@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { App as AntApp, ConfigProvider, Segmented } from 'antd';
-import { BrowserRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { HashRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutGroup, MotionConfig } from 'motion/react';
 import { StoreProvider } from './data/store';
 import { Shell } from './components/Shell';
@@ -47,9 +47,9 @@ export default function App() {
         {/* reducedMotion="user": transforms are skipped for people who ask for less motion; opacity fades stay. */}
         <MotionConfig reducedMotion="user" transition={{ duration: duration.base, ease: ease.standard }}>
           <StoreProvider>
-            <BrowserRouter>
+            <HashRouter>
               <Routed />
-            </BrowserRouter>
+            </HashRouter>
           </StoreProvider>
         </MotionConfig>
       </AntApp>
