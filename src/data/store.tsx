@@ -1,5 +1,11 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
-import { ACCOUNT, CREATIVES, type RowStatus } from './mock';
+import { ACCOUNT, CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, type Creative, type RowStatus } from './mock';
+
+export const DEMO_ACCOUNTS = [
+  { ...ACCOUNT, creatives: CREATIVES },
+  { ...SMALL_ACCOUNT, creatives: SMALL_CREATIVES },
+];
+export const ALL_CREATIVES: Creative[] = [...CREATIVES, ...SMALL_CREATIVES];
 
 /**
  * Shared job state so the Radar row and the ad detail always show the same
@@ -8,6 +14,8 @@ import { ACCOUNT, CREATIVES, type RowStatus } from './mock';
 interface Store {
   status: Record<string, RowStatus>;
   credits: number;
+  accountId: string;
+  setAccount: (id: string) => void;
   startJob: (creativeId: string, count: number, recIds?: string[], cost?: number) => void;
   markSeen: (creativeId: string) => void;
 }
@@ -16,10 +24,11 @@ const Ctx = createContext<Store | null>(null);
 
 export function StoreProvider({ children }: { children: ReactNode }) {
   const [status, setStatus] = useState<Record<string, RowStatus>>(() =>
-    Object.fromEntries(CREATIVES.map((c) => [c.id, c.status])),
+    Object.fromEntries(ALL_CREATIVES.map((c) => [c.id, c.status])),
   );
 
   const [credits, setCredits] = useState(ACCOUNT.credits);
+  const [accountId, setAccount] = useState(ACCOUNT.id);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -43,6 +52,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     () => ({
       status,
       credits,
+      accountId,
+      setAccount,
       startJob: (id, count, recIds, cost = 0) => {
         setCredits((c) => c - cost);
         setStatus((p) => ({ ...p, [id]: { kind: 'generating', count, progress: 0.02, recIds } }));
@@ -53,7 +64,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           return s?.kind === 'ready' ? { ...p, [id]: { ...s, unseen: false } } : p;
         }),
     }),
-    [status, credits],
+    [status, credits, accountId],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

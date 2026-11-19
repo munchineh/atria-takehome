@@ -1,10 +1,15 @@
-import { Popover, Tag } from 'antd';
+import { Popover, Tag, Tooltip } from 'antd';
 import { ACCOUNT, METRIC_META, gradeBand, type Creative, type Grade, type MetricKey } from '../data/mock';
 
 const COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'red' };
 
 export function GradeChip({ g }: { g: Grade }) {
-  if (!g) return <span className="muted">--</span>;
+  if (!g)
+    return (
+      <Tooltip title="Video only">
+        <span className="na">N/A</span>
+      </Tooltip>
+    );
   return (
     <Tag color={COLOR[g[0]]} className="grade-tag" bordered>
       {g}

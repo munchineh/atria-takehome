@@ -11,15 +11,16 @@ import {
   VideoCameraOutlined,
 } from '@ant-design/icons';
 import { ACCOUNT } from '../data/mock';
-import { useStore } from '../data/store';
+import { DEMO_ACCOUNTS, useStore } from '../data/store';
+import { useNavigate } from 'react-router-dom';
 
 const ACCOUNTS = [
   'Ancestral Supplements Ads',
+  'Javvy Coffee',
   'Tian Lin',
   'Blackout Coffee Copy',
   'Cosy Box Gurgaon',
   'Wonderland4children',
-  'Javvy Coffee',
   'UniversDuJapon',
   'Fun in Motion Toys',
   'Q30 Innovations',
@@ -36,18 +37,34 @@ const RAIL = [
   { icon: <AppstoreOutlined />, label: 'Brands' },
 ];
 
-function AccountList() {
+function AccountList({ onPick }: { onPick?: () => void }) {
+  const { accountId, setAccount } = useStore();
+  const nav = useNavigate();
   return (
     <div className="accounts">
       <div className="accounts-head">
         Ad accounts <span className="muted-dark">(26)</span>
       </div>
-      {ACCOUNTS.map((a, i) => (
-        <div key={a} className={`account ${i === 0 ? 'active' : ''}`}>
+      {ACCOUNTS.map((a) => {
+        const demo = DEMO_ACCOUNTS.find((d) => d.name === a);
+        return (
+        <div
+          key={a}
+          className={`account ${demo?.id === accountId ? 'active' : ''} ${demo ? 'demo' : ''}`}
+          role={demo ? 'button' : undefined}
+          tabIndex={demo ? 0 : undefined}
+          onClick={() => {
+            if (!demo) return;
+            setAccount(demo.id);
+            nav('/');
+            onPick?.();
+          }}
+        >
           <span className="meta-glyph">∞</span>
           {a}
         </div>
-      ))}
+        );
+      })}
     </div>
   );
 }
@@ -57,7 +74,8 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
   const mobile = !bp.md;
   const wide = bp.xl;
   const [drawer, setDrawer] = useState(false);
-  const { status, credits } = useStore();
+  const { status, credits, accountId } = useStore();
+  const accountName = DEMO_ACCOUNTS.find((d) => d.id === accountId)?.name ?? ACCOUNT.name;
   const running = Object.values(status).filter((s) => s.kind === 'generating').length;
   const unseen = Object.values(status).some((s) => s.kind === 'ready' && s.unseen);
 
@@ -87,7 +105,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           {!wide && <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawer(true)} aria-label="Ad accounts" />}
           <div className="topbar-title">
             <span className="meta-glyph blue">∞</span>
-            <span className="ellipsis">{ACCOUNT.name}</span>
+            <span className="ellipsis">{accountName}</span>
           </div>
           {header}
           <div className="topbar-right">
@@ -109,7 +127,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
         <main className="content">{children}</main>
       </div>
       <Drawer open={drawer} onClose={() => setDrawer(false)} placement="left" width={300} title="Analytics" className="dark-drawer">
-        <AccountList />
+        <AccountList onPick={() => setDrawer(false)} />
       </Drawer>
     </div>
   );

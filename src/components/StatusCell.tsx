@@ -10,17 +10,18 @@ export function diagnosis(c: Creative) {
   const rank = (g: string | null) => (g ? 'ABCD'.indexOf(g[0]) : -1);
   const worst = order.reduce<MetricKey | null>((w, k) => (rank(c.grades[k]) > (w ? rank(c.grades[w]) : -1) ? k : w), null);
   if (!worst) return 'Review';
+  if (rank(c.grades[worst]) <= 1) return 'Scale: no grade below B';
   const verb = { conversion: 'Fix conversion', hook: 'Fix the hook', retention: 'Fix retention', ctr: 'Lift CTR' }[worst];
   const metric = worst === 'conversion' ? 'CPA' : METRIC_META[worst].label;
   return `${verb}: ${metric} ${c.grades[worst]}`;
 }
 
 export function StatusCell({ creative, status }: { creative: Creative; status: RowStatus }) {
-  if (creative.media === 'Video') {
+  if (creative.media !== 'Image') {
     return (
-      <Tooltip title="Variations are for image ads for now. Video iteration is on the roadmap.">
+      <Tooltip title="Variations work on single-image ads for now. Video and carousel are on the roadmap.">
         <span className="status-cell disabled">
-          <StopOutlined /> Video: can't iterate yet
+          <StopOutlined /> {creative.media}: can't iterate yet
         </span>
       </Tooltip>
     );

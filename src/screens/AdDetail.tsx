@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, PERSONAS, PLACEMENTS, RECOMMENDATIONS, money, short, type Creative as CreativeT, type Recommendation } from '../data/mock';
-import { useStore } from '../data/store';
+import { ALL_CREATIVES, useStore } from '../data/store';
 import { Creative } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
@@ -47,6 +47,13 @@ function verdict(c: CreativeT, parent?: CreativeT) {
       <>
         <b>Promising.</b> Keeps the original's <b>CTR A</b> and converts better: <b>CPA B</b>, {money(c.values.cpa)} vs {money(parent.values.cpa)} on the
         original. Still early at {money(c.spend)} spent.
+      </>
+    );
+  }
+  if (c.id !== 'id-1090245') {
+    return (
+      <>
+        <b>Overall {c.overall}.</b> CPA {money(c.values.cpa)}, CTR {c.values.ctr.toFixed(2)}%, {money(c.spend)} spent at ROAS {c.roas}.
       </>
     );
   }
@@ -135,7 +142,7 @@ export function AdDetail() {
   const { id } = useParams();
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
-  const c =CREATIVES.find((x) => x.id === id) ?? CREATIVES[1];
+  const c = ALL_CREATIVES.find((x) => x.id === id) ?? CREATIVES[1];
   const parent = c.variationOf ? CREATIVES.find((x) => x.id === c.variationOf) : undefined;
   const { status, startJob, markSeen, credits: balance } = useStore();
   const s = status[c.id];

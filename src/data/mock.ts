@@ -3,7 +3,9 @@ export type Media = 'Image' | 'Video' | 'Carousel';
 export type MetricKey = 'conversion' | 'hook' | 'retention' | 'ctr';
 
 export const ACCOUNT = {
+  id: 'ancestral',
   name: 'Ancestral Supplements Ads',
+  monthlySpend: 96800,
   windowDays: 60,
   windowLabel: 'Last 60 days (22 Aug – 21 Oct)',
   credits: 1298,
@@ -102,10 +104,10 @@ export const CREATIVES: Creative[] = [
     name: 'ID-1086424_pNA_tStatic_ar1:1_Bundle',
     media: 'Image',
     thumb: 'liver',
-    ads: Array.from({ length: 6 }, (_, i) => ({ id: `12022990${1000 + i}`, campaign: camp.test, adSet: 'Static_Test', spend: 3908.95, cpa: 76.65 })),
+    ads: Array.from({ length: 6 }, (_, i) => ({ id: `12022990${1000 + i}`, campaign: camp.test, adSet: 'Static_Test', spend: 3908.95, cpa: 60.4 })),
     overall: 'C',
-    grades: { conversion: 'D', hook: null, retention: null, ctr: 'A' },
-    values: { cpa: 76.65, ctr: 1.88 },
+    grades: { conversion: 'C', hook: null, retention: null, ctr: 'D' },
+    values: { cpa: 60.4, ctr: 0.92 },
     spend: 23453.68,
     roas: 1.05,
     tab: ['potential'],
@@ -133,8 +135,8 @@ export const CREATIVES: Creative[] = [
     thumb: 'bottle',
     ads: Array.from({ length: 4 }, (_, i) => ({ id: `12022815${2000 + i}`, campaign: camp.prosp, adSet: 'Broad_25-65_All', spend: 4946.89, cpa: 51.8 })),
     overall: 'C',
-    grades: { conversion: 'D', hook: null, retention: null, ctr: 'A' },
-    values: { cpa: 51.8, ctr: 1.79 },
+    grades: { conversion: 'B', hook: null, retention: null, ctr: 'C' },
+    values: { cpa: 51.8, ctr: 1.3 },
     spend: 19787.54,
     roas: 1.31,
     tab: ['potential'],
@@ -145,10 +147,10 @@ export const CREATIVES: Creative[] = [
     name: 'img_bau_none_Batch030B_Liver_Static',
     media: 'Image',
     thumb: 'liver',
-    ads: Array.from({ length: 4 }, (_, i) => ({ id: `12023001${3000 + i}`, campaign: camp.test, adSet: 'Static_Test', spend: 4405.8, cpa: 62.72 })),
-    overall: 'D+',
-    grades: { conversion: 'D', hook: null, retention: null, ctr: 'A' },
-    values: { cpa: 62.72, ctr: 1.66 },
+    ads: Array.from({ length: 4 }, (_, i) => ({ id: `12023001${3000 + i}`, campaign: camp.test, adSet: 'Static_Test', spend: 4405.8, cpa: 55.1 })),
+    overall: 'C-',
+    grades: { conversion: 'B', hook: null, retention: null, ctr: 'D' },
+    values: { cpa: 55.1, ctr: 0.88 },
     spend: 17623.2,
     roas: 1.12,
     tab: ['potential', 'candidates'],
@@ -246,3 +248,43 @@ export function gradeBand(g: Grade) {
 
 export const short = (name: string, n = 22) => (name.length > n ? `${name.slice(0, n)}…` : name);
 export const money = (v: number) => `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+
+/** Grades are most reliable above this monthly spend (Atria's own guidance). */
+export const RELIABLE_SPEND = 10000;
+
+/** Small account for the low-spend Alert demo. Same structure, three creatives. */
+export const SMALL_ACCOUNT = { id: 'javvy', name: 'Javvy Coffee', monthlySpend: 6200 };
+
+export const SMALL_CREATIVES: Creative[] = [
+  {
+    id: 'jv-protein-static',
+    name: 'JV_Protein-Coffee_Static_ar4:5_Morning-Ritual',
+    media: 'Image', thumb: 'bottle',
+    ads: [{ id: '120240118830021', campaign: 'JV_Prospecting_Broad_US_Protein-Coffee_Q4-2025', adSet: 'Broad_25-54', spend: 3120.4, cpa: 31.2 }],
+    overall: 'C', grades: { conversion: 'C', hook: null, retention: null, ctr: 'D' },
+    values: { cpa: 31.2, ctr: 0.71 }, spend: 3120.4, roas: 1.4, tab: ['potential'], status: { kind: 'idle' },
+  },
+  {
+    id: 'jv-ugc-video',
+    name: 'JV_UGC_Video_Barista-Review_v2',
+    media: 'Video', thumb: 'fem',
+    ads: [{ id: '120240118830044', campaign: 'JV_Prospecting_Broad_US_Protein-Coffee_Q4-2025', adSet: 'Broad_25-54', spend: 2410.0, cpa: 26.8 }],
+    overall: 'B-', grades: { conversion: 'B', hook: 'B', retention: 'C', ctr: 'B' },
+    values: { cpa: 26.8, ctr: 1.21, hookRate: 27, retention: 16 }, spend: 2410, roas: 1.9, tab: ['potential'], status: { kind: 'idle' },
+  },
+  {
+    id: 'jv-bundle-static',
+    name: 'JV_Bundle_Static_ar1:1_Save-20',
+    media: 'Image', thumb: 'liver',
+    ads: [{ id: '120240118830067', campaign: 'JV_Retargeting_Website-Visitors-30D_US', adSet: 'WebVisitors_30D', spend: 1650.2, cpa: 41.9 }],
+    overall: 'D+', grades: { conversion: 'D', hook: null, retention: null, ctr: 'C' },
+    values: { cpa: 41.9, ctr: 0.96 }, spend: 1650.2, roas: 0.9, tab: ['candidates'], status: { kind: 'idle' },
+  },
+];
+
+export const TAB_DESCRIPTIONS = {
+  winners: 'Strong grades on most metrics. Scale these before making new ones.',
+  potential: 'Strong on one metric, weak on another. One focused fix could lift them.',
+  candidates: 'Weaker overall, with enough spend to be worth testing a new version.',
+  all: 'Every creative with spend in the last 60 days.',
+} as const;
