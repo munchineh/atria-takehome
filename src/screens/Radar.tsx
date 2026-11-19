@@ -1,10 +1,10 @@
 import { useMemo, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Badge, Button, Checkbox, Grid, Popover, Segmented, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Badge, Button, Checkbox, Empty, Grid, Popover, Segmented, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, InfoCircleOutlined, BranchesOutlined, DownOutlined } from '@ant-design/icons';
+import { FilterOutlined, BranchesOutlined, DownOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TAB_DESCRIPTIONS, money, short, type Creative, type Media } from '../data/mock';
+import { METRIC_META, RELIABLE_SPEND, TABS, WINDOW, money, plural, short, type Creative, type Media, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
@@ -12,13 +12,7 @@ import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
 import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../motion/tokens';
 
-type TabKey = 'winners' | 'potential' | 'candidates' | 'all';
-const TABS: { key: TabKey; label: string; icon: string; tip?: string }[] = [
-  { key: 'winners', label: 'Winners', icon: '🏆', tip: 'Top grades across the board. Scale these.' },
-  { key: 'potential', label: 'High iteration potential', icon: '⚑', tip: 'Strong in one metric, weak in another. A focused fix could lift them.' },
-  { key: 'candidates', label: 'Iteration candidates', icon: '··', tip: 'Weaker overall, but enough spend to be worth a try.' },
-  { key: 'all', label: 'All', icon: '', tip: 'Every creative in the window.' },
-];
+type TabKey = (typeof TABS)[number]['key'];
 
 const MediaTag = ({ m }: { m: Media }) => <Tag className={`media-tag media-${m.toLowerCase()}`}>{m}</Tag>;
 
@@ -26,7 +20,7 @@ function NameCell({ c, morph = true }: { c: Creative; morph?: boolean }) {
   const parent = c.variationOf ? ALL_CREATIVES.find((x) => x.id === c.variationOf) : null;
   return (
     <div className="name-cell">
-      <Thumb kind={c.thumb} layoutId={morph ? `creative-${c.id}` : undefined} />
+      <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
         <Tooltip title={c.name} placement="topLeft" mouseEnterDelay={0.6}>
           <div className="name ellipsis">{c.name}</div>
@@ -60,11 +54,25 @@ const MotionRow = (props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'
 
 const HOW_GRADING = (
   <div className="grade-pop">
-    <p>Each metric is ranked against every other creative in this account, weighted by spend. Top 25% gets an A, bottom 25% a D.</p>
-    <p>Overall combines the metrics a creative has. Hook and retention apply to video only.</p>
-    <p className="muted small">Scoring is built on insights from over $1 billion in ad spend. Most reliable above $10,000 a month.</p>
+    <p>Each metric is ranked against every other creative in this account. Creatives with more spend count for more.</p>
+    <p>A is the top 25%, D the bottom 25%. A plus or minus shows the upper or lower part of a band.</p>
+    <p>Overall combines the grades a creative has. Hook and retention are graded on video only.</p>
+    <p className="muted small">Built on patterns from over $1 billion in ad spend.</p>
   </div>
 );
+
+/** Column header with a one-sentence definition (RA-21, RA-23, RA-24). */
+const Head = ({ label, tip }: { label: string; tip: string }) => (
+  <Tooltip title={tip}>
+    <span className="col-head">{label}</span>
+  </Tooltip>
+);
+const metricCol = (k: MetricKey, key: string, width: number) => ({
+  title: <Head label={METRIC_META[k].label} tip={METRIC_META[k].tip} />,
+  key,
+  width,
+  render: (_: unknown, c: Creative) => <GradeTag creative={c} metric={k} />,
+});
 
 const FILTER_GROUPS: { label: string; options: string[] }[] = [
   { label: 'Placement', options: ['Feed', 'Stories', 'Reels'] },
@@ -108,7 +116,7 @@ export function Radar() {
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
   const cards = !bp.md; // below tablet width
-  const { status, accountId } = useStore();
+  const { statusOf, accountId } = useStore();
   const account = DEMO_ACCOUNTS.find((a) => a.id === accountId) ?? DEMO_ACCOUNTS[0];
   const CREATIVES = account.creatives;
   const lowSpend = account.monthlySpend < RELIABLE_SPEND;
@@ -118,34 +126,27 @@ export function Radar() {
 
   const rows = useMemo(
     () =>
-      CREATIVES.filter((c) => (tab === 'all' ? true : c.tab.includes(tab)))
+      CREATIVES.filter((c) => (tab === 'all' ? true : c.tab === tab))
         .filter((c) => media === 'All' || c.media === media)
         .sort((a, b) => b.spend - a.spend),
     [tab, media, CREATIVES],
   );
-  const count = (k: TabKey) => (k === 'all' ? CREATIVES.length : CREATIVES.filter((c) => c.tab.includes(k)).length);
+  const count = (k: TabKey) => (k === 'all' ? CREATIVES.length : CREATIVES.filter((c) => c.tab === k).length);
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
   const columns: ColumnsType<Creative> = [
     { title: 'Creative', key: 'name', width: 290, fixed: 'left', render: (_, c) => <NameCell c={c} /> },
     {
-      title: (
-        <span>
-          Next step{' '}
-          <Tooltip title="What to fix first. Click to see the issue and its fix.">
-            <InfoCircleOutlined className="muted" />
-          </Tooltip>
-        </span>
-      ),
+      title: <Head label="Next step" tip="The weakest grade on this creative. Click the row to see the fix" />,
       key: 'rec',
       width: 235,
-      render: (_, c) => <StatusCell creative={c} status={status[c.id]} />,
+      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} />,
     },
     { title: 'Overall', key: 'overall', width: 90, render: (_, c) => <OverallTag creative={c} /> },
-    { title: 'Conversion', key: 'conv', width: 95, render: (_, c) => <GradeTag creative={c} metric="conversion" /> },
-    { title: 'Hook', key: 'hook', width: 70, render: (_, c) => <GradeTag creative={c} metric="hook" /> },
-    { title: 'Retention', key: 'ret', width: 85, render: (_, c) => <GradeTag creative={c} metric="retention" /> },
-    { title: 'CTR', key: 'ctr', width: 70, render: (_, c) => <GradeTag creative={c} metric="ctr" /> },
+    metricCol('conversion', 'conv', 100),
+    metricCol('hook', 'hook', 70),
+    metricCol('retention', 'ret', 90),
+    metricCol('ctr', 'ctr', 70),
     { title: 'Spend', key: 'spend', width: 115, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
     { title: 'CPA', key: 'cpa', width: 90, align: 'right', render: (_, c) => <span className="cpa">{money(c.values.cpa)}</span> },
   ];
@@ -156,7 +157,7 @@ export function Radar() {
         <Typography.Title level={3} style={{ margin: 0 }}>
           Radar
         </Typography.Title>
-        <p className="muted desc">Grades every creative against the rest of this account, so you know what to fix first.</p>
+        <p className="muted desc">Grades each creative against the others in this account, so you can see what to fix first</p>
       </div>
 
       <AnimatePresence initial={false}>
@@ -165,7 +166,7 @@ export function Radar() {
             <Alert
               type="info"
               showIcon
-              message={`This account spends about ${money(account.monthlySpend).replace('.00', '')} a month. Grades are most reliable above ${money(RELIABLE_SPEND).replace('.00', '')} a month, so treat them as a rough guide.`}
+              message={`Radar works best on accounts that spend over ${money(RELIABLE_SPEND).replace('.00', '')} a month. This one spends about ${money(account.monthlySpend).replace('.00', '')}, so read its grades as a rough guide.`}
             />
           </motion.div>
         )}
@@ -176,12 +177,12 @@ export function Radar() {
         <Segmented
           value={media}
           onChange={(v) => setMedia(v as typeof media)}
-          options={['All', 'Image', 'Video', 'Carousel'].map((m) => ({ label: m, value: m }))}
+          options={['All', 'Image', 'Video', 'Carousel'].map((m) => ({ label: m === 'All' ? 'All media' : m, value: m }))}
           aria-label="Media type"
         />
         <span className="window muted">
-          Grades: <span className="window-long">{ACCOUNT.windowLabel}</span>
-          <span className="window-short">last {ACCOUNT.windowDays} days</span> ·{' '}
+          <span className="window-long">{WINDOW.long}</span>
+          <span className="window-short">{WINDOW.short}</span> ·{' '}
           <Popover content={HOW_GRADING} title="How grading works" trigger="click" placement="bottomRight">
             <Button type="link" size="small" className="inline-link">
               How grading works
@@ -191,21 +192,14 @@ export function Radar() {
       </div>
 
       {cards ? (
-        <Segmented
-          block
-          className="radar-seg"
-          value={tab}
-          onChange={(v) => setTab(v as TabKey)}
-          options={TABS.map((t) => ({
-            value: t.key,
-            label: (
-              <span className="seg-label">
-                <span>{{ winners: 'Winners', potential: 'Potential', candidates: 'Candidates', all: 'All' }[t.key]}</span>
-                <span className="seg-count">{count(t.key)}</span>
-              </span>
-            ),
-          }))}
-        />
+        <div className="radar-grid-tabs" role="tablist" aria-label="Radar views">
+          {TABS.map((t) => (
+            <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
+              <span>{t.label}</span>
+              <span className="seg-count">{count(t.key)}</span>
+            </button>
+          ))}
+        </div>
       ) : (
       <Tabs
         activeKey={tab}
@@ -215,7 +209,6 @@ export function Radar() {
           key: t.key,
           label: (
             <span className="tab-label">
-              {t.icon && <span className="tab-icon">{t.icon}</span>}
               {t.label} <span className="tab-count">{count(t.key)}</span>
             </span>
           ),
@@ -226,12 +219,24 @@ export function Radar() {
       <div className="tab-desc" aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
           <motion.p key={tab} variants={fadeUp} initial="hidden" animate="show" exit="exit">
-            {TAB_DESCRIPTIONS[tab]}
+            {TABS.find((t) => t.key === tab)!.desc}
           </motion.p>
         </AnimatePresence>
       </div>
 
-      {cards ? (
+      {rows.length === 0 ? (
+        <motion.div variants={fadeUp} initial="hidden" animate="show" className="radar-empty">
+          {tab === 'winners' && media === 'All' ? (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>No winners in the last 60 days</b><br />No creative is strong on every graded metric yet. The closest are under One weak metric.</>}>
+              <Button onClick={() => setTab('potential')}>View one weak metric</Button>
+            </Empty>
+          ) : (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No {media === 'All' ? '' : `${media.toLowerCase()} `}creatives in this tab</b>}>
+              {media !== 'All' && <Button onClick={() => setMedia('All')}>Show all media</Button>}
+            </Empty>
+          )}
+        </motion.div>
+      ) : cards ? (
         <div className="radar-cards">
           <AnimatePresence initial>
             {rows.map((c, i) => (
@@ -244,7 +249,7 @@ export function Radar() {
                 exit={{ opacity: 0, transition: { duration: duration.instant } }}
               >
                 <NameCell c={c} morph={false} />
-                <StatusCell creative={c} status={status[c.id]} />
+                <StatusCell creative={c} status={statusOf(c.id)} />
                 <div className="card-row">
                   <span className="card-overall">
                     Overall <OverallTag creative={c} />
@@ -300,7 +305,7 @@ export function Radar() {
           size="middle"
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
-          pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => `Total ${t} items`, showSizeChanger: false }}
+          pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'creative'), showSizeChanger: false }}
         />
       )}
     </motion.div>

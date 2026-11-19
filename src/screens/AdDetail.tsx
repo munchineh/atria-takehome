@@ -1,99 +1,94 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip, Typography } from 'antd';
-import {
-  ArrowRightOutlined,
-  BranchesOutlined,
-  CloudUploadOutlined,
-  DownOutlined,
-  ExportOutlined,
-  HistoryOutlined,
-  InfoCircleOutlined,
-} from '@ant-design/icons';
+import { ArrowRightOutlined, BranchesOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, PERSONAS, PLACEMENTS, RECOMMENDATIONS, money, short, type Creative as CreativeT, type Recommendation } from '../data/mock';
-import { ALL_CREATIVES, useStore } from '../data/store';
+import {
+  ACCOUNT,
+  CREATIVES,
+  METRIC_META,
+  PERSONAS,
+  WINDOW,
+  money,
+  plural,
+  recommendationsFor,
+  short,
+  type Creative as CreativeT,
+  type MetricKey,
+  type Recommendation,
+} from '../data/mock';
+import { findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
-import { duration, ease, fadeUp, spring, stagger } from '../motion/tokens';
+import { CreateDialog } from '../components/CreateDialog';
+import { Rolling } from '../components/Rolling';
+import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
 const section = {
   hidden: {},
   show: { transition: { staggerChildren: stagger.cards, delayChildren: 0.05 } },
 };
 
-/** Number that slides when it changes (sticky bar counts). */
-function Rolling({ value }: { value: string | number }) {
-  return (
-    <span className="rolling">
-      <AnimatePresence mode="popLayout" initial={false}>
-        <motion.span
-          key={value}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }}
-          exit={{ opacity: 0, transition: { duration: duration.instant } }}
-        >
-          {value}
-        </motion.span>
-      </AnimatePresence>
-    </span>
-  );
-}
+const val = (c: CreativeT, k: MetricKey) => {
+  const key = ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[k];
+  return METRIC_META[k].unit(c.values[key] ?? 0);
+};
+const mname = (k: MetricKey) => (k === 'conversion' ? ACCOUNT.conversionMetric : METRIC_META[k].label);
 
-function verdict(c: CreativeT, parent?: CreativeT) {
-  if (parent) {
-    return (
-      <>
-        <b>Promising.</b> Keeps the original's <b>CTR A</b> and converts better: <b>CPA B</b>, {money(c.values.cpa)} vs {money(parent.values.cpa)} on the
-        original. Still early at {money(c.spend)} spent.
-      </>
-    );
-  }
-  if (c.id !== 'id-1090245') {
-    return (
-      <>
-        <b>Overall {c.overall}.</b> CPA {money(c.values.cpa)}, CTR {c.values.ctr.toFixed(2)}%, {money(c.spend)} spent at ROAS {c.roas}.
-      </>
-    );
-  }
-  return (
-    <>
-      <b>Mixed.</b> People click (<b>CTR A</b>) but few buy (<b>CPA D</b>, {money(c.values.cpa)} vs account avg {money(ACCOUNT.avg.cpa)}).{' '}
-      {money(c.spend)} spent at ROAS {c.roas}.
-    </>
-  );
+/** AD-13 to AD-15: what happens, then the best and worst grade with numbers. No adjectives. */
+function summary(c: CreativeT, parent?: CreativeT) {
+  if (parent)
+    return `Converts better than the original. ${mname('conversion')} is ${c.grades.conversion} (${money(c.values.cpa)}, original ${money(parent.values.cpa)}). CTR is still ${c.grades.ctr}. Early result: ${money(c.spend)} spent so far.`;
+  const keys = (Object.keys(METRIC_META) as MetricKey[]).filter((k) => c.grades[k]);
+  const rank = (k: MetricKey) => 'ABCD'.indexOf(c.grades[k]![0]);
+  const worst = keys.reduce((a, b) => (rank(b) > rank(a) ? b : a));
+  // Pair a weak conversion grade with CTR, so the sentence reads as one story.
+  const best = worst === 'conversion' && c.grades.ctr ? 'ctr' : keys.reduce((a, b) => (rank(b) < rank(a) ? b : a));
+  const lead =
+    rank(worst) <= 1 ? 'Strong on every graded metric' : worst === 'conversion' ? 'People click but few buy' : worst === 'ctr' ? 'Few people click' : worst === 'hook' ? 'People scroll past in the first seconds' : 'People stop watching early';
+  const avg = METRIC_META[worst].unit(ACCOUNT.avg[METRIC_META[worst].avgKey]);
+  return `${lead}. ${mname(best)} is ${c.grades[best]} (${val(c, best)}). ${mname(worst)} is ${c.grades[worst]} (${val(c, worst)}, account average ${avg}).`;
 }
 
 function RecCard({
   r,
   selected,
   suggested,
+  disabled,
   onToggle,
-  jobCount,
-  generating,
+  footer,
 }: {
   r: Recommendation;
   selected: boolean;
   suggested: boolean;
+  disabled?: boolean;
   onToggle: () => void;
-  jobCount?: number;
-  generating?: boolean;
+  footer?: { text: string; action?: () => void; running?: boolean };
 }) {
-  const footerCount = jobCount ?? r.tried?.count;
   return (
-    <motion.div variants={fadeUp} className={`rec-card ${selected ? 'selected' : ''}`} onClick={onToggle} role="checkbox" aria-checked={selected} tabIndex={0}
-      onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), onToggle())}
+    <motion.div
+      variants={fadeUp}
+      className={`rec-card ${selected ? 'selected' : ''} ${disabled ? 'read-only' : ''}`}
+      onClick={disabled ? undefined : onToggle}
+      role={disabled ? undefined : 'checkbox'}
+      aria-checked={disabled ? undefined : selected}
+      tabIndex={disabled ? undefined : 0}
+      onKeyDown={(e) => !disabled && (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), onToggle())}
     >
       <div className="rec-top">
-        <Checkbox checked={selected} tabIndex={-1} />
+        {!disabled && <Checkbox checked={selected} tabIndex={-1} />}
         <span className="rec-priority">{r.priority}</span>
         <div className="rec-issue">
           <span className="muted small">Issue</span>
           <b>{r.issue}</b>
         </div>
         <div className="rec-tags">
-          {suggested && <Tag color="orange">Suggested</Tag>}
+          {suggested && !disabled && (
+            <Tooltip title="One of the top 2 by priority">
+              <Tag color="orange">Suggested</Tag>
+            </Tooltip>
+          )}
           <Tag>Targets {r.target}</Tag>
         </div>
       </div>
@@ -111,7 +106,7 @@ function RecCard({
         </div>
       </div>
       <AnimatePresence initial={false}>
-        {(footerCount || generating) && (
+        {footer && (
           <motion.div
             className="rec-footer"
             initial={{ opacity: 0 }}
@@ -119,17 +114,11 @@ function RecCard({
             onClick={(e) => e.stopPropagation()}
           >
             <HistoryOutlined />
-            {generating ? (
-              <span>Generating variations from this recommendation…</span>
-            ) : (
-              <>
-                <span>
-                  {r.tried && !jobCount ? `Tried ${r.tried.date} · ` : ''}Variations from this recommendation ({footerCount})
-                </span>
-                <Button type="link" size="small">
-                  View
-                </Button>
-              </>
+            <span>{footer.text}</span>
+            {footer.action && (
+              <Button type="link" size="small" onClick={footer.action}>
+                View variations
+              </Button>
             )}
           </motion.div>
         )}
@@ -142,29 +131,48 @@ export function AdDetail() {
   const { id } = useParams();
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
-  const c = ALL_CREATIVES.find((x) => x.id === id) ?? CREATIVES[1];
-  const parent = c.variationOf ? CREATIVES.find((x) => x.id === c.variationOf) : undefined;
-  const { status, startJob, markSeen, credits: balance } = useStore();
-  const s = status[c.id];
+  const nav = useNavigate();
+  const c = findCreative(id) ?? CREATIVES[0];
+  const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
+  const { statusOf, jobsFor, startJob, credits: balance } = useStore();
+  const s: RowStatus = statusOf(c.id);
+  const jobs = jobsFor(c.id);
+  const iterable = c.media === 'Image';
 
-  // D6: on a variation, the recommendation it already applied is history, not an option.
-  const recs = useMemo(() => (parent ? RECOMMENDATIONS.filter((r) => r.id !== 'stronger').map((r, i) => ({ ...r, priority: i + 1, tried: undefined, ...(r.id === 'simplify' ? { issueDetail: 'CPA improved to B, but the ad still carries two offers. One clear offer should close the gap.' } : {}) })) : RECOMMENDATIONS), [parent]);
+  const recs = useMemo(() => recommendationsFor(c), [c]);
   const suggestedIds = recs.slice(0, 2).map((r) => r.id);
-  const [selected, setSelected] = useState<string[]>(suggestedIds);
+  const [selected, setSelected] = useState<string[]>(iterable ? suggestedIds : []);
   const [adsOpen, setAdsOpen] = useState(true);
-
+  const [showAllAds, setShowAllAds] = useState(false);
+  const [dialog, setDialog] = useState(false);
+  const [feedback, setFeedback] = useState<'yes' | 'no' | null>(null);
   useEffect(() => {
-    if (s?.kind === 'ready') markSeen(c.id);
-  }, [s?.kind, c.id, markSeen]);
+    setSelected(iterable ? recommendationsFor(c).slice(0, 2).map((r) => r.id) : []);
+  }, [c, iterable]);
 
-  const images = selected.length * ACCOUNT.variationsPerRecommendation;
-  const credits = images * ACCOUNT.creditsPerImage;
-  const busy = s?.kind === 'generating';
+  const total = selected.length * ACCOUNT.variationsPerRecommendation;
+  const cost = total * ACCOUNT.creditsPerImage;
+  const busy = s.kind === 'generating' || s.kind === 'queued';
+  const short_ = cost > balance;
   const toggle = (rid: string) => setSelected((p) => (p.includes(rid) ? p.filter((x) => x !== rid) : [...p, rid]));
+  const viewRound = (jobId: string, rec?: string) => nav(`/ad/${c.id}/variations?round=${jobId}${rec ? `&rec=${rec}` : ''}`);
+
+  /** AD-21e/f/g: footer per recommendation from its latest round. */
+  const footerFor = (r: Recommendation) => {
+    const j = jobs.filter((x) => x.recIds.includes(r.id)).at(-1);
+    if (!j) return undefined;
+    if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}…`, running: true };
+    if (j.state === 'failed') return { text: "Couldn't create variations. Credits returned." };
+    const n = j.variations.filter((v, i) => v.recId === r.id && !j.failed.includes(i)).length;
+    if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'variation')} ready`, action: () => viewRound(j.id, r.id) };
+    return { text: `${plural(n, 'variation')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
+  };
+
+  const ads = showAllAds ? c.ads : c.ads.slice(0, 3);
 
   return (
-    <div className="page detail">
-      <motion.div className="detail-head" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: duration.base } }}>
+    <motion.div {...pageTransition} className="page detail">
+      <div className="detail-head">
         <Breadcrumb
           items={[
             { title: <Link to="/">Radar</Link> },
@@ -172,12 +180,12 @@ export function AdDetail() {
             { title: <Tooltip title={c.name}>{short(c.name, 22)}</Tooltip> },
           ]}
         />
-        <span className="muted small window">{ACCOUNT.windowLabel}</span>
-      </motion.div>
+        <span className="muted small window">{bp.md ? WINDOW.long : WINDOW.short}</span>
+      </div>
 
       {parent && (
         <motion.div className="lineage" variants={fadeUp} initial="hidden" animate="show">
-          <BranchesOutlined /> Lineage:
+          <BranchesOutlined /> Made from
           <Link to={`/ad/${parent.id}`}>{short(parent.name, 14)}</Link>
           <span className="muted">›</span>
           <b>{short(c.name, 18)}</b>
@@ -187,15 +195,15 @@ export function AdDetail() {
       <div className="detail-grid">
         <aside className="detail-left">
           <div className="panel creative-panel">
-            <div className="muted small">Ad name</div>
+            <div className="muted small">Creative name</div>
             <div className="ad-name">{c.name}</div>
-            <Creative kind={c.thumb} layoutId={bp.md ? `creative-${c.id}` : undefined} />
+            <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />
           </div>
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
-              <b>Running in {c.ads.length} {c.ads.length === 1 ? 'ad' : 'ads'}</b>
-              {c.ads.length > 1 && <span className="muted small">metrics combined</span>}
+              <b>Running in {plural(c.ads.length, 'ad')}</b>
+              {c.ads.length > 1 && <span className="muted small">Grades and spend combine {c.ads.length === 2 ? 'both ads' : `all ${c.ads.length} ads`}</span>}
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
               </motion.span>
@@ -208,11 +216,11 @@ export function AdDetail() {
                   animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
                   exit={{ opacity: 0, height: 0, transition: { height: { duration: duration.base, ease: ease.exit }, opacity: { duration: duration.instant } } }}
                 >
-                  {c.ads.slice(0, 3).map((a) => (
+                  {ads.map((a) => (
                     <div key={a.id} className="ad-row">
                       <div className="ad-row-id">
                         <i className="live-dot" /> Meta ad {a.id}
-                        <ExportOutlined className="muted" />
+                        <ExportOutlined className="muted" aria-label="Open in Meta Ads Manager" role="link" />
                       </div>
                       <div className="campaign">{a.campaign}</div>
                       <div className="muted small">Ad set: {a.adSet}</div>
@@ -221,16 +229,20 @@ export function AdDetail() {
                           <span className="muted">Spend</span> {money(a.spend)}
                         </span>
                         <span>
-                          <span className="muted">CPA</span> {money(a.cpa)}
+                          <span className="muted">{ACCOUNT.conversionMetric}</span> {money(a.cpa)}
                         </span>
                       </div>
                     </div>
                   ))}
-                  {c.ads.length > 3 && <Button type="link" size="small">Show {c.ads.length - 3} more</Button>}
+                  {c.ads.length > 3 && !showAllAds && (
+                    <Button type="link" size="small" onClick={() => setShowAllAds(true)}>
+                      Show {plural(c.ads.length - 3, 'more ad', 'more ads')}
+                    </Button>
+                  )}
                   <div className="placement">
-                    <div className="muted small">Placement split (spend)</div>
+                    <div className="muted small">Spend by placement</div>
                     <div className="placement-bar">
-                      {PLACEMENTS.map((p, i) => (
+                      {c.placements.map((p, i) => (
                         <motion.i
                           key={p.label}
                           style={{ width: `${p.share * 100}%`, originX: 0 }}
@@ -240,7 +252,7 @@ export function AdDetail() {
                         />
                       ))}
                     </div>
-                    <div className="small">{PLACEMENTS.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(' · ')}</div>
+                    <div className="small">{c.placements.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(' · ')}</div>
                   </div>
                 </motion.div>
               )}
@@ -257,15 +269,15 @@ export function AdDetail() {
                 <div>
                   Variation of <Link to={`/ad/${parent.id}`}>{short(parent.name, 18)}</Link>
                 </div>
-                <div className="muted small">From “Use stronger CTAs” · Brief v1 · 12 Nov</div>
-                <Button size="small" type="link" style={{ padding: 0 }}>
+                <div className="muted small">From “{recName(parent.id, 'cta')}” · Brief v1 · 12 Nov</div>
+                <Button size="small" type="link" style={{ padding: 0 }} onClick={() => nav(`/ad/${parent.id}/variations?round=job-hero-1`)}>
                   View brief and images
                 </Button>
               </div>
             ) : (
               <div className="source-body">
                 <Tag icon={<CloudUploadOutlined />}>Uploaded</Tag>
-                <div className="muted small">Made outside Atria and synced from Meta.</div>
+                <div className="muted small">Made outside Atria and synced from Meta</div>
               </div>
             )}
           </motion.div>
@@ -274,64 +286,91 @@ export function AdDetail() {
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
           <motion.div variants={fadeUp} className="panel verdict">
             <Typography.Text type="secondary" className="small">
-              Verdict
+              Summary
             </Typography.Text>
-            <p className="verdict-line">{verdict(c, parent)}</p>
+            <p className="verdict-line">{summary(c, parent)}</p>
             <div className="grade-row">
               <span>
                 Overall <OverallTag creative={c} />
               </span>
-              <span>
-                Conversion <GradeTag creative={c} metric="conversion" />
-              </span>
-              <span>
-                CTR <GradeTag creative={c} metric="ctr" />
+              {(Object.keys(METRIC_META) as MetricKey[])
+                .filter((k) => c.grades[k])
+                .map((k) => (
+                  <span key={k}>
+                    {METRIC_META[k].label} <GradeTag creative={c} metric={k} />
+                  </span>
+                ))}
+              <span className="muted">
+                Spend <b className="ink">{money(c.spend)}</b>
               </span>
               <span className="muted">
                 ROAS <b className="ink">{c.roas}</b>
               </span>
-              <span className="muted small">Click a grade to see what it means</span>
             </div>
-            {s && s.kind !== 'idle' && (
+            <span className="muted small">Select a grade to see how it's calculated</span>
+            {s.kind !== 'idle' && (
               <div className="verdict-status">
                 <StatusCell creative={c} status={s} />
+                {s.kind === 'ready' && (
+                  <Button type="link" size="small" onClick={() => viewRound(s.jobId)}>
+                    View variations
+                  </Button>
+                )}
               </div>
             )}
           </motion.div>
 
           <motion.div variants={fadeUp} className="section-title">
             <h4>What's holding it back</h4>
-            <span className="muted small">
-              Ordered by priority · pick what to fix{' '}
-              <Tooltip title="The top 2 are ticked for you. Each recommendation makes 4 variations.">
-                <InfoCircleOutlined />
-              </Tooltip>
+            <span className="muted small">{iterable ? 'In priority order. The top 2 are selected for you.' : 'In priority order'}</span>
+            <span className="muted small rec-date">
+              Recommendations from {WINDOW.synced} ·{' '}
+              <Button type="link" size="small" className="inline-link" icon={<ReloadOutlined />}>
+                Refresh
+              </Button>
             </span>
           </motion.div>
 
           {parent && (
             <motion.div variants={fadeUp} className="already-tried">
-              <HistoryOutlined /> Already applied in this variation: <b>Use stronger CTAs</b>
+              <HistoryOutlined /> This variation already applies: <b>{recName(parent.id, 'cta')}</b>
             </motion.div>
           )}
 
-          {recs.map((r) => {
-            const jobHas = s && s.kind !== 'idle' && s.recIds?.includes(r.id);
-            return (
-              <RecCard
-                key={r.id}
-                r={r}
-                selected={selected.includes(r.id)}
-                suggested={suggestedIds.includes(r.id)}
-                onToggle={() => toggle(r.id)}
-                generating={!!(jobHas && s.kind === 'generating')}
-                jobCount={jobHas && s.kind === 'ready' ? ACCOUNT.variationsPerRecommendation : undefined}
-              />
-            );
-          })}
+          {recs.map((r) => (
+            <RecCard
+              key={r.id}
+              r={r}
+              selected={selected.includes(r.id)}
+              suggested={suggestedIds.includes(r.id)}
+              disabled={!iterable}
+              onToggle={() => toggle(r.id)}
+              footer={footerFor(r)}
+            />
+          ))}
+
+          <motion.div variants={fadeUp} className="feedback small">
+            <span className="muted">Were these recommendations useful?</span>
+            <AnimatePresence mode="wait" initial={false}>
+              {feedback ? (
+                <motion.span key="thanks" variants={fadeUp} initial="hidden" animate="show" className="muted">
+                  Thanks. This helps Atria rank the next ones.
+                </motion.span>
+              ) : (
+                <motion.span key="ask" className="row-gap" exit={{ opacity: 0, transition: { duration: duration.instant } }}>
+                  <Button size="small" onClick={() => setFeedback('yes')}>
+                    Yes
+                  </Button>
+                  <Button size="small" onClick={() => setFeedback('no')}>
+                    No
+                  </Button>
+                </motion.span>
+              )}
+            </AnimatePresence>
+          </motion.div>
 
           <motion.div variants={fadeUp} className="panel personas">
-            <h4>Who it's for</h4>
+            <h4>Likely audience</h4>
             <div className="persona-tags">
               {PERSONAS.map((p) => (
                 <Tooltip key={p.label} title={p.why}>
@@ -346,45 +385,55 @@ export function AdDetail() {
       </div>
       <div className="sticky-spacer" />
 
-      <AnimatePresence>
-        {selected.length > 0 && (
-          <motion.div
-            className="sticky-bar"
-            initial={{ y: 24, opacity: 0 }}
-            animate={{ y: 0, opacity: 1, transition: spring.gentle }}
-            exit={{ y: 24, opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
-          >
-            <div className="sticky-summary">
+      {/* Always present (AD-27): the bar explains itself instead of vanishing. */}
+      <motion.div className="sticky-bar" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1, transition: spring.gentle }}>
+        <div className="sticky-summary">
+          {!iterable ? (
+            <span>Variations work for image ads only. You can still use the recommendations above.</span>
+          ) : busy ? (
+            <>
+              <b>Generating {s.kind === 'generating' || s.kind === 'queued' ? s.count : total}…</b>
+              <span className="muted small left">{balance.toLocaleString()} credits left</span>
+            </>
+          ) : selected.length === 0 ? (
+            <span>Select a recommendation to create variations</span>
+          ) : short_ ? (
+            <span>
+              Needs {cost} credits. You have {balance}.
+            </span>
+          ) : (
+            <>
               <b>
-                <Rolling value={selected.length} /> selected
+                <Rolling value={selected.length} /> {selected.length === 1 ? 'recommendation' : 'recommendations'} selected
               </b>
-              <span className="dot-sep">·</span>
-              <span>
-                <Rolling value={images} /> images
+              <span className="muted small left">
+                Uses <Rolling value={cost} /> of {balance.toLocaleString()} credits
               </span>
-              <span className="dot-sep">·</span>
-              <span>
-                <Rolling value={credits} /> credits
-              </span>
-              <span className="muted small left">{busy ? `${balance.toLocaleString()} left` : `${(balance - credits).toLocaleString()} left after`}</span>
-            </div>
-            <Button
-              type="primary"
-              size="large"
-              disabled={busy}
-              onClick={() => {
-                startJob(c.id, images, selected, credits);
-                message.success({
-                  content: `Generating ${images} variations. You can leave this page; progress shows on the Radar row and in the tracker.`,
-                  duration: 4,
-                });
-              }}
-            >
-              {busy ? 'Generating…' : 'Create variations'}
+            </>
+          )}
+        </div>
+        {iterable &&
+          (short_ && !busy && selected.length ? (
+            <Button size="large">Get credits</Button>
+          ) : (
+            <Button type="primary" size="large" disabled={busy || selected.length === 0} onClick={() => setDialog(true)}>
+              {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}…` : `Create ${total || ''} variations`.replace('  ', ' ')}
             </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </div>
+          ))}
+      </motion.div>
+
+      <CreateDialog
+        open={dialog}
+        mobile={!bp.md}
+        creative={c}
+        recCount={selected.length}
+        onClose={() => setDialog(false)}
+        onCreate={({ perRec, size }) => {
+          setDialog(false);
+          const j = startJob({ creativeId: c.id, recIds: selected, perRec, size });
+          message.success({ content: `Creating ${j.count} variations. This takes about 2 minutes. You can leave this page.`, duration: 4 });
+        }}
+      />
+    </motion.div>
   );
 }

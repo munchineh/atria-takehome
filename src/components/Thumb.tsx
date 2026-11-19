@@ -1,53 +1,94 @@
 import { motion } from 'motion/react';
-import type { Creative } from '../data/mock';
+import { CaretRightFilled, AppstoreFilled } from '@ant-design/icons';
+import type { AdCopy, Creative as CreativeT } from '../data/mock';
 
-/** Stand-in creatives drawn in CSS so no client artwork is copied. */
-export function Thumb({ kind, size = 40, layoutId }: { kind: Creative['thumb']; size?: number; layoutId?: string }) {
+/**
+ * Moody Mochi photos (fictional brand, Mancini's own images), keyed by slot
+ * prefix: src/assets/ads/r01.webp. Run scripts/prep_ads.py to add more.
+ * Missing slots render a soft placeholder so nothing breaks before Friday.
+ */
+const FILES = import.meta.glob('../assets/ads/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+const BY_SLOT: Record<string, string> = Object.fromEntries(Object.entries(FILES).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]));
+export const adImage = (slot: string) => BY_SLOT[slot];
+
+const PASTELS = ['#f9d3df', '#dcebc6', '#f8ecc9', '#d6e4f3', '#e3d9f1', '#fbdcc7'];
+const pastel = (slot: string) => PASTELS[[...slot].reduce((a, ch) => a + ch.charCodeAt(0), 0) % PASTELS.length];
+
+function Photo({ slot, alt }: { slot: string; alt: string }) {
+  const src = adImage(slot);
+  if (src) return <img className="ad-photo" src={src} alt={alt} loading="lazy" decoding="async" draggable={false} />;
   return (
-    <motion.div layoutId={layoutId} className={`thumb thumb-${kind}`} style={{ width: size, height: size, fontSize: size / 4.5 }}>
-      <ThumbArt kind={kind} />
+    <span className="ad-photo ad-placeholder" style={{ background: pastel(slot) }} role="img" aria-label={alt}>
+      <i className="mochi-blob" />
+    </span>
+  );
+}
+
+/** Copy drawn over the photo. Sizes use container units, so it scales from card to detail. */
+export function Overlay({ copy, typo }: { copy?: AdCopy; typo?: string }) {
+  if (!copy) return null;
+  const head = typo ? copy.head.split(typo) : [copy.head];
+  return (
+    <span className={`ad-copy ${copy.tone === 'dark' ? 'dark' : ''}`} aria-hidden>
+      <b className="ad-head">
+        {typo ? (
+          <>
+            {head[0]}
+            <span className="typo">{typo}</span>
+            {head[1]}
+          </>
+        ) : (
+          copy.head
+        )}
+      </b>
+      {copy.band && <span className="ad-band">{copy.band}</span>}
+      {copy.cta && <span className="ad-cta">{copy.cta}</span>}
+    </span>
+  );
+}
+
+/** Small square thumbnail for rows and lists. No copy at this size. */
+export function Thumb({ c, size = 40, layoutId }: { c: Pick<CreativeT, 'img' | 'media' | 'name'>; size?: number; layoutId?: string }) {
+  return (
+    <motion.div layoutId={layoutId} className="thumb" style={{ width: size, height: size }}>
+      <Photo slot={c.img} alt={c.name} />
+      {c.media === 'Video' && <CaretRightFilled className="thumb-badge" />}
+      {c.media === 'Carousel' && <AppstoreFilled className="thumb-badge" />}
     </motion.div>
   );
 }
 
-function ThumbArt({ kind }: { kind: Creative['thumb'] }) {
-  if (kind === 'tiktok') return <span className="thumb-glyph">♪</span>;
-  if (kind === 'fem') return <span className="thumb-glyph">▶</span>;
-  const headline = kind === 'variation' ? 'CLAIM 40% OFF' : kind === 'deal' ? 'BIG DEAL' : '';
+/** Large creative for the ad detail and results pages. */
+export function AdArt({
+  slot,
+  copy,
+  media = 'Image',
+  ratio = '1 / 1',
+  layoutId,
+  alt,
+  typo,
+}: {
+  slot: string;
+  copy?: AdCopy;
+  media?: CreativeT['media'];
+  ratio?: string;
+  layoutId?: string;
+  alt: string;
+  typo?: string;
+}) {
   return (
-    <>
-      {headline && <span className="thumb-head">{headline}</span>}
-      <span className="thumb-bottles">
-        <i />
-        <i />
-        <i />
-      </span>
-      {(kind === 'deal' || kind === 'variation') && <span className="thumb-band">SAVE 40%</span>}
-    </>
+    <motion.div layoutId={layoutId} className="ad-art" style={{ aspectRatio: ratio }}>
+      <Photo slot={slot} alt={alt} />
+      <Overlay copy={copy} typo={typo} />
+      {media === 'Video' && (
+        <span className="play">
+          <CaretRightFilled />
+        </span>
+      )}
+    </motion.div>
   );
 }
 
-/** Large version for the ad detail page. */
-export function Creative({ kind, layoutId }: { kind: Creative['thumb']; layoutId?: string }) {
-  const variation = kind === 'variation';
-  return (
-    <motion.div layoutId={layoutId} className="creative" style={{ borderRadius: 8 }}>
-      <div className="creative-head">
-        <b>{variation ? 'CLAIM YOUR' : 'THIS DEAL IS'}</b>
-        <b className="accent">{variation ? '40% OFF' : 'INSANE'}</b>
-      </div>
-      <div className="creative-bottles">
-        <i />
-        <i />
-        <i />
-      </div>
-      <div className="creative-band">
-        <b>{variation ? 'SHOP NOW' : 'SAVE 40% TODAY'}</b>
-      </div>
-      <div className="creative-foot">
-        <span className="seal">60-day guarantee</span>
-        <b>{variation ? 'START TODAY' : 'CLICK HERE AND SAVE'}</b>
-      </div>
-    </motion.div>
-  );
+export function Creative({ c, layoutId }: { c: CreativeT; layoutId?: string }) {
+  return <AdArt slot={c.img} copy={c.copy} media={c.media} layoutId={layoutId} alt={c.name} ratio={c.img.startsWith('x') ? '3 / 4' : '1 / 1'} />;
 }

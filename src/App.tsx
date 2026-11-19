@@ -6,6 +6,8 @@ import { StoreProvider } from './data/store';
 import { Shell } from './components/Shell';
 import { Radar } from './screens/Radar';
 import { AdDetail } from './screens/AdDetail';
+import { Results } from './screens/Results';
+import { ImageAds } from './screens/ImageAds';
 import { theme } from './theme';
 import { ease, duration } from './motion/tokens';
 
@@ -35,7 +37,9 @@ function Routed() {
       <LayoutGroup>
         <Routes location={loc}>
           <Route path="/" element={<Radar />} />
-          <Route path="/ad/:id" element={<AdDetail />} />
+          <Route path="/ad/:id" element={<AdDetail key={loc.pathname} />} />
+          <Route path="/ad/:id/variations" element={<Results />} />
+          <Route path="/creation" element={<ImageAds />} />
         </Routes>
       </LayoutGroup>
     </Shell>
@@ -45,7 +49,7 @@ function Routed() {
 export default function App() {
   return (
     <ConfigProvider theme={theme}>
-      <AntApp>
+      <AntApp notification={{ placement: 'topRight', top: 68 }}>
         {/* reducedMotion="user": transforms are skipped for people who ask for less motion; opacity fades stay. */}
         <MotionConfig reducedMotion="user" transition={{ duration: duration.base, ease: ease.standard }}>
           <StoreProvider>
