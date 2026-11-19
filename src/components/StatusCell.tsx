@@ -29,7 +29,7 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
   const key = status.kind === 'generating' ? 'gen' : status.kind;
   return (
     <span className={`status-cell ${status.kind}`}>
-      <AnimatePresence mode="popLayout" initial={false}>
+      <AnimatePresence mode="wait" initial={false}>
         <motion.span key={key} variants={swap} initial="hidden" animate="show" exit="exit" className="status-inner">
           {status.kind === 'idle' && (
             <>
@@ -52,9 +52,9 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
                 {status.unseen && (
                   <motion.i
                     className="unseen-dot"
-                    initial={{ scale: 0 }}
-                    animate={{ scale: 1, transition: spring.snappy }}
-                    exit={{ scale: 0, opacity: 0 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1, transition: spring.snappy }}
+                    exit={{ opacity: 0 }}
                     aria-label="New"
                   />
                 )}

@@ -27,7 +27,9 @@ function TopNav() {
 
 function Routed() {
   const loc = useLocation();
-  useEffect(() => window.scrollTo({ top: 0 }), [loc.pathname]);
+  useEffect(() => {
+    window.scrollTo({ top: 0 });
+  }, [loc.pathname]);
   return (
     <Shell header={<TopNav />}>
       <LayoutGroup>

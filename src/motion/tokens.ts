@@ -29,36 +29,40 @@ export const ease = {
   exit: [0.3, 0, 0.8, 0.15],
 } as const;
 
-/** Springs for anything the user directly causes or that changes size/position. */
+/**
+ * Springs with bounce: 0 (critically damped): they settle without overshoot.
+ * Mancini flagged visible bounce on 20 Nov, so nothing in the prototype overshoots.
+ */
 export const spring = {
-  /** Selections, toggles, a dot appearing. Tight, no visible overshoot. */
-  snappy: { type: 'spring', stiffness: 520, damping: 40, mass: 1 },
-  /** Bars and panels sliding in. Slight settle, reads as physical. */
-  gentle: { type: 'spring', stiffness: 300, damping: 32, mass: 1 },
-  /** Layout changes and shared elements (row thumbnail → detail image). */
-  layout: { type: 'spring', stiffness: 380, damping: 38, mass: 1 },
+  /** Selections, toggles, chevrons. */
+  snappy: { type: 'spring', bounce: 0, duration: 0.18 },
+  /** Sticky bar, sheets, placement bars. */
+  gentle: { type: 'spring', bounce: 0, duration: 0.28 },
+  /** Expanders and shared elements (row thumbnail → detail image). */
+  layout: { type: 'spring', bounce: 0, duration: 0.24 },
 } as const satisfies Record<string, Transition>;
 
 /** Delay between siblings in a list. Short so long lists don't feel slow. */
-export const stagger = { list: 0.025, cards: 0.05, maxItems: 10 } as const;
+export const stagger = { list: 0.015, cards: 0.03, maxItems: 8 } as const;
 
 /** Reusable variants. */
+/** Plain fade (name kept for existing imports). No movement: content appears where it lives. */
 export const fadeUp = {
-  hidden: { opacity: 0, y: 4 },
-  show: { opacity: 1, y: 0, transition: { duration: duration.base, ease: ease.enter } },
-  exit: { opacity: 0, y: 0, transition: { duration: duration.fast, ease: ease.exit } },
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: duration.fast, ease: ease.standard } },
+  exit: { opacity: 0, transition: { duration: duration.fast, ease: ease.exit } },
 };
 
 export const swap = {
-  hidden: { opacity: 0, y: 6 },
-  show: { opacity: 1, y: 0, transition: { duration: duration.fast, ease: ease.enter } },
-  exit: { opacity: 0, y: -6, transition: { duration: duration.instant, ease: ease.exit } },
+  hidden: { opacity: 0 },
+  show: { opacity: 1, transition: { duration: duration.fast, ease: ease.standard } },
+  exit: { opacity: 0, transition: { duration: duration.instant, ease: ease.exit } },
 };
 
 export const pageTransition = {
   // Opacity only: sliding whole pages reads as jitter on phones (flagged 19 Nov).
   initial: { opacity: 0 },
-  animate: { opacity: 1, transition: { duration: duration.base, ease: ease.standard } },
+  animate: { opacity: 1, transition: { duration: duration.fast, ease: ease.standard } },
   exit: { opacity: 0, transition: { duration: duration.fast, ease: ease.exit } },
 };
 

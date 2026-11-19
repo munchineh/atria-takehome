@@ -52,8 +52,8 @@ const MotionRow = (props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'
   return (
     <motion.tr
       {...(rest as object)}
-      initial={{ opacity: 0, y: 4 }}
-      animate={{ opacity: 1, y: 0, transition: { duration: duration.base, ease: ease.enter, delay: listDelay(i) } }}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
     />
   );
 };
@@ -233,15 +233,14 @@ export function Radar() {
 
       {cards ? (
         <div className="radar-cards">
-          <AnimatePresence mode="popLayout" initial>
+          <AnimatePresence initial>
             {rows.map((c, i) => (
               <motion.article
                 key={`${tab}-${media}-${c.id}`}
-                layout="position"
                 className="radar-card"
                 onClick={() => open(c)}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0, transition: { duration: duration.base, ease: ease.enter, delay: listDelay(i) } }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
                 exit={{ opacity: 0, transition: { duration: duration.instant } }}
               >
                 <NameCell c={c} morph={false} />
@@ -271,7 +270,7 @@ export function Radar() {
                       className="card-grades"
                       onClick={(e) => e.stopPropagation()}
                       initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.base, delay: 0.04 } } }}
+                      animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
                       exit={{ opacity: 0, height: 0, transition: { duration: duration.fast, ease: ease.exit } }}
                     >
                       <div className="card-grades-inner">

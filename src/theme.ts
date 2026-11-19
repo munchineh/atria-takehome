@@ -15,6 +15,9 @@ export const theme: ThemeConfig = {
     motionDurationMid: '0.2s',
     motionDurationSlow: '0.28s',
     motionEaseOut: 'cubic-bezier(0.05, 0.7, 0.1, 1)',
+    // antd's default 'back' curves overshoot (badges, popovers, switches). Flattened to match ours.
+    motionEaseOutBack: 'cubic-bezier(0.2, 0, 0, 1)',
+    motionEaseInBack: 'cubic-bezier(0.3, 0, 0.8, 0.15)',
   },
   components: {
     Table: { headerBg: '#fafafa', headerSplitColor: 'transparent', rowHoverBg: '#fff7f3', cellPaddingBlockMD: 14 },

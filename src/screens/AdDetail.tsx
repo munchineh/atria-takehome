@@ -30,9 +30,9 @@ function Rolling({ value }: { value: string | number }) {
       <AnimatePresence mode="popLayout" initial={false}>
         <motion.span
           key={value}
-          initial={{ y: '60%', opacity: 0 }}
-          animate={{ y: 0, opacity: 1, transition: { duration: duration.fast, ease: ease.enter } }}
-          exit={{ y: '-60%', opacity: 0, transition: { duration: duration.instant } }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }}
+          exit={{ opacity: 0, transition: { duration: duration.instant } }}
         >
           {value}
         </motion.span>
@@ -114,8 +114,8 @@ function RecCard({
         {(footerCount || generating) && (
           <motion.div
             className="rec-footer"
-            initial={{ opacity: 0, y: -4 }}
-            animate={{ opacity: 1, y: 0, transition: { duration: duration.base, ease: ease.enter } }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }}
             onClick={(e) => e.stopPropagation()}
           >
             <HistoryOutlined />
@@ -205,7 +205,7 @@ export function AdDetail() {
                 <motion.div
                   className="ads-list"
                   initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.base, delay: 0.05 } } }}
+                  animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
                   exit={{ opacity: 0, height: 0, transition: { height: { duration: duration.base, ease: ease.exit }, opacity: { duration: duration.instant } } }}
                 >
                   {c.ads.slice(0, 3).map((a) => (
@@ -236,7 +236,7 @@ export function AdDetail() {
                           style={{ width: `${p.share * 100}%`, originX: 0 }}
                           className={`seg seg-${i}`}
                           initial={{ scaleX: 0 }}
-                          animate={{ scaleX: 1, transition: { ...spring.gentle, delay: 0.15 + i * 0.08 } }}
+                          animate={{ scaleX: 1, transition: { ...spring.gentle, delay: 0.05 + i * 0.04 } }}
                         />
                       ))}
                     </div>
@@ -350,9 +350,9 @@ export function AdDetail() {
         {selected.length > 0 && (
           <motion.div
             className="sticky-bar"
-            initial={{ y: 80, opacity: 0 }}
+            initial={{ y: 24, opacity: 0 }}
             animate={{ y: 0, opacity: 1, transition: spring.gentle }}
-            exit={{ y: 80, opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+            exit={{ y: 24, opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
           >
             <div className="sticky-summary">
               <b>
