@@ -1,0 +1,9 @@
+{
+  // Static-assets Worker. Build: npm run build. Unlisted: workers.dev URL only, noindex + robots.txt.
+  "name": "atria-takehome",
+  "compatibility_date": "2026-11-01",
+  "assets": {
+    "directory": "./dist",
+    "not_found_handling": "single-page-application"
+  }
+}
