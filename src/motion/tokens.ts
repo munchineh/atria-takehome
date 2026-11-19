@@ -44,9 +44,9 @@ export const stagger = { list: 0.025, cards: 0.05, maxItems: 10 } as const;
 
 /** Reusable variants. */
 export const fadeUp = {
-  hidden: { opacity: 0, y: 8 },
+  hidden: { opacity: 0, y: 4 },
   show: { opacity: 1, y: 0, transition: { duration: duration.base, ease: ease.enter } },
-  exit: { opacity: 0, y: -4, transition: { duration: duration.fast, ease: ease.exit } },
+  exit: { opacity: 0, y: 0, transition: { duration: duration.fast, ease: ease.exit } },
 };
 
 export const swap = {
@@ -56,8 +56,9 @@ export const swap = {
 };
 
 export const pageTransition = {
-  initial: { opacity: 0, y: 12 },
-  animate: { opacity: 1, y: 0, transition: { duration: duration.slow, ease: ease.enter } },
+  // Opacity only: sliding whole pages reads as jitter on phones (flagged 19 Nov).
+  initial: { opacity: 0 },
+  animate: { opacity: 1, transition: { duration: duration.base, ease: ease.standard } },
   exit: { opacity: 0, transition: { duration: duration.fast, ease: ease.exit } },
 };
 

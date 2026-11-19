@@ -21,11 +21,11 @@ const TABS: { key: TabKey; label: string; icon: string; tip: string }[] = [
 
 const MediaTag = ({ m }: { m: Media }) => <Tag className={`media-tag media-${m.toLowerCase()}`}>{m}</Tag>;
 
-function NameCell({ c }: { c: Creative }) {
+function NameCell({ c, morph = true }: { c: Creative; morph?: boolean }) {
   const parent = c.variationOf ? CREATIVES.find((x) => x.id === c.variationOf) : null;
   return (
     <div className="name-cell">
-      <Thumb kind={c.thumb} layoutId={`creative-${c.id}`} />
+      <Thumb kind={c.thumb} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
         <Tooltip title={c.name} placement="topLeft" mouseEnterDelay={0.6}>
           <div className="name ellipsis">{c.name}</div>
@@ -123,6 +123,23 @@ export function Radar() {
         <span className="window muted">Grades: {ACCOUNT.windowLabel}</span>
       </div>
 
+      {cards ? (
+        <Segmented
+          block
+          className="radar-seg"
+          value={tab}
+          onChange={(v) => setTab(v as TabKey)}
+          options={TABS.map((t) => ({
+            value: t.key,
+            label: (
+              <span className="seg-label">
+                <span>{{ winners: 'Winners', potential: 'Potential', candidates: 'Candidates', all: 'All' }[t.key]}</span>
+                <span className="seg-count">{count(t.key)}</span>
+              </span>
+            ),
+          }))}
+        />
+      ) : (
       <Tabs
         activeKey={tab}
         onChange={(k) => setTab(k as TabKey)}
@@ -142,6 +159,7 @@ export function Radar() {
           ),
         }))}
       />
+      )}
 
       {cards ? (
         <div className="radar-cards">
@@ -149,15 +167,14 @@ export function Radar() {
             {rows.map((c, i) => (
               <motion.article
                 key={`${tab}-${media}-${c.id}`}
-                layout
+                layout="position"
                 className="radar-card"
                 onClick={() => open(c)}
                 initial={{ opacity: 0, y: 8 }}
                 animate={{ opacity: 1, y: 0, transition: { duration: duration.base, ease: ease.enter, delay: listDelay(i) } }}
                 exit={{ opacity: 0, transition: { duration: duration.instant } }}
-                whileTap={{ scale: 0.985 }}
               >
-                <NameCell c={c} />
+                <NameCell c={c} morph={false} />
                 <StatusCell creative={c} status={status[c.id]} />
                 <div className="card-row">
                   <span className="card-overall">

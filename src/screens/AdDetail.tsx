@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Button, Checkbox, Tag, Tooltip, Typography } from 'antd';
+import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip, Typography } from 'antd';
 import {
   ArrowRightOutlined,
   BranchesOutlined,
@@ -77,7 +77,6 @@ function RecCard({
   return (
     <motion.div variants={fadeUp} className={`rec-card ${selected ? 'selected' : ''}`} onClick={onToggle} role="checkbox" aria-checked={selected} tabIndex={0}
       onKeyDown={(e) => (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), onToggle())}
-      whileTap={{ scale: 0.995 }}
     >
       <div className="rec-top">
         <Checkbox checked={selected} tabIndex={-1} />
@@ -135,6 +134,7 @@ function RecCard({
 export function AdDetail() {
   const { id } = useParams();
   const { message } = App.useApp();
+  const bp = Grid.useBreakpoint();
   const c =CREATIVES.find((x) => x.id === id) ?? CREATIVES[1];
   const parent = c.variationOf ? CREATIVES.find((x) => x.id === c.variationOf) : undefined;
   const { status, startJob, markSeen, credits: balance } = useStore();
@@ -182,7 +182,7 @@ export function AdDetail() {
           <div className="panel creative-panel">
             <div className="muted small">Ad name</div>
             <div className="ad-name">{c.name}</div>
-            <Creative kind={c.thumb} layoutId={`creative-${c.id}`} />
+            <Creative kind={c.thumb} layoutId={bp.md ? `creative-${c.id}` : undefined} />
           </div>
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
