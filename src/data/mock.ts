@@ -57,6 +57,8 @@ export interface MetaAd {
   cpa: number;
   /** Per-copy status; falls back to the ad's status. */
   status?: 'Active' | 'Paused';
+  /** Platform the copy runs on (A29); default Meta. */
+  platform?: 'Meta' | 'TikTok';
 }
 
 export interface Recommendation {
@@ -355,7 +357,8 @@ export const CREATIVES: Creative[] = [
     product: 'Sad Pink mochi',
     media: 'Video',
     img: 'v02',
-    ads: ads(2, 33120000, camp.prosp, 'Broad_F_18-34', 8890.0, 24.1),
+    // One copy on TikTok, so the Platform filter and field have something to show (A29).
+    ads: ads(2, 33120000, camp.prosp, 'Broad_F_18-34', 8890.0, 24.1).map((a, i) => (i === 1 ? { ...a, platform: 'TikTok' as const, campaign: 'TikTok · Squishies · Q4', adSet: 'Interest_Squishy-Toys' } : a)),
     overall: 'A',
     grades: { conversion: 'B', hook: 'A', retention: 'A', ctr: 'B' },
     values: { cpa: 24.1, ctr: 1.62, hookRate: 41, retention: 33 },
@@ -595,3 +598,5 @@ export function graded(c: Creative, days: number): Creative {
   const r = REGRADE[days]?.[c.id];
   return r ? { ...c, ...r, grades: { ...c.grades, ...r.grades } } : c;
 }
+
+export const platformOf = (a: MetaAd) => a.platform ?? 'Meta';

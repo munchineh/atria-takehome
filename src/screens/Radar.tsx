@@ -4,7 +4,7 @@ import { Alert, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Sele
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, SubnodeOutlined, DownOutlined, CloseOutlined, ExportOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
+import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
@@ -51,7 +51,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
               {isOpen && (
                 <div className="runs-kv small">
                   <span className="t-key">Platform</span>
-                  <span>Meta</span>
+                  <span>{platformOf(a)}</span>
                   <span className="t-key">Audience</span>
                   <span>{a.adSet}</span>
                   <span className="t-key">Status</span>
@@ -69,7 +69,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                   <span className="t-key">Ad ID</span>
                   <span>{a.id}</span>
                   <a className="runs-out" onClick={(e) => e.preventDefault()} href="#">
-                    Open in Meta Ads Manager <ExportOutlined />
+                    Open in {platformOf(a) === 'TikTok' ? 'TikTok Ads Manager' : 'Meta Ads Manager'} <ExportOutlined />
                   </a>
                 </div>
               )}
@@ -169,7 +169,7 @@ const metricCol = (k: MetricKey, key: string, width: number) => ({
 
 const FILTER_GROUPS: { label: string; options: string[] }[] = [
   { label: 'Media', options: ['Image', 'Video', 'Carousel'] },
-  { label: 'Placement', options: ['Feed', 'Stories', 'Reels'] },
+  { label: 'Platform', options: ['Meta', 'TikTok'] },
   { label: 'Ad status', options: ['Active', 'Paused'] },
   { label: 'Source', options: ['Uploaded', 'Created in Atria'] },
 ];
@@ -177,7 +177,7 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
 type Picked = Record<string, string[]>;
 
 /** Icon-only Filters button (L-059). Compact rows; campaigns are searched, not listed (Mancini, 20 Nov 17:01). */
-function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
+function FiltersButton({ campaigns, placements, picked, setPicked }: { campaigns: string[]; placements: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
   const total = Object.values(picked).flat().length;
   const row = (g: { label: string; options: string[] }) => (
     <div key={g.label} className="filters-row">
@@ -192,6 +192,7 @@ function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; 
   const content = (
     <div className="filters-pop compact">
       {row(FILTER_GROUPS[0])}
+      {row(FILTER_GROUPS[1])}
       <div className="filters-row">
         <div className="filters-label t-label">Campaign</div>
         <Select
@@ -207,7 +208,22 @@ function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; 
           getPopupContainer={(n) => n.parentElement ?? document.body}
         />
       </div>
-      {FILTER_GROUPS.slice(1).map(row)}
+      <div className="filters-row">
+        <div className="filters-label t-label">Placement</div>
+        <Select
+          mode="multiple"
+          allowClear
+          showSearch
+          placeholder="Search placements"
+          value={picked.Placement ?? []}
+          onChange={(v) => setPicked({ ...picked, Placement: v })}
+          options={placements.map((pl) => ({ label: pl, value: pl }))}
+          className="filters-search"
+          maxTagCount="responsive"
+          getPopupContainer={(n) => n.parentElement ?? document.body}
+        />
+      </div>
+      {FILTER_GROUPS.slice(2).map(row)}
       <div className="filters-foot">
         <Button size="small" type="text" disabled={!total} onClick={() => setPicked({})}>
           Clear all
@@ -297,6 +313,7 @@ export function Radar() {
   const any = (g: string, test: (v: string) => boolean) => !(picked[g] ?? []).length || picked[g].some(test);
   const matches = (c: Creative) =>
     any('Media', (v) => v === c.media) &&
+    any('Platform', (v) => c.ads.some((a) => platformOf(a) === v)) &&
     any('Campaign', (v) => c.ads.some((a) => a.campaign === v)) &&
     any('Placement', (v) => c.placements.some((p) => p.label === v)) &&
     any('Ad status', (v) => v === adStatusOf(c)) &&
@@ -363,7 +380,7 @@ export function Radar() {
             </Button>
           </Popover>
         </span>
-        <FiltersButton key={account.id} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} />
+        <FiltersButton key={account.id} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
       <ActiveFilters picked={picked} setPicked={setPicked} />
 

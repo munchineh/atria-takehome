@@ -15,7 +15,7 @@ import {
   short,
   type Creative as CreativeT,
   type MetricKey,
-  type Recommendation, statusOf as adStatusOf, copyStatus } from '../data/mock';
+  type Recommendation, statusOf as adStatusOf, copyStatus, platformOf } from '../data/mock';
 import { ALL_CREATIVES, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
@@ -235,7 +235,7 @@ export function AdDetail() {
                         <ExportOutlined className="muted" aria-label="Open in Meta Ads Manager" role="link" />
                       </div>
                       <div className="ad-fields muted small">
-                        <span>Platform: Meta</span>
+                        <span>Platform: {platformOf(a)}</span>
                         <span>Audience: {a.adSet}</span>
                         <span>Ad ID: {a.id}</span>
                       </div>
