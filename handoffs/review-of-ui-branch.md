@@ -11,6 +11,7 @@ Written by Claude on `feat/architecture-and-data`. Antigravity: read this after 
 |---|---|---|
 | Nov 21, 01:50 | `e181219` (port commit only) | Nothing to review yet |
 | Nov 21, 03:00 | `5385853` (7 commits, 02:00 to 02:19, **local only: push failed with 403**) | Reviewed from a bundle of the local worktree. Build passes. Trial merge with `feat/architecture-and-data` is clean and builds. See below |
+| Nov 21, 04:00 | `5385853` (no new commits; still local only) | Second pass on the pages not checked at 03:00: editor, Create panel, Creative gallery, Tasks, Radar at 834. No overflow, no console errors. Findings E3, E4, G6 to G9 below |
 
 ## Nov 21, 03:00: review of `a3e30d2` to `5385853`
 
@@ -36,3 +37,22 @@ Checked by screenshot: Overview, Radar, ad page (`mm-1090245-v3`), Creation roun
 ### Notes for Mancini (not for Antigravity)
 - Antigravity's seven commits exist only on the Mac (`adtech-antigravity`). Its push was refused: `Permission to munchineh/atria-takehome.git denied to munchineh (403)`. Run `git push origin feat/ui-and-mobile` in that folder after fixing the Git login, or tell Claude to push the same commits from the bundle.
 - Its questions are in `handoffs/questions-for-mancini.md` on its branch (white text on orange, grade tag text darkened, neutral "Recommended" tag, 20 px titles).
+
+## Nov 21, 04:00: second pass (editor, Create panel, gallery, Tasks, 834)
+
+### Essential
+| # | Page | Width | What | Fix | Rule |
+|---|---|---|---|---|---|
+| E3 | Editor (Creation) | 375 | The breadcrumb "Creative gallery / Mystery box · Stack / Round 1 · Nov 20 / Product detail" wraps to 3 lines beside the Creation tag, with a slash ending two of them | On phones use one back link to the round ("‹ Round 1 · Nov 20"), as the round page does (`.phone-back`) | R-L, R-R |
+| E4 | Creative gallery | 375, 1440 | The floating teaching card covers the list: on phones it hides the second row and everything under it; on desktop it sits on the third row's status ("Generating 8", grade) | On phones show it inline above the list (or as a sheet); on desktop keep it clear of the rows | R-E, R-H |
+
+### Good to have
+| # | Page | Width | What | Fix | Rule |
+|---|---|---|---|---|---|
+| G6 | Editor | 375 | The docked "Uses 4 of 1,298 credits" bar with a disabled "Apply change" is always on screen and covers the image before anything is typed | Show the docked bar only once there is a change to apply | R-R |
+| G7 | Create panel | 1440 | "Pre-fill from suggestions", "Rewrite from a product page" and "Change" are small orange text links on the dark panel; orange on dark at 12 px is hard to read and they do not look like actions | Use the dark theme's link color or small default buttons | R-C |
+| G8 | Creative gallery | both | "5 ads with variations" counts a cloned creative and a from-scratch project, which are not ads | "5 sets of variations", or count ads and projects apart | R-T |
+| G9 | Editor banner | 1440 | For a ROAS suggestion the banner shows "ROAS 1.31" with no grade tag and no word on why | Show the grey "No grade" tag used on the ad page, same tooltip | R-I |
+
+### For Mancini
+- The gallery teaching card still says "Open that ad in Radar to see every round" with "Open Radar" as its main button. That is your wording (C5d-23), but it now pulls people out of Creation, against DL-06. Suggest: "Each round is saved with the ad it came from. Find them all here, grouped by ad." with one "Got it" button.
