@@ -633,3 +633,35 @@ Open items waiting for Mancini (defaults are in force until a row is added): "co
 | DL-05 | 21 Nov | Item 12: "D.CTR" banner | There is no metric called D.CTR. The banner shows the metric and its grade ("CTR" with a D tag), then the full issue line with no truncation. | R-L, R-T | Antigravity | Decided |
 | DL-06 | 21 Nov | Items 1, 18: Creation sends people to Analytics | Gallery tiles open inside Creation and stay there. "View in Radar" is an explicit link. Claude owns routes and the gallery's account scoping. | R-P | Both | In progress |
 | DL-07 | 21 Nov | Revision vs Iteration (glossary) | The UI keeps "version" (an edit of the same creative) and "variation" (a new creative testing a new idea). Figma's glossary card maps them: Revision (修订) = version, Iteration (迭代) = a round of variations. "Iterate", "revision" and "iteration" do not appear in the UI. | R-T | Both | Decided |
+
+## 15. Sprint tasks for Antigravity (prioritized)
+
+Work top to bottom. Tick a box in the same commit that finishes the task. Data for every item is listed in `handoffs/data-for-ui.md`. Plan numbers refer to `handoffs/execution-plan.md`; the decisions log above overrides the plan.
+
+### P0: desktop, verify at 1440 x 900
+- [ ] Item 15: Overview in four sections from `overviewBriefing()` (titles and helps come from `titles`). Each change shows an arrow and a percent, never color alone. (R-H, R-P)
+- [ ] Item 13: Overview and Radar switch as a sliding pill; labels unchanged. (DL-02, R-MO)
+- [ ] Item 12: CTR banner on the editor: metric with its grade tag, full issue line, no truncation. (DL-05, R-L)
+- [ ] Item 7: grade popover in three levels (grade and band, numbers, muted footer). (R-H)
+- [ ] Item 8: ad summary card in three zones. (R-H)
+- [ ] Item 10: thumbs up and down next to the image; Download and Delete in the toolbar. (R-I)
+- [ ] Item 4: suggestion card in four parts from `suggestionParts()`. (R-H, R-I)
+- [ ] Item 9: lay out the three brief starts, including "Start from the suggestions" (`.brief-prefill`). (R-E)
+- [ ] Items 1, 18: "View in Radar" link on Creation round and editor pages (`ws.radarPath`), plus a mode cue in the breadcrumb. (DL-06)
+- [ ] Item 11: style `.ad-copy.stylized`; "No preview yet" note in the editor when there is no ready-made render. (R-AI)
+
+### P0: lineage
+- [ ] Items 16, 17: History drawer from `lineageOf()`: tree on desktop, opened from a "History" button on the ad page and on round pages. Each step: letter, date, placement, grade, summary, reason, result vs parent, repeat warning. Demo: `mm-1090245-v3`. (DL-04)
+
+### P1: phones, verify at 375 x 812
+- [ ] Item 6: every dense table becomes summary cards below 768 px (section 9 anatomy); no sideways scrolling tables.
+- [ ] Item 5: compact date and goal tags; extra tags fold into "+2"; nothing breaks mid-phrase. Dates month first. (DL-03)
+- [ ] Items 16, 17: History as a single-column timeline in a bottom sheet.
+- [ ] Sticky action bars use safe-area padding; one primary action per view; 44 px targets.
+- [ ] Filters open as a sheet with a count on the trigger (already built: check it at 375).
+- [ ] Recheck the Tasks status line: relative times are longer now ("2 hours ago").
+
+### P2
+- [ ] Section 12.1 known issues, Essential first.
+- [ ] Section 11 page one-liners under every title.
+- [ ] Item 3: reference strip on the round page (thumbnail plus two-line note) from each angle's reason.
