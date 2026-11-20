@@ -1092,3 +1092,8 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
   .section-title .rec-date { margin-left: 0; margin-top: 2px; }
   .section-title .rec-date .ant-btn { margin-left: 2px; }
 }
+/* 5d (Mancini 23:49): Spend by placement in its own box, light fill (colorFillTertiary), no stroke, radius 8 inside 10 px cards */
+.placements { background: rgba(0, 0, 0, 0.04); border-radius: 8px; padding: 12px 14px; }
+.ads-list .placement { border-top: 0 !important; padding-top: 0 !important; margin: 4px 0 4px !important; }
+.ads-list .ad-row:last-of-type { border-bottom: 0; padding-bottom: 0; }
+.ads-list > .placement { margin-top: 8px !important; }

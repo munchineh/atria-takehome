@@ -324,6 +324,10 @@ export function AdDetail() {
                   animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
                   exit={{ opacity: 0, height: 0, transition: { height: { duration: duration.base, ease: ease.exit }, opacity: { duration: duration.instant } } }}
                 >
+                  {/* 5d (Mancini 23:49): the split across all copies comes first, in its own light-fill box, like Radar's copies panel. */}
+                  <div className="placement">
+                    <Placements items={c.placements} animate />
+                  </div>
                   {ads.map((a) => (
                     <div key={a.id} className="ad-row">
                       <div className="ad-row-id">
@@ -352,9 +356,6 @@ export function AdDetail() {
                       Show {plural(c.ads.length - 3, 'more copy', 'more copies')}
                     </Button>
                   )}
-                  <div className="placement">
-                    <Placements items={c.placements} animate />
-                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
