@@ -1144,3 +1144,38 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .period-check { grid-area: check; color: #f66c30; font-size: 16px; visibility: hidden; }
 .period-row.on .period-name { font-weight: 600; }
 .period-row.on .period-check { visibility: visible; }
+/* 5e (Mancini 00:01): Variations page on phones. Back link, cards in a sideways row per suggestion, "why" folded,
+   hold an image to see the original */
+.phone-back { display: inline-flex; align-items: center; gap: 6px; min-height: 44px; margin: -8px 0 -4px; font-size: 14px; color: rgba(0, 0, 0, 0.65); max-width: 100%; }
+.phone-back .crumb-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.phone-back .anticon { font-size: 12px; }
+.hold-compare { position: absolute; inset: 0; -webkit-touch-callout: none; user-select: none; -webkit-user-select: none; touch-action: pan-x pan-y; cursor: pointer; }
+.hold-compare .hc-layer { position: absolute; inset: 0; }
+.hold-compare .hc-layer .ad-art { height: 100%; border-radius: 0; }
+.hc-hint { position: absolute; left: 50%; bottom: 10px; translate: -50% 0; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.6); color: #fff; font-size: 12px; line-height: 18px; white-space: nowrap; pointer-events: none; }
+.why-toggle { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; min-height: 32px; margin-top: 2px; padding: 0; border: 0; background: none; font: inherit; font-size: 14px; color: #f66c30; cursor: pointer; }
+.why-toggle .anticon { font-size: 10px; transition: transform 0.2s; }
+.why-toggle.open .anticon { transform: rotate(180deg); }
+@media (max-width: 767px) {
+  .results .results-head { margin-bottom: 4px; }
+  .results .results-title h3 { font-size: 20px; line-height: 28px; margin: 0; }
+  .var-group { margin-bottom: 24px; gap: 10px; }
+  .var-group-head { border-bottom: 0; padding-bottom: 0; }
+  .var-group-title h4 { font-size: 16px; line-height: 24px; }
+  .var-group-why { overflow: hidden; margin: 0; font-size: 14px; line-height: 22px; }
+  .var-grid.var-rail { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-padding-left: 16px; margin: 0 -16px; padding: 2px 16px 4px; scrollbar-width: none; overscroll-behavior-x: contain; }
+  .var-grid.var-rail::-webkit-scrollbar { display: none; }
+  .var-rail > .var-card { flex: 0 0 76%; scroll-snap-align: start; }
+  .var-group-more { justify-content: stretch; margin-top: 4px; }
+  .var-group-more .ant-btn { width: 100%; }
+}
+@media (max-width: 767px) {
+  .hc-hint { left: 10px; top: 10px; bottom: auto; translate: none; }
+  .var-rail > .var-card { flex-basis: 72%; }
+  .var-rail .var-reason { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+}
+@media (max-width: 767px) {
+  .var-rail .var-reason { display: block; -webkit-line-clamp: unset; }
+  .var-group-more { justify-content: flex-start; }
+  .var-group-more .ant-btn { width: auto; }
+}

@@ -2,7 +2,7 @@ import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
-import { CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
+import { CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, ExclamationCircleOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
@@ -20,6 +20,84 @@ function cardState(j: Job, i: number): CardState {
   if (j.state === 'ready') return 'ready';
   if (j.state === 'failed') return 'failed';
   return i < Math.floor(j.progress * j.count) ? 'ready' : 'generating';
+}
+
+/** 5e: press and hold an image on phones to see the original in its place; let go to come back. */
+function HoldCompare({ variation, original, onTap, showHint }: { variation: React.ReactNode; original: React.ReactNode; onTap: () => void; showHint: boolean }) {
+  const [held, setHeld] = useState(false);
+  const timer = useRef<number | undefined>(undefined);
+  const start = useRef<{ x: number; y: number } | null>(null);
+  const longPress = useRef(false);
+  const stop = () => {
+    window.clearTimeout(timer.current);
+    start.current = null;
+    setHeld(false);
+  };
+  return (
+    <div
+      className={`hold-compare ${held ? 'held' : ''}`}
+      role="button"
+      tabIndex={0}
+      aria-label="Open in the editor. Press and hold to see the original."
+      onContextMenu={(e) => e.preventDefault()}
+      onPointerDown={(e) => {
+        start.current = { x: e.clientX, y: e.clientY };
+        longPress.current = false;
+        timer.current = window.setTimeout(() => {
+          longPress.current = true;
+          setHeld(true);
+        }, 220);
+      }}
+      onPointerMove={(e) => {
+        // A drag is a scroll of the row, not a press.
+        if (start.current && !longPress.current && Math.hypot(e.clientX - start.current.x, e.clientY - start.current.y) > 8) stop();
+      }}
+      onPointerUp={() => {
+        const tap = start.current && !longPress.current;
+        stop();
+        if (tap) onTap();
+      }}
+      onPointerCancel={stop}
+      onPointerLeave={stop}
+      onKeyDown={(e) => e.key === 'Enter' && onTap()}
+    >
+      <div className="hc-layer">{variation}</div>
+      <AnimatePresence>
+        {held && (
+          <motion.div key="orig" className="hc-layer hc-orig" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }} exit={{ opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}>
+            {original}
+            <span className="compare-label">Original</span>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {showHint && !held && <span className="hc-hint">Hold to see the original</span>}
+    </div>
+  );
+}
+
+/** 5e: on phones each suggestion's "why" sits behind one line, so the cards come first. */
+function GroupWhy({ why, mobile }: { why: string; mobile: boolean }) {
+  const [open, setOpen] = useState(false);
+  if (!mobile) return <p className="t-help var-group-why">{why}</p>;
+  return (
+    <>
+      <button className={`why-toggle ${open ? 'open' : ''}`} onClick={() => setOpen(!open)} aria-expanded={open}>
+        Why this might work <DownOutlined />
+      </button>
+      <AnimatePresence initial={false}>
+        {open && (
+          <motion.p
+            className="t-help var-group-why"
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: 'auto', opacity: 1, transition: { duration: duration.base, ease: ease.standard } }}
+            exit={{ height: 0, opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+          >
+            {why}
+          </motion.p>
+        )}
+      </AnimatePresence>
+    </>
+  );
 }
 
 function VariationCard({
@@ -51,8 +129,6 @@ function VariationCard({
   moreCost: string;
   index: number;
 }) {
-  const [slide, setSlide] = useState(0);
-  const strip = useRef<HTMLDivElement>(null);
   // Cards show the latest finished version (E6: count on the card).
   const cur = [...versions].reverse().find((x) => x.state === 'ready') ?? versions[0];
   const typo = cur.n === 1 ? v.typo : undefined;
@@ -69,26 +145,14 @@ function VariationCard({
           {state === 'ready' ? (
             <motion.div key="img" initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: duration.base, ease: ease.standard } }}>
               {mobile ? (
-                // Mobile: swipe to compare with the original (section 4).
-                <>
-                  <div
-                    className="compare-strip"
-                    ref={strip}
-                    onScroll={(e) => setSlide(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
-                  >
-                    <div className="compare-slide">
-                      <AdArt slot={cur.img} copy={cur.copy} typo={typo} ratio={ratioFor(cur.img)} alt={`${v.angle} variation`} />
-                    </div>
-                    <div className="compare-slide">
-                      <AdArt slot={original.img} copy={original.copy} ratio="2 / 3" alt="Original" />
-                      <span className="compare-label">Original</span>
-                    </div>
-                  </div>
-                  <div className="compare-dots" aria-hidden>
-                    <i className={slide === 0 ? 'on' : ''} />
-                    <i className={slide === 1 ? 'on' : ''} />
-                  </div>
-                </>
+                // 5e: phones press and hold to see the original (the cards themselves now swipe sideways, so the
+                // image can't). A short tap opens the editor, like a click on desktop.
+                <HoldCompare
+                  showHint={index === 0}
+                  onTap={onRefine}
+                  variation={<AdArt slot={cur.img} copy={cur.copy} typo={typo} ratio={ratioFor(cur.img)} alt={`${v.angle} variation`} />}
+                  original={<AdArt slot={original.img} copy={original.copy} ratio="2 / 3" alt="Original" />}
+                />
               ) : (
                 <button className="art-btn" onClick={onRefine} aria-label={`Open ${v.angle} in the editor`}>
                   <AdArt slot={cur.img} copy={cur.copy} typo={typo} ratio={ratioFor(cur.img)} alt={`${v.angle} variation`} />
@@ -222,7 +286,6 @@ export function Results() {
   const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || v.recId === recFilter));
   const openEditor = (v: Variation, text = false) => nav(`/ad/${c.id}/variations/${v.id}?round=${job.id}${text ? '&text=1' : ''}`);
   const audience = c.ads[0]?.adSet ?? 'Variation_Test';
-  const readyCount = job.variations.filter((_, i) => cardState(job, i) === 'ready').length;
   const allAngles = [...new Set(rounds.flatMap((r) => r.variations.map((v) => v.angle)))];
   const allVars = rounds.flatMap((r) => r.variations).slice(-12);
   const counts = allVars.reduce<Record<string, number>>((a, v) => ({ ...a, [v.angle]: (a[v.angle] ?? 0) + 1 }), {});
@@ -242,6 +305,14 @@ export function Results() {
   return (
     <motion.div {...pageTransition} className="page results">
       <div className="detail-head">
+        {mobile ? (
+          // 5e: phones get one back link to the parent instead of a three-part trail.
+          c.project ? (
+            <Link to="/creation" className="phone-back"><LeftOutlined /> Creative gallery</Link>
+          ) : (
+            <Link to={`/ad/${c.id}`} className="phone-back"><LeftOutlined /> <span className="crumb-name">{c.name}</span></Link>
+          )
+        ) : (
         <Breadcrumb
           items={[
             ...(c.project
@@ -253,11 +324,12 @@ export function Results() {
                 ]),
           ]}
         />
+        )}
       </div>
 
       <div className="results-head">
         <div className="results-title">
-          <h3>Variations of {c.name}</h3>
+          <h3>{mobile && !c.project ? `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} variations` : `Variations of ${c.name}`}</h3>
           <p className="muted small">
             {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')} · {job.date}
             {job.label ? ` · ${job.label}` : ''}
@@ -336,7 +408,6 @@ export function Results() {
             )}
           </AnimatePresence>
 
-          {mobile && readyCount > 0 && <p className="muted small swipe-hint">Swipe an image to compare it with the original</p>}
 
           {/* Grouped by suggestion (Mancini, 18:55): one header per fix replaces the segmented filter,
               the "Angles used" line and the "Fixes:" line on every card. */}
@@ -354,17 +425,18 @@ export function Results() {
                   <div className="var-group-head">
                     <div className="var-group-title">
                       <span className="t-label">
-                        Improves {r.target === 'Hook' ? 'hook' : r.target} · {plural(items.length, 'variation')}
+                        Improves {r.target === 'Hook' ? 'hook' : r.target}
+                        {mobile ? '' : ` · ${plural(items.length, 'variation')}`}
                       </span>
                       <h4>{r.fix}</h4>
                       {/* 5d OG-14: Atria says why under each section; ours didn't. */}
-                      {r.why && <p className="t-help var-group-why">{r.why}</p>}
+                      {r.why && <GroupWhy why={r.why} mobile={mobile} />}
                     </div>
                   </div>
                   {items.length === 0 ? (
                     <p className="t-help">No variations for this suggestion yet.</p>
                   ) : (
-                    <div className="var-grid">
+                    <div className={`var-grid ${mobile ? 'var-rail' : ''}`}>
                       <AnimatePresence mode="popLayout">
                         {items.map(({ v, i }, k) => (
                       <VariationCard
