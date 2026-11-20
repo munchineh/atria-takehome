@@ -2,7 +2,7 @@ import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Checkbox, Dropdown, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
-import { CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
+import { BarChartOutlined, BulbOutlined, CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
@@ -12,6 +12,7 @@ import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
 import { CreateDialog } from '../components/CreateDialog';
 import { Rolling } from '../components/Rolling';
+import { HistoryButton } from '../components/LineageDrawer';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
 type CardState = 'ready' | 'generating' | 'failed';
@@ -314,33 +315,72 @@ export function Results() {
     setParams({ round: j.id }, { replace: false });
   };
 
+  const refAngles = useMemo(() => {
+    const seen = new Set<string>();
+    const out: { angle: string; reason: string; v: Variation; img: string }[] = [];
+    for (const { v, i } of visible) {
+      if (cardState(job, i) !== 'ready') continue;
+      if (seen.has(v.angle) || !ANGLE_REASON[v.angle]) continue;
+      seen.add(v.angle);
+      const latestReady = versionsOf(v).filter((x) => x.state === 'ready').at(-1);
+      out.push({ angle: v.angle, reason: ANGLE_REASON[v.angle], v, img: latestReady?.img ?? v.img });
+    }
+    return out;
+  }, [visible, job, versionsOf]);
+
   return (
     <motion.div {...pageTransition} className="page results">
       <div className="detail-head">
-        {mobile ? (
-          // 5e: phones get one back link to the parent instead of a three-part trail.
-          c.project || ws.inCreation ? (
-            <Link to="/creation" className="phone-back"><LeftOutlined /> Creative gallery</Link>
+        <div className="ws-crumb-row">
+          {mobile ? (
+            // 5e: phones get one back link on the left, Creation mode cue on the right.
+            <>
+              {c.project || ws.inCreation ? (
+                <Link to="/creation" className="phone-back"><LeftOutlined /> Creative gallery</Link>
+              ) : (
+                <Link to={ws.radarPath(c.id)} className="phone-back"><LeftOutlined /> <span className="crumb-name">{c.name}</span></Link>
+              )}
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+            </>
           ) : (
-            <Link to={`/ad/${c.id}`} className="phone-back"><LeftOutlined /> <span className="crumb-name">{c.name}</span></Link>
-          )
-        ) : (
-        <Breadcrumb
-          items={[
-            ...(c.project || ws.inCreation
-              ? [
-                  { title: <Link to="/creation">Creative gallery</Link> },
-                  { title: <span className="crumb-name">{c.name}</span> },
-                  ...(c.project ? [] : [{ title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} · ${job.date}` }]),
-                ]
-              : [
-                  { title: <Link to="/">Radar</Link> },
-                  { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> },
-                  { title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} · ${job.date}` },
-                ]),
-          ]}
-        />
-        )}
+            <>
+              {/* DL-06: mode cue in the breadcrumb when inside Creation. */}
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+              <Breadcrumb
+                items={[
+                  ...(c.project || ws.inCreation
+                    ? [
+                        { title: <Link to="/creation">Creative gallery</Link> },
+                        { title: <span className="crumb-name">{c.name}</span> },
+                        ...(c.project ? [] : [{ title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}` }]),
+                      ]
+                    : [
+                        { title: <Link to="/">Radar</Link> },
+                        { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> },
+                        { title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}` },
+                      ]),
+                ]}
+              />
+            </>
+          )}
+        </div>
+        {/* DL-06: explicit "View in Radar" link when inside Creation on a Radar ad. */}
+        <div className="detail-head-right">
+          {!c.project && <HistoryButton creative={c} />}
+          {ws.inCreation && !c.project && (
+            <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
+              View in Radar
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="results-head">
@@ -380,10 +420,10 @@ export function Results() {
               <div className="muted small">{c.project === 'clone' ? 'Cloned ad' : 'Made from scratch'} · not on Radar</div>
             ) : (
               <>
-                {/* K13 (R-T11): Synced, not Data from. */}
+                {/* K13 (R-T11), DL-06: Synced + workspace-aware link. */}
                 <div className="muted small">Synced {WINDOW.synced}</div>
-                <Button size="small" block onClick={() => nav(`/ad/${c.id}`)}>
-                  Open the ad
+                <Button size="small" block onClick={() => nav(ws.radarPath(c.id))}>
+                  {ws.inCreation ? 'View in Radar' : 'Open the ad'}
                 </Button>
               </>
             )}
@@ -441,6 +481,29 @@ export function Results() {
             )}
           </AnimatePresence>
 
+
+          {/* Item 3: Reference gallery strip pairing visual thumbnails with concise 2-line strategic write-ups. */}
+          {refAngles.length > 0 && (
+            <section className="panel ref-strip" aria-label="Reference angles">
+              <div className="ref-strip-head">
+                <h2 className="panel-title">Reference angles</h2>
+                <span className="t-help">Why each angle in this round works.</span>
+              </div>
+              <div className="ref-strip-grid">
+                {refAngles.map((ref) => (
+                  <button key={ref.angle} type="button" className="ref-card" onClick={() => openEditor(ref.v)}>
+                    <span className="ref-thumb">
+                      <AdArt slot={ref.img} copy={ref.v.copy} ratio="1 / 1" alt={ref.angle} />
+                    </span>
+                    <span className="ref-text">
+                      <strong className="ref-angle">{ref.angle}</strong>
+                      <span className="ref-note">{ref.reason}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Grouped by suggestion (Mancini, 18:55): one header per fix replaces the segmented filter,
               the "Angles used" line and the "Fixes:" line on every card. */}

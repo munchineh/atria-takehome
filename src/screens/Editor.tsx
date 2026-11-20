@@ -4,7 +4,8 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
 import {
-  
+  BarChartOutlined,
+  BulbOutlined,
   DeleteOutlined,
   FlagOutlined,
   DislikeFilled,
@@ -179,7 +180,17 @@ export function Editor() {
           >
             <AdArt
               slot={textMode === 'stylized' ? preview.img : editing ? shown.img : canvasVersion.img}
-              copy={textMode === 'stylized' ? undefined : editing ? draft : canvasVersion.copy}
+              copy={
+                textMode === 'stylized'
+                  ? stylizedSlot
+                    ? undefined
+                    : shown.copy
+                      ? { ...shown.copy, stylized: true }
+                      : undefined
+                  : editing
+                    ? draft
+                    : canvasVersion.copy
+              }
               typo={textMode === 'editable' && !editing && canvasVersion.n === 1 ? v.typo : undefined}
               ratio={ratioFor(textMode === 'stylized' ? preview.img : canvasVersion.img)}
               alt={`${v.angle} variation, v${canvasVersion.n}`}
@@ -193,7 +204,7 @@ export function Editor() {
             </motion.div>
           )}
         </AnimatePresence>
-        {textMode === 'stylized' && <span className="ed-preview-label">Preview</span>}
+        {textMode === 'stylized' && <span className="ed-preview-label">{stylizedSlot ? 'Preview' : 'No preview yet'}</span>}
       </div>
 
       {/* Item 10 (R-I): Outcome feedback lives beside the image, separated from Download and Delete. */}
@@ -286,6 +297,24 @@ export function Editor() {
         ) : textMode === 'stylized' ? (
           <motion.div key="styl" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
             <Alert type="info" showIcon title="Atria draws the text into the image." description="Richer type, but it can misspell words. Any change to the text creates a new version." />
+            {/* Item 11 (R-AI): explicit "No preview yet" note when there is no ready-made render. */}
+            {!stylizedSlot && (
+              <div className="ed-stylized-note">
+                <b>No preview yet</b>
+                <span className="t-help">The image shows rough display lettering. Atria renders the final stylized text when you create the variation.</span>
+              </div>
+            )}
+            {shown.copy && (
+              <div className="ed-stylized-copy">
+                <span className="t-label">Stylized text preview</span>
+                <div className="ed-stylized-sample">
+                  <span className="ed-stylized-head">{shown.copy.head}</span>
+                  {shown.copy.price && <span className="ed-stylized-price">{shown.copy.price}</span>}
+                  {shown.copy.band && <span className="ed-stylized-band">{shown.copy.band}</span>}
+                  {shown.copy.cta && <span className="ed-stylized-cta">{shown.copy.cta}</span>}
+                </div>
+              </div>
+            )}
             <Button
               block
               onClick={() => {
@@ -508,15 +537,29 @@ export function Editor() {
   return (
     <motion.div {...pageTransition} className="page editor">
       <div className="detail-head">
-        <Breadcrumb
-          items={[
-            ...(c.project || ws.inCreation
-              ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
-              : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> }]),
-            { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)} · ${job.date}`}</Link> },
-            { title: v.angle },
-          ]}
-        />
+        <div className="ws-crumb-row">
+          {/* DL-06: mode cue in the breadcrumb when working inside Creation. */}
+          {ws.inCreation && (
+            <Tag className="ws-cue" icon={<BulbOutlined />}>
+              Creation
+            </Tag>
+          )}
+          <Breadcrumb
+            items={[
+              ...(c.project || ws.inCreation
+                ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
+                : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> }]),
+              { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}`}</Link> },
+              { title: v.angle },
+            ]}
+          />
+        </div>
+        {/* DL-06: explicit "View in Radar" exit link when inside Creation on a Radar ad. */}
+        {ws.inCreation && !c.project && (
+          <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
+            View in Radar
+          </Button>
+        )}
       </div>
 
       <div className="ed-head">
