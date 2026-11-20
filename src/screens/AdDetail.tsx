@@ -112,8 +112,8 @@ function RecCard({
             <span className="rec-metric">{r.target}</span>
             <span className="rec-issue-text">{r.issue}</span>
             {suggested && !disabled && (
-              <Tooltip title="One of the top 2 by priority.">
-                <Tag color="orange" className="rec-suggested">Suggested</Tag>
+              <Tooltip title="One of the top 2 by priority, so it's selected for you.">
+                <Tag color="orange" className="rec-suggested">Recommended</Tag>
               </Tooltip>
             )}
           </div>
@@ -171,7 +171,9 @@ export function AdDetail() {
   /** Suggestions with a round still running or just made aren't preselected again (Mancini, 18:54). */
   const fresh = (rid: string) =>
     jobs.some((j) => j.recIds.includes(rid) && (j.state === 'generating' || j.state === 'queued' || (j.state !== 'failed' && (j.unseen || j.minutesAgo < 60))));
-  const preselect = () => (iterable ? recommendationsFor(c).slice(0, 2).map((r) => r.id).filter((rid) => !fresh(rid)) : []);
+  // Mancini (18:57): the top 2 are always preselected; the ready status opens results directly instead.
+  const preselect = () => (iterable ? recommendationsFor(c).slice(0, 2).map((r) => r.id) : []);
+  void fresh;
   const [selected, setSelected] = useState<string[]>(preselect);
   const [adsOpen, setAdsOpen] = useState(true);
   const [showAllAds, setShowAllAds] = useState(false);
