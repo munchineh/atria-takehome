@@ -52,11 +52,14 @@ export const theme: ThemeConfig = {
   },
 };
 
-/** R-H9: nested dark theme for the expanding Create variations panel on AdDetail. */
+/** R-H9, G7 (R-C): nested dark theme for the expanding Create variations panel on AdDetail. */
 export const darkBarTheme: ThemeConfig = {
   algorithm: antdTheme.darkAlgorithm,
   token: {
     colorPrimary: '#f66c30',
+    colorLink: '#ffb185',
+    colorLinkHover: '#ffcead',
+    colorLinkActive: '#f66c30',
     colorBgContainer: '#2a272e',
     colorBgElevated: '#2a272e',
     borderRadius: 6,

@@ -113,7 +113,8 @@ export function Body({
               <span>
                 {brand.name} · {brand.colors.length} colors · {brand.font}
               </span>
-              <Button type="link" size="small" className="inline-link" onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
+              {/* G7 (R-C): use crisp default buttons on the dark panel so actions are legible and unmistakably clickable. */}
+              <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
                 Change
               </Button>
             </span>
@@ -135,12 +136,12 @@ export function Body({
             <span className="dlg-label">Ad brief</span>
             <span className="row-gap wrap">
               {mode === 'filled' && picked && picked.length > 0 && (
-                <Button type="link" size="small" className="inline-link" icon={<ThunderboltOutlined />} onClick={prefill}>
+                <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} icon={<ThunderboltOutlined />} onClick={prefill}>
                   Pre-fill from suggestions
                 </Button>
               )}
               {mode === 'filled' && saved && (
-                <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
+                <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => setMode('url')}>
                   Rewrite from a product page
                 </Button>
               )}

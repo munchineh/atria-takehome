@@ -101,6 +101,16 @@ export function ImageAds() {
     (r) => (brand === 'all' || r.brand === brand) && (source === 'all' || r.source === source) && (campaign === 'all' || r.campaigns.includes(campaign)),
   );
 
+  const adCount = shown.filter((r) => r.source === 'radar').length;
+  const projectCount = shown.length - adCount;
+  // G8 (R-T): distinguish ads with performance data from cloned / from-scratch projects.
+  const countLine =
+    adCount > 0 && projectCount > 0
+      ? `${plural(adCount, 'ad')} and ${plural(projectCount, 'project')} with variations`
+      : projectCount > 0
+        ? `${plural(projectCount, 'project')} with variations`
+        : `${plural(adCount, 'ad')} with variations`;
+
   return (
     <motion.div {...pageTransition} className="page image-ads">
       <div className="page-head pl-head">
@@ -109,7 +119,7 @@ export function ImageAds() {
             Creative gallery
           </Typography.Title>
           <p className="muted desc">Find every variation you've created, grouped by the ad it came from.</p>
-          <p className="t-help pl-meta">{plural(shown.length, 'ad')} with variations</p>
+          <p className="t-help pl-meta">{countLine}</p>
         </div>
         {/* K41 (R-R6): PopSheet so it opens as a bottom sheet on phones. */}
         <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
