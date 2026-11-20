@@ -611,3 +611,25 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .window-select .ant-select-selection-item { color: var(--ink, #1f1f1f); font-weight: 500; }
 .runs-pop .runs-list { max-height: 46vh; overflow-y: auto; }
 .runs-sheet .runs-list { max-height: 52dvh; overflow-y: auto; }
+
+/* ---------- Type roles (visual hierarchy pass, 20 Nov 17:36) ----------
+   title   14/600 ink           section and panel titles
+   label   12/600 #6b6b6b       names a value or group (Spend by placement, Issue, Original)
+   key     13/400 #8c8c8c       field names in key-value lists
+   help    13/400 #8c8c8c, own line, smaller gap above its value  explanations and helpers
+   value   13-14/400 ink        the data itself                                   */
+.t-label { font-size: 12px; font-weight: 600; color: #6b6b6b; letter-spacing: 0.01em; line-height: 1.4; }
+.t-help { font-size: 13px; color: #8c8c8c; line-height: 1.45; }
+.t-key { color: #8c8c8c; }
+.placements { display: flex; flex-direction: column; gap: 8px; }
+.seg-2 { background: #ffd6c4; }
+.seg-other { background: #d9d9d9; }
+.place-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 4px; font-size: 13px; }
+.place-list li { display: grid; grid-template-columns: 8px 1fr auto; gap: 8px; align-items: center; }
+.place-dot { width: 8px; height: 8px; border-radius: 2px; display: block; }
+.place-pct { font-variant-numeric: tabular-nums; color: #1f1f1f; }
+.place-other span:nth-child(2) { color: #8c8c8c; }
+.runs-pop .ant-popover-title { font-size: 15px; margin-bottom: 2px; }
+.runs .t-help { margin-top: -6px; }
+/* Tooltips: tighter lines and padding (Mancini, 20 Nov 17:37) */
+.ant-tooltip .ant-tooltip-inner, .ant-tooltip .ant-tooltip-container { line-height: 1.4; padding: 6px 10px; font-size: 13px; }

@@ -224,7 +224,7 @@ export function Editor() {
         ) : textMode === 'stylized' ? (
           <motion.div key="styl" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
             <Tag className="wrap-tag">Text is part of the image. Edits create a new variation.</Tag>
-            <p className="muted small">Richer type, but a typo or a price change means a new image. Editable text stays free to change.</p>
+            <p className="t-help">Richer type, but a typo or a price change means a new image. Editable text stays free to change.</p>
             <Button
               block
               onClick={() => {
@@ -259,7 +259,7 @@ export function Editor() {
                 </label>
               );
             })}
-            <span className="muted small">Text edits don't use credits</span>
+            <span className="t-help">Text edits don't use credits</span>
             <div className="row-gap">
               <Button
                 type="primary"
@@ -299,7 +299,7 @@ export function Editor() {
       <AnimatePresence initial={false}>
         {rating === 'down' && (
           <motion.div key="why" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-reasons">
-            <b className="small">What's wrong?</b>
+            <span className="t-label">What's wrong?</span>
             <div className="chips">
               {REASONS.map((r) => (
                 <button key={r.label} className="chip" onClick={() => reason(r)}>
@@ -375,7 +375,7 @@ export function Editor() {
             animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
             exit={{ opacity: 0, height: 0, transition: { height: { duration: duration.base, ease: ease.exit }, opacity: { duration: duration.instant } } }}
           >
-            <b className="small">Image prompt</b>
+            <span className="t-label">Image prompt</span>
             <Input.TextArea value={prompt} onChange={(e) => setPrompt(e.target.value)} autoSize={{ minRows: 4, maxRows: 9 }} />
             <span className="muted small">Brief v1 · saved for {c.product}</span>
             {prompt !== promptFor(v, c.product) && (
@@ -401,7 +401,7 @@ export function Editor() {
   const tags = tagsFor(v.angle);
   const tagBlock = (
     <section className="ed-block">
-      <b className="small">How Atria reads this image</b>
+      <span className="t-label">How Atria reads this image</span>
       <div className="ed-tags">
         {Object.entries(tags).map(([k, val]) => (
           <div key={k} className="ed-tag-row small">

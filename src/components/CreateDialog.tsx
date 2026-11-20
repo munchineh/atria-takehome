@@ -137,7 +137,7 @@ function Body({
                 <div className="brief-or muted small">or</div>
                 <div className="brief-start">
                   <b>Write your own</b>
-                  <span className="muted small">Cover the product, who it's for, the goal and the tone</span>
+                  <span className="t-help">Cover the product, who it's for, the goal and the tone</span>
                   <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
                     Write it yourself
                   </Button>
@@ -167,7 +167,7 @@ function Body({
               </motion.div>
             ) : (
               <motion.div key="field" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="brief-field">
-                <span className="muted small">Cover the product, who it's for, the goal and the tone</span>
+                <span className="t-help">Cover the product, who it's for, the goal and the tone</span>
                 <Input.TextArea
                   value={brief}
                   onChange={(e) => setDraft(e.target.value)}
@@ -176,7 +176,7 @@ function Body({
                   aria-label="Ad brief"
                 />
                 {mode === 'filled' && saved && (
-                  <span className="muted small">
+                  <span className="t-help">
                     Saved for {creative.product}. Used for every variation of this product.{' '}
                     <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
                       Rewrite from a product page
@@ -191,7 +191,7 @@ function Body({
         {/* Product images (I2). */}
         <section className="dlg-block">
           <div className="dlg-label">Product images</div>
-          <span className="muted small">Up to 4. PNG or JPG, under 5 MB each</span>
+          <span className="t-help">Up to 4. PNG or JPG, under 5 MB each</span>
           <div className="img-tiles">
             <AnimatePresence initial={false}>
               {images.map((s) => (
@@ -226,7 +226,7 @@ function Body({
             <span className="dlg-label">Size</span>
             <Select value={size} onChange={setSize} options={SIZES.map((s) => ({ value: s.value, label: s.label }))} />
             {size === defaultSize && (
-              <span className="muted small">
+              <span className="t-help">
                 Set to {top.label}, where this creative spends most ({Math.round(top.share * 100)}%)
               </span>
             )}
@@ -243,7 +243,7 @@ function Body({
           <span>
             {plural(recCount, 'recommendation')} × {perRec} = <b><Rolling value={total} /> variations</b>
           </span>
-          <span className="muted small">
+          <span className="t-help">
             Uses <Rolling value={cost} /> of {credits.toLocaleString()} credits
           </span>
         </div>

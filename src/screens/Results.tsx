@@ -282,7 +282,7 @@ export function Results() {
       <div className="results-grid">
         {!mobile && (
           <aside className="original-panel panel">
-            <div className="muted small">Original</div>
+            <div className="t-label">Original</div>
             <Creative c={c} />
             <div className="small ad-name">{short(c.name, 34)}</div>
             <div className="muted small">Data from {WINDOW.synced}</div>

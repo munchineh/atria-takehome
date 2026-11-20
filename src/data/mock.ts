@@ -32,21 +32,21 @@ export const METRIC_META: Record<
   conversion: {
     label: 'Conversion',
     plain: ACCOUNT.conversionMetric,
-    tip: `Graded on ${ACCOUNT.conversionMetric}. Change the metric in Radar settings`,
+    tip: `How cheaply this ad turns clicks into purchases, graded on ${ACCOUNT.conversionMetric}. You can change the metric in Radar settings.`,
     unit: (v) => `$${v.toFixed(2)}`,
     avgKey: 'cpa',
     lowerIsBetter: true,
   },
-  hook: { label: 'Hook', plain: 'hook rate', tip: 'Share of viewers who watch past the first 3 seconds. Video only', unit: (v) => `${v}%`, avgKey: 'hookRate', videoOnly: true },
+  hook: { label: 'Hook', plain: 'hook rate', tip: 'How many viewers keep watching past the first 3 seconds. Video ads only.', unit: (v) => `${v}%`, avgKey: 'hookRate', videoOnly: true },
   retention: {
     label: 'Retention',
     plain: 'retention',
-    tip: 'How much of the video people watch, measured at 25%, 50%, 75% and 100%. Video only',
+    tip: 'How much of the video people watch before they scroll away. Video ads only.',
     unit: (v) => `${v}%`,
     avgKey: 'retention',
     videoOnly: true,
   },
-  ctr: { label: 'CTR', plain: 'CTR', tip: 'Clicks divided by impressions', unit: (v) => `${v.toFixed(2)}%`, avgKey: 'ctr' },
+  ctr: { label: 'CTR', plain: 'CTR', tip: 'How often people click the ad after seeing it.', unit: (v) => `${v.toFixed(2)}%`, avgKey: 'ctr' },
 };
 
 export interface MetaAd {
@@ -129,7 +129,7 @@ const reelsOnly = [
 ];
 const feedOnly = [{ label: 'Feed', share: 1 }];
 const ads = (n: number, base: number, campaign: string, adSet: string, spend: number, cpa: number): MetaAd[] =>
-  Array.from({ length: n }, (_, i) => ({ id: `1202${base + i}`, campaign: i === 1 && n > 2 ? camp.gifting : campaign, adSet, spend: spend / n, cpa }));
+  Array.from({ length: n }, (_, i) => ({ id: `1202${base + i}`, campaign: i === 1 ? (n > 2 || campaign === camp.retarget ? camp.gifting : camp.retarget) : campaign, adSet, spend: spend / n, cpa }));
 
 export const CREATIVES: Creative[] = [
   {
@@ -167,7 +167,12 @@ export const CREATIVES: Creative[] = [
     spend: 38816.9,
     roas: 1.08,
     tab: 'potential',
-    placements: feedHeavy,
+    // Many placements (Advantage+ placements), to show the list scaling.
+    placements: [
+      { label: 'Feed', share: 0.41 }, { label: 'Reels', share: 0.19 }, { label: 'Stories', share: 0.14 }, { label: 'Explore', share: 0.07 },
+      { label: 'Marketplace', share: 0.05 }, { label: 'Video feeds', share: 0.04 }, { label: 'Search results', share: 0.03 }, { label: 'Right column', share: 0.02 },
+      { label: 'Messenger inbox', share: 0.02 }, { label: 'Audience Network', share: 0.02 }, { label: 'Profile feed', share: 0.006 }, { label: 'Threads feed', share: 0.004 },
+    ],
   },
   {
     id: 'mm-1086424',

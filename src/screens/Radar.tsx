@@ -8,6 +8,7 @@ import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyF
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
+import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
 import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../motion/tokens';
@@ -29,17 +30,9 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
   const body = (
     <div className="runs" onClick={(e) => e.stopPropagation()}>
-      {c.ads.length > 1 && <div className="muted small">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</div>}
+      {c.ads.length > 1 && <div className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</div>}
       {anyPaused && <div className="runs-note small">Paused copies were turned off in Meta. Grades still cover the {win.short.toLowerCase()}.</div>}
-      <div className="runs-place">
-        <div className="muted small">Spend by placement</div>
-        <div className="placement-bar">
-          {c.placements.map((p, i) => (
-            <i key={p.label} style={{ width: `${p.share * 100}%` }} className={`seg seg-${i}`} />
-          ))}
-        </div>
-        <div className="small">{c.placements.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(' · ')}</div>
-      </div>
+      <Placements items={c.placements} />
       <div className="runs-list">
         {c.ads.map((a) => {
           const f = copyFacts(a);
@@ -57,23 +50,23 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
               </button>
               {isOpen && (
                 <div className="runs-kv small">
-                  <span className="muted">Platform</span>
+                  <span className="t-key">Platform</span>
                   <span>Meta</span>
-                  <span className="muted">Audience</span>
+                  <span className="t-key">Audience</span>
                   <span>{a.adSet}</span>
-                  <span className="muted">Status</span>
+                  <span className="t-key">Status</span>
                   <span>{st === 'Paused' ? `Paused · ran ${f.days} days from ${f.since}` : `Running since ${f.since} · ${f.days} days`}</span>
-                  <span className="muted">Spend</span>
+                  <span className="t-key">Spend</span>
                   <span>{money(a.spend)} in the {win.short.toLowerCase()}</span>
-                  <span className="muted">{ACCOUNT.conversionMetric}</span>
+                  <span className="t-key">{ACCOUNT.conversionMetric}</span>
                   <span>
                     {money(a.cpa)} · account average {money(ACCOUNT.avg.cpa)}
                   </span>
                   <Tooltip title="How many times the average person saw this copy">
-                    <span className="muted dotted">Frequency</span>
+                    <span className="t-key dotted">Frequency</span>
                   </Tooltip>
                   <span>{f.frequency}</span>
-                  <span className="muted">Ad ID</span>
+                  <span className="t-key">Ad ID</span>
                   <span>{a.id}</span>
                   <a className="runs-out" onClick={(e) => e.preventDefault()} href="#">
                     Open in Meta Ads Manager <ExportOutlined />
@@ -188,7 +181,7 @@ function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; 
   const total = Object.values(picked).flat().length;
   const row = (g: { label: string; options: string[] }) => (
     <div key={g.label} className="filters-row">
-      <div className="filters-label">{g.label}</div>
+      <div className="filters-label t-label">{g.label}</div>
       <Checkbox.Group
         value={picked[g.label] ?? []}
         onChange={(v) => setPicked({ ...picked, [g.label]: v as string[] })}
@@ -200,7 +193,7 @@ function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; 
     <div className="filters-pop compact">
       {row(FILTER_GROUPS[0])}
       <div className="filters-row">
-        <div className="filters-label">Campaign</div>
+        <div className="filters-label t-label">Campaign</div>
         <Select
           mode="multiple"
           allowClear
@@ -315,18 +308,18 @@ export function Radar() {
   const columns: ColumnsType<Creative> = [
     { title: 'Ad', key: 'name', width: 300, fixed: 'left', render: (_, c) => <NameCell c={c} /> },
     {
-      title: <Head label="Next step" tip="The weakest grade on this ad. Click the row to see the fix" />,
+      title: <Head label="Next step" tip="The grade to fix first on this ad. Click the row to see how." />,
       key: 'rec',
       width: 235,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} />,
     },
-    { title: 'Overall', key: 'overall', width: 90, render: (_, c) => <OverallTag creative={c} /> },
+    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: 90, render: (_, c) => <OverallTag creative={c} /> },
     metricCol('conversion', 'conv', 100),
     metricCol('hook', 'hook', 70),
     metricCol('retention', 'ret', 90),
     metricCol('ctr', 'ctr', 70),
-    { title: 'Spend', key: 'spend', width: 115, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
-    { title: 'CPA', key: 'cpa', width: 90, align: 'right', render: (_, c) => <span className="cpa">{money(c.values.cpa)}</span> },
+    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 115, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
+    { title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 90, align: 'right', render: (_, c) => <span className="cpa">{money(c.values.cpa)}</span> },
   ];
 
   return (
@@ -474,6 +467,7 @@ export function Radar() {
           columns={columns}
           dataSource={rows}
           scroll={{ x: 1115 }}
+          showSorterTooltip={false}
           size="middle"
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}

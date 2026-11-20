@@ -18,6 +18,7 @@ import {
   type Recommendation, statusOf as adStatusOf, copyStatus } from '../data/mock';
 import { ALL_CREATIVES, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative, Thumb } from '../components/Thumb';
+import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
 import { CreateDialog } from '../components/CreateDialog';
@@ -204,7 +205,7 @@ export function AdDetail() {
       <div className="detail-grid">
         <aside className="detail-left">
           <div className="panel creative-panel">
-            <div className="muted small">Ad</div>
+            <div className="t-label">Ad</div>
             <div className="ad-name">{c.name}</div>
             <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />
           </div>
@@ -213,7 +214,7 @@ export function AdDetail() {
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
               <b>Where it runs · {c.ads.length}</b>
               {c.ads.length > 1 && (
-                <span className="muted small">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</span>
+                <span className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</span>
               )}
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
@@ -254,19 +255,7 @@ export function AdDetail() {
                     </Button>
                   )}
                   <div className="placement">
-                    <div className="muted small">Spend by placement</div>
-                    <div className="placement-bar">
-                      {c.placements.map((p, i) => (
-                        <motion.i
-                          key={p.label}
-                          style={{ width: `${p.share * 100}%`, originX: 0 }}
-                          className={`seg seg-${i}`}
-                          initial={{ scaleX: 0 }}
-                          animate={{ scaleX: 1, transition: { ...spring.gentle, delay: 0.05 + i * 0.04 } }}
-                        />
-                      ))}
-                    </div>
-                    <div className="small">{c.placements.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(' · ')}</div>
+                    <Placements items={c.placements} animate />
                   </div>
                 </motion.div>
               )}
@@ -291,7 +280,7 @@ export function AdDetail() {
             ) : (
               <div className="source-body">
                 <Tag icon={<CloudUploadOutlined />}>Uploaded</Tag>
-                <div className="muted small">Made outside Atria and synced from Meta</div>
+                <div className="t-help">Made outside Atria and synced from Meta</div>
               </div>
             )}
           </motion.div>
@@ -349,7 +338,7 @@ export function AdDetail() {
                 ROAS <b className="ink">{c.roas}</b>
               </span>
             </div>
-            <span className="muted small">Select a grade to see how it's calculated</span>
+            <span className="t-help">Select a grade to see how it's calculated</span>
             {s.kind !== 'idle' && (
               <div className="verdict-status">
                 <StatusCell creative={c} status={s} />
