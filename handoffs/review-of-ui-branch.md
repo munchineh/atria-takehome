@@ -56,3 +56,10 @@ Checked by screenshot: Overview, Radar, ad page (`mm-1090245-v3`), Creation roun
 
 ### For Mancini
 - The gallery teaching card still says "Open that ad in Radar to see every round" with "Open Radar" as its main button. That is your wording (C5d-23), but it now pulls people out of Creation, against DL-06. Suggest: "Each round is saved with the ad it came from. Find them all here, grouped by ad." with one "Got it" button.
+
+## Nov 21, 08:35: decisions from Mancini to apply (spec section 14, DL-08 to DL-13)
+| # | Do | Where |
+|---|---|---|
+| D1 | Radar one-liner becomes "Find out how each ad is performing and what to do next." | `Radar.tsx` page subtitle (DL-08) |
+| D2 | Gallery teaching card: body "Each round is saved with the ad it came from. Find them all here, grouped by ad.", one "Got it" button, remove "Open Radar" | `TeachingCard.tsx` (DL-13); also fixes E4 if shown inline on phones |
+| D3 | No change needed: white on orange, darker grade letters, neutral tags and 20 px titles are confirmed | DL-09 to DL-12 |

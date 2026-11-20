@@ -633,6 +633,12 @@ Open items waiting for Mancini (defaults are in force until a row is added): "co
 | DL-05 | 21 Nov | Item 12: "D.CTR" banner | There is no metric called D.CTR. The banner shows the metric and its grade ("CTR" with a D tag), then the full issue line with no truncation. | R-L, R-T | Antigravity | Decided |
 | DL-06 | 21 Nov | Items 1, 18: Creation sends people to Analytics | Gallery tiles open inside Creation and stay there. "View in Radar" is an explicit link. Claude owns routes and the gallery's account scoping. | R-P | Both | In progress |
 | DL-07 | 21 Nov | Revision vs Iteration (glossary) | The UI keeps "version" (an edit of the same creative) and "variation" (a new creative testing a new idea). Figma's glossary card maps them: Revision (修订) = version, Iteration (迭代) = a round of variations. "Iterate", "revision" and "iteration" do not appear in the UI. | R-T | Both | Decided |
+| DL-08 | 21 Nov | Radar one-liner | Radar is framed as something that finds things, not as a grading tool. The line under the title: "Find out how each ad is performing and what to do next." It hands on from Overview ("which ads to fix first") and leads into the "Next steps" column. Grades are how Radar shows it, so "How Radar grades your ads" stays as the help link. Replaces the Radar row in section 11. | R-P, R-V | Antigravity | Decided |
+| DL-09 | 21 Nov | Text on orange buttons and the active switch pill (R-C3) | Stays white on `#F66C30`, as in Atria's product. Annotate in Figma as a known contrast trade-off (2.96:1). | R-C3 | Antigravity | Decided |
+| DL-10 | 21 Nov | Grade tag text (R-C6) | Keep the darker letters (`#137333`, `#0958d9`, `#9a4e00`, `#cf1322`) on the same tints. | R-C6 | Antigravity | Decided |
+| DL-11 | 21 Nov | "Recommended" and "Created in Atria" tags (K37) | Neutral grey. Orange is for primary actions, progress, selection and current location. | R-C1 | Antigravity | Decided |
+| DL-12 | 21 Nov | Page title size | 20 px semibold on every page. | R-H | Antigravity | Decided |
+| DL-13 | 21 Nov | Gallery teaching card | Title stays "Variations now live with their ad". Body: "Each round is saved with the ad it came from. Find them all here, grouped by ad." One button: "Got it". No "Open Radar" button (it pulled people out of Creation, DL-06). | R-E, DL-06 | Antigravity | Decided |
 
 ## 15. Sprint tasks for Antigravity (prioritized)
 
