@@ -1,11 +1,12 @@
 import { useEffect, useState, type HTMLAttributes } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Progress, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
-import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
+import { ACCOUNT, GOALS, goalOf, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
+import { ALL_CREATIVES, DEMO_ACCOUNTS, accountOf } from '../data/store';
+import { GOAL_ICON, objectiveOf } from '../components/Goal';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
@@ -52,6 +53,8 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                 <div className="runs-kv small">
                   <span className="t-key">Platform</span>
                   <span>{platformOf(a)}</span>
+                  <span className="t-key">Goal</span>
+                  <span className="goal-val">{GOAL_ICON[objectiveOf(a)]} {objectiveOf(a)} · {GOALS[objectiveOf(a)].plain}</span>
                   <span className="t-key">Audience</span>
                   <span>{a.adSet}</span>
                   <span className="t-key">Status</span>
@@ -60,7 +63,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                   <span>{money(a.spend)} in the {win.short.toLowerCase()}</span>
                   <span className="t-key">{ACCOUNT.conversionMetric}</span>
                   <span>
-                    {money(a.cpa)} · account average {money(ACCOUNT.avg.cpa)}
+                    {money(a.cpa)} · account average {money(accountOf(c).avg.cpa)}
                   </span>
                   <Tooltip title="How many times the average person saw this copy.">
                     <span className="t-key dotted">Frequency</span>
@@ -182,7 +185,7 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
 type Picked = Record<string, string[]>;
 
 /** Icon-only Filters button (L-059). Compact rows; campaigns are searched, not listed (Mancini, 20 Nov 17:01). */
-function FiltersButton({ campaigns, placements, picked, setPicked }: { campaigns: string[]; placements: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
+function FiltersButton({ campaigns, placements, goals, picked, setPicked }: { campaigns: string[]; placements: string[]; goals: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
   const [popOpen, setPopOpen] = useState(false);
   const total = Object.values(picked).flat().length;
   const row = (g: { label: string; options: string[] }) => (
@@ -199,6 +202,8 @@ function FiltersButton({ campaigns, placements, picked, setPicked }: { campaigns
     <div className="filters-pop compact">
       {row(FILTER_GROUPS[0])}
       {row(FILTER_GROUPS[1])}
+      {/* Goal row (chat 5c): only the goals this account's ads use. */}
+      {row({ label: 'Goal', options: goals })}
       <div className="filters-row">
         <div className="filters-label t-label">Campaign</div>
         <Select
@@ -310,7 +315,13 @@ export function Radar() {
     });
   };
   const lowSpend = account.monthlySpend < RELIABLE_SPEND;
-  const [tab, setTab] = useState<TabKey>('potential');
+  // Overview's grade counts link to a tab (#/?tab=winners).
+  const [search] = useSearchParams();
+  const asked = search.get('tab') as TabKey | null;
+  const [tab, setTab] = useState<TabKey>(asked && TABS.some((t) => t.key === asked) ? asked : 'potential');
+  useEffect(() => {
+    if (asked && TABS.some((t) => t.key === asked)) setTab(asked);
+  }, [asked]);
   const [picked, setPicked] = useState<Picked>({});
   useEffect(() => {
     setPicked({});
@@ -321,6 +332,7 @@ export function Radar() {
   const matches = (c: Creative) =>
     any('Media', (v) => v === c.media) &&
     any('Platform', (v) => c.ads.some((a) => platformOf(a) === v)) &&
+    any('Goal', (v) => goalOf(c) === v) &&
     any('Campaign', (v) => c.ads.some((a) => a.campaign === v)) &&
     any('Placement', (v) => c.placements.some((p) => p.label === v)) &&
     any('Ad status', (v) => v === adStatusOf(c)) &&
@@ -427,7 +439,7 @@ export function Radar() {
             </Button>
           </Popover>
         </div>
-        <FiltersButton key={account.id} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
+        <FiltersButton key={account.id} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
       <ActiveFilters picked={picked} setPicked={setPicked} />
 

@@ -1,14 +1,14 @@
+import { GoalPill, objectiveOf } from '../components/Goal';
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip, theme as antdTheme } from 'antd';
-import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, GiftOutlined, SmileOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
   CREATIVES,
   METRIC_META,
-  PERSONAS,
   WINDOW,
   WINDOWS,
   graded,
@@ -19,7 +19,7 @@ import {
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
-import { ALL_CREATIVES, findCreative, recName, useStore, type RowStatus } from '../data/store';
+import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -27,6 +27,18 @@ import { StatusCell } from '../components/StatusCell';
 import { Body, CreateDialog } from '../components/CreateDialog';
 import { Rolling } from '../components/Rolling';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
+
+/** Persona icons per account (accounts.ts Persona['icon']). */
+const PERSONA_ICON: Record<string, React.ReactNode> = {
+  gift: <GiftOutlined />,
+  calm: <SmileOutlined />,
+  home: <HomeOutlined />,
+  leaf: <EnvironmentOutlined />,
+  run: <ThunderboltOutlined />,
+  paw: <HeartOutlined />,
+  sun: <SunOutlined />,
+  cup: <CoffeeOutlined />,
+};
 
 const section = {
   hidden: {},
@@ -286,6 +298,7 @@ export function AdDetail() {
                       </div>
                       <div className="ad-fields muted small">
                         <span>Platform: {platformOf(a)}</span>
+                        <span>Goal: {objectiveOf(a)}</span>
                         <span>Audience: {a.adSet}</span>
                         <span>Ad ID: {a.id}</span>
                       </div>
@@ -366,7 +379,10 @@ export function AdDetail() {
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
           <motion.div variants={fadeUp} className="panel verdict">
-            <span className="t-label">Summary</span>
+            <div className="verdict-head">
+              <span className="t-label">Summary</span>
+              <GoalPill c={c} />
+            </div>
             <p className="verdict-line">{summary(c, parent)}</p>
             <div className="stat-strip">
               <div className="stat">
@@ -437,10 +453,10 @@ export function AdDetail() {
             <p className="t-help persona-help">Who this ad seems to speak to, read from its image and copy.</p>
             {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
             <div className="persona-cards">
-              {PERSONAS.map((p) => (
+              {accountOf(c).personas.map((p) => (
                 <div key={p.label} className="persona-card">
                   <span className="persona-avatar" style={{ background: p.tint }}>
-                    {p.icon === 'gift' ? <GiftOutlined /> : <SmileOutlined />}
+                    {PERSONA_ICON[p.icon] ?? <SmileOutlined />}
                   </span>
                   <span className="persona-text">
                     <b>{p.label}</b>

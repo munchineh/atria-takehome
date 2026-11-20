@@ -7,8 +7,10 @@ import type { AdCopy, Creative as CreativeT } from '../data/mock';
  * prefix: src/assets/ads/r01.webp. Run scripts/prep_ads.py to add more.
  * Missing slots render a soft placeholder so nothing breaks before Friday.
  */
-const FILES = import.meta.glob('../assets/ads/*.webp', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
-const BY_SLOT: Record<string, string> = Object.fromEntries(Object.entries(FILES).map(([k, v]) => [k.split('/').pop()!.replace('.webp', ''), v]));
+const FILES = import.meta.glob('../assets/ads/*.{webp,svg}', { eager: true, query: '?url', import: 'default' }) as Record<string, string>;
+// Photos (.webp) and drawn product art (.svg, scripts/draw_products.py). When a slot has both, the photo wins.
+const BY_SLOT: Record<string, string> = {};
+for (const [k, v] of Object.entries(FILES).sort(([a], [b]) => (a.endsWith('.webp') ? 1 : 0) - (b.endsWith('.webp') ? 1 : 0))) BY_SLOT[k.split('/').pop()!.replace(/\.(webp|svg)$/, '')] = v;
 export const adImage = (slot: string) => BY_SLOT[slot];
 
 const PASTELS = ['#f9d3df', '#dcebc6', '#f8ecc9', '#d6e4f3', '#e3d9f1', '#fbdcc7'];

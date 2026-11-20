@@ -30,6 +30,7 @@ const RAIL = [
 function AccountList({ onPick }: { onPick?: () => void }) {
   const { accountId, setAccount } = useStore();
   const { message } = App.useApp();
+  const loc = useLocation();
   const nav = useNavigate();
   return (
     <div className="accounts">
@@ -50,7 +51,7 @@ function AccountList({ onPick }: { onPick?: () => void }) {
                 return;
               }
               setAccount(demo.id);
-              nav('/');
+              nav(loc.pathname.startsWith('/overview') ? '/overview' : '/');
               onPick?.();
             }}
           >

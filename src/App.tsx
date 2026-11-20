@@ -9,18 +9,19 @@ import { AdDetail } from './screens/AdDetail';
 import { Results } from './screens/Results';
 import { ImageAds } from './screens/ImageAds';
 import { Editor } from './screens/Editor';
+import { Overview } from './screens/Overview';
 import { theme } from './theme';
 import { ease, duration } from './motion/tokens';
 
 function TopNav() {
   const loc = useLocation();
   const nav = useNavigate();
-  const { message } = AntApp.useApp();
+  // Overview and Radar switch pages and keep the account (chat 5c).
   return (
     <Segmented
       className="top-nav"
-      value="radar"
-      onChange={(v) => (v === 'radar' ? loc.pathname !== '/' && nav('/') : message.info({ content: "Overview isn't part of this prototype.", key: 'overview' }))}
+      value={loc.pathname.startsWith('/overview') ? 'overview' : 'radar'}
+      onChange={(v) => nav(v === 'overview' ? '/overview' : '/')}
       options={[
         { label: 'Overview', value: 'overview' },
         { label: 'Radar', value: 'radar' },
@@ -39,6 +40,7 @@ function Routed() {
       <LayoutGroup>
         <Routes location={loc}>
           <Route path="/" element={<Radar />} />
+          <Route path="/overview" element={<Overview />} />
           <Route path="/ad/:id" element={<AdDetail key={loc.pathname} />} />
           <Route path="/ad/:id/variations" element={<Results />} />
           <Route path="/ad/:id/variations/:vid" element={<Editor key={loc.pathname} />} />

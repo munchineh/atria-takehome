@@ -1,14 +1,52 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ACCOUNT, CREATIVES, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, type Creative } from './mock';
+import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, type Creative } from './mock';
+import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
 import { applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
 
-export const DEMO_ACCOUNTS = [
-  { ...ACCOUNT, creatives: CREATIVES },
-  { ...SMALL_ACCOUNT, creatives: SMALL_CREATIVES },
+/**
+ * Every sidebar account has data (chat 5c, wiring Mancini's 19:08 ask). Each account brings its own averages
+ * (grade popovers, copies panel), personas (ad page) and art + headlines (new variations).
+ */
+export const DEMO_ACCOUNTS: MockAccount[] = [
+  {
+    ...ACCOUNT,
+    personas: PERSONAS as Persona[],
+    art: ['x01', 'x02', 'x04', 'x05c', 'x07', 'x08'],
+    heads: ['PICK YOUR MOOD', 'SQUISH ME', '3 FOR $36', 'BACK IN SHAPE'],
+    creatives: CREATIVES,
+  },
+  {
+    ...SMALL_ACCOUNT,
+    avg: { cpa: 28.0, ctr: 1.12, hookRate: 25, retention: 15 },
+    personas: [
+      { label: 'Small-kitchen cooks', why: 'Likely to respond to size and counter-space messages.', icon: 'home', tint: '#f8ecc9' },
+      { label: 'Gift shoppers', why: 'Likely to respond to color and gift messages.', icon: 'gift', tint: '#fde4ec' },
+    ],
+    art: ['t01', 't03', 't04', 't02'],
+    heads: ['TOAST FOR ONE', 'NOW IN MINT', 'FITS ANY SHELF', '$39 TODAY'],
+    creatives: [...SMALL_CREATIVES, ...TINY_TOAST_EXTRA],
+  },
+  ...MORE_ACCOUNTS,
 ];
-export const ALL_CREATIVES: Creative[] = [...CREATIVES, ...SMALL_CREATIVES, ...PROJECT_CREATIVES];
+export const ALL_CREATIVES: Creative[] = [...DEMO_ACCOUNTS.flatMap((a) => a.creatives), ...PROJECT_CREATIVES];
 export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === id);
 export const accountOf = (c: Creative) => DEMO_ACCOUNTS.find((a) => a.id === c.accountId) ?? DEMO_ACCOUNTS[0];
+
+/** Drawn art with a dark background (scripts/draw_products.py), so the copy goes light on it. */
+const DARK_ART = new Set(['ho2', 'ks4', 'lt3', 'pp4', 'sg4']);
+
+/** New variations for other accounts use that account's art and headlines, not Moody Mochi photos. */
+function forAccount(vs: Variation[], creativeId: string): Variation[] {
+  const c = findCreative(creativeId);
+  if (!c || c.accountId === ACCOUNT.id) return vs;
+  const acc = accountOf(c);
+  return vs.map((v, i) => ({
+    ...v,
+    img: acc.art[i % acc.art.length],
+    copy: { head: acc.heads[i % acc.heads.length], cta: c.copy?.cta ?? 'SHOP NOW', tone: DARK_ART.has(acc.art[i % acc.art.length]) ? undefined : 'dark' },
+    typo: undefined,
+  }));
+}
 
 export type JobState = 'queued' | 'generating' | 'ready' | 'failed';
 
@@ -41,7 +79,7 @@ export type RowStatus =
   | { kind: 'failed'; count: number; jobId: string; recIds: string[] };
 
 const mk = (j: Omit<Job, 'variations' | 'count'>): Job => {
-  const variations = buildVariations(j.id, j.recIds, j.perRec);
+  const variations = forAccount(buildVariations(j.id, j.recIds, j.perRec), j.creativeId);
   return { ...j, count: variations.length, variations };
 };
 
@@ -185,7 +223,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const id = `job-new-${counter.current}`;
       const used: Record<string, number> = {};
       for (const j of jobs.filter((x) => x.creativeId === o.creativeId && !x.label)) for (const v of j.variations) used[v.recId] = (used[v.recId] ?? 0) + 1;
-      const variations = buildVariations(id, o.recIds, o.perRec, used, o.like);
+      const variations = forAccount(buildVariations(id, o.recIds, o.perRec, used, o.like), o.creativeId);
       const busy = jobs.some((j) => j.state === 'generating' && j.creativeId === o.creativeId);
       const job: Job = {
         id,

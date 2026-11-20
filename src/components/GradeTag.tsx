@@ -1,5 +1,5 @@
 import { Grid, Popover, Tag, Tooltip } from 'antd';
-import { useStore } from '../data/store';
+import { accountOf, useStore } from '../data/store';
 import { ACCOUNT, METRIC_META, WINDOWS, type Creative, type Grade, type MetricKey } from '../data/mock';
 
 const COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'red' };
@@ -41,7 +41,7 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
   const meta = METRIC_META[metric];
   const valueKey = ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[metric];
   const value = creative.values[valueKey] ?? 0;
-  const avg = ACCOUNT.avg[meta.avgKey];
+  const avg = accountOf(creative).avg[meta.avgKey];
   const name = metric === 'conversion' ? ACCOUNT.conversionMetric : meta.label;
   const content = (
     <div className="grade-pop" onClick={(e) => e.stopPropagation()}>
