@@ -37,6 +37,27 @@ for (const c of ALL_CREATIVES) {
 }
 for (const a of DEMO_ACCOUNTS) for (const p of a.personas) p.why = glue(p.why);
 export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === id);
+
+/**
+ * DL-16: a creative started in the Creative gallery, tied to no ad. Modeled on Atria's own starts
+ * (from a reference, clone an ad, from an ad's suggestions, ask Raya). The gallery's "New creative" offers three;
+ * the fourth (from an ad's suggestions) already lives on the ad page.
+ */
+export type NewCreativeStart = 'scratch' | 'reference' | 'clone';
+export const NEW_CREATIVE_STARTS: { value: NewCreativeStart; title: string; help: string }[] = [
+  { value: 'scratch', title: 'Start from a brief', help: 'Describe the product, who it\u2019s for, the goal and the tone.' },
+  { value: 'reference', title: 'Start from a reference', help: 'Pick up to 10 reference ads. Atria follows their layout with your brand and product.' },
+  { value: 'clone', title: 'Clone an ad', help: 'Pick one ad you like. Atria rebuilds the idea for your brand.' },
+];
+let projectCount = 0;
+/** Adds an untied project to the account and returns it; start its first round with `startJob({ creativeId: project.id, recIds: ['r1'], … })`. */
+export function newProject(start: NewCreativeStart, name: string, accountId: string): Creative {
+  projectCount += 1;
+  const base = PROJECT_CREATIVES.find((c) => c.project === (start === 'clone' ? 'clone' : 'scratch')) ?? PROJECT_CREATIVES[0];
+  const c: Creative = { ...base, id: `${start}-new-${projectCount}`, accountId, name: name.trim() || (start === 'clone' ? 'Cloned ad' : 'Untitled creative'), project: start === 'clone' ? 'clone' : 'scratch', ads: [] };
+  ALL_CREATIVES.push(c);
+  return c;
+}
 export const accountOf = (c: Creative) => DEMO_ACCOUNTS.find((a) => a.id === c.accountId) ?? DEMO_ACCOUNTS[0];
 
 /** Drawn art with a dark background (scripts/draw_products.py), so the copy goes light on it. */
