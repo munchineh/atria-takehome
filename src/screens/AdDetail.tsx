@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip, Typography } from 'antd';
+import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip } from 'antd';
 import { ArrowRightOutlined, BranchesOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -357,13 +357,13 @@ export function AdDetail() {
           </motion.div>
 
           <motion.div variants={fadeUp} className="section-title">
-            <h4>What's holding it back</h4>
-            <span className="muted small">{iterable ? 'In priority order. The top 2 are selected for you.' : 'In priority order'}</span>
-            <span className="muted small rec-date">
-              Recommendations from {WINDOW.synced} ·{' '}
-              <Button type="link" size="small" className="inline-link" icon={<ReloadOutlined />}>
-                Refresh
-              </Button>
+            <h4>Suggestions</h4>
+            <span className="t-help">{iterable ? 'In priority order. The top 2 are selected for you.' : 'In priority order.'}</span>
+            <span className="t-help rec-date">
+              Updated {WINDOW.synced}
+              <Tooltip title="Refresh">
+                <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" />
+              </Tooltip>
             </span>
           </motion.div>
 
@@ -386,11 +386,11 @@ export function AdDetail() {
           ))}
 
           <motion.div variants={fadeUp} className="feedback small">
-            <span className="muted">Were these recommendations useful?</span>
+            <span className="muted">Were these suggestions useful?</span>
             <AnimatePresence mode="wait" initial={false}>
               {feedback ? (
                 <motion.span key="thanks" variants={fadeUp} initial="hidden" animate="show" className="muted">
-                  Thanks. This helps Atria rank the next ones.
+                  Thanks for the feedback.
                 </motion.span>
               ) : (
                 <motion.span key="ask" className="row-gap" exit={{ opacity: 0, transition: { duration: duration.instant } }}>
