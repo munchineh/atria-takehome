@@ -3,7 +3,7 @@ import type { Recommendation } from '../data/mock';
 import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, App, Button, Drawer, Input, Modal, Select } from 'antd';
-import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
 import { accountOf, useStore } from '../data/store';
@@ -133,53 +133,68 @@ export function Body({
           {/* 5d C5d-08: one help line only; the rewrite link sits on the label row. */}
           <div className="dlg-label-row">
             <span className="dlg-label">Ad brief</span>
-            {mode === 'filled' && saved && (
-              <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
-                Rewrite from a product page
-              </Button>
-            )}
+            <span className="row-gap wrap">
+              {mode === 'filled' && picked && picked.length > 0 && (
+                <Button type="link" size="small" className="inline-link" icon={<ThunderboltOutlined />} onClick={prefill}>
+                  Pre-fill from suggestions
+                </Button>
+              )}
+              {mode === 'filled' && saved && (
+                <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
+                  Rewrite from a product page
+                </Button>
+              )}
+            </span>
           </div>
           <AnimatePresence mode="wait" initial={false}>
             {(mode === 'empty' || mode === 'url' || mode === 'reading' || mode === 'error') && !saved ? (
-              <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="brief-starts">
-                <div className="brief-start">
-                  <b>Start from a product page</b>
-                  <Input
-                    placeholder="https://"
-                    prefix={<LinkOutlined className="muted" />}
-                    value={url}
-                    onChange={(e) => {
-                      setUrl(e.target.value);
-                      if (mode === 'error') setMode('url');
-                    }}
-                    onPressEnter={() => url && readPage()}
-                    status={mode === 'error' ? 'error' : undefined}
-                    inputMode="url"
-                    aria-label="Product page link"
-                  />
-                  {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
-                  <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
-                    {mode === 'reading' ? 'Reading the page' : 'Write brief'}
-                  </Button>
-                </div>
+              <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className={`brief-starts-wrap ${picked && picked.length > 0 ? 'has-prefill' : ''}`}>
                 {picked && picked.length > 0 && (
                   <>
-                    <div className="brief-or muted small">or</div>
-                    {/* Item 9 (logic branch): plain markup; layout and styling belong to the UI branch. */}
+                    {/* Item 9 (R-E): featured pre-fill option from picked suggestions. */}
                     <div className="brief-start brief-prefill">
-                      <b>Start from the suggestions</b>
-                      <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
+                      <div className="brief-prefill-body">
+                        <b className="brief-prefill-title">
+                          <ThunderboltOutlined aria-hidden /> Start from the suggestions
+                        </b>
+                        <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
+                      </div>
                       <Button onClick={prefill}>Fill in the brief</Button>
+                    </div>
+                    <div className="brief-divider muted small">
+                      <span>or start another way</span>
                     </div>
                   </>
                 )}
-                <div className="brief-or muted small">or</div>
-                <div className="brief-start">
-                  <b>Write your own</b>
-                  <span className="t-help">Cover the product, who it's for, the goal and the tone</span>
-                  <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
-                    Write it yourself
-                  </Button>
+                <div className="brief-starts">
+                  <div className="brief-start">
+                    <b>Start from a product page</b>
+                    <Input
+                      placeholder="https://"
+                      prefix={<LinkOutlined className="muted" />}
+                      value={url}
+                      onChange={(e) => {
+                        setUrl(e.target.value);
+                        if (mode === 'error') setMode('url');
+                      }}
+                      onPressEnter={() => url && readPage()}
+                      status={mode === 'error' ? 'error' : undefined}
+                      inputMode="url"
+                      aria-label="Product page link"
+                    />
+                    {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
+                    <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                      {mode === 'reading' ? 'Reading the page' : 'Write brief'}
+                    </Button>
+                  </div>
+                  <div className="brief-or muted small">or</div>
+                  <div className="brief-start">
+                    <b>Write your own</b>
+                    <span className="t-help">Cover the product, who it's for, the goal and the tone.</span>
+                    <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
+                      Write it yourself
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             ) : mode === 'url' || mode === 'reading' || mode === 'error' ? (
@@ -335,7 +350,16 @@ export function CreateDialog({
   const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} />;
   if (mobile)
     return (
-      <Drawer open={open} onClose={onClose} placement="bottom" height="100%" title="Create variations" className="sheet-drawer" destroyOnHidden>
+      <Drawer
+        open={open}
+        onClose={onClose}
+        placement="bottom"
+        size="large"
+        styles={{ wrapper: { height: '100svh' } }}
+        title="Create variations"
+        className="sheet-drawer"
+        destroyOnHidden
+      >
         {body}
       </Drawer>
     );

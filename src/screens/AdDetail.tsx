@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -22,12 +22,14 @@ import {
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
 import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
+import { suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { Body, CreateDialog } from '../components/CreateDialog';
 import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
+import { HistoryButton } from '../components/LineageDrawer';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
 /** Persona icons per account (accounts.ts Persona['icon']). */
@@ -108,29 +110,27 @@ const KV = ({ k, v }: { k: string; v: string }) => (
   </span>
 );
 
+/** Item 4 (R-H, R-I): Suggestion card in four structured parts from suggestionParts(). */
 function RecCard({
-  r,
+  parts,
   selected,
   suggested,
   disabled,
   onToggle,
   footer,
-  targetGrade,
 }: {
-  r: Recommendation;
+  parts: SuggestionParts;
   selected: boolean;
   suggested: boolean;
   disabled?: boolean;
   onToggle: () => void;
   footer?: { text: string; action?: () => void; running?: boolean };
-  targetGrade?: string | null;
 }) {
-  const phone = !Grid.useBreakpoint().md;
-  const gradeTag = targetGrade ? (
-    <Tag className={`rec-grade grade-tag g-${targetGrade[0]}`}>{targetGrade}</Tag>
+  const { diagnosis, evidence, action, apply } = parts;
+  const gradeTag = evidence.grade ? (
+    <Tag className={`rec-grade grade-tag g-${evidence.grade[0]}`}>{evidence.grade}</Tag>
   ) : (
-    // 5d C5d-04: Radar grades one conversion metric per account (Atria's "ROAS-G" when ROAS is the setting); here it's CPA.
-    <Tooltip title={`${r.target} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+    <Tooltip title={`${evidence.metric} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
       <Tag className="rec-grade no-grade">No grade</Tag>
     </Tooltip>
   );
@@ -140,65 +140,68 @@ function RecCard({
       <Tag className="rec-suggested">Recommended</Tag>
     </Tooltip>
   );
-  const tryBlock = r.examples.length > 0 && (
-    <div className="rec-try">
-      <span className="t-label">Try</span>
-      {r.examples.map((e) => (
-        <span key={e} className="rec-chip">{e}</span>
-      ))}
-    </div>
-  );
   return (
     <motion.div
       variants={fadeUp}
-      className={`rec-card ${selected ? 'selected' : ''} ${disabled ? 'read-only' : ''}`}
+      className={`rec-card rec-four ${selected ? 'selected' : ''} ${disabled ? 'read-only' : ''}`}
       onClick={disabled ? undefined : onToggle}
       role={disabled ? undefined : 'checkbox'}
       aria-checked={disabled ? undefined : selected}
       tabIndex={disabled ? undefined : 0}
       onKeyDown={(e) => !disabled && (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), onToggle())}
     >
-      {/* How > What > Why (Mancini, 20 Nov 17:43). 18:49 hierarchy pass: the problem is a coloured eyebrow
-          (grade + metric + issue), the fix is the title, the reason is quiet, examples are chips. */}
-      {phone ? (
-        // 5d (Mancini 23:44): on phones the short items share one line (select, grade, metric, Recommended),
-        // so nothing wraps mid-phrase; the problem, fix and reason then run the full card width with no indent.
-        <div className="rec-phone">
-          <div className="rec-phone-top">
-            {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
-            {gradeTag}
-            <span className="rec-metric">{r.target}</span>
-            <span className="rec-phone-spacer" />
-            {recTag}
-          </div>
-          <p className="rec-phone-issue">{r.issue}</p>
-          <b className="rec-how">{r.fix}</b>
-          <p className="rec-why">{r.why}</p>
-          {tryBlock}
-          <RateRow />
-        </div>
-      ) : (
-        <div className="rec-head">
+      {/* Part 1: Diagnosis (What's happening) */}
+      <div className="rec-part rec-part-diag">
+        <div className="rec-diag-left">
           {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
-          <div className="rec-body">
-            <div className="rec-eyebrow">
-              {/* 5c A-19: grade, metric and issue wrap inside their own group, so "Recommended" keeps the first line. */}
-              <span className="rec-eyebrow-main">
-                {gradeTag}
-                <span className="rec-metric">{r.target}</span>
-                <span className="rec-issue-text">{r.issue}</span>
-              </span>
-              {recTag}
-            </div>
-            <b className="rec-how">{r.fix}</b>
-            <p className="rec-why">{r.why}</p>
-            <div className="rec-bottom">
-              {tryBlock}
-              <RateRow />
-            </div>
-          </div>
+          {gradeTag}
+          <span className="rec-metric">{evidence.metric}</span>
+          <span className="rec-issue-text">{diagnosis}</span>
         </div>
-      )}
+        {recTag}
+      </div>
+
+      {/* Part 2: Evidence (Metric value vs account average) */}
+      <div className="rec-part rec-part-evidence">
+        <span className="rec-ev-label">Evidence</span>
+        <span className="rec-ev-val">
+          {evidence.metric} <b>{evidence.value}</b>
+          {evidence.average && (
+            <span className="muted">
+              {'\u00a0'}· account average{'\u00a0'}
+              {evidence.average}
+            </span>
+          )}
+        </span>
+      </div>
+
+      {/* Part 3: Recommended action (What to change + why + examples) */}
+      <div className="rec-part rec-part-action">
+        <b className="rec-how">{action.title}</b>
+        <p className="rec-why">{action.why}</p>
+        {action.examples.length > 0 && (
+          <div className="rec-try">
+            <span className="t-label">Try</span>
+            {action.examples.map((e) => (
+              <span key={e} className="rec-chip">{e}</span>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Part 4: Apply to brief + per-suggestion rating */}
+      <div className="rec-part rec-part-apply">
+        {!disabled ? (
+          <span className={`rec-apply-pill ${selected ? 'on' : ''}`}>
+            {selected ? <CheckOutlined aria-hidden /> : <PlusOutlined aria-hidden />}
+            <span>{selected ? 'Added to brief' : apply.label}</span>
+          </span>
+        ) : (
+          <span className="t-help">Apply manually on {evidence.metric}</span>
+        )}
+        <RateRow />
+      </div>
+
       <AnimatePresence initial={false}>
         {footer && (
           <motion.div
@@ -308,13 +311,17 @@ export function AdDetail() {
             { title: <span className="crumb-name">{c.name}</span> },
           ]}
         />
-        <Tooltip title="Set on Radar. Grades on this page use the same period.">
-          <span className="period-chip">
-            <CalendarOutlined />
-            <span>{win.short}</span>
-            {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
-          </span>
-        </Tooltip>
+        <div className="detail-head-right">
+          {/* Items 16 & 17 (DL-04): History drawer entry point */}
+          <HistoryButton creative={c} />
+          <Tooltip title="Set on Radar. Grades on this page use the same period.">
+            <span className="period-chip">
+              <CalendarOutlined />
+              <span>{win.short}</span>
+              {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
+            </span>
+          </Tooltip>
+        </div>
       </div>
 
       <div className="page-head detail-page-head">
@@ -519,13 +526,12 @@ export function AdDetail() {
           {recs.map((r) => (
             <RecCard
               key={r.id}
-              r={r}
+              parts={suggestionParts(c, r, accountOf(c).avg)}
               selected={selected.includes(r.id)}
               suggested={suggestedIds.includes(r.id)}
               disabled={!iterable}
               onToggle={() => toggle(r.id)}
               footer={footerFor(r)}
-              targetGrade={c.grades[({ CPA: 'conversion', CTR: 'ctr', Hook: 'hook', ROAS: '' } as Record<string, string>)[r.target] as MetricKey] ?? null}
             />
           ))}
 
