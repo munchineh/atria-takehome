@@ -454,7 +454,20 @@ const VIDEO_RECS: Recommendation[] = [
   },
 ];
 
+/** Order suggestions by how weak their target metric is (D first), so priority follows the grades. */
 export function recommendationsFor(c: Creative): Recommendation[] {
+  const key: Record<string, MetricKey | undefined> = { CPA: 'conversion', CTR: 'ctr', Hook: 'hook' };
+  const rank = (r: Recommendation) => {
+    const g = key[r.target] ? c.grades[key[r.target]!] : null;
+    return g ? 'ABCD'.indexOf(g[0]) : 1.5; // ungraded targets (ROAS) sit between B and C
+  };
+  return recsFor(c)
+    .map((r, i) => ({ r, i }))
+    .sort((a, b) => rank(b.r) - rank(a.r) || a.i - b.i)
+    .map(({ r }, i) => ({ ...r, priority: i + 1 }));
+}
+
+function recsFor(c: Creative): Recommendation[] {
   if (c.id === 'mm-1090245') return HERO_RECS;
   if (c.variationOf === 'mm-1090245')
     return HERO_RECS.filter((r) => r.id !== 'cta').map((r, i) => ({
