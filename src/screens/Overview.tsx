@@ -75,7 +75,7 @@ export function Overview() {
           <Typography.Title level={1} className="page-title">
             Overview
           </Typography.Title>
-          <p className="muted desc">See how this account is doing and which ads to fix first.</p>
+          <p className="muted desc">See how this account is doing and where to look first.</p>
         </div>
         <Select
           variant="filled"

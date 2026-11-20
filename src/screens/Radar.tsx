@@ -405,7 +405,7 @@ export function Radar() {
         <Typography.Title level={1} className="page-title">
           Radar
         </Typography.Title>
-        <p className="muted desc">Radar grades every ad in this account and suggests what to fix next.</p>
+        <p className="muted desc">Find out how each ad is performing and what to do next.</p>
       </div>
 
       <AnimatePresence initial={false}>

@@ -118,7 +118,7 @@ export function ImageAds() {
           <Typography.Title level={1} className="page-title">
             Creative gallery
           </Typography.Title>
-          <p className="muted desc">Find every variation you've created, grouped by the ad it came from.</p>
+          <p className="muted desc">Every creative you've made in Atria, ready to refine or use in an ad.</p>
           <p className="t-help pl-meta">{countLine}</p>
         </div>
         {/* K41 (R-R6): PopSheet so it opens as a bottom sheet on phones. */}
