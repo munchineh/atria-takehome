@@ -8,6 +8,8 @@ export const theme: ThemeConfig = {
     colorInfo: '#1677ff',
     borderRadius: 6,
     borderRadiusLG: 10,
+    // 5c A-29: small buttons, tags and small selects were 4 px (antd default); the scale says 6.
+    borderRadiusSM: 6,
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontSize: 14,
     colorText: '#1f1f1f',
@@ -30,7 +32,9 @@ export const theme: ThemeConfig = {
     Dropdown: { borderRadiusLG: 14 },
     // Controls stay at 6 px at every size (L-030): large inputs, selects and buttons were picking up 10.
     Input: { borderRadiusLG: 6 },
-    Select: { borderRadiusLG: 6 },
+    // 5c A-32: the select's popup list is a floating surface; 10 reads as one with the control.
+    Select: { borderRadiusLG: 6, optionSelectedBg: '#fff3ee' },
+    Checkbox: { borderRadiusSM: 4 },
     Button: { borderRadiusLG: 6 },
     InputNumber: { borderRadiusLG: 6 },
   },

@@ -140,7 +140,7 @@ function VariationCard({
         </div>
         {rec && (
           <div className="small muted">
-            Fixes: {rec.issue} ({rec.target})
+            Improves {rec.target} · {rec.issue}
           </div>
         )}
       </div>
@@ -157,16 +157,17 @@ function VariationCard({
               </Button>
             </Tooltip>
           )}
+          <Button size="small" className={`pick-btn ${picked ? 'on' : ''}`} onClick={onPick} aria-pressed={picked} aria-label="Add to shortlist">
+            <Checkbox checked={picked} tabIndex={-1} /> {picked ? 'Shortlisted' : 'Shortlist'}
+          </Button>
+          {/* 5c A-33: two bordered actions on one row, "More like this" as a quieter link below. */}
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
             <Tooltip title={`Create 4 new variations close to this one. ${moreCost}.`}>
-              <Button size="small" icon={<CopyOutlined />}>
+              <Button size="small" type="link" icon={<CopyOutlined />} className="more-like">
                 More like this
               </Button>
             </Tooltip>
           </Popconfirm>
-          <Button size="small" className={`pick-btn ${picked ? 'on' : ''}`} onClick={onPick} aria-pressed={picked} aria-label="Add to shortlist">
-            <Checkbox checked={picked} tabIndex={-1} /> {picked ? 'Shortlisted' : 'Shortlist'}
-          </Button>
         </div>
       )}
     </motion.article>
@@ -243,10 +244,10 @@ export function Results() {
         <Breadcrumb
           items={[
             ...(c.project
-              ? [{ title: <Link to="/creation">Image ads</Link> }, { title: short(c.name, mobile ? 18 : 30) }]
+              ? [{ title: <Link to="/creation">Image ads</Link> }, { title: <span className="crumb-name">{c.name}</span> }]
               : [
                   { title: <Link to="/">Radar</Link> },
-                  { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 12 : 22)}</Link> },
+                  { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> },
                   { title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} · ${job.date}` },
                 ]),
           ]}
@@ -255,7 +256,7 @@ export function Results() {
 
       <div className="results-head">
         <div className="results-title">
-          <h3>Variations of {short(c.name, mobile ? 18 : 30)}</h3>
+          <h3>Variations of {c.name}</h3>
           <p className="muted small">
             {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')} · {job.date}
             {job.label ? ` · ${job.label}` : ''}

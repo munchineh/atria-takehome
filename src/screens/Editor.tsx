@@ -14,7 +14,7 @@ import {
   LikeOutlined,
 } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, plural, recommendationsFor, short, type AdCopy } from '../data/mock';
+import { ACCOUNT, CREATIVES, plural, recommendationsFor, type AdCopy } from '../data/mock';
 import { findCreative, useStore } from '../data/store';
 import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt } from '../components/Thumb';
@@ -186,7 +186,7 @@ export function Editor() {
             <span className="film-img">
               {x.state === 'applying' ? <i className="film-skeleton" /> : <AdArt slot={x.img} copy={x.copy} ratio={ratioFor(x.img)} alt={`v${x.n}`} />}
             </span>
-            <span className="film-cap">
+            <span className="film-cap" title={x.caption}>
               <b>v{x.n}</b> <span className="muted">{x.state === 'applying' ? 'Applying your change' : x.caption}</span>
             </span>
           </motion.button>
@@ -245,7 +245,7 @@ export function Editor() {
               const bad = f.key === 'head' && typoNow && val.includes(typoNow);
               return (
                 <label key={f.key} className="ed-field">
-                  <span className="small">{f.label}</span>
+                  <span className="t-label">{f.label}</span>
                   <Input
                     value={val}
                     status={bad ? 'warning' : undefined}
@@ -426,8 +426,8 @@ export function Editor() {
           items={[
             ...(c.project
               ? [{ title: <Link to="/creation">Image ads</Link> }]
-              : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 10 : 22)}</Link> }]),
-            { title: <Link to={back}>Variations</Link> },
+              : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> }]),
+            { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)} · ${job.date}`}</Link> },
             { title: v.angle },
           ]}
         />
@@ -437,7 +437,7 @@ export function Editor() {
         <div className="ed-title">
           <h3>{v.angle}</h3>
           <div className="row-gap wrap small">
-            {rec && <span className="muted">Fixes: {rec.issue} ({rec.target})</span>}
+            {rec && <span className="muted">Improves {rec.target} · {rec.issue}</span>}
             <PredictedTag id={v.id} />
             {v.from && (
               <Tag icon={<MadeFromIcon />} className="from-tag">

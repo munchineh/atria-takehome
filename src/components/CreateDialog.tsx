@@ -1,8 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
-import { App, Button, Drawer, Input, Modal, Select, Tooltip } from 'antd';
+import { App, Button, Drawer, Input, Modal, Select } from 'antd';
 import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, SIZES, plural, short, type Creative } from '../data/mock';
+import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
 import { accountOf, useStore } from '../data/store';
 import { Thumb } from './Thumb';
 import { duration, ease, fadeUp } from '../motion/tokens';
@@ -84,7 +84,7 @@ export function Body({
       <div className="dlg-scroll">
         {panel && <h4 className="dlg-panel-title">Create variations</h4>}
         <p className="dlg-sub muted">
-          For <b className="ink">{short(creative.name, 28)}</b> · {plural(recCount, 'recommendation')}
+          For <b className="ink">{creative.name}</b> · {plural(recCount, 'suggestion')}
         </p>
 
         {/* Brand row (I5, I7): prefilled, inline, no modal. */}
@@ -138,7 +138,7 @@ export function Body({
                   />
                   {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
                   <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
-                    {mode === 'reading' ? 'Reading the page…' : 'Write brief'}
+                    {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                   </Button>
                 </div>
                 <div className="brief-or muted small">or</div>
@@ -165,7 +165,7 @@ export function Body({
                 {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
                 <span className="row-gap">
                   <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
-                    {mode === 'reading' ? 'Reading the page…' : 'Write brief'}
+                    {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                   </Button>
                   <Button type="text" onClick={() => setMode('filled')}>
                     Cancel
@@ -234,12 +234,12 @@ export function Body({
             <Select value={size} onChange={setSize} options={SIZES.map((s) => ({ value: s.value, label: s.label }))} />
             {size === defaultSize && (
               <span className="t-help">
-                Set to {top.label}, where this creative spends most ({Math.round(top.share * 100)}%)
+                Set to {top.label}, where this ad spends most ({Math.round(top.share * 100)}%)
               </span>
             )}
           </label>
           <label className="dlg-block">
-            <span className="dlg-label">Variations per recommendation</span>
+            <span className="dlg-label">Variations per suggestion</span>
             <Select value={perRec} onChange={setPerRec} options={[2, 4, 6, 8].map((n) => ({ value: n, label: n }))} />
           </label>
         </section>
@@ -248,16 +248,17 @@ export function Body({
       <footer className="dlg-foot">
         <div className="dlg-sum">
           <span>
-            {plural(recCount, 'recommendation')} × {perRec} = <b><Rolling value={total} /> variations</b>
+            {plural(recCount, 'suggestion')} × {perRec} = <b><Rolling value={total} /> variations</b>
           </span>
           <span className="t-help">
             Uses <Rolling value={cost} /> of {credits.toLocaleString()} credits
           </span>
+          {/* 5c A-22, A-23: one hint, under the total, instead of a tooltip plus a floating line. */}
+          {!ready && <span className="t-help dlg-need">Add a brief to continue</span>}
         </div>
         <div className="dlg-actions">
           <Button onClick={onCancel}>Cancel</Button>
-          <Tooltip title={ready ? '' : 'Add a brief to continue.'}>
-            <Button
+          <Button
               type="primary"
               disabled={!ready || cost > credits}
               onClick={() => {
@@ -267,9 +268,7 @@ export function Body({
             >
               Create {total} variations
             </Button>
-          </Tooltip>
         </div>
-        {!ready && <span className="field-hint small muted">Add a brief to continue</span>}
       </footer>
     </div>
   );

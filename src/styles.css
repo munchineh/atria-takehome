@@ -22,8 +22,8 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 /* Shell */
 .shell { display: flex; min-height: 100vh; }
 .rail { position: sticky; top: 0; height: 100vh; width: var(--rail-w); flex: none; background: var(--rail); display: flex; flex-direction: column; align-items: center; gap: 6px; padding-top: 12px; }
-.rail-logo { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(135deg, #f5582a, #ffb347); color: #fff; display: grid; place-items: center; font-weight: 700; margin-bottom: 10px; }
-.rail-item { width: 56px; padding: 8px 0; border-radius: 8px; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #a7a3ad; font-size: 18px; cursor: default; }
+.rail-logo { width: 32px; height: 32px; border-radius: 6px; background: linear-gradient(135deg, #f5582a, #ffb347); color: #fff; display: grid; place-items: center; font-weight: 700; margin-bottom: 10px; }
+.rail-item { width: 56px; padding: 8px 0; border-radius: 6px; display: flex; flex-direction: column; align-items: center; gap: 3px; color: #a7a3ad; font-size: 18px; cursor: default; }
 .rail-item > span:not(.anticon) { font-size: 11px; }
 .rail-item .anticon { font-size: 18px; }
 .rail-item.active { background: #34303a; color: #fff; }
@@ -238,7 +238,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .ad-photo { display: block; width: 100%; height: 100%; object-fit: cover; user-select: none; }
 .ad-placeholder { display: grid; place-items: center; }
 .mochi-blob { width: 46%; aspect-ratio: 1.25; border-radius: 50% 50% 46% 46% / 62% 62% 38% 38%; background: rgba(255,255,255,.6); box-shadow: inset 0 -6px 10px rgba(0,0,0,.04); }
-.ad-art { position: relative; overflow: hidden; border-radius: 8px; background: #f5f0eb; container-type: inline-size; width: 100%; }
+.ad-art { position: relative; overflow: hidden; border-radius: 6px; background: #f5f0eb; container-type: inline-size; width: 100%; }
 .ad-art .ad-photo { position: absolute; inset: 0; }
 .ad-copy { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; padding: 7cqw 6cqw; text-align: center; color: #fff; pointer-events: none; font-family: 'Inter', sans-serif; }
 .ad-copy.dark { color: #2a1f22; }
@@ -468,7 +468,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
   .td-vars { opacity: 1; }
   .td-vars i { opacity: 1; }
 }
-.var-actions .pick-btn { flex-basis: 100%; }
+.var-actions .pick-btn { flex-basis: auto; }
 
 @media (max-width: 767px) { .ant-notification-top { width: calc(100vw - 24px) !important; max-width: 400px; margin-inline: auto; left: 0 !important; right: 0 !important; transform: none !important; } .ant-notification-top .ant-notification-notice-wrapper, .ant-notification-top .ant-notification-notice { width: 100% !important; max-width: 100%; } }
 
@@ -526,12 +526,12 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .ed-preview-label { position: absolute; top: 10px; left: 10px; background: rgba(31, 29, 34, 0.82); color: #fff; font-size: 12px; padding: 2px 8px; border-radius: 6px; }
 .filmstrip { display: flex; gap: 10px; overflow-x: auto; padding: 2px 2px 6px; scroll-snap-type: x proximity; justify-content: safe center; }
 .film { flex: 0 0 96px; scroll-snap-align: start; display: flex; flex-direction: column; gap: 6px; text-align: left; background: none; border: 0; padding: 0; cursor: pointer; font: inherit; color: inherit; }
-.film-img { display: block; border-radius: 8px; overflow: hidden; outline: 1px solid var(--line); transition: outline-color 0.16s; }
+.film-img { display: block; border-radius: 6px; overflow: hidden; outline: 1px solid var(--line); transition: outline-color 0.16s; }
 .film.on .film-img { outline: 2px solid var(--orange); }
 .film:hover:not(.on) .film-img { outline-color: #d9d9d9; }
 .film .ad-art { border-radius: 0; }
 .film-skeleton { display: block; aspect-ratio: 2 / 3; background: linear-gradient(110deg, #f2eee9 30%, #faf8f5 50%, #f2eee9 70%); background-size: 250% 100%; animation: ed-shimmer 1.4s linear infinite; }
-.film-cap { font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.film-cap { font-size: 12px; line-height: 1.35; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
 .film.applying { cursor: default; }
 .ed-panel { display: flex; flex-direction: column; gap: 0; padding: 0; position: sticky; top: 76px; }
 .ed-panel-title { margin: 0; padding: 14px 16px 4px; font-size: 16px; font-weight: 600; }
@@ -793,3 +793,36 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .media-pill.video { background: #efeaf7; color: #5b4a86; }
 .media-pill.carousel { background: #e8f1f7; color: #3c6283; }
 .media-pill .anticon { font-size: 12px; }
+.clamp2 { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; min-width: 0; }
+/* 5c audit A-11: breadcrumbs truncate by width, not by a character count. */
+.crumb-name { display: inline-block; max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; vertical-align: bottom; }
+@media (max-width: 767px) { .crumb-name { max-width: 120px; } }
+/* A-17, A-35: the prediction reads as a tag, so its box edge is the left edge. */
+.predicted { border-color: #c9c9c9 !important; }
+/* 5c A-19 */
+.rec-eyebrow { flex-wrap: nowrap; align-items: flex-start; }
+.rec-eyebrow-main { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; flex: 1; min-width: 0; }
+.rec-suggested { flex: none; }
+/* 5c A-18: when the Try chips wrap, feedback sits on the last chip row, not floating between rows. */
+@media (min-width: 768px) { .rec-card .rec-bottom { align-items: flex-end; } }
+/* 5c A-24: the chosen period keeps full colour while the dropdown is open. */
+.window-select.ant-select-open [class*="selection-item"], .window-select.ant-select-open [class*="select-content"] { color: #1f1f1f !important; opacity: 1 !important; }
+/* 5c A-20: on phones, popovers keep a 12 px margin from both screen edges. */
+@media (max-width: 767px) {
+  .ant-popover { left: 12px !important; right: 12px !important; max-width: none !important; }
+  .ant-popover .ant-popover-arrow { display: none; }
+}
+/* 5c A-40 */
+.how-pop { width: 320px; max-width: 100%; }
+.dlg-need { color: #d4380d; }
+/* 5c A-26, A-27: every page-card title on the ad page is 16/600, like Suggestions and Likely audience. */
+.panel-title { display: block; margin: 0; font-size: 16px; font-weight: 600; line-height: 1.35; color: #1f1f1f; }
+.creative-panel .ad-name.panel-title { margin: 0 0 12px; word-break: normal; }
+/* 5c A-33 */
+.var-actions .ant-btn.more-like { flex: 0 0 100%; justify-content: flex-start; padding-left: 0; height: 24px; }
+@media (max-width: 767px) { .var-actions .ant-btn.more-like { height: 36px; } }
+/* 5c A-16: the meta line never breaks; when the action doesn't fit beside it, the action takes its own row. */
+.task-foot { flex-wrap: wrap; row-gap: 8px; }
+.task-foot > .muted { white-space: nowrap; }
+/* 5c A-15: campaign search takes the full row on phones. */
+@media (max-width: 767px) { .pl-filters { flex-wrap: wrap; } .pl-filters .pl-campaign-select { flex: 1 1 100% !important; } }

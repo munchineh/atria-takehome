@@ -85,7 +85,7 @@ export function TeachingCard() {
           </div>
           <div className="teach-text">
             <b>Variations have moved to their ad</b>
-            <span>Open a creative in Radar to see everything made from it</span>
+            <span>Open an ad in Radar to see everything made from it.</span>
           </div>
           <div className="teach-actions">
             <Button type="primary" size="small" onClick={() => nav('/')}>

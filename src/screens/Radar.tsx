@@ -115,7 +115,7 @@ function NameCell({ c, morph = true, mobile = false }: { c: Creative; morph?: bo
       <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
         <div className="name-line">
-          <span className="name ellipsis">{c.name}</span>
+          <span className="name clamp2">{c.name}</span>
           {parent && (
             <Tooltip title={`Variation ${n} of ${parent.name}`}>
               <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>
@@ -183,6 +183,7 @@ type Picked = Record<string, string[]>;
 
 /** Icon-only Filters button (L-059). Compact rows; campaigns are searched, not listed (Mancini, 20 Nov 17:01). */
 function FiltersButton({ campaigns, placements, picked, setPicked }: { campaigns: string[]; placements: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
+  const [popOpen, setPopOpen] = useState(false);
   const total = Object.values(picked).flat().length;
   const row = (g: { label: string; options: string[] }) => (
     <div key={g.label} className="filters-row">
@@ -237,9 +238,10 @@ function FiltersButton({ campaigns, placements, picked, setPicked }: { campaigns
     </div>
   );
   return (
-    <Popover content={content} trigger="click" placement="bottomRight">
+    <Popover content={content} trigger="click" placement="bottomRight" open={popOpen} onOpenChange={setPopOpen}>
       <Badge count={total} size="small" color="#f5582a">
-        <Tooltip title="Filters">
+        {/* 5c A-25: the name tooltip hides while the panel it names is open. */}
+        <Tooltip title="Filters" open={popOpen ? false : undefined}>
           <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn" />
         </Tooltip>
       </Badge>
@@ -327,21 +329,23 @@ export function Radar() {
   const count = (k: TabKey) => CREATIVES.filter((c) => c.tab === k && matches(c)).length;
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
+  // 5c audit A-01 to A-03: the Ad column takes the spare width so names wrap before they truncate, and
+  // below 1200 px Hook, Retention (video only) and CPA step out (Overall's popover still lists them), so nothing scrolls off.
+  const wide = !!bp.xl;
   const columns: ColumnsType<Creative> = [
-    { title: 'Ad', key: 'name', width: 300, fixed: 'left', render: (_, c) => <NameCell c={c} /> },
+    { title: 'Ad', key: 'name', render: (_, c) => <NameCell c={c} /> },
     {
       title: <Head label="Next step" tip="The grade to fix first on this ad. Click the row to see how." />,
       key: 'rec',
-      width: 235,
+      width: wide ? 170 : 150,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} />,
     },
-    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: 90, render: (_, c) => <OverallTag creative={c} /> },
-    metricCol('conversion', 'conv', 100),
-    metricCol('hook', 'hook', 70),
-    metricCol('retention', 'ret', 90),
-    metricCol('ctr', 'ctr', 70),
-    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 115, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
-    { title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 90, align: 'right', render: (_, c) => <span className="cpa">{money(c.values.cpa)}</span> },
+    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: 84, render: (_, c) => <OverallTag creative={c} /> },
+    metricCol('conversion', 'conv', 104),
+    ...(wide ? [metricCol('hook', 'hook', 70), metricCol('retention', 'ret', 92)] : []),
+    metricCol('ctr', 'ctr', 64),
+    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 116, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
+    ...(wide ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
   ];
 
   return (
@@ -396,7 +400,7 @@ export function Radar() {
               return (
                 <span className="window-value">
                   <b>{w.short}</b>
-                  <span className="window-dates">{w.long.split(' · ')[1].replace(' to ', ' – ')}</span>
+                  <span className="window-dates">{w.long.split(' · ')[1]}</span>
                 </span>
               );
             }}
@@ -411,7 +415,7 @@ export function Radar() {
               label: (
                 <span className="window-opt">
                   <span>{w.short}</span>
-                  <span className="t-help">{w.long.split(' · ')[1].replace(' to ', ' – ')}</span>
+                  <span className="t-help">{w.long.split(' · ')[1]}</span>
                 </span>
               ),
             }))}
@@ -526,7 +530,6 @@ export function Radar() {
           rowKey="id"
           columns={columns}
           dataSource={rows}
-          scroll={{ x: 1115 }}
           showSorterTooltip={false}
           size="middle"
           components={{ body: { row: MotionRow } }}

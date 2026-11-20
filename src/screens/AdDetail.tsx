@@ -110,9 +110,12 @@ function RecCard({
         {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
         <div className="rec-body">
           <div className="rec-eyebrow">
-            {targetGrade && <Tag className="rec-grade" color={GRADE_COLOR[targetGrade[0]]}>{targetGrade}</Tag>}
-            <span className="rec-metric">{r.target}</span>
-            <span className="rec-issue-text">{r.issue}</span>
+            {/* 5c A-19: grade, metric and issue wrap inside their own group, so "Recommended" keeps the first line. */}
+            <span className="rec-eyebrow-main">
+              {targetGrade && <Tag className="rec-grade" color={GRADE_COLOR[targetGrade[0]]}>{targetGrade}</Tag>}
+              <span className="rec-metric">{r.target}</span>
+              <span className="rec-issue-text">{r.issue}</span>
+            </span>
             {suggested && !disabled && (
               <Tooltip title="One of the top 2 by priority, so it's selected for you.">
                 <Tag color="orange" className="rec-suggested">Recommended</Tag>
@@ -198,7 +201,7 @@ export function AdDetail() {
   const footerFor = (r: Recommendation) => {
     const j = jobs.filter((x) => x.recIds.includes(r.id)).at(-1);
     if (!j) return undefined;
-    if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}…`, running: true };
+    if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}`, running: true };
     if (j.state === 'failed') return { text: "Couldn't create variations. Credits returned." };
     const n = j.variations.filter((v, i) => v.recId === r.id && !j.failed.includes(i)).length;
     if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'variation')} ready`, action: () => viewRound(j.id, r.id) };
@@ -242,7 +245,7 @@ export function AdDetail() {
           <span className="period-chip">
             <CalendarOutlined />
             <span>{win.short}</span>
-            {bp.md && <span className="window-dates">{win.long.split(' · ')[1].replace(' to ', ' – ')}</span>}
+            {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
           </span>
         </Tooltip>
       </div>
@@ -256,14 +259,13 @@ export function AdDetail() {
       <div className="detail-grid">
         <aside className="detail-left">
           <div className="panel creative-panel">
-            <div className="t-label">Ad</div>
-            <div className="ad-name">{c.name}</div>
+            <h4 className="panel-title ad-name">{c.name}</h4>
             <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />
           </div>
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
-              <b>{copiesTitle(c)}</b>
+              <b className="panel-title">{copiesTitle(c)}</b>
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
               </motion.span>
@@ -299,7 +301,7 @@ export function AdDetail() {
                   ))}
                   {c.ads.length > 3 && !showAllAds && (
                     <Button type="link" size="small" onClick={() => setShowAllAds(true)}>
-                      Show {plural(c.ads.length - 3, 'more ad', 'more ads')}
+                      Show {plural(c.ads.length - 3, 'more copy', 'more copies')}
                     </Button>
                   )}
                   <div className="placement">
@@ -311,7 +313,7 @@ export function AdDetail() {
           </motion.div>
 
           <motion.div className="panel source" variants={fadeUp} initial="hidden" animate="show">
-            <b>Source</b>
+            <b className="panel-title">Source</b>
             {parent ? (
               <div className="source-body">
                 <Tag color="orange" icon={<MadeFromIcon />}>
@@ -334,7 +336,7 @@ export function AdDetail() {
           </motion.div>
                   {made.length > 0 && (
             <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-              <b>Made from this ad · {made.length}</b>
+              <b className="panel-title">Made from this ad · {made.length}</b>
               <div className="made-list">
                 {made.map((m) =>
                   m.kind === 'ad' ? (

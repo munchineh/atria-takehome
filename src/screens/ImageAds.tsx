@@ -187,9 +187,9 @@ export function ImageAds() {
                   </Tooltip>{' '}
                   · {plural(r.variations, 'variation')}
                 </div>
-                <div className="muted small">Last on {r.last}</div>
+                <div className="muted small">Last round {r.last}</div>
                 <div className="pl-status">
-                  {r.status?.kind === 'generating' && <span className="small">Generating {r.status.count}…</span>}
+                  {r.status?.kind === 'generating' && <span className="small">Generating {r.status.count}</span>}
                   {r.status?.kind === 'new' && <span className="small new">{r.status.count} new</span>}
                   {r.overall && (
                     <span className="small muted">
