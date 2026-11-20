@@ -36,7 +36,7 @@ export function Overlay({ copy, typo }: { copy?: AdCopy; typo?: string }) {
   if (!copy) return null;
   const head = typo ? copy.head.split(typo) : [copy.head];
   return (
-    <span className={`ad-copy ${copy.tone === 'dark' ? 'dark' : ''}`} aria-hidden>
+    <span className={`ad-copy ${copy.tone === 'dark' ? 'dark' : ''}${copy.stylized ? ' stylized' : ''}`} aria-hidden>
       <b className={`ad-head ${copy.head.length > 16 ? 'long' : ''}`}>
         {typo ? (
           <>

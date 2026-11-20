@@ -6,6 +6,7 @@ import { CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, Exclamation
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
+import { useWorkspace } from '../data/nav';
 import { ANGLE_REASON, ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
@@ -243,6 +244,7 @@ export function Results() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const nav = useNavigate();
+  const ws = useWorkspace();
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
   const { message } = App.useApp();
@@ -284,7 +286,7 @@ export function Results() {
   const moreCount = recs.length * settings.perRec;
   const perRecCost = settings.perRec * ACCOUNT.creditsPerImage;
   const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || v.recId === recFilter));
-  const openEditor = (v: Variation, text = false) => nav(`/ad/${c.id}/variations/${v.id}?round=${job.id}${text ? '&text=1' : ''}`);
+  const openEditor = (v: Variation, text = false) => nav(ws.editorPath(c.id, v.id, job.id, text));
   const audience = c.ads[0]?.adSet ?? 'Variation_Test';
   const allAngles = [...new Set(rounds.flatMap((r) => r.variations.map((v) => v.angle)))];
   const allVars = rounds.flatMap((r) => r.variations).slice(-12);
@@ -307,7 +309,7 @@ export function Results() {
       <div className="detail-head">
         {mobile ? (
           // 5e: phones get one back link to the parent instead of a three-part trail.
-          c.project ? (
+          c.project || ws.inCreation ? (
             <Link to="/creation" className="phone-back"><LeftOutlined /> Creative gallery</Link>
           ) : (
             <Link to={`/ad/${c.id}`} className="phone-back"><LeftOutlined /> <span className="crumb-name">{c.name}</span></Link>
@@ -315,8 +317,12 @@ export function Results() {
         ) : (
         <Breadcrumb
           items={[
-            ...(c.project
-              ? [{ title: <Link to="/creation">Creative gallery</Link> }, { title: <span className="crumb-name">{c.name}</span> }]
+            ...(c.project || ws.inCreation
+              ? [
+                  { title: <Link to="/creation">Creative gallery</Link> },
+                  { title: <span className="crumb-name">{c.name}</span> },
+                  ...(c.project ? [] : [{ title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} · ${job.date}` }]),
+                ]
               : [
                   { title: <Link to="/">Radar</Link> },
                   { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> },

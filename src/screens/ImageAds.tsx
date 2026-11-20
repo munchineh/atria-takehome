@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Empty, Grid, Popover, Select, Tag, Tooltip, Typography } from 'antd';
 import { CopyOutlined, FormOutlined, RightOutlined } from '@ant-design/icons';
@@ -56,8 +56,12 @@ function Campaigns({ list }: { list: string[] }) {
 export function ImageAds() {
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
-  const { jobs } = useStore();
-  const [brand, setBrand] = useState<string>('all');
+  const { jobs, accountId } = useStore();
+  // The gallery opens on the account picked in the sidebar (it showed every account's rows under one account's name).
+  // "All brands" is still one click away.
+  const accountName = DEMO_ACCOUNTS.find((a) => a.id === accountId)?.name ?? 'all';
+  const [brand, setBrand] = useState<string>(accountName);
+  useEffect(() => setBrand(accountName), [accountName]);
   const [source, setSource] = useState<string>('all');
   const [campaign, setCampaign] = useState<string>('all');
 
@@ -82,7 +86,8 @@ export function ImageAds() {
         last: last.date,
         overall: c.overall,
         status: running ? { kind: 'generating', count: running.count } : unseen ? { kind: 'new', count: unseen.count - unseen.failed.length } : undefined,
-        to: `/ad/${cid}/variations?round=${last.id}`,
+        // DL-06: tiles open the round inside Creation, never the ad page in Analytics.
+        to: `/creation/${cid}?round=${last.id}`,
         variationOf: c.variationOf,
       };
     });
@@ -101,7 +106,7 @@ export function ImageAds() {
           <Typography.Title level={3} style={{ margin: 0 }}>
             Creative gallery
           </Typography.Title>
-          <p className="muted desc">{plural(rows.filter((r) => r.source === 'radar').length, 'ad')} with variations</p>
+          <p className="muted desc">{plural(shown.length, 'ad')} with variations</p>
         </div>
         <Popover content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
           <Button type="link" className="inline-link">

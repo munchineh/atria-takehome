@@ -18,6 +18,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, plural, recommendationsFor, type AdCopy } from '../data/mock';
 import { findCreative, useStore } from '../data/store';
+import { useWorkspace } from '../data/nav';
 import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
@@ -55,6 +56,7 @@ export function Editor() {
   const { id, vid } = useParams();
   const [params] = useSearchParams();
   const nav = useNavigate();
+  const ws = useWorkspace();
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
   const { message } = App.useApp();
@@ -110,14 +112,14 @@ export function Editor() {
     return (
       <div className="page">
         <Empty description={<b>This variation was deleted</b>}>
-          <Button type="primary" onClick={() => nav(`/ad/${c.id}/variations`)}>
+          <Button type="primary" onClick={() => nav(ws.roundPath(c.id))}>
             View variations
           </Button>
         </Empty>
       </div>
     );
 
-  const back = `/ad/${c.id}/variations?round=${job.id}`;
+  const back = ws.roundPath(c.id, job.id);
   const parent = v.from ? job.variations.find((x) => x.id === v.from!.id) : undefined;
   const cost = ACCOUNT.creditsPerImage;
   // L-163: say when an editor change will use a sample image because today's live images are used up.
@@ -125,10 +127,12 @@ export function Editor() {
   const typoNow = shown.n === 1 && v.typo && shown.copy?.head.includes(v.typo) ? v.typo : undefined;
   const fixedTypo = typoNow ? typoNow.replace(/(.)\1(?!.*\1\1)/, '$1') : '';
   const stylizedSlot = !v.stylized ? STYLIZED[shown.img] ?? STYLIZED[v.img] : undefined;
+  // Item 11: the Stylized text option is offered on every variation that has text, not only those with a ready-made render.
+  const canStylize = !v.stylized && Boolean(shown.copy);
   const preview = textMode === 'stylized' && stylizedSlot ? { img: stylizedSlot, copy: undefined } : editing && draft ? { img: shown.img, copy: draft } : shown;
   const canvasVersion = applying && !onOlder ? versions.at(-2) ?? shown : shown;
 
-  const go = (nid: string) => nav(`/ad/${c.id}/variations/${nid}?round=${job.id}`);
+  const go = (nid: string) => nav(ws.editorPath(c.id, nid, job.id));
   const apply = (instruction: string) => {
     const text = instruction.trim();
     if (!text) return;
@@ -213,7 +217,7 @@ export function Editor() {
     <section className="ed-block">
       <div className="ed-block-head">
         <b>Text</b>
-        {stylizedSlot && (
+        {canStylize && (
           <Segmented
             size="small"
             value={textMode}
@@ -461,8 +465,8 @@ export function Editor() {
       <div className="detail-head">
         <Breadcrumb
           items={[
-            ...(c.project
-              ? [{ title: <Link to="/creation">Creative gallery</Link> }]
+            ...(c.project || ws.inCreation
+              ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
               : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> }]),
             { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)} · ${job.date}`}</Link> },
             { title: v.angle },

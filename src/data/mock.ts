@@ -9,8 +9,8 @@ export type MetricKey = 'conversion' | 'hook' | 'retention' | 'ctr';
 export type TabKey = 'winners' | 'potential' | 'candidates';
 
 /** Today in the prototype. Grades cover the 60 days up to the last sync. */
-export const TODAY = '20 Nov';
-export const WINDOW = { days: 60, long: 'Last 60 days · 21 Sep to 19 Nov', short: 'Last 60 days', synced: '19 Nov, 13:43' };
+export const TODAY = 'Nov 20';
+export const WINDOW = { days: 60, long: 'Last 60 days · Sep 21 to Nov 19', short: 'Last 60 days', synced: 'Nov 19, 13:43' };
 
 export const ACCOUNT = {
   id: 'moody-mochi',
@@ -105,6 +105,8 @@ export interface AdCopy {
   band?: string;
   cta?: string;
   tone?: 'light' | 'dark';
+  /** Plan item 11: text drawn into the image by the model (stylized). The overlay gets the class "stylized" until a live render replaces it. */
+  stylized?: boolean;
 }
 
 export interface Creative {
@@ -442,7 +444,7 @@ const HERO_RECS: Recommendation[] = [
     fix: 'Use a more specific call to action',
     target: 'CTR',
     examples: ['"Pick your mood"', '"Get the Sad Pink one"'],
-    tried: { date: '12 Nov', count: 8, jobId: 'job-hero-1' },
+    tried: { date: 'Nov 12', count: 8, jobId: 'job-hero-1' },
   },
 ];
 
@@ -658,14 +660,14 @@ export function copyFacts(a: MetaAd) {
   const h = Math.abs(hash(a.id));
   const days = 6 + (h % 70);
   const d = new Date(2026, 10, 20 - days);
-  return { days, since: `${d.getDate()} ${MONTHS[d.getMonth()]}`, frequency: (1.3 + ((h >>> 3) % 22) / 10).toFixed(1) };
+  return { days, since: `${MONTHS[d.getMonth()]} ${d.getDate()}`, frequency: (1.3 + ((h >>> 3) % 22) / 10).toFixed(1) };
 }
 
 /** Grade windows (deck A7). Changing the window re-grades every ad; a few mock ads change. */
 export const WINDOWS = [
-  { days: 30, long: 'Last 30 days · 21 Oct to 19 Nov', short: 'Last 30 days' },
-  { days: 60, long: 'Last 60 days · 21 Sep to 19 Nov', short: 'Last 60 days' },
-  { days: 90, long: 'Last 90 days · 22 Aug to 19 Nov', short: 'Last 90 days' },
+  { days: 30, long: 'Last 30 days · Oct 21 to Nov 19', short: 'Last 30 days' },
+  { days: 60, long: 'Last 60 days · Sep 21 to Nov 19', short: 'Last 60 days' },
+  { days: 90, long: 'Last 90 days · Aug 22 to Nov 19', short: 'Last 90 days' },
 ];
 type Regrade = Partial<Pick<Creative, 'overall' | 'tab'>> & { grades?: Partial<Creative['grades']> };
 const REGRADE: Record<number, Record<string, Regrade>> = {
