@@ -16,7 +16,7 @@ import {
   short,
   type Creative as CreativeT,
   type MetricKey,
-  type Recommendation, statusOf as adStatusOf, copyStatus, platformOf } from '../data/mock';
+  type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
 import { ALL_CREATIVES, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
@@ -251,10 +251,7 @@ export function AdDetail() {
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
-              <b>Where it runs · {c.ads.length}</b>
-              {c.ads.length > 1 && (
-                <span className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}.</span>
-              )}
+              <b>{copiesTitle(c)}</b>
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
               </motion.span>

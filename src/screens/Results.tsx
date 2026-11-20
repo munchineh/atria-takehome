@@ -1,7 +1,7 @@
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Segmented, Select, Tag, Tooltip } from 'antd';
+import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
 import { CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, short, type Creative as CreativeT, type Recommendation } from '../data/mock';
@@ -247,7 +247,7 @@ export function Results() {
               : [
                   { title: <Link to="/">Radar</Link> },
                   { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 12 : 22)}</Link> },
-                  { title: 'Variations' },
+                  { title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} · ${job.date}` },
                 ]),
           ]}
         />
@@ -257,7 +257,7 @@ export function Results() {
         <div className="results-title">
           <h3>Variations of {short(c.name, mobile ? 18 : 30)}</h3>
           <p className="muted small">
-            {plural(job.count, 'variation')} from {plural(job.recIds.length, 'recommendation')} · {job.date}
+            {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')} · {job.date}
             {job.label ? ` · ${job.label}` : ''}
           </p>
         </div>
@@ -304,27 +304,6 @@ export function Results() {
         )}
 
         <section className="results-main">
-          <div className="results-filters">
-            <Segmented
-              value={recFilter}
-              onChange={(v) => setParams(v === 'all' ? { round: job.id } : { round: job.id, rec: String(v) }, { replace: true })}
-              options={[
-                { value: 'all', label: <span className="seg-opt">All <span className="seg-n">{job.count}</span></span> },
-                ...recs.map((r) => ({
-                  value: r.id,
-                  label: (
-                    <span className="seg-opt">
-                      <span className="ellipsis">{r.fix}</span>
-                      <span className="seg-n">Targets {r.target} · {job.variations.filter((v) => v.recId === r.id).length}</span>
-                    </span>
-                  ),
-                })),
-              ]}
-              className="rec-filter"
-            />
-            <div className="muted small angles">Angles used: {allAngles.join(', ')}</div>
-          </div>
-
           <AnimatePresence initial={false}>
             {!nudgeOff && topN >= 3 && (
               <motion.div key="nudge" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="nudge">
@@ -361,58 +340,70 @@ export function Results() {
             )}
           </AnimatePresence>
 
-          {recFilter !== 'all' && (
-            <div className="rec-more small">
-              <Button
-                size="small"
-                onClick={() => createMore([recFilter])}
-              >
-                Create {settings.perRec} more
-              </Button>
-              <span className="muted">
-                Uses {perRecCost} of {credits.toLocaleString()} credits
-              </span>
-              <Button type="link" size="small" className="inline-link" onClick={() => setEdit(true)}>
-                Edit settings
-              </Button>
-            </div>
-          )}
-
           {mobile && readyCount > 0 && <p className="muted small swipe-hint">Swipe an image to compare it with the original</p>}
 
-          {visible.length === 0 ? (
-            <Empty description={<b>No variations for this recommendation yet</b>}>
-              <Button onClick={() => createMore([recFilter])}>Create {settings.perRec} variations</Button>
-            </Empty>
-          ) : (
-            <div className="var-grid">
-              <AnimatePresence mode="popLayout">
-                {visible.map(({ v, i }, k) => (
-                  <VariationCard
-                    key={v.id}
-                    index={k}
-                    v={v}
-                    state={cardState(job, i)}
-                    rec={recs.find((r) => r.id === v.recId)}
-                    original={c}
-                    mobile={mobile}
-                    picked={shortlist.includes(v.id)}
-                    onPick={() => setShortlist((p) => (p.includes(v.id) ? p.filter((x) => x !== v.id) : [...p, v.id]))}
-                    onRefine={() => openEditor(v)}
-                    onFixText={() => openEditor(v, true)}
-                    versions={versionsOf(v)}
-                    onMore={() => {
-                      const j = startJob({ creativeId: c.id, recIds: [v.recId], perRec: 4, size: job.size, like: v });
-                      message.success({ content: `Creating 4 variations like ${v.angle}.`, duration: 3 });
-                      setParams({ round: j.id });
-                    }}
-                    moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`}
-                    onRetry={() => retryJob(job.id)}
-                  />
-                ))}
-              </AnimatePresence>
-            </div>
+          {/* Grouped by suggestion (Mancini, 18:55): one header per fix replaces the segmented filter,
+              the "Angles used" line and the "Fixes:" line on every card. */}
+          {recFilter !== 'all' && (
+            <Button type="link" size="small" className="inline-link show-all-recs" onClick={() => setParams({ round: job.id }, { replace: true })}>
+              Show all {job.recIds.length} suggestions
+            </Button>
           )}
+          {recs
+            .filter((r) => recFilter === 'all' || r.id === recFilter)
+            .map((r) => {
+              const items = visible.filter(({ v }) => v.recId === r.id);
+              return (
+                <section key={r.id} className="var-group">
+                  <div className="var-group-head">
+                    <div className="var-group-title">
+                      <span className="t-label">
+                        Improves {r.target === 'Hook' ? 'hook' : r.target} · {plural(items.length, 'variation')}
+                      </span>
+                      <h4>{r.fix}</h4>
+                    </div>
+                    <Popconfirm
+                      title={`Create ${settings.perRec} more for this suggestion?`}
+                      description={`Uses ${perRecCost} of ${credits.toLocaleString()} credits`}
+                      okText={`Create ${settings.perRec}`}
+                      onConfirm={() => createMore([r.id])}
+                    >
+                      <Button size="small">Create {settings.perRec} more</Button>
+                    </Popconfirm>
+                  </div>
+                  {items.length === 0 ? (
+                    <p className="t-help">No variations for this suggestion yet.</p>
+                  ) : (
+                    <div className="var-grid">
+                      <AnimatePresence mode="popLayout">
+                        {items.map(({ v, i }, k) => (
+                      <VariationCard
+                        key={v.id}
+                        index={k}
+                        v={v}
+                        state={cardState(job, i)}
+                        original={c}
+                        mobile={mobile}
+                        picked={shortlist.includes(v.id)}
+                        onPick={() => setShortlist((p) => (p.includes(v.id) ? p.filter((x) => x !== v.id) : [...p, v.id]))}
+                        onRefine={() => openEditor(v)}
+                        onFixText={() => openEditor(v, true)}
+                        versions={versionsOf(v)}
+                        onMore={() => {
+                          const j = startJob({ creativeId: c.id, recIds: [v.recId], perRec: 4, size: job.size, like: v });
+                          message.success({ content: `Creating 4 variations like ${v.angle}.`, duration: 3 });
+                          setParams({ round: j.id });
+                        }}
+                        moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`}
+                        onRetry={() => retryJob(job.id)}
+                      />
+                        ))}
+                      </AnimatePresence>
+                    </div>
+                  )}
+                </section>
+              );
+            })}
         </section>
       </div>
       <div className="sticky-spacer" />

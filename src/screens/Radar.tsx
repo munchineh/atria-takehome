@@ -4,7 +4,7 @@ import { Alert, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Sele
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
+import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
@@ -31,7 +31,6 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
   const body = (
     <div className="runs" onClick={(e) => e.stopPropagation()}>
-      {c.ads.length > 1 && <div className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}.</div>}
       {anyPaused && <div className="runs-note small">Paused copies were turned off in Meta. Grades still cover the {win.short.toLowerCase()}.</div>}
       <Placements items={c.placements} />
       <div className="runs-list">
@@ -45,7 +44,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                 <i className={`live-dot ${st === 'Paused' ? 'paused' : ''}`} />
                 <span className="runs-camp">{a.campaign}</span>
                 <span className="muted small">
-                  {st === 'Paused' ? 'Paused' : 'Running'} · {Math.round((a.spend / c.spend) * 100)}% of spend
+                  {st === 'Paused' ? 'Paused · ' : ''}{Math.round((a.spend / c.spend) * 100)}% of spend
                 </span>
                 {c.ads.length > 1 && <DownOutlined className={`runs-chev ${isOpen ? 'up' : ''}`} />}
               </button>
@@ -80,7 +79,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
       </div>
     </div>
   );
-  const title = `Where it runs · ${c.ads.length}`;
+  const title = copiesTitle(c);
   const trigger = (
     <button
       className="copies-link"

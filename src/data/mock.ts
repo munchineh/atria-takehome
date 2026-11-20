@@ -599,6 +599,17 @@ export const SIZES = [
 /** Status of one running copy (copy-level wins, else the ad's). */
 export const copyStatus = (c: Creative, a: MetaAd) => a.status ?? c.status ?? 'Active';
 
+/** Panel title (Mancini, 18:55): "4 copies of this ad running", "4 copies of this ad, 3 running", "2 copies of this ad, all paused". */
+export function copiesTitle(c: Creative) {
+  const paused = c.ads.filter((a) => copyStatus(c, a) === 'Paused').length;
+  const n = c.ads.length;
+  const running = n - paused;
+  const base = `${plural(n, 'copy', 'copies')} of this ad`;
+  if (!paused) return `${base} running`;
+  if (!running) return n === 1 ? `${base}, paused` : `${base}, all paused`;
+  return `${base}, ${running} running`;
+}
+
 /** Row sub-line: "2 copies running", "2 copies paused" or "5 running · 1 paused". */
 export function copiesLabel(c: Creative) {
   const paused = c.ads.filter((a) => copyStatus(c, a) === 'Paused').length;
