@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1080" width="720" height="1080">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2d3a2e"/><stop offset="1" stop-color="#1f2a20"/></linearGradient>
+<radialGradient id="sh" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#000" stop-opacity="0.22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
+<rect width="720" height="1080" fill="url(#g)"/>
+<rect y="842" width="720" height="237" fill="#000" opacity="0.05"/>
+<g transform="translate(360 760) scale(1.1)"><ellipse cx="0" cy="200" rx="170" ry="27.2" fill="url(#sh)"/>
+<path d="M0 -40 C-40 -160 -170 -200 -200 -150 C-150 -140 -80 -100 0 -40 Z" fill="#95d5b2"/>
+<path d="M0 -40 C40 -170 170 -230 210 -170 C150 -150 80 -110 0 -40 Z" fill="#95d5b2" opacity="0.9"/>
+<path d="M0 -40 C-10 -200 40 -300 90 -320 C80 -250 50 -150 0 -40 Z" fill="#6a994e"/>
+<path d="M0 -40 C-20 -180 -90 -280 -140 -290 C-110 -220 -60 -140 0 -40 Z" fill="#6a994e" opacity="0.9"/>
+<path d="M-150 -40 H150 L115 200 H-115 Z" fill="#c9733d"/>
+<rect x="-165" y="-60" width="330" height="50" rx="14" fill="#c9733d"/><rect x="-165" y="-60" width="330" height="18" rx="9" fill="#fff" opacity="0.2"/>
+</g>
+</svg>

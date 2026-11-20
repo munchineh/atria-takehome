@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 1080" width="720" height="1080">
+<defs><linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fde8e0"/><stop offset="1" stop-color="#f6cbb9"/></linearGradient>
+<radialGradient id="sh" cx="0.5" cy="0.5" r="0.5"><stop offset="0" stop-color="#000" stop-opacity="0.22"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient></defs>
+<rect width="720" height="1080" fill="url(#g)"/>
+<rect y="842" width="720" height="237" fill="#000" opacity="0.05"/>
+<g transform="translate(300 650) scale(0.85)"><ellipse cx="0" cy="230" rx="200" ry="32.0" fill="url(#sh)"/>
+<ellipse cx="0" cy="120" rx="170" ry="120" fill="#b5835a"/>
+<path d="M-150 -120 C-230 -60 -200 80 -130 60 Z" fill="#8a5a2b"/><path d="M150 -120 C230 -60 200 80 130 60 Z" fill="#8a5a2b"/>
+<circle cx="0" cy="-30" r="160" fill="#b5835a"/>
+<ellipse cx="0" cy="40" rx="90" ry="70" fill="#f6e3c6"/>
+<circle cx="-60" cy="-50" r="18" fill="#2b2020"/><circle cx="60" cy="-50" r="18" fill="#2b2020"/>
+<ellipse cx="0" cy="15" rx="30" ry="22" fill="#2b2020"/><path d="M0 37 V60 M-30 70 C-15 85 15 85 30 70" stroke="#2b2020" stroke-width="8" fill="none" stroke-linecap="round"/>
+<rect x="-110" y="150" width="220" height="30" rx="15" fill="#e76f51"/><circle cx="0" cy="200" r="22" fill="#f4c542"/>
+</g><g transform="translate(540 900) rotate(15) scale(0.6)">
+<rect x="-110" y="-22" width="220" height="44" rx="22" fill="#f4e9d8"/>
+<circle cx="-110" cy="-26" r="30" fill="#f4e9d8"/><circle cx="-110" cy="26" r="30" fill="#f4e9d8"/>
+<circle cx="110" cy="-26" r="30" fill="#f4e9d8"/><circle cx="110" cy="26" r="30" fill="#f4e9d8"/></g>
+</svg>

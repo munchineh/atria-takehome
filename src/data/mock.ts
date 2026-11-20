@@ -59,7 +59,30 @@ export interface MetaAd {
   status?: 'Active' | 'Paused';
   /** Platform the copy runs on (A29); default Meta. */
   platform?: 'Meta' | 'TikTok';
+  /** Campaign objective (Meta's six, 20 Nov 19:08); default Sales. */
+  objective?: Objective;
 }
+
+export type Objective = 'Sales' | 'Leads' | 'Traffic' | 'Awareness' | 'Engagement' | 'App promotion';
+/** Plain meaning of each goal (Mancini, 19:08: make goals obvious). `metric` is the grade the goal cares about most. */
+export const GOALS: Record<Objective, { plain: string; leads: string; metric: MetricKey; primary: Recommendation['target'][]; supporting: Recommendation['target'][] }> = {
+  Sales: { plain: 'get purchases', leads: 'CPA and ROAS', metric: 'conversion', primary: ['CPA', 'ROAS'], supporting: ['CTR', 'Hook'] },
+  Leads: { plain: 'get sign-ups', leads: 'cost per lead', metric: 'conversion', primary: ['CPA'], supporting: ['CTR', 'Hook'] },
+  Traffic: { plain: 'get site visits', leads: 'CTR', metric: 'ctr', primary: ['CTR'], supporting: ['Hook'] },
+  Awareness: { plain: 'get seen by more people', leads: 'hook and retention', metric: 'hook', primary: ['Hook'], supporting: [] },
+  Engagement: { plain: 'get likes, comments and views', leads: 'hook and retention', metric: 'hook', primary: ['Hook'], supporting: ['CTR'] },
+  'App promotion': { plain: 'get installs', leads: 'cost per install', metric: 'conversion', primary: ['CPA'], supporting: ['CTR'] },
+};
+/** An ad's goal: the objective of the copies with the most spend. */
+export function goalOf(c: Pick<Creative, 'ads'>): Objective {
+  const by: Record<string, number> = {};
+  for (const a of c.ads) by[a.objective ?? 'Sales'] = (by[a.objective ?? 'Sales'] ?? 0) + a.spend;
+  return (Object.entries(by).sort((a, b) => b[1] - a[1])[0]?.[0] as Objective) ?? 'Sales';
+}
+/** Goals across copies, when they differ ("Most spend is in Sales campaigns"). */
+export const goalsOf = (c: Pick<Creative, 'ads'>) => [...new Set(c.ads.map((a) => a.objective ?? 'Sales'))] as Objective[];
+/** Extra suggestion providers for accounts defined in accounts.ts. */
+export const REC_PROVIDERS: Record<string, (c: Creative) => Recommendation[]> = {};
 
 export interface Recommendation {
   id: string;
@@ -287,7 +310,8 @@ export const CREATIVES: Creative[] = [
     product: 'Sad Pink mochi',
     media: 'Video',
     img: 'v02',
-    ads: ads(3, 32035000, camp.prosp, 'Broad_F_18-34', 12845.8, 29.2),
+    // Goal variety (19:08): the talking-head video runs for awareness, so it gets hook fixes, not CPA fixes.
+    ads: ads(3, 32035000, camp.prosp, 'Broad_F_18-34', 12845.8, 29.2).map((a) => ({ ...a, objective: 'Awareness' as const })),
     overall: 'C-',
     grades: { conversion: 'D', hook: 'D', retention: 'B', ctr: 'A' },
     values: { cpa: 29.2, ctr: 1.52, hookRate: 15, retention: 21 },
@@ -376,7 +400,7 @@ export const CREATIVES: Creative[] = [
     media: 'Video',
     img: 'v02',
     // One copy on TikTok, so the Platform filter and field have something to show (A29).
-    ads: ads(2, 33120000, camp.prosp, 'Broad_F_18-34', 8890.0, 24.1).map((a, i) => (i === 1 ? { ...a, platform: 'TikTok' as const, campaign: 'TikTok · Squishies · Q4', adSet: 'Interest_Squishy-Toys' } : a)),
+    ads: ads(2, 33120000, camp.prosp, 'Broad_F_18-34', 8890.0, 24.1).map((a, i) => (i === 1 ? { ...a, platform: 'TikTok' as const, campaign: 'TikTok · Squishies · Q4', adSet: 'Interest_Squishy-Toys', objective: 'Awareness' as const } : a)),
     overall: 'A',
     grades: { conversion: 'B', hook: 'A', retention: 'A', ctr: 'B' },
     values: { cpa: 24.1, ctr: 1.62, hookRate: 41, retention: 33 },
@@ -468,20 +492,25 @@ const VIDEO_RECS: Recommendation[] = [
   },
 ];
 
-/** Order suggestions by how weak their target metric is (D first), so priority follows the grades. */
+/** Suggestions follow the ad's goal (19:08): goal metrics first, then supporting ones, weakest grade first in each;
+ *  suggestions for metrics the goal doesn't care about are dropped (an Awareness ad gets no CPA fix). */
 export function recommendationsFor(c: Creative): Recommendation[] {
+  const goal = GOALS[goalOf(c)];
   const key: Record<string, MetricKey | undefined> = { CPA: 'conversion', CTR: 'ctr', Hook: 'hook' };
+  const tier = (r: Recommendation) => (goal.primary.includes(r.target) ? 0 : goal.supporting.includes(r.target) ? 1 : 2);
   const rank = (r: Recommendation) => {
     const g = key[r.target] ? c.grades[key[r.target]!] : null;
-    return g ? 'ABCD'.indexOf(g[0]) : 1.5; // ungraded targets (ROAS) sit between B and C
+    return g ? 'ABCD'.indexOf(g[0]) : 1.5;
   };
   return recsFor(c)
     .map((r, i) => ({ r, i }))
-    .sort((a, b) => rank(b.r) - rank(a.r) || a.i - b.i)
+    .filter(({ r }) => tier(r) < 2)
+    .sort((a, b) => tier(a.r) - tier(b.r) || rank(b.r) - rank(a.r) || a.i - b.i)
     .map(({ r }, i) => ({ ...r, priority: i + 1 }));
 }
 
 function recsFor(c: Creative): Recommendation[] {
+  if (REC_PROVIDERS[c.accountId]) return REC_PROVIDERS[c.accountId](c);
   if (c.id === 'mm-1090245') return HERO_RECS;
   if (c.variationOf === 'mm-1090245')
     return HERO_RECS.filter((r) => r.id !== 'cta').map((r, i) => ({
