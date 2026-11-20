@@ -1,7 +1,9 @@
+import { briefFromSuggestions } from '../data/insights';
+import type { Recommendation } from '../data/mock';
 import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, App, Button, Drawer, Input, Modal, Select } from 'antd';
-import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
 import { accountOf, useStore } from '../data/store';
@@ -30,10 +32,13 @@ export interface CreateSettings {
 export function Body({
   creative,
   recCount,
+  picked,
   onCancel,
   onCreate,
   panel = false,
 }: {
+  /** Item 9: the suggestions picked on the ad page. When given, the brief can be filled in from them. */
+  picked?: Recommendation[];
   creative: Creative;
   recCount: number;
   onCancel: () => void;
@@ -61,6 +66,12 @@ export function Body({
   const cost = total * ACCOUNT.creditsPerImage;
   const ready = brief.trim().length > 0 && (mode === 'filled' || mode === 'write');
 
+  // Item 9: fill the brief from the diagnosis. Everything stays editable; nothing is saved until Create.
+  const prefill = () => {
+    setDraft(briefFromSuggestions(creative, picked ?? [], account, saved));
+    setMode('write');
+  };
+
   const readPage = () => {
     setMode('reading');
     setTimeout(() => {
@@ -74,9 +85,9 @@ export function Body({
 
   const addFile = (f?: File) => {
     if (!f) return;
-    if (images.length >= 4) return setUploadError('You can add up to 4 images');
-    if (!/image\/(png|jpe?g)/.test(f.type)) return setUploadError('Use a PNG or JPG file');
-    if (f.size > 5 * 1024 * 1024) return setUploadError('That file is over 5 MB');
+    if (images.length >= 4) return setUploadError('You can add up to 4 images.');
+    if (!/image\/(png|jpe?g)/.test(f.type)) return setUploadError('Use a PNG or JPG file.');
+    if (f.size > 5 * 1024 * 1024) return setUploadError('That file is over 5\u00a0MB.');
     setUploadError('');
     setImages((p) => [...p, URL.createObjectURL(f)]);
   };
@@ -102,7 +113,8 @@ export function Body({
               <span>
                 {brand.name} · {brand.colors.length} colors · {brand.font}
               </span>
-              <Button type="link" size="small" className="inline-link" onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
+              {/* G7 (R-C): use crisp default buttons on the dark panel so actions are legible and unmistakably clickable. */}
+              <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
                 Change
               </Button>
             </span>
@@ -122,42 +134,68 @@ export function Body({
           {/* 5d C5d-08: one help line only; the rewrite link sits on the label row. */}
           <div className="dlg-label-row">
             <span className="dlg-label">Ad brief</span>
-            {mode === 'filled' && saved && (
-              <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
-                Rewrite from a product page
-              </Button>
-            )}
+            <span className="row-gap wrap">
+              {mode === 'filled' && picked && picked.length > 0 && (
+                <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} icon={<ThunderboltOutlined />} onClick={prefill}>
+                  Pre-fill from suggestions
+                </Button>
+              )}
+              {mode === 'filled' && saved && (
+                <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => setMode('url')}>
+                  Rewrite from a product page
+                </Button>
+              )}
+            </span>
           </div>
           <AnimatePresence mode="wait" initial={false}>
             {(mode === 'empty' || mode === 'url' || mode === 'reading' || mode === 'error') && !saved ? (
-              <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="brief-starts">
-                <div className="brief-start">
-                  <b>Start from a product page</b>
-                  <Input
-                    placeholder="https://"
-                    prefix={<LinkOutlined className="muted" />}
-                    value={url}
-                    onChange={(e) => {
-                      setUrl(e.target.value);
-                      if (mode === 'error') setMode('url');
-                    }}
-                    onPressEnter={() => url && readPage()}
-                    status={mode === 'error' ? 'error' : undefined}
-                    inputMode="url"
-                    aria-label="Product page link"
-                  />
-                  {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
-                  <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
-                    {mode === 'reading' ? 'Reading the page' : 'Write brief'}
-                  </Button>
-                </div>
-                <div className="brief-or muted small">or</div>
-                <div className="brief-start">
-                  <b>Write your own</b>
-                  <span className="t-help">Cover the product, who it's for, the goal and the tone</span>
-                  <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
-                    Write it yourself
-                  </Button>
+              <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className={`brief-starts-wrap ${picked && picked.length > 0 ? 'has-prefill' : ''}`}>
+                {picked && picked.length > 0 && (
+                  <>
+                    {/* Item 9 (R-E): featured pre-fill option from picked suggestions. */}
+                    <div className="brief-start brief-prefill">
+                      <div className="brief-prefill-body">
+                        <b className="brief-prefill-title">
+                          <ThunderboltOutlined aria-hidden /> Start from the suggestions
+                        </b>
+                        <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
+                      </div>
+                      <Button onClick={prefill}>Fill in the brief</Button>
+                    </div>
+                    <div className="brief-divider muted small">
+                      <span>or start another way</span>
+                    </div>
+                  </>
+                )}
+                <div className="brief-starts">
+                  <div className="brief-start">
+                    <b>Start from a product page</b>
+                    <Input
+                      placeholder="https://"
+                      prefix={<LinkOutlined className="muted" />}
+                      value={url}
+                      onChange={(e) => {
+                        setUrl(e.target.value);
+                        if (mode === 'error') setMode('url');
+                      }}
+                      onPressEnter={() => url && readPage()}
+                      status={mode === 'error' ? 'error' : undefined}
+                      inputMode="url"
+                      aria-label="Product page link"
+                    />
+                    {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
+                    <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                      {mode === 'reading' ? 'Reading the page' : 'Write brief'}
+                    </Button>
+                  </div>
+                  <div className="brief-or muted small">or</div>
+                  <div className="brief-start">
+                    <b>Write your own</b>
+                    <span className="t-help">Cover the product, who it's for, the goal and the tone.</span>
+                    <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
+                      Write it yourself
+                    </Button>
+                  </div>
                 </div>
               </motion.div>
             ) : mode === 'url' || mode === 'reading' || mode === 'error' ? (
@@ -202,7 +240,7 @@ export function Body({
         {/* Product images (I2). */}
         <section className="dlg-block">
           <div className="dlg-label">Product images</div>
-          <span className="t-help">Up to 4. PNG or JPG, under 5 MB each</span>
+          <span className="t-help">Up to 4. PNG or JPG, under 5{'\u00a0'}MB each.</span>
           <div className="img-tiles">
             <AnimatePresence initial={false}>
               {images.map((s) => (
@@ -259,7 +297,7 @@ export function Body({
             {plural(recCount, 'suggestion')} × {perRec} = <b><Rolling value={total} /> variations</b>
           </span>
           <span className="t-help">
-            Uses <Rolling value={cost} /> of {credits.toLocaleString()} credits
+            Uses <Rolling value={cost} /> of {credits.toLocaleString('en-US')}{'\u00a0'}credits
           </span>
           {quota.live && quota.left > 0 && (
             <span className="t-help live-left">
@@ -293,9 +331,11 @@ export function CreateDialog({
   mobile,
   creative,
   recCount,
+  picked,
   onClose,
   onCreate,
 }: {
+  picked?: Recommendation[];
   open: boolean;
   mobile: boolean;
   creative: Creative;
@@ -308,10 +348,19 @@ export function CreateDialog({
   useEffect(() => {
     if (open) setN((x) => x + 1);
   }, [open]);
-  const body = <Body key={n} creative={creative} recCount={recCount} onCancel={onClose} onCreate={onCreate} />;
+  const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} />;
   if (mobile)
     return (
-      <Drawer open={open} onClose={onClose} placement="bottom" height="100%" title="Create variations" className="sheet-drawer" destroyOnHidden>
+      <Drawer
+        open={open}
+        onClose={onClose}
+        placement="bottom"
+        size="large"
+        styles={{ wrapper: { height: '100svh' } }}
+        title="Create variations"
+        className="sheet-drawer"
+        destroyOnHidden
+      >
         {body}
       </Drawer>
     );

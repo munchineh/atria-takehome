@@ -622,8 +622,46 @@ Run for every page touched, before `npm run build` and commit.
 
 New decisions go here, newest last. A row here overrides any "Open" default above. Owner is who implements it.
 
-Open items waiting for Mancini (defaults are in force until a row is added): date and time format (R-M10), "copy" collision (R-T4), suggestion vs recommendation (R-T5), period rule (R-M3), radius 6/8 vs 10/14 (7.4), B grade color (7.3), active tab color (7.3), white text on orange (R-C3), grade tag text darkening (R-C6), motion ladder (R-MO2), page title size 20 or 24 (section 1), Radar one-liner (11), page subtitles in build (11), "Recommended" tag color (K37), teaching card title (K55), "Next steps" header (K56).
+Open items waiting for Mancini (defaults are in force until a row is added): "copy" collision (R-T4), suggestion vs recommendation (R-T5), period rule (R-M3), radius 6/8 vs 10/14 (7.4), B grade color (7.3), active tab color (7.3), white text on orange (R-C3), grade tag text darkening (R-C6), motion ladder (R-MO2), page title size 20 or 24 (section 1), Radar one-liner (11), page subtitles in build (11), "Recommended" tag color (K37), teaching card title (K55), "Next steps" header (K56).
 
 | ID | Date | Question | Decision | Rules | Owner (Claude / Antigravity) | Status |
 |---|---|---|---|---|---|---|
-| DL-01 | | | | | | |
+| DL-01 | 21 Nov | Item 14: replace "Grades" with health tiers? | Keep "grade", A to D with plus and minus, and the plain-word bands (Top, Above average, Below average, Lowest). Tiers go in the roadmap as a question to test. | R-T | Both | Decided |
+| DL-02 | 21 Nov | Item 13: rename the switch to "My Brand Performance" and "Market Radar"? | Keep "Overview" and "Radar". Radar grades the account's own ads; it is not market data. Sliding pill polish only. | R-T, R-MO | Antigravity | Decided |
+| DL-03 | 21 Nov | Date format (R-M10) | Align with Atria's product: month first. "Sep 21 to Nov 19", "Nov 19, 13:43", year only when not the current year ("Oct 21, 2025"). Ranges still use "to". This replaces the R-M10 default. Date strings in data are Claude's; dates built in JSX are Antigravity's. | R-M10 | Both | Decided |
+| DL-04 | 21 Nov | Items 16, 17: lineage scope | Build the full lineage now: chain per ad (original, variation ads, versions), a change summary and reason on each step, grade change vs parent, and a repeat warning when a step goes back to something already tried. Claude ships data and logic (`src/data/lineage.ts`); Antigravity builds the timeline or tree UI. | R-H, R-R | Both | In progress |
+| DL-05 | 21 Nov | Item 12: "D.CTR" banner | There is no metric called D.CTR. The banner shows the metric and its grade ("CTR" with a D tag), then the full issue line with no truncation. | R-L, R-T | Antigravity | Decided |
+| DL-06 | 21 Nov | Items 1, 18: Creation sends people to Analytics | Gallery tiles open inside Creation and stay there. "View in Radar" is an explicit link. Claude owns routes and the gallery's account scoping. | R-P | Both | In progress |
+| DL-07 | 21 Nov | Revision vs Iteration (glossary) | The UI keeps "version" (an edit of the same creative) and "variation" (a new creative testing a new idea). Figma's glossary card maps them: Revision (修订) = version, Iteration (迭代) = a round of variations. "Iterate", "revision" and "iteration" do not appear in the UI. | R-T | Both | Decided |
+
+## 15. Sprint tasks for Antigravity (prioritized)
+
+Work top to bottom. Tick a box in the same commit that finishes the task. Data for every item is listed in `handoffs/data-for-ui.md`. Plan numbers refer to `handoffs/execution-plan.md`; the decisions log above overrides the plan.
+
+### P0: desktop, verify at 1440 x 900
+- [x] Item 15: Overview in four sections from `overviewBriefing()` (titles and helps come from `titles`). Each change shows an arrow and a percent, never color alone. (R-H, R-P)
+- [x] Item 13: Overview and Radar switch as a sliding pill; labels unchanged. (DL-02, R-MO)
+- [x] Item 12: CTR banner on the editor: metric with its grade tag, full issue line, no truncation. (DL-05, R-L)
+- [x] Item 7: grade popover in three levels (grade and band, numbers, muted footer). (R-H)
+- [x] Item 8: ad summary card in three zones. (R-H)
+- [x] Item 10: thumbs up and down next to the image; Download and Delete in the toolbar. (R-I)
+- [x] Item 4: suggestion card in four parts from `suggestionParts()`. (R-H, R-I)
+- [x] Item 9: lay out the three brief starts, including "Start from the suggestions" (`.brief-prefill`). (R-E)
+- [x] Items 1, 18: "View in Radar" link on Creation round and editor pages (`ws.radarPath`), plus a mode cue in the breadcrumb. (DL-06)
+- [x] Item 11: style `.ad-copy.stylized`; "No preview yet" note in the editor when there is no ready-made render. (R-AI)
+
+### P0: lineage
+- [x] Items 16, 17: History drawer from `lineageOf()`: tree on desktop, opened from a "History" button on the ad page and on round pages. Each step: letter, date, placement, grade, summary, reason, result vs parent, repeat warning. Demo: `mm-1090245-v3`. (DL-04)
+
+### P1: phones, verify at 375 x 812
+- [x] Item 6: every dense table becomes summary cards below 768 px (section 9 anatomy); no sideways scrolling tables.
+- [x] Item 5: compact date and goal tags; extra tags fold into "+2"; nothing breaks mid-phrase. Dates month first. (DL-03)
+- [x] Items 16, 17: History as a single-column timeline in a bottom sheet.
+- [x] Sticky action bars use safe-area padding; one primary action per view; 44 px targets.
+- [x] Filters open as a sheet with a count on the trigger (already built: check it at 375).
+- [x] Recheck the Tasks status line: relative times are longer now ("2 hours ago").
+
+### P2
+- [x] Section 12.1 known issues, Essential first.
+- [x] Section 11 page one-liners under every title.
+- [x] Item 3: reference strip on the round page (thumbnail plus two-line note) from each angle's reason.

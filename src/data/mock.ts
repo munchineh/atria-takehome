@@ -9,8 +9,8 @@ export type MetricKey = 'conversion' | 'hook' | 'retention' | 'ctr';
 export type TabKey = 'winners' | 'potential' | 'candidates';
 
 /** Today in the prototype. Grades cover the 60 days up to the last sync. */
-export const TODAY = '20 Nov';
-export const WINDOW = { days: 60, long: 'Last 60 days · 21 Sep to 19 Nov', short: 'Last 60 days', synced: '19 Nov, 13:43' };
+export const TODAY = 'Nov 20';
+export const WINDOW = { days: 60, long: 'Last 60 days · Sep 21 to Nov 19', short: 'Last 60 days', synced: 'Nov 19, 13:43' };
 
 export const ACCOUNT = {
   id: 'moody-mochi',
@@ -32,7 +32,7 @@ export const METRIC_META: Record<
   conversion: {
     label: 'Conversion',
     plain: ACCOUNT.conversionMetric,
-    tip: `How cheaply this ad turns clicks into purchases, graded on ${ACCOUNT.conversionMetric}. You can change the metric in Radar settings.`,
+    tip: `How cheaply this ad turns clicks into purchases, graded on ${ACCOUNT.conversionMetric}.`,
     unit: (v) => `$${v.toFixed(2)}`,
     avgKey: 'cpa',
     lowerIsBetter: true,
@@ -105,6 +105,8 @@ export interface AdCopy {
   band?: string;
   cta?: string;
   tone?: 'light' | 'dark';
+  /** Plan item 11: text drawn into the image by the model (stylized). The overlay gets the class "stylized" until a live render replaces it. */
+  stylized?: boolean;
 }
 
 export interface Creative {
@@ -442,7 +444,7 @@ const HERO_RECS: Recommendation[] = [
     fix: 'Use a more specific call to action',
     target: 'CTR',
     examples: ['"Pick your mood"', '"Get the Sad Pink one"'],
-    tried: { date: '12 Nov', count: 8, jobId: 'job-hero-1' },
+    tried: { date: 'Nov 12', count: 8, jobId: 'job-hero-1' },
   },
 ];
 
@@ -451,7 +453,7 @@ const CTR_RECS: Recommendation[] = [
     id: 'stop',
     priority: 1,
     issue: 'Nothing stops the scroll',
-    issueDetail: 'CTR is in the bottom 25% of this account. The product sits small in a busy scene.',
+    issueDetail: 'CTR is the lowest grade on this ad. The product sits small in a busy scene.',
     why: `The product sits small in a busy scene. Filling the frame with it gives people a reason to stop scrolling.`,
     fix: 'Make the product the first thing you see',
     target: 'CTR',
@@ -474,7 +476,7 @@ const VIDEO_RECS: Recommendation[] = [
     id: 'hook',
     priority: 1,
     issue: 'The first 3 seconds lose people',
-    issueDetail: 'Hook is in the bottom 25%. The video opens on a talking head before the product appears.',
+    issueDetail: 'Hook is the lowest grade on this ad. The video opens on a talking head before the product appears.',
     why: `The video opens on a talking head. Leading with the squish shows the product before people scroll away.`,
     fix: 'Show the squish in the first second',
     target: 'Hook',
@@ -536,13 +538,6 @@ export const PERSONAS = [
   { label: 'Stress-relief seekers', why: 'Likely to respond to calm and comfort messages.', icon: 'calm', tint: '#e6f2dc' },
 ];
 
-/** Bands for R6 (quartiles assumed, A4). */
-export function gradeBand(g: Grade) {
-  if (!g) return null;
-  return ({ A: 'Top 25%', B: 'Upper middle 25%', C: 'Lower middle 25%', D: 'Bottom 25%' } as Record<string, string>)[g[0]];
-}
-
-export const short = (name: string, n = 22) => (name.length > n ? `${name.slice(0, n)}…` : name);
 export const money = (v: number) => `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
@@ -658,14 +653,14 @@ export function copyFacts(a: MetaAd) {
   const h = Math.abs(hash(a.id));
   const days = 6 + (h % 70);
   const d = new Date(2026, 10, 20 - days);
-  return { days, since: `${d.getDate()} ${MONTHS[d.getMonth()]}`, frequency: (1.3 + ((h >>> 3) % 22) / 10).toFixed(1) };
+  return { days, since: `${MONTHS[d.getMonth()]} ${d.getDate()}`, frequency: (1.3 + ((h >>> 3) % 22) / 10).toFixed(1) };
 }
 
 /** Grade windows (deck A7). Changing the window re-grades every ad; a few mock ads change. */
 export const WINDOWS = [
-  { days: 30, long: 'Last 30 days · 21 Oct to 19 Nov', short: 'Last 30 days' },
-  { days: 60, long: 'Last 60 days · 21 Sep to 19 Nov', short: 'Last 60 days' },
-  { days: 90, long: 'Last 90 days · 22 Aug to 19 Nov', short: 'Last 90 days' },
+  { days: 30, long: 'Last 30 days · Oct 21 to Nov 19', short: 'Last 30 days' },
+  { days: 60, long: 'Last 60 days · Sep 21 to Nov 19', short: 'Last 60 days' },
+  { days: 90, long: 'Last 90 days · Aug 22 to Nov 19', short: 'Last 90 days' },
 ];
 type Regrade = Partial<Pick<Creative, 'overall' | 'tab'>> & { grades?: Partial<Creative['grades']> };
 const REGRADE: Record<number, Record<string, Regrade>> = {

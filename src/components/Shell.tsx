@@ -78,12 +78,12 @@ function useCompletionToasts(mobile: boolean) {
         key,
         className: 'done-toast',
         icon: c ? <Thumb c={c} size={40} /> : undefined,
-        message: `${plural(j.count - j.failed.length, 'variation')} ready`,
+        title: `${plural(j.count - j.failed.length, 'variation')} ready`,
         // 5d Gm-10: name the account when the round belongs to another one.
-        description: c ? (accountOf(c).id !== accountId ? `${accountOf(c).name} · ${c.name}` : c.name) : '',
+        description: c ? (accountOf(c).id !== accountId ? `${accountOf(c).name}\u00a0· ${c.name}` : c.name) : '',
         placement: mobile ? 'top' : 'topRight',
         duration: 6,
-        btn: (
+        actions: (
           <Button
             type="link"
             className="toast-action"
@@ -131,7 +131,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                   className={`rail-item link ${active ? 'active' : ''}`}
                   role="link"
                   tabIndex={0}
-                  onClick={() => (r.to ? nav(r.to) : message.info({ content: `${r.label} is part of Atria, but not of this prototype.`, key: 'rail' }))}
+                  onClick={() => (r.to ? nav(r.to) : message.info({ content: `In the live product, this opens ${r.label}. It's not part of this prototype.`, key: 'rail' }))}
                 >
                   {r.icon}
                   <span>{r.label}</span>
@@ -161,8 +161,8 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                 <SyncOutlined /> Synced 1 day ago
               </span>
             )}
-            <Tooltip title={`Credits left in this workspace. Each image Atria makes uses ${ACCOUNT.creditsPerImage} credits.`}>
-              <span className="credits">{credits.toLocaleString()} credits</span>
+            <Tooltip title={`Credits left in this workspace. Each image Atria makes uses ${ACCOUNT.creditsPerImage}\u00a0credits.`}>
+              <span className="credits">{credits.toLocaleString('en-US')}{'\u00a0'}credits</span>
             </Tooltip>
             <Tooltip title={tasksOpen ? '' : 'Tasks'}>
               <motion.span
@@ -189,6 +189,11 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           </div>
         )}
         <AccountList onPick={() => setDrawer(false)} />
+        {mobile && (
+          <div className="drawer-sync">
+            <SyncOutlined /> Synced 1 day ago
+          </div>
+        )}
       </Drawer>
     </div>
   );

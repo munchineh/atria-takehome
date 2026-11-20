@@ -1,16 +1,18 @@
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
-import { CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, ExclamationCircleOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
+import { Alert, App, Breadcrumb, Button, Checkbox, Dropdown, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
+import { BarChartOutlined, BulbOutlined, CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
+import { ACCOUNT, CREATIVES, WINDOW, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
+import { useWorkspace } from '../data/nav';
 import { ANGLE_REASON, ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
 import { CreateDialog } from '../components/CreateDialog';
 import { Rolling } from '../components/Rolling';
+import { HistoryButton } from '../components/LineageDrawer';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
 type CardState = 'ready' | 'generating' | 'failed';
@@ -211,13 +213,20 @@ function VariationCard({
       </div>
       {state === 'ready' && (
         <div className={`var-actions ${mobile ? 'phone' : ''}`}>
-          {/* C5d-19: on phones the row is Shortlist (wide), Refine and More like this as 44 px icon buttons. */}
-          <Button size={mobile ? 'large' : 'small'} className={`pick-btn ${picked ? 'on' : ''}`} type={picked ? 'primary' : 'default'} onClick={onPick} aria-pressed={picked} aria-label="Add to shortlist">
+          {/* K42 (R-A4): state-aware aria-label; K9 (R-T8, R-A4): "Edit text" with distinct icon; K30 (R-I7): cost stays in Popconfirm. */}
+          <Button
+            size={mobile ? 'large' : 'small'}
+            className={`pick-btn ${picked ? 'on' : ''}`}
+            type={picked ? 'primary' : 'default'}
+            onClick={onPick}
+            aria-pressed={picked}
+            aria-label={picked ? 'Remove from shortlist' : 'Add to shortlist'}
+          >
             {!mobile && <Checkbox checked={picked} tabIndex={-1} />} {picked ? 'Shortlisted' : 'Shortlist'}
           </Button>
           {typo ? (
-            <Button size={mobile ? 'large' : 'small'} icon={<EditOutlined />} onClick={onFixText} aria-label="Fix text">
-              {!mobile && 'Fix text'}
+            <Button size={mobile ? 'large' : 'small'} icon={<FontSizeOutlined />} onClick={onFixText} aria-label="Edit text">
+              {!mobile && 'Edit text'}
             </Button>
           ) : (
             <Tooltip title="Change this image.">
@@ -227,7 +236,7 @@ function VariationCard({
             </Tooltip>
           )}
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
-            <Tooltip title={`Create 4 new variations close to this one. ${moreCost}.`}>
+            <Tooltip title="Create 4 new variations close to this one.">
               <Button size={mobile ? 'large' : 'small'} type={mobile ? 'default' : 'link'} icon={<CopyOutlined />} className="more-like" aria-label="More like this">
                 {!mobile && 'More like this'}
               </Button>
@@ -243,6 +252,7 @@ export function Results() {
   const { id } = useParams();
   const [params, setParams] = useSearchParams();
   const nav = useNavigate();
+  const ws = useWorkspace();
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
   const { message } = App.useApp();
@@ -260,7 +270,10 @@ export function Results() {
   const [compare, setCompare] = useState(false);
   const [testing, setTesting] = useState(false);
   const [nudgeOff, setNudgeOff] = useState(false);
+  const [sameRecOff, setSameRecOff] = useState(false);
+  const [nextAngle, setNextAngle] = useState<string | null>(null);
   const [edit, setEdit] = useState(false);
+  const platform = c.ads[0] ? platformOf(c.ads[0]) : 'Meta';
 
   useEffect(() => {
     if (job?.unseen && job.state === 'ready') markSeen(job.id);
@@ -284,7 +297,7 @@ export function Results() {
   const moreCount = recs.length * settings.perRec;
   const perRecCost = settings.perRec * ACCOUNT.creditsPerImage;
   const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || v.recId === recFilter));
-  const openEditor = (v: Variation, text = false) => nav(`/ad/${c.id}/variations/${v.id}?round=${job.id}${text ? '&text=1' : ''}`);
+  const openEditor = (v: Variation, text = false) => nav(ws.editorPath(c.id, v.id, job.id, text));
   const audience = c.ads[0]?.adSet ?? 'Variation_Test';
   const allAngles = [...new Set(rounds.flatMap((r) => r.variations.map((v) => v.angle)))];
   const allVars = rounds.flatMap((r) => r.variations).slice(-12);
@@ -298,41 +311,86 @@ export function Results() {
   const go = (extra: Record<string, string>) => setParams({ round: job.id, ...(recFilter !== 'all' ? { rec: recFilter } : {}), ...extra }, { replace: true });
   const createMore = (recIds: string[], perRec = settings.perRec, size = settings.size) => {
     const j = startJob({ creativeId: c.id, recIds, perRec, size });
-    message.success({ content: `Creating ${j.count} variations. This takes about 2 minutes. You can leave this page.`, duration: 3 });
+    message.success({ content: `Generating ${plural(j.count, 'variation')}`, duration: 3 });
     setParams({ round: j.id }, { replace: false });
   };
+
+  const refAngles = useMemo(() => {
+    const seen = new Set<string>();
+    const out: { angle: string; reason: string; v: Variation; img: string }[] = [];
+    for (const { v, i } of visible) {
+      if (cardState(job, i) !== 'ready') continue;
+      if (seen.has(v.angle) || !ANGLE_REASON[v.angle]) continue;
+      seen.add(v.angle);
+      const latestReady = versionsOf(v).filter((x) => x.state === 'ready').at(-1);
+      out.push({ angle: v.angle, reason: ANGLE_REASON[v.angle], v, img: latestReady?.img ?? v.img });
+    }
+    return out;
+  }, [visible, job, versionsOf]);
 
   return (
     <motion.div {...pageTransition} className="page results">
       <div className="detail-head">
-        {mobile ? (
-          // 5e: phones get one back link to the parent instead of a three-part trail.
-          c.project ? (
-            <Link to="/creation" className="phone-back"><LeftOutlined /> Creative gallery</Link>
+        <div className="ws-crumb-row">
+          {mobile ? (
+            // 5e: phones get one back link on the left, Creation mode cue on the right.
+            <>
+              {c.project || ws.inCreation ? (
+                <Link to="/creation" className="phone-back"><LeftOutlined /> Creative gallery</Link>
+              ) : (
+                <Link to={ws.radarPath(c.id)} className="phone-back"><LeftOutlined /> <span className="crumb-name">{c.name}</span></Link>
+              )}
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+            </>
           ) : (
-            <Link to={`/ad/${c.id}`} className="phone-back"><LeftOutlined /> <span className="crumb-name">{c.name}</span></Link>
-          )
-        ) : (
-        <Breadcrumb
-          items={[
-            ...(c.project
-              ? [{ title: <Link to="/creation">Creative gallery</Link> }, { title: <span className="crumb-name">{c.name}</span> }]
-              : [
-                  { title: <Link to="/">Radar</Link> },
-                  { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> },
-                  { title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} · ${job.date}` },
-                ]),
-          ]}
-        />
-        )}
+            <>
+              {/* DL-06: mode cue in the breadcrumb when inside Creation. */}
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+              <Breadcrumb
+                items={[
+                  ...(c.project || ws.inCreation
+                    ? [
+                        { title: <Link to="/creation">Creative gallery</Link> },
+                        { title: <span className="crumb-name">{c.name}</span> },
+                        ...(c.project ? [] : [{ title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}` }]),
+                      ]
+                    : [
+                        { title: <Link to="/">Radar</Link> },
+                        { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> },
+                        { title: `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}` },
+                      ]),
+                ]}
+              />
+            </>
+          )}
+        </div>
+        {/* DL-06: explicit "View in Radar" link when inside Creation on a Radar ad. */}
+        <div className="detail-head-right">
+          {!c.project && <HistoryButton creative={c} />}
+          {ws.inCreation && !c.project && (
+            <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
+              View in Radar
+            </Button>
+          )}
+        </div>
       </div>
 
       <div className="results-head">
         <div className="results-title">
-          <h3>{mobile && !c.project ? `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} variations` : `Variations of ${c.name}`}</h3>
-          <p className="muted small">
-            {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')} · {job.date}
-            {job.label ? ` · ${job.label}` : ''}
+          {/* K43 (R-P1) & Section 11: identical title at every width + one-liner. */}
+          <h1 className="page-title">Variations of {c.name}</h1>
+          <p className="muted desc">Review this round, shortlist the best and test them in {platform}.</p>
+          <p className="t-help results-meta">
+            {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')}{'\u00a0'}· {job.date}
+            {job.label ? `\u00a0· ${job.label}` : ''}
           </p>
         </div>
         <div className="results-actions">
@@ -362,9 +420,10 @@ export function Results() {
               <div className="muted small">{c.project === 'clone' ? 'Cloned ad' : 'Made from scratch'} · not on Radar</div>
             ) : (
               <>
-                <div className="muted small">Data from {WINDOW.synced}</div>
-                <Button size="small" block onClick={() => nav(`/ad/${c.id}`)}>
-                  Open the ad
+                {/* K13 (R-T11), DL-06: Synced + workspace-aware link. */}
+                <div className="muted small">Synced {WINDOW.synced}</div>
+                <Button size="small" block onClick={() => nav(ws.radarPath(c.id))}>
+                  {ws.inCreation ? 'View in Radar' : 'Open the ad'}
                 </Button>
               </>
             )}
@@ -378,12 +437,20 @@ export function Results() {
                 <Alert
                   type="info"
                   showIcon
-                  message={`${topN} of your last ${allVars.length} variations use ${topAngle}.`}
+                  title={nextAngle ? `Next round will include ${nextAngle}.` : `${topN} of your last ${allVars.length} variations use ${topAngle}.`}
                   action={
                     <span className="row-gap">
-                      <Button size="small" onClick={() => message.info(`Next round will try ${unused}`)}>
-                        Try {unused}
-                      </Button>
+                      {!nextAngle && (
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            setNextAngle(unused);
+                            message.info(`Next round will try ${unused}`);
+                          }}
+                        >
+                          Try {unused}
+                        </Button>
+                      )}
                       <Button size="small" type="text" onClick={() => setNudgeOff(true)}>
                         Dismiss
                       </Button>
@@ -392,22 +459,51 @@ export function Results() {
                 />
               </motion.div>
             )}
-            {sameRec && otherRec && (
+            {sameRec && otherRec && !sameRecOff && (
               <motion.div key="pick-hint" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="nudge">
+                {/* K10 (R-T1), K36 (R-I3): "shortlisted variations" + same Dismiss control on both Alerts. */}
                 <Alert
                   type="info"
                   showIcon
-                  message={`All ${picks.length} picks fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
+                  title={`All ${picks.length} shortlisted variations fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
                   action={
-                    <Button size="small" onClick={() => go({ rec: otherRec.id })}>
-                      Show {otherRec.target}
-                    </Button>
+                    <span className="row-gap">
+                      <Button size="small" onClick={() => go({ rec: otherRec.id })}>
+                        Show {otherRec.target}
+                      </Button>
+                      <Button size="small" type="text" onClick={() => setSameRecOff(true)}>
+                        Dismiss
+                      </Button>
+                    </span>
                   }
                 />
               </motion.div>
             )}
           </AnimatePresence>
 
+
+          {/* Item 3: Reference gallery strip pairing visual thumbnails with concise 2-line strategic write-ups. */}
+          {refAngles.length > 0 && (
+            <section className="panel ref-strip" aria-label="Reference angles">
+              <div className="ref-strip-head">
+                <h2 className="panel-title">Reference angles</h2>
+                <span className="t-help">Why each angle in this round works.</span>
+              </div>
+              <div className="ref-strip-grid">
+                {refAngles.map((ref) => (
+                  <button key={ref.angle} type="button" className="ref-card" onClick={() => openEditor(ref.v)}>
+                    <span className="ref-thumb">
+                      <AdArt slot={ref.img} copy={ref.v.copy} ratio="1 / 1" alt={ref.angle} />
+                    </span>
+                    <span className="ref-text">
+                      <strong className="ref-angle">{ref.angle}</strong>
+                      <span className="ref-note">{ref.reason}</span>
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </section>
+          )}
 
           {/* Grouped by suggestion (Mancini, 18:55): one header per fix replaces the segmented filter,
               the "Angles used" line and the "Fixes:" line on every card. */}
@@ -453,10 +549,10 @@ export function Results() {
                         versions={versionsOf(v)}
                         onMore={() => {
                           const j = startJob({ creativeId: c.id, recIds: [v.recId], perRec: 4, size: job.size, like: v });
-                          message.success({ content: `Creating 4 variations like ${v.angle}.`, duration: 3 });
+                          message.success({ content: `Generating 4 variations like ${v.angle}`, duration: 3 });
                           setParams({ round: j.id });
                         }}
-                        moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`}
+                        moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString('en-US')}\u00a0credits`}
                         onRetry={() => retryJob(job.id)}
                       />
                         ))}
@@ -479,8 +575,9 @@ export function Results() {
             })}
           {/* C5d-18: round-wide actions at the end of the page. */}
           <div className="results-end">
-            <span className="t-help">Want more options?</span>
-            <Popconfirm title={`Create ${moreCount} more with the same settings?`} description={`Uses ${moreCount * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`} okText={`Create ${moreCount}`} onConfirm={() => createMore(job.recIds)}>
+            {/* K10 (R-T1): "Need more variations?" */}
+            <span className="t-help">Need more variations?</span>
+            <Popconfirm title={`Create ${moreCount} more with the same settings?`} description={`Uses ${moreCount * ACCOUNT.creditsPerImage} of ${credits.toLocaleString('en-US')}\u00a0credits`} okText={`Create ${moreCount}`} onConfirm={() => createMore(job.recIds)}>
               <Button>Create {moreCount} more</Button>
             </Popconfirm>
             <Button type="link" onClick={() => setEdit(true)}>
@@ -504,24 +601,46 @@ export function Results() {
                 <Rolling value={shortlist.length} /> shortlisted
               </b>
             </div>
-            <div className="row-gap wrap">
-              <Button icon={<SwapOutlined />} onClick={() => setCompare(true)}>
-                Compare with original
-              </Button>
-              <Button icon={<SendOutlined />} onClick={() => setTesting(true)}>
-                Test in Meta
-              </Button>
-              <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                onClick={() => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`)}
-              >
-                Download {shortlist.length}
-              </Button>
-              <Button type="text" className="on-dark" onClick={() => setShortlist([])}>
-                Clear
-              </Button>
-            </div>
+            {/* K50 (R-R7): on phones, one primary "Test in {platform}" + More menu so the bar stays one row. */}
+            {mobile ? (
+              <div className="row-gap">
+                <Button type="primary" icon={<SendOutlined />} onClick={() => setTesting(true)}>
+                  Test in {platform}
+                </Button>
+                <Dropdown
+                  trigger={['click']}
+                  menu={{
+                    items: [
+                      { key: 'compare', icon: <SwapOutlined />, label: 'Compare with original', onClick: () => setCompare(true) },
+                      { key: 'download', icon: <DownloadOutlined />, label: `Download ${shortlist.length}`, onClick: () => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`) },
+                      { type: 'divider' },
+                      { key: 'clear', label: 'Clear shortlist', onClick: () => setShortlist([]) },
+                    ],
+                  }}
+                >
+                  <Button icon={<EllipsisOutlined />} aria-label="More shortlist actions" />
+                </Dropdown>
+              </div>
+            ) : (
+              <div className="row-gap wrap">
+                <Button icon={<SwapOutlined />} onClick={() => setCompare(true)}>
+                  Compare with original
+                </Button>
+                <Button icon={<SendOutlined />} onClick={() => setTesting(true)}>
+                  Test in {platform}
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={() => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`)}
+                >
+                  Download {shortlist.length}
+                </Button>
+                <Button type="text" className="on-dark" onClick={() => setShortlist([])}>
+                  Clear
+                </Button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -544,7 +663,8 @@ export function Results() {
               <AdArt slot={cur.img} copy={cur.copy} typo={cur.n === 1 ? v.typo : undefined} ratio="2 / 3" alt={v.angle} />
               <figcaption>
                 <b>{v.angle}</b>
-                <span className="muted small">Fixes: {recs.find((r) => r.id === v.recId)?.issue}</span>
+                {/* K23 (R-M7): drop colon; "Improves {metric}". */}
+                <span className="muted small">Improves {recs.find((r) => r.id === v.recId)?.target ?? 'CTR'}</span>
                 <PredictedTag id={v.id} />
               </figcaption>
             </figure>

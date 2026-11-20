@@ -4,20 +4,23 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
 import {
-  
+  BarChartOutlined,
+  BulbOutlined,
   DeleteOutlined,
   FlagOutlined,
   DislikeFilled,
   DislikeOutlined,
   DownloadOutlined,
-  EditOutlined,
   ExclamationCircleOutlined,
+  FontSizeOutlined,
+  LeftOutlined,
   LikeFilled,
   LikeOutlined,
 } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, plural, recommendationsFor, type AdCopy } from '../data/mock';
-import { findCreative, useStore } from '../data/store';
+import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
+import { accountOf, findCreative, useStore } from '../data/store';
+import { useWorkspace } from '../data/nav';
 import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
@@ -55,6 +58,7 @@ export function Editor() {
   const { id, vid } = useParams();
   const [params] = useSearchParams();
   const nav = useNavigate();
+  const ws = useWorkspace();
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
   const { message } = App.useApp();
@@ -104,31 +108,39 @@ export function Editor() {
 
   const recs = useMemo(() => recommendationsFor(c), [c]);
   const rec = recs.find((r) => r.id === v?.recId) ?? recommendationsFor(findCreative('mm-1090245')!).find((r) => r.id === v?.recId);
-  const recGrade = rec ? (c.grades[({ CPA: 'conversion', CTR: 'ctr', Hook: 'hook' } as Record<string, 'conversion' | 'ctr' | 'hook'>)[rec.target]] ?? null) : null;
+  const recMetricKey: MetricKey | null = rec ? ({ CPA: 'conversion', CTR: 'ctr', Hook: 'hook' } as Record<string, MetricKey>)[rec.target] ?? null : null;
+  const recGrade = recMetricKey ? c.grades[recMetricKey] : null;
+  const recMeta = recMetricKey ? METRIC_META[recMetricKey] : null;
+  const recValKey = recMetricKey ? ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[recMetricKey] : null;
+  const recVal = recMeta && recValKey && c.values[recValKey] != null ? recMeta.unit(c.values[recValKey]!) : rec?.target === 'ROAS' ? (c.roas ?? 0).toFixed(2) : null;
+  const recAvg = recMeta ? recMeta.unit(accountOf(c).avg[recMeta.avgKey]) : null;
+  const recMetricLabel = rec ? (rec.target === 'Hook' ? 'Hook rate' : rec.target) : '';
 
   if (!job || !v || !shown || !latest)
     return (
       <div className="page">
         <Empty description={<b>This variation was deleted</b>}>
-          <Button type="primary" onClick={() => nav(`/ad/${c.id}/variations`)}>
+          <Button type="primary" onClick={() => nav(ws.roundPath(c.id))}>
             View variations
           </Button>
         </Empty>
       </div>
     );
 
-  const back = `/ad/${c.id}/variations?round=${job.id}`;
+  const back = ws.roundPath(c.id, job.id);
   const parent = v.from ? job.variations.find((x) => x.id === v.from!.id) : undefined;
   const cost = ACCOUNT.creditsPerImage;
-  // L-163: say when an editor change will use a sample image because today's live images are used up.
-  const costLine = `Uses ${cost} of ${credits.toLocaleString()} credits${quota.live && quota.left === 0 ? ' · Sample image (live images used up today)' : ''}`;
+  // K17 (R-AI6), K24 (R-M6, R-M13): comma thousands, NBSP before credits, lowercase after dot, no parens.
+  const costLine = `Uses ${cost} of ${credits.toLocaleString('en-US')}\u00a0credits${quota.live && quota.left === 0 ? '\u00a0· sample image, live images used up today' : ''}`;
   const typoNow = shown.n === 1 && v.typo && shown.copy?.head.includes(v.typo) ? v.typo : undefined;
   const fixedTypo = typoNow ? typoNow.replace(/(.)\1(?!.*\1\1)/, '$1') : '';
   const stylizedSlot = !v.stylized ? STYLIZED[shown.img] ?? STYLIZED[v.img] : undefined;
+  // Item 11: the Stylized text option is offered on every variation that has text, not only those with a ready-made render.
+  const canStylize = !v.stylized && Boolean(shown.copy);
   const preview = textMode === 'stylized' && stylizedSlot ? { img: stylizedSlot, copy: undefined } : editing && draft ? { img: shown.img, copy: draft } : shown;
   const canvasVersion = applying && !onOlder ? versions.at(-2) ?? shown : shown;
 
-  const go = (nid: string) => nav(`/ad/${c.id}/variations/${nid}?round=${job.id}`);
+  const go = (nid: string) => nav(ws.editorPath(c.id, nid, job.id));
   const apply = (instruction: string) => {
     const text = instruction.trim();
     if (!text) return;
@@ -141,7 +153,7 @@ export function Editor() {
     }
   };
   const chip = (label: string) => {
-    if (label === 'Fix the text' && !v.stylized) {
+    if ((label === 'Edit text' || label === 'Fix the text') && !v.stylized) {
       setTextMode('editable');
       setEditing(true);
       return;
@@ -150,7 +162,7 @@ export function Editor() {
     input.current?.focus();
   };
   const reason = (r: (typeof REASONS)[number]) => {
-    if (r.fill === null) chip('Fix the text');
+    if (r.fill === null) chip('Edit text');
     else {
       setAsk(r.fill);
       input.current?.focus();
@@ -169,7 +181,17 @@ export function Editor() {
           >
             <AdArt
               slot={textMode === 'stylized' ? preview.img : editing ? shown.img : canvasVersion.img}
-              copy={textMode === 'stylized' ? undefined : editing ? draft : canvasVersion.copy}
+              copy={
+                textMode === 'stylized'
+                  ? stylizedSlot
+                    ? undefined
+                    : shown.copy
+                      ? { ...shown.copy, stylized: true }
+                      : undefined
+                  : editing
+                    ? draft
+                    : canvasVersion.copy
+              }
               typo={textMode === 'editable' && !editing && canvasVersion.n === 1 ? v.typo : undefined}
               ratio={ratioFor(textMode === 'stylized' ? preview.img : canvasVersion.img)}
               alt={`${v.angle} variation, v${canvasVersion.n}`}
@@ -183,7 +205,42 @@ export function Editor() {
             </motion.div>
           )}
         </AnimatePresence>
-        {textMode === 'stylized' && <span className="ed-preview-label">Preview</span>}
+        {textMode === 'stylized' && <span className="ed-preview-label">{stylizedSlot ? 'Preview' : 'No preview yet'}</span>}
+      </div>
+
+      {/* Item 10 (R-I): Outcome feedback lives beside the image, separated from Download and Delete. */}
+      <div className="ed-feedback-bar" role="group" aria-label="Rate this variation">
+        <span className="t-help">Rate this result</span>
+        <div className="ed-feedback-btns">
+          <Tooltip title="Good result.">
+            <Button
+              size={mobile ? 'middle' : 'small'}
+              className={rating === 'up' ? 'ed-rate-up' : ''}
+              aria-label="Good result"
+              aria-pressed={rating === 'up'}
+              icon={rating === 'up' ? <LikeFilled /> : <LikeOutlined />}
+              onClick={() => setRating(rating === 'up' ? null : 'up')}
+            >
+              Good
+            </Button>
+          </Tooltip>
+          <Tooltip title="Bad result.">
+            <Button
+              size={mobile ? 'middle' : 'small'}
+              danger={rating === 'down'}
+              aria-label="Bad result"
+              aria-pressed={rating === 'down'}
+              icon={rating === 'down' ? <DislikeFilled /> : <DislikeOutlined />}
+              onClick={() => {
+                const next = rating === 'down' ? null : 'down';
+                setRating(next);
+                if (next && mobile) setTimeout(() => document.querySelector('.ed-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+              }}
+            >
+              Needs work
+            </Button>
+          </Tooltip>
+        </div>
       </div>
 
       <div className="filmstrip" ref={strip} role="listbox" aria-label="Versions">
@@ -213,7 +270,7 @@ export function Editor() {
     <section className="ed-block">
       <div className="ed-block-head">
         <b>Text</b>
-        {stylizedSlot && (
+        {canStylize && (
           <Segmented
             size="small"
             value={textMode}
@@ -231,20 +288,39 @@ export function Editor() {
       <AnimatePresence mode="wait" initial={false}>
         {v.stylized ? (
           <motion.div key="baked" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            {/* 5d C5d-11: one message (was a tag plus a helper saying the same thing). */}
-            <Alert type="info" showIcon message="AI drew this text into the image" description="To change it, regenerate the image." />
-            <Button block onClick={() => apply('Regenerate the text')} disabled={applying}>
-              Regenerate · uses {cost} credits
+            {/* K5 (R-T8, R-T13, R-AI6): "Atria drew this text...", "Create new version", cost line beside button. */}
+            <Alert type="info" showIcon title="Atria drew this text into the image." description="Changing it creates a new version." />
+            <Button block onClick={() => apply('Create a new version with updated text')} disabled={applying}>
+              Create new version
             </Button>
+            <span className="muted small">{costLine}</span>
           </motion.div>
         ) : textMode === 'stylized' ? (
           <motion.div key="styl" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            <Alert type="info" showIcon message="AI draws the text into the image" description="Richer type, but it can misspell words. Any change to the text makes a new image." />
+            <Alert type="info" showIcon title="Atria draws the text into the image." description="Richer type, but it can misspell words. Any change to the text creates a new version." />
+            {/* Item 11 (R-AI): explicit "No preview yet" note when there is no ready-made render. */}
+            {!stylizedSlot && (
+              <div className="ed-stylized-note">
+                <b>No preview yet</b>
+                <span className="t-help">The image shows rough display lettering. Atria renders the final stylized text when you create the variation.</span>
+              </div>
+            )}
+            {shown.copy && (
+              <div className="ed-stylized-copy">
+                <span className="t-label">Stylized text preview</span>
+                <div className="ed-stylized-sample">
+                  <span className="ed-stylized-head">{shown.copy.head}</span>
+                  {shown.copy.price && <span className="ed-stylized-price">{shown.copy.price}</span>}
+                  {shown.copy.band && <span className="ed-stylized-band">{shown.copy.band}</span>}
+                  {shown.copy.cta && <span className="ed-stylized-cta">{shown.copy.cta}</span>}
+                </div>
+              </div>
+            )}
             <Button
               block
               onClick={() => {
                 const nid = branch(job.id, v, 'stylized', '');
-                message.success({ content: 'Creating a stylized-text variation', duration: 3 });
+                message.success({ content: 'Generating a stylized-text variation', duration: 3 });
                 go(nid);
               }}
             >
@@ -300,7 +376,7 @@ export function Editor() {
                 <ExclamationCircleOutlined /> The headline may contain a typo: {typoNow}
               </span>
             )}
-            <Button icon={<EditOutlined />} onClick={() => setEditing(true)} disabled={onOlder} className="self-start">
+            <Button icon={<FontSizeOutlined />} onClick={() => setEditing(true)} disabled={onOlder} className="self-start">
               Edit text
             </Button>
           </motion.div>
@@ -379,9 +455,10 @@ export function Editor() {
             ]}
           />
           <p className="ed-mode-help">
+            {/* K2 (R-T3): never "a separate creative" or "this creative". */}
             {makeNew
-              ? 'Makes a separate creative next to this one. You can shortlist and test it on its own.'
-              : `Adds v${latest.n + 1} to this creative. Earlier versions stay in the history below the image.`}
+              ? 'Makes a new variation next to this one. You can shortlist and test it on its own.'
+              : `Adds v${latest.n + 1} to this variation. Earlier versions stay in the history below the image.`}
           </p>
         </div>
       )}
@@ -389,7 +466,8 @@ export function Editor() {
         <div className="ed-apply">
           <span className="muted small">{costLine}</span>
           <Button type="primary" disabled={!ask.trim() || (applying && !onOlder)} onClick={() => apply(ask)}>
-            {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Make new variation' : 'Apply change'}
+            {/* K6 (R-T8): "Create new variation" everywhere. */}
+            {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
           </Button>
         </div>
       )}
@@ -450,78 +528,86 @@ export function Editor() {
           </div>
         ))}
       </div>
-      <Button type="text" size="small" icon={<FlagOutlined />} className="ed-report" onClick={() => message.success('Thanks for the feedback')}>
+      {/* K54 (R-AI11): state what the report changes instead of a dead toast. */}
+      <Button type="text" size="small" icon={<FlagOutlined />} className="ed-report" onClick={() => message.success('Flagged for tag review')}>
         Report a wrong tag
       </Button>
     </section>
   );
 
+  const roundLabel = `Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}`;
+
   return (
     <motion.div {...pageTransition} className="page editor">
       <div className="detail-head">
-        <Breadcrumb
-          items={[
-            ...(c.project
-              ? [{ title: <Link to="/creation">Creative gallery</Link> }]
-              : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> }]),
-            { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)} · ${job.date}`}</Link> },
-            { title: v.angle },
-          ]}
-        />
+        <div className="ws-crumb-row">
+          {/* E3 (R-L, R-R): on phones use one clean back link to the round instead of a 3-line breadcrumb. */}
+          {mobile ? (
+            <>
+              <Link to={back} className="phone-back">
+                <LeftOutlined /> {roundLabel}
+              </Link>
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+            </>
+          ) : (
+            <>
+              {/* DL-06: mode cue in the breadcrumb when working inside Creation. */}
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+              <Breadcrumb
+                items={[
+                  ...(c.project || ws.inCreation
+                    ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
+                    : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> }]),
+                  { title: <Link to={back}>{roundLabel}</Link> },
+                  { title: v.angle },
+                ]}
+              />
+            </>
+          )}
+        </div>
+        {/* DL-06: explicit "View in Radar" exit link when inside Creation on a Radar ad. */}
+        {ws.inCreation && !c.project && (
+          <div className="detail-head-right">
+            <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
+              View in Radar
+            </Button>
+          </div>
+        )}
       </div>
 
       <div className="ed-head">
         <div className="ed-title">
-          <h3>{v.angle}</h3>
-          <div className="row-gap wrap small">
-            {/* 5d C5d-13: same top line as the suggestion card ([grade] metric · issue), then the prediction with its label. */}
-            {rec && (
-              <span className="rec-eyebrow-main">
-                {recGrade && <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>}
-                <span className="rec-metric">{rec.target}</span>
-                <span className="muted">· {rec.issue}</span>
-              </span>
-            )}
-            <PredictedTag id={v.id} />
-            {v.from && (
-              <Tag icon={<MadeFromIcon />} className="from-tag">
-                {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
-                {parent ? (
-                  <>
-                    {' '}
-                    of <a onClick={() => go(parent.id)}>{v.from.angle}</a>
-                  </>
-                ) : null}
-              </Tag>
-            )}
-            {v.launched && <Tag color="default">Paused in Meta</Tag>}
-          </div>
+          <h1 className="page-title">{v.angle}</h1>
+          <p className="muted desc">Describe a change or edit the text, and every change is saved as a version.</p>
+          {(v.from || v.launched || !rec) && (
+            <div className="row-gap wrap small ed-subtags">
+              {!rec && <PredictedTag id={v.id} />}
+              {v.from && (
+                <Tag icon={<MadeFromIcon />} className="from-tag">
+                  {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
+                  {parent ? (
+                    <>
+                      {' '}
+                      of <a onClick={() => go(parent.id)}>{v.from.angle}</a>
+                    </>
+                  ) : null}
+                </Tag>
+              )}
+              {v.launched && <Tag color="default">Paused in Meta</Tag>}
+            </div>
+          )}
         </div>
+        {/* Item 10 (R-I): Utility actions only in the top-right toolbar. */}
         <div className="ed-tools">
-          <Tooltip title="Good result">
-            <Button
-              type="text"
-              aria-label="Good result"
-              aria-pressed={rating === 'up'}
-              icon={rating === 'up' ? <LikeFilled /> : <LikeOutlined />}
-              onClick={() => setRating(rating === 'up' ? null : 'up')}
-            />
-          </Tooltip>
-          <Tooltip title="Bad result">
-            <Button
-              type="text"
-              aria-label="Bad result"
-              aria-pressed={rating === 'down'}
-              icon={rating === 'down' ? <DislikeFilled /> : <DislikeOutlined />}
-              onClick={() => {
-                const next = rating === 'down' ? null : 'down';
-                setRating(next);
-                // Mobile: the reasons sit in the panel below the image, so bring them into view.
-                if (next && mobile) setTimeout(() => document.querySelector('.ed-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
-              }}
-            />
-          </Tooltip>
-          <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded v${shown.n}`)}>
+          <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded v${shown.n}`)} aria-label="Download">
             {mobile ? '' : 'Download'}
           </Button>
           <Button danger type="text" icon={<DeleteOutlined />} onClick={() => setConfirmDelete(true)} aria-label="Delete variation">
@@ -529,6 +615,34 @@ export function Editor() {
           </Button>
         </div>
       </div>
+
+      {/* Item 12 (DL-05, R-L): Dedicated diagnostic banner — metric + grade tag, full issue line, no truncation. */}
+      {rec && (
+        <section className={`ed-diag-banner ${recGrade ? `tone-${recGrade[0]}` : ''}`} aria-label="Diagnostic summary">
+          <div className="ed-diag-main">
+            <div className="ed-diag-head">
+              <span className="ed-diag-metric">{recMetricLabel}</span>
+              {/* G9 (R-I): show the grey "No grade" tag + tooltip when a metric (like ROAS) is ungraded on this account. */}
+              {recGrade ? (
+                <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
+              ) : (
+                <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                  <Tag className="rec-grade no-grade">No grade</Tag>
+                </Tooltip>
+              )}
+              {recVal && <span className="ed-diag-val">{recVal}</span>}
+              {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
+            </div>
+            <p className="ed-diag-issue">{rec.issue}</p>
+            <p className="t-help ed-diag-fix">
+              <span className="kv-k">Fix</span> {rec.fix}
+            </p>
+          </div>
+          <div className="ed-diag-aside">
+            <PredictedTag id={v.id} />
+          </div>
+        </section>
+      )}
 
       <div className="ed-grid">
         {canvas}
@@ -541,19 +655,28 @@ export function Editor() {
         </aside>
       </div>
 
-      {mobile && (
-        <>
-          <div className="sticky-spacer" />
-          <motion.div className="sticky-bar" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1, transition: spring.gentle }}>
-            <div className="sticky-summary">
-              <span className="small">{costLine}</span>
-            </div>
-            <Button type="primary" block disabled={!ask.trim() || (applying && !onOlder)} onClick={() => apply(ask)}>
-              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Make new variation' : 'Apply change'}
-            </Button>
-          </motion.div>
-        </>
-      )}
+      {/* G6 (R-R): on phones only show the docked Apply bar once there is a change to apply so the image stays clear. */}
+      <AnimatePresence>
+        {mobile && ask.trim().length > 0 && (
+          <>
+            <div className="sticky-spacer" />
+            <motion.div
+              key="ed-sticky"
+              className="sticky-bar"
+              initial={{ y: 24, opacity: 0 }}
+              animate={{ y: 0, opacity: 1, transition: spring.gentle }}
+              exit={{ y: 24, opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+            >
+              <div className="sticky-summary">
+                <span className="small">{costLine}</span>
+              </div>
+              <Button type="primary" block disabled={applying && !onOlder} onClick={() => apply(ask)}>
+                {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
+              </Button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <Modal
         open={confirmDelete}

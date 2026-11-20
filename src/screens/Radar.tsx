@@ -6,7 +6,7 @@ import { Alert, Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, GOALS, goalOf, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
+import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS, accountOf } from '../data/store';
 import { GOAL_ICON, objectiveOf } from '../components/Goal';
 import { useStore } from '../data/store';
@@ -32,9 +32,10 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const { message } = App.useApp();
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
+  const pausedPlatform = [...new Set(c.ads.filter((a) => copyStatus(c, a) === 'Paused').map(platformOf))].join(' or ') || 'Meta';
   const body = (
     <div className="runs" onClick={(e) => e.stopPropagation()}>
-      {anyPaused && <div className="runs-note small">Paused copies were turned off in Meta. Grades still cover the {win.short.toLowerCase()}.</div>}
+      {anyPaused && <div className="runs-note small">Paused copies were turned off in {pausedPlatform}. Grades still cover the {win.short.toLowerCase()}.</div>}
       <Placements items={c.placements} />
       <div className="runs-list">
         {c.ads.map((a) => {
@@ -120,11 +121,12 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
       <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
         <div className="name-line">
-          <span className="name clamp2">{c.name}</span>
+          {/* G1 (R-L): glue last words and keep middle dot bound so names never break right after "·". */}
+          <span className="name clamp2">{mobile ? glue(c.name).replace(/\u00a0· /g, '\u00a0·\u00a0') : c.name}</span>
           {parent && (
-            <Tooltip title={`Variation ${n} of ${parent.name}`}>
+            <Tooltip title={`Variation ${n} of ${parent.name}.`}>
               <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>
-                Var. {n}
+                Variation {n}
               </span>
             </Tooltip>
           )}
@@ -157,19 +159,19 @@ const MotionRow = (props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'
   );
 };
 
-// 5d C5d-20: titled "How Radar grades your ads" so it answers the page's subtitle; the scale is a 2 x 2 list (Gm-11).
-const HOW_GRADING = (
+// K15 (R-E9): one owner for the $10,000 accuracy point — omit here when the page Alert/meter already says it.
+const howGrading = (lowSpend: boolean) => (
   <div className="grade-pop how-pop">
     <p>Radar compares each ad with the other ads in this account, one metric at a time. Ads that spend more count for more.</p>
     <div className="how-scale">
       {(['A', 'B', 'C', 'D'] as const).map((g) => (
         <span key={g}>
-          <Tag className={`grade-tag g-${g}`} bordered>{g}</Tag> {({ A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' } as const)[g]}
+          <Tag className={`grade-tag g-${g}`}>{g}</Tag> {({ A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' } as const)[g]}
         </span>
       ))}
     </div>
     <p>Overall combines an ad's grades, so it can carry a plus or minus. Hook and retention apply to video ads&nbsp;only.</p>
-    <p className="grade-pop-meta">Grades are more accurate for accounts that spend over $10,000 a&nbsp;month.</p>
+    <p className="grade-pop-meta">An estimate from how ads performed in this account. Not a guarantee.{lowSpend ? '' : ' Grades are more accurate for accounts that spend over $10,000 a\u00a0month.'}</p>
   </div>
 );
 
@@ -266,21 +268,40 @@ function FiltersButton({ campaigns, placements, goals, picked, setPicked, popOpe
   );
 }
 
-/** Active filters as light orange pills; each clears itself, plus one quick "Clear all". */
-function ActiveFilters({ picked, setPicked, panelOpen }: { picked: Picked; setPicked: (p: Picked) => void; panelOpen: boolean }) {
+/** Active filters as light orange pills; on phones collapse extra pills into a "+N" chip (Item 5). */
+function ActiveFilters({
+  picked,
+  setPicked,
+  panelOpen,
+  mobile,
+  onOpenFilters,
+}: {
+  picked: Picked;
+  setPicked: (p: Picked) => void;
+  panelOpen: boolean;
+  mobile: boolean;
+  onOpenFilters: () => void;
+}) {
   const items = Object.entries(picked).flatMap(([g, vs]) => vs.map((v) => ({ g, v })));
+  const shown = mobile && items.length > 2 ? items.slice(0, 2) : items;
+  const hiddenCount = items.length - shown.length;
   return (
     <AnimatePresence initial={false}>
       {items.length > 0 && (
         <motion.div className="active-filters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: duration.fast }}>
-          {items.map(({ g, v }) => (
+          {shown.map(({ g, v }) => (
             <span key={`${g}-${v}`} className="filter-pill">
-              {g === 'Media' ? v : `${g}: ${v}`}
+              {g === 'Media' ? v : `${g} ${v}`}
               <button aria-label={`Remove ${v}`} onClick={() => setPicked({ ...picked, [g]: picked[g].filter((x) => x !== v) })}>
                 <CloseOutlined />
               </button>
             </span>
           ))}
+          {hiddenCount > 0 && (
+            <button type="button" className="filter-pill filter-more" onClick={onOpenFilters} aria-label={`Show ${hiddenCount} more active filters`}>
+              +{hiddenCount}
+            </button>
+          )}
           {/* 5e Gm-15: one "Clear all" at a time. While the Filters panel is open, its own footer has it. */}
           {!panelOpen && (
             <Button type="link" size="small" className="inline-link clear-all" onClick={() => setPicked({})}>
@@ -367,21 +388,21 @@ export function Radar() {
       // 5d C5d-21 (Mancini's wording). Below 1200 px the cell carries the grade, since its column is hidden (Gm-07).
       title: <Head label="Next steps" tip="Suggested based on your ad performance." />,
       key: 'rec',
-      width: wide ? 170 : 160,
+      width: wide ? 170 : 144,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!wide} />,
     },
-    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: 84, render: (_, c) => <OverallTag creative={c} /> },
-    metricCol('conversion', 'conv', 104),
+    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 72, render: (_, c) => <OverallTag creative={c} /> },
+    metricCol('conversion', 'conv', wide ? 104 : 92),
     ...(wide ? [metricCol('hook', 'hook', 70), metricCol('retention', 'ret', 92)] : []),
-    metricCol('ctr', 'ctr', 64),
-    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 116, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
+    metricCol('ctr', 'ctr', wide ? 64 : 56),
+    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: wide ? 116 : 104, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
     ...(wide ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
   ];
 
   return (
     <motion.div {...pageTransition} className="page radar">
       <div className="page-head">
-        <Typography.Title level={3} style={{ margin: 0 }}>
+        <Typography.Title level={1} className="page-title">
           Radar
         </Typography.Title>
         <p className="muted desc">Radar grades every ad in this account and suggests what to fix next.</p>
@@ -431,7 +452,8 @@ export function Radar() {
               return (
                 <span className="window-value">
                   <b>{w.short}</b>
-                  <span className="window-dates">{w.long.split(' · ')[1]}</span>
+                  {/* K49 (R-L4, R-R11): hide range in trigger below md; full range stays in the period sheet. */}
+                  {bp.md && <span className="window-dates">{w.long.split(' · ')[1]}</span>}
                 </span>
               );
             }}
@@ -452,7 +474,7 @@ export function Radar() {
             }))}
           />
           {period.sheet}
-          <PopSheet content={HOW_GRADING} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+          <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
             <Button type="link" size="small" className="inline-link hgw" aria-label="How Radar grades your ads">
               <QuestionCircleOutlined className="hgw-icon" />
               <span className="hgw-text">How Radar grades your ads</span>
@@ -467,7 +489,7 @@ export function Radar() {
         </div>
         <FiltersButton key={account.id} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
-      <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} />
+      <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} mobile={cards} onOpenFilters={() => setFiltersOpen(true)} />
 
       <Tabs
         activeKey={tab}
@@ -493,82 +515,110 @@ export function Radar() {
 
       {rows.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" className="radar-empty">
-          {tab === 'winners' && Object.values(picked).flat().length === 0 ? (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>Nothing in Best in the {win.short.toLowerCase()}</b><br />No ad is strong on every graded metric yet. The closest are under Improve.</>}>
-              <Button onClick={() => setTab('potential')}>View Improve</Button>
+          {Object.values(picked).flat().length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <>
+                  {/* K26, K35 (R-V2, R-I9, R-E5): distinct empty copy when no filters are active. */}
+                  <b>No {TABS.find((t) => t.key === tab)!.label} ads in the {win.short.toLowerCase()}</b>
+                  <br />
+                  {tab === 'winners' ? 'No ad is strong on every graded metric yet. The closest are under Improve.' : 'Ads appear here once their grades land in this group.'}
+                </>
+              }
+            >
+              {tab === 'winners' && <Button onClick={() => setTab('potential')}>View Improve</Button>}
             </Empty>
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters in this tab</b>}>
-              {!(Object.values(picked).flat().length === 0) && <Button onClick={() => setPicked({})}>Clear filters</Button>}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters</b>}>
+              <Button onClick={() => setPicked({})}>Clear filters</Button>
             </Empty>
           )}
         </motion.div>
       ) : cards ? (
         <div className="radar-cards">
           <AnimatePresence initial>
-            {rows.map((c, i) => (
-              <motion.article
-                key={`${tab}-${c.id}`}
-                className="radar-card"
-                onClick={() => open(c)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
-                exit={{ opacity: 0, transition: { duration: duration.instant } }}
-              >
-                {/* 5d (Mancini 23:46): Overall fills the empty top-right corner and spend joins the name block,
-                    so the card is header + action row (C5d-17 kept: data first, action on the right). */}
-                <NameCell
-                  c={c}
-                  morph={false}
-                  mobile
-                  meta={<span className="card-spend">{money(c.spend)} spend</span>}
-                  aside={
-                    <span className="card-corner" onClick={(e) => e.stopPropagation()}>
-                      <span className="card-corner-label">Overall</span>
-                      <OverallTag creative={c} />
-                    </span>
-                  }
-                />
-                <div className="card-foot">
-                  <button
-                    className="card-more"
-                    aria-expanded={expanded === c.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExpanded((x) => (x === c.id ? null : c.id));
-                    }}
-                  >
-                    Details{' '}
-                    <motion.span animate={{ rotate: expanded === c.id ? 180 : 0 }} transition={spring.snappy} style={{ display: 'inline-flex' }}>
-                      <DownOutlined />
-                    </motion.span>
-                  </button>
-                  <StatusCell creative={c} status={statusOf(c.id)} withGrade />
-                </div>
-                <AnimatePresence initial={false}>
-                  {expanded === c.id && (
-                    <motion.div
-                      className="card-grades"
-                      onClick={(e) => e.stopPropagation()}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
-                      exit={{ opacity: 0, height: 0, transition: { duration: duration.fast, ease: ease.exit } }}
-                    >
-                      <div className="card-grades-inner">
-                        {(['conversion', 'hook', 'retention', 'ctr'] as const).map((k) => (
-                          <span key={k}>
-                            {METRIC_META[k].label} <GradeTag creative={c} metric={k} />
-                          </span>
-                        ))}
-                        <span>
-                          CPA <b className="ink">{money(c.values.cpa)}</b>
+            {rows.map((c, i) => {
+              // R-K4: Phone summary card shows Overall grade + ONE number top right (goal metric value, or Spend if ungraded).
+              const goal = goalOf(c);
+              const gm = GOALS[goal].metric;
+              const vKey = ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[gm];
+              const goalVal = c.overall && c.values[vKey] != null ? METRIC_META[gm].unit(c.values[vKey]!) : money(c.spend).replace(/\.\d\d$/, '');
+              const goalLabel = c.overall && c.values[vKey] != null ? (gm === 'conversion' ? ACCOUNT.conversionMetric : METRIC_META[gm].label) : 'Spend';
+              return (
+                <motion.article
+                  key={`${tab}-${c.id}`}
+                  className="radar-card"
+                  onClick={() => open(c)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
+                  exit={{ opacity: 0, transition: { duration: duration.instant } }}
+                >
+                  <NameCell
+                    c={c}
+                    morph={false}
+                    mobile
+                    meta={
+                      <div className="card-tags">
+                        <span className="card-goal-chip">
+                          {GOAL_ICON[goal]} {goal}
                         </span>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.article>
-            ))}
+                    }
+                    aside={
+                      <span className="card-corner" onClick={(e) => e.stopPropagation()}>
+                        <OverallTag creative={c} />
+                        <span className="card-corner-metric">
+                          <span className="card-corner-label">{goalLabel}</span>{' '}
+                          <b className="card-corner-val">{goalVal}</b>
+                        </span>
+                      </span>
+                    }
+                  />
+                  <div className="card-foot">
+                    <button
+                      className="card-more"
+                      aria-expanded={expanded === c.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded((x) => (x === c.id ? null : c.id));
+                      }}
+                    >
+                      Details{' '}
+                      <motion.span animate={{ rotate: expanded === c.id ? 180 : 0 }} transition={spring.snappy} style={{ display: 'inline-flex' }}>
+                        <DownOutlined />
+                      </motion.span>
+                    </button>
+                    <StatusCell creative={c} status={statusOf(c.id)} withGrade />
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {expanded === c.id && (
+                      <motion.div
+                        className="card-grades"
+                        onClick={(e) => e.stopPropagation()}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
+                        exit={{ opacity: 0, height: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+                      >
+                        <div className="card-grades-inner">
+                          {(['conversion', 'hook', 'retention', 'ctr'] as const).map((k) => (
+                            <span key={k}>
+                              {METRIC_META[k].label} <GradeTag creative={c} metric={k} />
+                            </span>
+                          ))}
+                          <span>
+                            Spend <b className="ink">{money(c.spend)}</b>
+                          </span>
+                          <span>
+                            CPA <b className="ink">{money(c.values.cpa)}</b>
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.article>
+              );
+            })}
           </AnimatePresence>
         </div>
       ) : (
@@ -578,7 +628,6 @@ export function Radar() {
           columns={columns}
           dataSource={rows}
           showSorterTooltip={false}
-          size="middle"
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
           pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false }}

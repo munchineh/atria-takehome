@@ -1,6 +1,6 @@
 import { cloneElement, useState, type ReactElement, type ReactNode } from 'react';
-import { Drawer, Grid, Popover, type PopoverProps } from 'antd';
-import { CheckOutlined } from '@ant-design/icons';
+import { Button, Drawer, Grid, Popover, type PopoverProps } from 'antd';
+import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
 
 /** 5e Gm-19: a floating panel on desktop and tablet, a bottom sheet on phones (below 768 px, the phone layer's line).
  *  The copies panel already worked this way; Filters, How Radar grades, the period list and grade popovers follow it. */
@@ -41,6 +41,8 @@ export function PopSheet({ content, title, sheetTitle, children, sheetClassName,
           onClose={() => set(false)}
           placement="bottom"
           size="auto"
+          closable={false}
+          extra={<Button type="text" icon={<CloseOutlined />} aria-label="Close" className="sheet-close-btn" onClick={() => set(false)} />}
           title={sheetTitle ?? title}
           className={`pop-sheet ${sheetClassName ?? ''}`}
           destroyOnHidden

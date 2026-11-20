@@ -1,10 +1,10 @@
-import { useEffect } from 'react';
-import { App as AntApp, ConfigProvider, Segmented } from 'antd';
-import { BarChartOutlined, RadarChartOutlined } from '@ant-design/icons';
-import { HashRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { App as AntApp, ConfigProvider } from 'antd';
+import { HashRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { LayoutGroup, MotionConfig } from 'motion/react';
 import { StoreProvider } from './data/store';
 import { Shell } from './components/Shell';
+import { ModeSwitch } from './components/ModeSwitch';
 import { Radar } from './screens/Radar';
 import { AdDetail } from './screens/AdDetail';
 import { Results } from './screens/Results';
@@ -15,21 +15,7 @@ import { theme } from './theme';
 import { ease, duration } from './motion/tokens';
 
 function TopNav() {
-  const loc = useLocation();
-  const nav = useNavigate();
-  // Overview and Radar switch pages and keep the account (chat 5c).
-  return (
-    <Segmented
-      className="top-nav"
-      value={loc.pathname.startsWith('/overview') ? 'overview' : 'radar'}
-      onChange={(v) => nav(v === 'overview' ? '/overview' : '/')}
-      // 5d C5d-25: matches Atria's own switch (grey track, solid orange active item, icons).
-      options={[
-        { label: 'Overview', value: 'overview', icon: <BarChartOutlined /> },
-        { label: 'Radar', value: 'radar', icon: <RadarChartOutlined /> },
-      ]}
-    />
-  );
+  return <ModeSwitch />;
 }
 
 function Routed() {
@@ -47,15 +33,33 @@ function Routed() {
           <Route path="/ad/:id/variations" element={<Results />} />
           <Route path="/ad/:id/variations/:vid" element={<Editor key={loc.pathname} />} />
           <Route path="/creation" element={<ImageAds />} />
+          {/* DL-06: rounds and the editor also live under Creation, so gallery tiles never leave it. */}
+          <Route path="/creation/:id" element={<Results />} />
+          <Route path="/creation/:id/:vid" element={<Editor key={loc.pathname} />} />
         </Routes>
       </LayoutGroup>
     </Shell>
   );
 }
 
+function usePrefersReducedMotion() {
+  const [reduce, setReduce] = useState(
+    () => typeof window !== 'undefined' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches,
+  );
+  useEffect(() => {
+    const mq = window.matchMedia?.('(prefers-reduced-motion: reduce)');
+    if (!mq) return;
+    const on = () => setReduce(mq.matches);
+    mq.addEventListener?.('change', on);
+    return () => mq.removeEventListener?.('change', on);
+  }, []);
+  return reduce;
+}
+
 export default function App() {
+  const reduce = usePrefersReducedMotion();
   return (
-    <ConfigProvider theme={theme}>
+    <ConfigProvider theme={{ ...theme, token: { ...theme.token, motion: !reduce } }}>
       <AntApp notification={{ placement: 'topRight', top: 68 }}>
         {/* reducedMotion="user": transforms are skipped for people who ask for less motion; opacity fades stay. */}
         <MotionConfig reducedMotion="user" transition={{ duration: duration.base, ease: ease.standard }}>

@@ -33,6 +33,10 @@ export interface Version {
 
 /** ED-09b: base photos that have a stylized-text render (B) made for the comparison (L-020, L-026). */
 export const STYLIZED: Record<string, string> = { x05c: 'x05t', x03c: 'x03t' };
+/** Plan item 11: every variation can get a stylized-text version. Only some photos have a ready-made render;
+ *  the rest keep their photo and mark the copy as stylized (live generation then draws the text in). */
+export const stylizedRender = (...slots: string[]) => slots.map((x) => STYLIZED[x]).find(Boolean);
+export const adText = (copy?: AdCopy) => (copy ? [copy.head, copy.price, copy.band, copy.cta].filter(Boolean).join(' · ') : '');
 /** Stylized renders are 3:4 with text to the edges, so they are never cropped to 2:3. */
 export const ratioFor = (slot: string) => (Object.values(STYLIZED).includes(slot) ? '3 / 4' : '2 / 3');
 
@@ -71,13 +75,10 @@ const EMOTION: Record<string, string> = { 'Bold offer': 'Excitement', Scarcity: 
 const THEME: Record<string, string> = { 'Bold offer': 'Savings', Scarcity: 'Limited edition', 'Price anchor': 'Savings', Bundle: 'Collection', Gift: 'Gifting', Demonstration: 'Stress relief', Comparison: 'Quality', Collection: 'Collection' };
 export const tagsFor = (angle: string) => ({ Angle: angle, Emotion: EMOTION[angle] ?? 'Comfort', Theme: THEME[angle] ?? 'Self-care' });
 export const TAG_TIPS: Record<string, string> = {
-  Angle: ANGLE_TIP_TEXT(),
+  Angle: 'The approach an ad takes to get a response, such as scarcity or social proof.',
   Emotion: 'The feeling the image is most likely to bring out.',
   Theme: 'The subject the image is about. Used to group results in analytics.',
 };
-function ANGLE_TIP_TEXT() {
-  return 'The approach an ad takes to get a response, such as scarcity or social proof.';
-}
 
 /** Demo 2 (D2-01): predicted CTR grade before launch. Deterministic per variation. */
 export function predictedCtr(id: string): 'A' | 'B' | 'C' {
@@ -151,7 +152,8 @@ export function buildVariations(jobId: string, recIds: string[], perRec: number,
   });
 }
 
-export const ANGLE_TIP = 'The approach an ad takes to get a response, such as scarcity or social proof.';
+/** One definition of "angle" for every surface (R-E8). */
+export const ANGLE_TIP = TAG_TIPS.Angle;
 
 /** 5d OG-13: Atria gives every generated image a one-line reason; ours showed the angle only. */
 export const ANGLE_REASON: Record<string, string> = {

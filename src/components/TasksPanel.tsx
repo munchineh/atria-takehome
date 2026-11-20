@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Empty, Progress } from 'antd';
 import { CloseOutlined, RightOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
+import { useWorkspace } from '../data/nav';
 import { useNavigate } from 'react-router-dom';
 import { plural } from '../data/mock';
 import { accountOf, findCreative, recName, timeAgo, useStore, type Job } from '../data/store';
@@ -17,10 +18,10 @@ export function jobTitle(j: Job) {
   return j.recIds.length > 1 ? `${first} + ${j.recIds.length - 1} more` : first;
 }
 
-/** TR-05 time left, on the ~2 minute scale the copy promises (A17). */
+/** TR-05 time left, spelled out (R-M10, R-T14). */
 export const timeLeft = (p: number) => {
   const s = (1 - p) * 120;
-  return s < 50 ? 'less than a minute left' : `about ${Math.ceil(s / 60)} min left`;
+  return s < 50 ? 'less than a minute left' : `about ${plural(Math.ceil(s / 60), 'minute')} left`;
 };
 
 function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void }) {
@@ -28,20 +29,20 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
   const c = findCreative(j.creativeId)!;
   const failedN = j.failed.length;
   const acct = accountOf(c);
-  // 5d C5d-29: one status signal per row. Unseen = semibold name + dot; nothing else is coloured unless it failed.
-  // The fixes and credits live on the round page. The account shows as a small eyebrow only when it isn't the one you're in (Gm-10), so the status line never has to share its width.
   const other = acct.id !== accountId ? acct.name : '';
   const ago = timeAgo(j.minutesAgo);
+  // K1 (R-T9), K45 (R-L2, R-L10): "Generating" for status; concise line with credits on meta line when partial fail.
   const status =
     j.state === 'queued'
-      ? `Queued · ${plural(j.count, 'variation')}`
+      ? `Queued\u00a0· ${plural(j.count, 'variation')}`
       : j.state === 'generating'
-        ? `Creating ${j.count} · ${timeLeft(j.progress)}`
+        ? `Generating ${j.count}\u00a0· ${timeLeft(j.progress)}`
         : j.state === 'ready'
           ? failedN
-            ? `${j.count - failedN} of ${j.count} ready · ${failedN} failed, credits returned`
-            : `${plural(j.count, 'variation')} ready · ${ago}`
-          : `Failed · ${j.cost} credits returned`;
+            ? `${j.count - failedN} ready\u00a0· ${failedN} failed`
+            : `${plural(j.count, 'variation')} ready\u00a0· ${ago}`
+          : `Failed\u00a0· ${j.cost}\u00a0credits returned`;
+  const creditNote = j.state === 'ready' && failedN ? `${failedN * 4}\u00a0credits returned\u00a0· ${ago}` : null;
   const openable = j.state === 'ready';
   return (
     <motion.li
@@ -61,15 +62,14 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
           {j.unseen && <i className="unseen-dot" aria-label="New" />}
         </div>
         <div className={`task-line ${j.state === 'failed' ? 'bad' : ''}`}>
-          <span className="task-line-text">
-            {status}
-          </span>
+          <span className="task-line-text">{status}</span>
           {j.state === 'failed' && (
             <Button type="link" size="small" className="inline-link" onClick={(e) => { e.stopPropagation(); retryJob(j.id); }}>
               Retry
             </Button>
           )}
         </div>
+        {creditNote && <div className="task-line-meta">{creditNote}</div>}
         {j.state === 'generating' && <Progress percent={Math.round(j.progress * 100)} size="small" showInfo={false} strokeColor="#f66c30" className="task-progress" />}
       </div>
       {openable && <RightOutlined className="task-chev" />}
@@ -80,20 +80,24 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
 function PanelBody({ onClose }: { onClose: () => void }) {
   const { jobs, markSeen } = useStore();
   const nav = useNavigate();
+  const ws = useWorkspace();
   const [tab, setTab] = useState<'tasks' | 'notes'>('tasks');
   const recent = jobs.filter((j) => j.minutesAgo < WEEK).sort((a, b) => a.minutesAgo - b.minutesAgo);
   const notes = recent.filter((j) => j.state === 'ready' || j.state === 'failed');
   const open = (j: Job) => {
     markSeen(j.id);
-    nav(`/ad/${j.creativeId}/variations?round=${j.id}`);
+    // Tasks keep you where you are: Creation stays in Creation, Analytics in Analytics.
+    nav(ws.roundPath(j.creativeId, j.id));
     onClose();
   };
 
   return (
     <>
       <div className="tasks-head">
-        {/* One list (Mancini, 19:04): Notifications only repeated finished and failed tasks. */}
-        <b className="tasks-title">Tasks</b>
+        <div>
+          <b className="tasks-title">Tasks</b>
+          <p className="tasks-desc t-help">Track variations while they generate and open them when they're ready.</p>
+        </div>
         <Button type="text" icon={<CloseOutlined />} onClick={onClose} aria-label="Close" />
       </div>
       <div className="tasks-scroll">
@@ -137,20 +141,22 @@ function PanelBody({ onClose }: { onClose: () => void }) {
         )}
       </div>
       <div className="tasks-foot small muted">
-        {/* 5d C5d-30/32: one line, link inline; the page is now the Creative gallery. */}
-        Last 7 days. See everything in{' '}
-        <Button
-          type="link"
-          size="small"
-          className="inline-link"
-          onClick={() => {
-            nav('/creation');
-            onClose();
-          }}
-        >
-          Creative gallery
-        </Button>
-        .
+        {/* K52 (R-L9): link + closing punctuation kept cleanly together. */}
+        Last 7{'\u00a0'}days. See everything in{' '}
+        <span className="nw">
+          <Button
+            type="link"
+            size="small"
+            className="inline-link"
+            onClick={() => {
+              nav('/creation');
+              onClose();
+            }}
+          >
+            Creative gallery
+          </Button>
+          .
+        </span>
       </div>
     </>
   );

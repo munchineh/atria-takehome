@@ -2,12 +2,11 @@ import { Progress, Tooltip } from 'antd';
 import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { ACCOUNT, METRIC_META, type Creative, type MetricKey } from '../data/mock';
+import { ACCOUNT, METRIC_META, plural, type Creative, type MetricKey } from '../data/mock';
 import type { RowStatus } from '../data/store';
 import { spring, swap } from '../motion/tokens';
 
 /** R5 / RA-28 to RA-30: the weakest grade, on every row (video included, decided 20 Nov). */
-/** The metric and grade behind the diagnosis (5d Gm-07: shown in the cell when its column is hidden). */
 export function weakest(c: Creative) {
   const order: MetricKey[] = ['conversion', 'hook', 'retention', 'ctr'];
   const rank = (g: string | null) => (g ? 'ABCD'.indexOf(g[0]) : -1);
@@ -19,7 +18,8 @@ export function diagnosis(c: Creative) {
   const order: MetricKey[] = ['conversion', 'hook', 'retention', 'ctr'];
   const rank = (g: string | null) => (g ? 'ABCD'.indexOf(g[0]) : -1);
   const worst = order.reduce<MetricKey | null>((w, k) => (rank(c.grades[k]) > (w ? rank(c.grades[w]) : -1) ? k : w), null);
-  if (!worst) return 'Not enough data to grade';
+  // K47 (R-L2): concise string so dense rows and phone cards never clip.
+  if (!worst) return 'Not enough data';
   if (rank(c.grades[worst]) <= 1) return 'No fix needed';
   const metric = worst === 'conversion' ? ACCOUNT.conversionMetric : worst === 'ctr' ? 'CTR' : METRIC_META[worst].label.toLowerCase();
   return `Fix ${metric}`;
@@ -30,7 +30,6 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
   const healthy = status.kind === 'idle' && diagnosis(creative).startsWith('No fix');
   const key = status.kind === 'generating' ? 'gen' : status.kind;
   const nav = useNavigate();
-  // A ready round opens its variations directly, from Radar or the ad page (Mancini, 18:54).
   const open =
     status.kind === 'ready'
       ? (e: React.MouseEvent | React.KeyboardEvent) => {
@@ -58,7 +57,7 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
               ) : (
                 <span>
                   {diagnosis(creative)}
-                  {withGrade && weak && <span className="status-grade"> · {weak.grade}</span>}
+                  {withGrade && weak && <span className="status-grade">{'\u00a0'}· {weak.grade}</span>}
                 </span>
               )}
               <RightOutlined className="status-chev" />
@@ -67,7 +66,8 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
           {status.kind === 'queued' && (
             <>
               <ClockCircleOutlined />
-              <span>Queued · {status.count} variations</span>
+              {/* K20a (R-M11): shared plural() helper. */}
+              <span>Queued{'\u00a0'}· {plural(status.count, 'variation')}</span>
             </>
           )}
           {status.kind === 'generating' && (
@@ -79,7 +79,8 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
           {status.kind === 'ready' && (
             <>
               <CheckCircleFilled className="status-icon ok" />
-              <Tooltip title={`${status.count} new variations are ready.`}>
+              {/* K32 (R-I7): says what opens instead of repeating the button label. */}
+              <Tooltip title="Open this round's variations.">
                 <span>Review {status.count} new</span>
               </Tooltip>
               <AnimatePresence>
@@ -99,7 +100,10 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
           {status.kind === 'failed' && (
             <>
               <ExclamationCircleFilled className="status-icon bad" />
-              <span>Couldn't create variations</span>
+              {/* K16 (R-AI8): state what happened and credits returned. */}
+              <Tooltip title={`Couldn't create variations. ${status.count * ACCOUNT.creditsPerImage}\u00a0credits returned.`}>
+                <span>Couldn't create{'\u00a0'}· {status.count * ACCOUNT.creditsPerImage}{'\u00a0'}credits returned</span>
+              </Tooltip>
             </>
           )}
         </motion.span>

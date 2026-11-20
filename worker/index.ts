@@ -80,7 +80,7 @@ async function generate(req: Request, env: Env) {
   if (!q.live) return json({ sample: true, reason: 'off' });
   if (q.left <= 0) return json({ sample: true, reason: 'limit', limit: q.limit, left: 0 });
 
-  const body = (await req.json().catch(() => null)) as { image?: string; imageData?: string; mime?: string; instruction?: string; ratio?: string } | null;
+  const body = (await req.json().catch(() => null)) as { image?: string; imageData?: string; mime?: string; instruction?: string; ratio?: string; text?: string } | null;
   const instruction = (body?.instruction ?? '').slice(0, 600);
   if (!instruction) return json({ error: 'bad request' }, 400);
   let mime = 'image/webp';
@@ -99,10 +99,14 @@ async function generate(req: Request, env: Env) {
     data = toBase64(await src.arrayBuffer());
   }
 
+  // Stylized text (plan item 11): the model draws the headline into the image instead of the app overlaying it.
+  const drawText = (body?.text ?? '').replace(/["\n\r]/g, ' ').slice(0, 120).trim();
   const prompt =
     `You are making a new variation of this social media ad photo. ${instruction} ` +
     'Keep the same product, recognisable and accurate. Photographic, natural light. ' +
-    'Do not add any text, letters, logos, prices or buttons to the image: the ad copy is added separately.';
+    (drawText
+      ? `Draw this ad text into the image in bold, expressive display lettering that suits the product, spelled exactly as written: "${drawText}". Add no other text or logos.`
+      : 'Do not add any text, letters, logos, prices or buttons to the image: the ad copy is added separately.');
 
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {
     method: 'POST',

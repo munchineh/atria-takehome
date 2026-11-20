@@ -1,41 +1,67 @@
-import type { ThemeConfig } from 'antd';
+import { theme as antdTheme, type ThemeConfig } from 'antd';
+import { duration } from './motion/tokens';
 
-/** Atria look: the Figma asset library (stock antd 5, primary #F66C30, Inter 14/22). Library tints: colorPrimaryBg #FFF7F0, colorPrimaryBorder #FFCEAD. Radius scale (L-030): 6 px controls and tags, 10 px cards, 14 px floating surfaces. */
+/**
+ * Atria look (antd 6.7.1, primary #F66C30, Inter 14/22).
+ * Library tints: colorPrimaryBg #FFF7F0, colorPrimaryBorder #FFCEAD.
+ * Radius scale (L-030): 6 px controls and tags, 10 px cards, 14 px floating surfaces.
+ * R-C2: orange text uses step 8 (#a83411) for AA contrast on white.
+ * R-C10: tertiary text at 0.55 alpha (4.74:1) so actionable meta lines pass AA.
+ * R-MO1/R-MO2: antd motion durations mirrored from src/motion/tokens.ts.
+ */
 export const theme: ThemeConfig = {
   token: {
     colorPrimary: '#f66c30',
-    colorLink: '#f66c30',
-    colorInfo: '#1677ff',
+    colorLink: '#a83411', // R-C2
+    colorLinkHover: '#cf4e1f',
+    colorLinkActive: '#821f07',
+    colorPrimaryText: '#a83411', // R-C2
+    colorPrimaryTextHover: '#cf4e1f',
+    colorPrimaryTextActive: '#821f07',
+    colorPrimaryBg: '#fff7f0', // R-C9
+    colorPrimaryBorder: '#ffcead', // R-C9
+    colorInfo: '#1677ff', // R-C4: info semantic only; links use colorLink
+    colorTextTertiary: 'rgba(0, 0, 0, 0.55)', // R-C10
     borderRadius: 6,
     borderRadiusLG: 10,
-    // 5c A-29: small buttons, tags and small selects were 4 px (antd default); the scale says 6.
     borderRadiusSM: 6,
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontSize: 14,
-    colorText: '#1f1f1f',
-    colorTextSecondary: '#6b6b6b',
     colorBorderSecondary: '#efefef',
-    motionDurationMid: '0.2s',
-    motionDurationSlow: '0.28s',
+    motionDurationFast: `${duration.instant}s`,
+    motionDurationMid: `${duration.fast}s`,
+    motionDurationSlow: `${duration.base}s`,
+    motionEaseInOut: 'cubic-bezier(0.2, 0, 0, 1)',
     motionEaseOut: 'cubic-bezier(0.05, 0.7, 0.1, 1)',
-    // antd's default 'back' curves overshoot (badges, popovers, switches). Flattened to match ours.
     motionEaseOutBack: 'cubic-bezier(0.2, 0, 0, 1)',
     motionEaseInBack: 'cubic-bezier(0.3, 0, 0.8, 0.15)',
   },
   components: {
     Table: { headerBg: '#fafafa', headerSplitColor: 'transparent', rowHoverBg: '#fff7f0', cellPaddingBlockMD: 14 },
-    Tabs: { itemSelectedColor: '#1f1f1f', inkBarColor: '#f66c30', itemColor: '#6b6b6b' },
+    Tabs: { itemSelectedColor: 'rgba(0, 0, 0, 0.88)', inkBarColor: '#f66c30', itemColor: 'rgba(0, 0, 0, 0.65)' },
     Modal: { borderRadiusLG: 14 },
     Popover: { borderRadiusLG: 14 },
     Notification: { borderRadiusLG: 14 },
     Drawer: { borderRadiusLG: 14 },
     Dropdown: { borderRadiusLG: 14 },
-    // Controls stay at 6 px at every size (L-030): large inputs, selects and buttons were picking up 10.
     Input: { borderRadiusLG: 6 },
-    // 5c A-32: the select's popup list is a floating surface; 10 reads as one with the control.
     Select: { borderRadiusLG: 6, optionSelectedBg: '#fff7f0' },
     Checkbox: { borderRadiusSM: 4 },
     Button: { borderRadiusLG: 6 },
     InputNumber: { borderRadiusLG: 6 },
+  },
+};
+
+/** R-H9, G7 (R-C): nested dark theme for the expanding Create variations panel on AdDetail. */
+export const darkBarTheme: ThemeConfig = {
+  algorithm: antdTheme.darkAlgorithm,
+  token: {
+    colorPrimary: '#f66c30',
+    colorLink: '#ffb185',
+    colorLinkHover: '#ffcead',
+    colorLinkActive: '#f66c30',
+    colorBgContainer: '#2a272e',
+    colorBgElevated: '#2a272e',
+    borderRadius: 6,
   },
 };
