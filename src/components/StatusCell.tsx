@@ -1,6 +1,7 @@
 import { Progress, Tooltip } from 'antd';
 import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
+import { useNavigate } from 'react-router-dom';
 import { ACCOUNT, METRIC_META, type Creative, type MetricKey } from '../data/mock';
 import type { RowStatus } from '../data/store';
 import { spring, swap } from '../motion/tokens';
@@ -19,8 +20,23 @@ export function diagnosis(c: Creative) {
 export function StatusCell({ creative, status }: { creative: Creative; status: RowStatus }) {
   const healthy = status.kind === 'idle' && diagnosis(creative).startsWith('No fix');
   const key = status.kind === 'generating' ? 'gen' : status.kind;
+  const nav = useNavigate();
+  // A ready round opens its variations directly, from Radar or the ad page (Mancini, 18:54).
+  const open =
+    status.kind === 'ready'
+      ? (e: React.MouseEvent | React.KeyboardEvent) => {
+          e.stopPropagation();
+          nav(`/ad/${creative.id}/variations?round=${status.jobId}`);
+        }
+      : undefined;
   return (
-    <span className={`status-cell ${status.kind} ${healthy ? 'healthy' : ''}`}>
+    <span
+      className={`status-cell ${status.kind} ${healthy ? 'healthy' : ''}`}
+      onClick={open}
+      role={open ? 'link' : undefined}
+      tabIndex={open ? 0 : undefined}
+      onKeyDown={open ? (e) => e.key === 'Enter' && open(e) : undefined}
+    >
       <AnimatePresence mode="wait" initial={false}>
         <motion.span key={key} variants={swap} initial="hidden" animate="show" exit="exit" className="status-inner">
           {status.kind === 'idle' && (

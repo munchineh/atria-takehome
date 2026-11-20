@@ -168,12 +168,17 @@ export function AdDetail() {
 
   const recs = useMemo(() => recommendationsFor(c), [c]);
   const suggestedIds = recs.slice(0, 2).map((r) => r.id);
-  const [selected, setSelected] = useState<string[]>(iterable ? suggestedIds : []);
+  /** Suggestions with a round still running or just made aren't preselected again (Mancini, 18:54). */
+  const fresh = (rid: string) =>
+    jobs.some((j) => j.recIds.includes(rid) && (j.state === 'generating' || j.state === 'queued' || (j.state !== 'failed' && (j.unseen || j.minutesAgo < 60))));
+  const preselect = () => (iterable ? recommendationsFor(c).slice(0, 2).map((r) => r.id).filter((rid) => !fresh(rid)) : []);
+  const [selected, setSelected] = useState<string[]>(preselect);
   const [adsOpen, setAdsOpen] = useState(true);
   const [showAllAds, setShowAllAds] = useState(false);
   const [dialog, setDialog] = useState(false);
   useEffect(() => {
-    setSelected(iterable ? recommendationsFor(c).slice(0, 2).map((r) => r.id) : []);
+    setSelected(preselect());
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c, iterable]);
 
   const total = selected.length * ACCOUNT.variationsPerRecommendation;
@@ -382,18 +387,13 @@ export function AdDetail() {
             {s.kind !== 'idle' && (
               <div className="verdict-status">
                 <StatusCell creative={c} status={s} />
-                {s.kind === 'ready' && (
-                  <Button type="link" size="small" onClick={() => viewRound(s.jobId)}>
-                    View variations
-                  </Button>
-                )}
               </div>
             )}
           </motion.div>
 
           <motion.div variants={fadeUp} className="section-title">
             <h4>Suggestions</h4>
-            <span className="t-help">{iterable ? 'Most important first. The top 2 are already selected.' : 'Most important first.'}</span>
+            <span className="t-help">{iterable && preselect().length === 2 ? 'Most important first. The top 2 are already selected.' : 'Most important first.'}</span>
             <span className="t-help rec-date">
               Updated {WINDOW.synced}
               <Tooltip title="Refresh">
@@ -489,6 +489,11 @@ export function AdDetail() {
               <b>Generating {s.kind === 'generating' || s.kind === 'queued' ? s.count : total}</b>
               <span className="muted small left">{balance.toLocaleString()} credits left</span>
             </>
+          ) : selected.length === 0 && s.kind === 'ready' ? (
+            <>
+              <b>{s.count} new variations are ready</b>
+              <span className="muted small left">Or select a suggestion to create more.</span>
+            </>
           ) : selected.length === 0 ? (
             <span>Select a suggestion to create variations</span>
           ) : short_ ? (
@@ -508,9 +513,13 @@ export function AdDetail() {
           (short_ && !busy && selected.length ? (
             <Button size="large" onClick={() => message.info('Opens billing in a new tab.')}>Get credits</Button>
           ) : (
+            selected.length === 0 && s.kind === 'ready' ? (
+              <Button type="primary" size="large" onClick={() => viewRound(s.jobId)}>View variations</Button>
+            ) : (
             <Button type="primary" size="large" disabled={busy || selected.length === 0} onClick={() => setDialog(true)}>
               {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}` : 'Create variations'}
             </Button>
+            )
           ))}
             </motion.div>
           )}
