@@ -1125,3 +1125,5 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
   .creative-panel .car .ad-art { width: 100%; }
   .creative-panel .ad-media { justify-self: start; }
 }
+.live-alert { margin: 0 20px 12px; }
+@media (max-width: 767px) { .live-alert { margin: 0 16px 12px; } }

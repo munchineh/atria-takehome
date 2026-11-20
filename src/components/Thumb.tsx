@@ -13,6 +13,10 @@ const FILES = import.meta.glob('../assets/ads/*.{webp,svg}', { eager: true, quer
 const BY_SLOT: Record<string, string> = {};
 for (const [k, v] of Object.entries(FILES).sort(([a], [b]) => (a.endsWith('.webp') ? 1 : 0) - (b.endsWith('.webp') ? 1 : 0))) BY_SLOT[k.split('/').pop()!.replace(/\.(webp|svg)$/, '')] = v;
 export const adImage = (slot: string) => BY_SLOT[slot];
+/** Live generations (src/data/live.ts) are added at runtime under their own slot. */
+export const registerImage = (slot: string, url: string) => {
+  BY_SLOT[slot] = url;
+};
 
 const PASTELS = ['#f9d3df', '#dcebc6', '#f8ecc9', '#d6e4f3', '#e3d9f1', '#fbdcc7'];
 const pastel = (slot: string) => PASTELS[[...slot].reduce((a, ch) => a + ch.charCodeAt(0), 0) % PASTELS.length];

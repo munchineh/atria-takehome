@@ -1,5 +1,6 @@
+import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
-import { App, Button, Drawer, Input, Modal, Select } from 'antd';
+import { Alert, App, Button, Drawer, Input, Modal, Select } from 'antd';
 import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
@@ -41,6 +42,7 @@ export function Body({
   panel?: boolean;
 }) {
   const { briefs, setBrief, credits, lastSettings } = useStore();
+  const quota = useQuota();
   const { message } = App.useApp();
   const account = accountOf(creative);
   const brand = 'brand' in account ? account.brand : null;
@@ -247,6 +249,10 @@ export function Body({
         </section>
       </div>
 
+      {quota.live && quota.left === 0 && (
+        // L-163: the demo's daily cap for live Gemini images.
+        <Alert className="live-alert" type="warning" showIcon message="You've used today's 10 live images." description="New variations use sample images until tomorrow." />
+      )}
       <footer className="dlg-foot">
         <div className="dlg-sum">
           <span>
@@ -255,6 +261,11 @@ export function Body({
           <span className="t-help">
             Uses <Rolling value={cost} /> of {credits.toLocaleString()} credits
           </span>
+          {quota.live && quota.left > 0 && (
+            <span className="t-help live-left">
+              {quota.left} of {quota.limit} live images left today{total > quota.left ? `. The other ${total - quota.left} use samples.` : '.'}
+            </span>
+          )}
           {/* 5c A-22, A-23: one hint, under the total, instead of a tooltip plus a floating line. */}
           {!ready && <span className="t-help dlg-need">Add a brief to continue</span>}
         </div>

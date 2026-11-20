@@ -1,7 +1,8 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, type Creative } from './mock';
 import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
-import { applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
+import { ANGLE_REASON, applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
+import { generateLive } from './live';
 
 /**
  * Every sidebar account has data (chat 5c, wiring Mancini's 19:08 ask). Each account brings its own averages
@@ -223,6 +224,29 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [jobs],
   );
 
+  /** L-163: swap a variation's sample image for a live one when it arrives. */
+  const setVarImg = useCallback((jobId: string, vid: string, img: string) => {
+    setJobs((p) => p.map((j) => (j.id === jobId ? { ...j, variations: j.variations.map((v) => (v.id === vid ? { ...v, img } : v)) } : j)));
+  }, []);
+  const runLive = useCallback(
+    (jobId: string, creativeId: string, list: Variation[], ratio: string) => {
+      const src = ALL_CREATIVES.find((c) => c.id === creativeId)?.img;
+      if (!src) return;
+      let k = 0;
+      const next = async (): Promise<void> => {
+        const v = list[k++];
+        if (!v) return;
+        const why = ANGLE_REASON[v.angle] ?? '';
+        const slot = await generateLive(src, `${recName(creativeId, v.recId)}. Angle: ${v.angle}. ${why}`, ratio === '3:4' ? '3:4' : '2:3');
+        if (slot) setVarImg(jobId, v.id, slot);
+        return next();
+      };
+      // Three at a time: fast enough for a round of 8 without tripping rate limits.
+      void Promise.all([next(), next(), next()]);
+    },
+    [setVarImg],
+  );
+
   const startJob = useCallback(
     (o: StartOpts) => {
       counter.current += 1;
@@ -250,11 +274,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       };
       setJobs((p) => [...p, job]);
       setCredits((c) => c - job.cost);
+      runLive(id, o.creativeId, variations, o.size);
       if (!o.like) setLast((l) => ({ ...l, [o.creativeId]: { perRec: o.perRec, size: o.size } }));
       setBump((b) => b + 1);
       return job;
     },
-    [jobs],
+    [jobs, runLive],
   );
 
   const versionsOf = useCallback(
@@ -272,6 +297,13 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     setTimeout(() => setVersions((p) => ({ ...p, [vid]: (p[vid] ?? []).map((x) => (x.n === n ? { ...x, state: 'ready' } : x)) })), delay);
   }, []);
 
+  /** L-163: editor changes go live too; the version's image is replaced when Gemini answers. */
+  const liveVersion = useCallback((vid: string, n: number, fromSlot: string, instruction: string) => {
+    void generateLive(fromSlot, instruction).then((slot) => {
+      if (slot) setVersions((p) => ({ ...p, [vid]: (p[vid] ?? []).map((x) => (x.n === n ? { ...x, img: slot } : x)) }));
+    });
+  }, []);
+
   const applyChange = useCallback(
     (jobId: string, v: Variation, fromN: number, instruction: string, asNew = false) => {
       const list = versionsOf(v);
@@ -282,6 +314,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         const n = list.length + 1;
         setVersions((p) => ({ ...p, [v.id]: [...list, { n, ...out, caption: instruction, cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
         land(v.id, n);
+        liveVersion(v.id, n, src.img, instruction);
         return v.id;
       }
       counter.current += 1;
@@ -296,9 +329,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       }));
       addVariation(jobId, nv);
       land(nid, 2);
+      liveVersion(nid, 2, src.img, instruction);
       return nid;
     },
-    [versionsOf, land, addVariation],
+    [versionsOf, land, addVariation, liveVersion],
   );
 
   const saveText = useCallback(
@@ -322,9 +356,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setVersions((p) => ({ ...p, [nid]: [{ n: 1, img, copy, caption: how === 'stylized' ? 'Stylized text' : 'Edited prompt', cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
       addVariation(jobId, nv);
       land(nid, 1, 3000);
+      if (how === 'prompt') liveVersion(nid, 1, last.img, note);
       return nid;
     },
-    [versionsOf, land, addVariation],
+    [versionsOf, land, addVariation, liveVersion],
   );
 
   const value = useMemo<Store>(

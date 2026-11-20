@@ -80,15 +80,24 @@ async function generate(req: Request, env: Env) {
   if (!q.live) return json({ sample: true, reason: 'off' });
   if (q.left <= 0) return json({ sample: true, reason: 'limit', limit: q.limit, left: 0 });
 
-  const body = (await req.json().catch(() => null)) as { image?: string; instruction?: string; ratio?: string } | null;
-  const image = body?.image ?? '';
+  const body = (await req.json().catch(() => null)) as { image?: string; imageData?: string; mime?: string; instruction?: string; ratio?: string } | null;
   const instruction = (body?.instruction ?? '').slice(0, 600);
-  if (!/^\/?(assets\/)?[\w.-]+\.(webp|jpe?g|png)$/i.test(image.replace(/^\.\//, '')) || !instruction) return json({ error: 'bad request' }, 400);
-
-  const src = await env.ASSETS.fetch(new Request(new URL(image.replace(/^\.\//, '/'), req.url)));
-  if (!src.ok) return json({ error: 'image not found' }, 400);
-  const mime = src.headers.get('content-type')?.split(';')[0] ?? 'image/webp';
-  const data = toBase64(await src.arrayBuffer());
+  if (!instruction) return json({ error: 'bad request' }, 400);
+  let mime = 'image/webp';
+  let data = '';
+  if (body?.imageData) {
+    // The app draws the source photo to a canvas and sends a JPEG (covers inlined photos and drawn SVG art).
+    if (body.imageData.length > 3_000_000 || !/^image\/(webp|png|jpe?g)$/.test(body.mime ?? '')) return json({ error: 'bad image' }, 400);
+    mime = body.mime!;
+    data = body.imageData;
+  } else {
+    const image = (body?.image ?? '').replace(/^\.\//, '/');
+    if (!/^\/?assets\/[\w.-]+\.(webp|jpe?g|png)$/i.test(image)) return json({ error: 'bad request' }, 400);
+    const src = await env.ASSETS.fetch(new Request(new URL(image, req.url)));
+    if (!src.ok) return json({ error: 'image not found' }, 400);
+    mime = src.headers.get('content-type')?.split(';')[0] ?? 'image/webp';
+    data = toBase64(await src.arrayBuffer());
+  }
 
   const prompt =
     `You are making a new variation of this social media ad photo. ${instruction} ` +

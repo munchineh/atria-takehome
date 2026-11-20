@@ -1,3 +1,4 @@
+import { useQuota } from '../data/live';
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -69,6 +70,7 @@ export function Editor() {
   const onOlder = !!shown && !!latest && shown.n !== latest.n;
   const applying = latest?.state === 'applying';
 
+  const quota = useQuota();
   const [ask, setAsk] = useState('');
   // 5d option A: one way in (Refine); the choice sits where you describe the change. ?new=1 presets it (gallery entry).
   const [makeNew, setMakeNew] = useState(params.get('new') === '1');
@@ -118,7 +120,8 @@ export function Editor() {
   const back = `/ad/${c.id}/variations?round=${job.id}`;
   const parent = v.from ? job.variations.find((x) => x.id === v.from!.id) : undefined;
   const cost = ACCOUNT.creditsPerImage;
-  const costLine = `Uses ${cost} of ${credits.toLocaleString()} credits`;
+  // L-163: say when an editor change will use a sample image because today's live images are used up.
+  const costLine = `Uses ${cost} of ${credits.toLocaleString()} credits${quota.live && quota.left === 0 ? ' · Sample image (live images used up today)' : ''}`;
   const typoNow = shown.n === 1 && v.typo && shown.copy?.head.includes(v.typo) ? v.typo : undefined;
   const fixedTypo = typoNow ? typoNow.replace(/(.)\1(?!.*\1\1)/, '$1') : '';
   const stylizedSlot = !v.stylized ? STYLIZED[shown.img] ?? STYLIZED[v.img] : undefined;
