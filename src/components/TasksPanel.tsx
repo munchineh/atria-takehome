@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Empty, Progress, Segmented, Tag } from 'antd';
+import { Button, Empty, Progress, Tag } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
@@ -111,18 +111,12 @@ function PanelBody({ onClose }: { onClose: () => void }) {
   return (
     <>
       <div className="tasks-head">
-        <Segmented
-          value={tab}
-          onChange={(v) => setTab(v as typeof tab)}
-          options={[
-            { label: 'Tasks', value: 'tasks' },
-            { label: 'Notifications', value: 'notes' },
-          ]}
-        />
+        {/* One list (Mancini, 19:04): Notifications only repeated finished and failed tasks. */}
+        <b className="tasks-title">Tasks</b>
         <Button type="text" icon={<CloseOutlined />} onClick={onClose} aria-label="Close" />
       </div>
       <div className="tasks-scroll">
-        {tab === 'tasks' ? (
+        {tab === 'tasks' || true ? (
           recent.length ? (
             <ul className="task-list">
               {recent.map((j, i) => (

@@ -786,3 +786,4 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .data-meter .ant-progress { margin: 0; }
 .runs-copy:last-child { border-bottom: 0; }
 .runs-out { justify-self: end; margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; }
+.tasks-title { font-size: 16px; font-weight: 600; }
