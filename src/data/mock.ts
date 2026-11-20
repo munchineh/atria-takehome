@@ -32,7 +32,7 @@ export const METRIC_META: Record<
   conversion: {
     label: 'Conversion',
     plain: ACCOUNT.conversionMetric,
-    tip: `How cheaply this ad turns clicks into purchases, graded on ${ACCOUNT.conversionMetric}. You can change the metric in Radar settings.`,
+    tip: `How cheaply this ad turns clicks into purchases, graded on ${ACCOUNT.conversionMetric}.`,
     unit: (v) => `$${v.toFixed(2)}`,
     avgKey: 'cpa',
     lowerIsBetter: true,
@@ -453,7 +453,7 @@ const CTR_RECS: Recommendation[] = [
     id: 'stop',
     priority: 1,
     issue: 'Nothing stops the scroll',
-    issueDetail: 'CTR is in the bottom 25% of this account. The product sits small in a busy scene.',
+    issueDetail: 'CTR is the lowest grade on this ad. The product sits small in a busy scene.',
     why: `The product sits small in a busy scene. Filling the frame with it gives people a reason to stop scrolling.`,
     fix: 'Make the product the first thing you see',
     target: 'CTR',
@@ -476,7 +476,7 @@ const VIDEO_RECS: Recommendation[] = [
     id: 'hook',
     priority: 1,
     issue: 'The first 3 seconds lose people',
-    issueDetail: 'Hook is in the bottom 25%. The video opens on a talking head before the product appears.',
+    issueDetail: 'Hook is the lowest grade on this ad. The video opens on a talking head before the product appears.',
     why: `The video opens on a talking head. Leading with the squish shows the product before people scroll away.`,
     fix: 'Show the squish in the first second',
     target: 'Hook',
@@ -538,13 +538,6 @@ export const PERSONAS = [
   { label: 'Stress-relief seekers', why: 'Likely to respond to calm and comfort messages.', icon: 'calm', tint: '#e6f2dc' },
 ];
 
-/** Bands for R6 (quartiles assumed, A4). */
-export function gradeBand(g: Grade) {
-  if (!g) return null;
-  return ({ A: 'Top 25%', B: 'Upper middle 25%', C: 'Lower middle 25%', D: 'Bottom 25%' } as Record<string, string>)[g[0]];
-}
-
-export const short = (name: string, n = 22) => (name.length > n ? `${name.slice(0, n)}…` : name);
 export const money = (v: number) => `$${v.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
