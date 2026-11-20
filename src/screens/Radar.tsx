@@ -244,7 +244,7 @@ function FiltersButton({ campaigns, placements, goals, picked, setPicked }: { ca
   );
   return (
     <Popover content={content} trigger="click" placement="bottomRight" open={popOpen} onOpenChange={setPopOpen}>
-      <Badge count={total} size="small" color="#f5582a">
+      <Badge count={total} size="small" color="#f66c30">
         {/* 5c A-25: the name tooltip hides while the panel it names is open. */}
         <Tooltip title="Filters" open={popOpen ? false : undefined}>
           <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn" />
@@ -381,7 +381,7 @@ export function Radar() {
                     <b>{money(account.monthlySpend).replace('.00', '')}</b> of {money(RELIABLE_SPEND).replace('.00', '')} a month
                   </span>
                 </div>
-                <Progress percent={Math.round((account.monthlySpend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f5582a" />
+                <Progress percent={Math.round((account.monthlySpend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
                 <span className="t-help">Grades get more accurate as your monthly spend grows.</span>
               </div>
             ) : (

@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, type Creative } from './mock';
+import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, type Creative } from './mock';
 import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
 import { applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
 
@@ -29,6 +29,12 @@ export const DEMO_ACCOUNTS: MockAccount[] = [
   ...MORE_ACCOUNTS,
 ];
 export const ALL_CREATIVES: Creative[] = [...DEMO_ACCOUNTS.flatMap((a) => a.creatives), ...PROJECT_CREATIVES];
+// 5c line breaks: "Sad Pink · Fits in your palm" must never wrap with the middle dot starting a line.
+for (const c of ALL_CREATIVES) {
+  c.name = c.name.replace(/ · /g, '\u00a0· ');
+  for (const a of c.ads) a.campaign = a.campaign.replace(/ · /g, '\u00a0· ');
+}
+for (const a of DEMO_ACCOUNTS) for (const p of a.personas) p.why = glue(p.why);
 export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === id);
 export const accountOf = (c: Creative) => DEMO_ACCOUNTS.find((a) => a.id === c.accountId) ?? DEMO_ACCOUNTS[0];
 

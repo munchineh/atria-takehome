@@ -13,7 +13,7 @@ import {
 } from '@ant-design/icons';
 import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ACCOUNT, SIDEBAR_ACCOUNTS, short, plural } from '../data/mock';
+import { ACCOUNT, SIDEBAR_ACCOUNTS, plural } from '../data/mock';
 import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
 import { TasksPanel } from './TasksPanel';
 import { Thumb } from './Thumb';
@@ -79,7 +79,7 @@ function useCompletionToasts(mobile: boolean) {
         className: 'done-toast',
         icon: c ? <Thumb c={c} size={40} /> : undefined,
         message: `${plural(j.count - j.failed.length, 'variation')} ready`,
-        description: short(c?.name ?? '', mobile ? 30 : 34),
+        description: c?.name ?? '',
         placement: mobile ? 'top' : 'topRight',
         duration: 6,
         btn: (
@@ -170,7 +170,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                 initial={bump ? { opacity: 0.4 } : false}
                 animate={{ opacity: 1, transition: { duration: duration.base, ease: ease.standard } }}
               >
-                <Badge count={running} size="small" dot={!running && unseen} offset={[-4, 4]} color="#f5582a">
+                <Badge count={running} size="small" dot={!running && unseen} offset={[-4, 4]} color="#f66c30">
                   <Button type="text" className="bell-btn" icon={<BellOutlined />} aria-label={bellLabel} aria-expanded={tasksOpen} onClick={() => setTasksOpen(!tasksOpen)} />
                 </Badge>
               </motion.span>

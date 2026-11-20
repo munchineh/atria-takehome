@@ -506,8 +506,11 @@ export function recommendationsFor(c: Creative): Recommendation[] {
     .map((r, i) => ({ r, i }))
     .filter(({ r }) => tier(r) < 2)
     .sort((a, b) => tier(a.r) - tier(b.r) || rank(b.r) - rank(a.r) || a.i - b.i)
-    .map(({ r }, i) => ({ ...r, priority: i + 1 }));
+    .map(({ r }, i) => ({ ...r, issue: glue(r.issue), fix: glue(r.fix), why: glue(r.why), issueDetail: glue(r.issueDetail), priority: i + 1 }));
 }
+
+/** 5c line breaks: joins the last two words so short labels never end on a one-word line. */
+export const glue = (s: string) => s.replace(/ (\S+)$/, '\u00a0$1');
 
 function recsFor(c: Creative): Recommendation[] {
   if (REC_PROVIDERS[c.accountId]) return REC_PROVIDERS[c.accountId](c);

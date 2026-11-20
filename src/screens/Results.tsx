@@ -4,7 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
 import { CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, short, type Creative as CreativeT, type Recommendation } from '../data/mock';
+import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT, type Recommendation } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
 import { ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
@@ -290,7 +290,7 @@ export function Results() {
           <aside className="original-panel panel">
             <div className="t-label">{c.project ? 'Starting point' : 'Original'}</div>
             <Creative c={c} />
-            <div className="small ad-name">{short(c.name, 34)}</div>
+            <div className="small ad-name">{c.name}</div>
             {c.project ? (
               <div className="muted small">{c.project === 'clone' ? 'Cloned ad' : 'Made from scratch'} · not on Radar</div>
             ) : (
@@ -485,7 +485,7 @@ export function Results() {
           message.success({
             content: (
               <span>
-                {plural(picks.length, 'paused ad')} added to {short(audience, 24)} ·{' '}
+                {plural(picks.length, 'paused ad')} added to {audience} ·{' '}
                 <a onClick={() => message.info('Opens Meta Ads Manager in a new tab.')}>Open in Meta</a>
               </span>
             ),
@@ -503,7 +503,7 @@ export function Results() {
             return <AdArt key={p.id} slot={cur.img} copy={cur.copy} ratio={ratioFor(cur.img)} alt={p.angle} />;
           })}
         </div>
-        <p className="muted small">Their results come back to Radar as ads tagged “Variation of {short(c.name, 28)}”.</p>
+        <p className="muted small">Their results come back to Radar as ads tagged “Variation of {c.name}”.</p>
       </Modal>
 
       <CreateDialog

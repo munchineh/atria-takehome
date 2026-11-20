@@ -15,7 +15,6 @@ import {
   money,
   plural,
   recommendationsFor,
-  short,
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
@@ -250,7 +249,7 @@ export function AdDetail() {
         <Breadcrumb
           items={[
             { title: <Link to="/">Radar</Link> },
-            { title: <Tooltip title={c.name}>{short(c.name, 36)}</Tooltip> },
+            { title: <span className="crumb-name">{c.name}</span> },
           ]}
         />
         <Tooltip title="Set on Radar. Grades on this page use the same period.">
@@ -333,7 +332,7 @@ export function AdDetail() {
                   Created in Atria
                 </Tag>
                 <div>
-                  Variation of <Link to={`/ad/${parent.id}`}>{short(parent.name, 18)}</Link>
+                  Variation of <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
                 </div>
                 <div className="muted small">From “{recName(parent.id, 'cta')}” · Brief v1 · 12 Nov</div>
                 <Button size="small" type="link" style={{ padding: 0 }} onClick={() => nav(`/ad/${parent.id}/variations?round=job-hero-1`)}>
@@ -356,7 +355,7 @@ export function AdDetail() {
                     <Link key={m.id} to={`/ad/${m.id}`} className="made-row">
                       <Thumb c={m.c} size={40} />
                       <span className="small">
-                        <span className="made-name">{short(m.c.name, 30)}</span>
+                        <span className="made-name">{m.c.name}</span>
                         <span className="muted">
                           Overall {m.c.overall} · {ACCOUNT.conversionMetric} {money(m.c.values.cpa)} · {statusLabel(m.c)}
                         </span>
@@ -431,7 +430,7 @@ export function AdDetail() {
 
           {parent && (
             <motion.div variants={fadeUp} className="already-tried">
-              <HistoryOutlined /> This variation already applies: <b>{recName(parent.id, 'cta')}</b>
+              <HistoryOutlined /> <span>This variation already applies: <b>{recName(parent.id, 'cta')}</b></span>
             </motion.div>
           )}
 
@@ -502,7 +501,7 @@ export function AdDetail() {
               animate={{ opacity: 1, transition: { delay: 0.16, duration: duration.base, ease: ease.standard } }}
               exit={{ opacity: 0, transition: { duration: duration.instant } }}
             >
-              <ConfigProvider theme={{ algorithm: antdTheme.darkAlgorithm, token: { colorPrimary: '#f5582a', colorBgContainer: '#2a272e', colorBgElevated: '#2a272e', colorBorder: '#3d3942', colorBorderSecondary: '#333037', colorText: '#ece9ef', colorTextSecondary: '#a8a3ad', colorTextTertiary: '#8c8791', colorTextPlaceholder: '#7d7883', colorTextDisabled: '#6b6670', colorBgContainerDisabled: '#2a272e', borderRadius: 6 } }}>
+              <ConfigProvider theme={{ algorithm: antdTheme.darkAlgorithm, token: { colorPrimary: '#f66c30', colorBgContainer: '#2a272e', colorBgElevated: '#2a272e', colorBorder: '#3d3942', colorBorderSecondary: '#333037', colorText: '#ece9ef', colorTextSecondary: '#a8a3ad', colorTextTertiary: '#8c8791', colorTextPlaceholder: '#7d7883', colorTextDisabled: '#6b6670', colorBgContainerDisabled: '#2a272e', borderRadius: 6 } }}>
                 <Body creative={c} recCount={selected.length} panel onCancel={() => setDialog(false)} onCreate={create} />
               </ConfigProvider>
             </motion.div>

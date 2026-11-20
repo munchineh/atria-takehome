@@ -3,7 +3,7 @@ import { Button, Empty, Progress, Tag } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
-import { short, plural } from '../data/mock';
+import { plural } from '../data/mock';
 import { accountOf, findCreative, recName, timeAgo, useStore, type Job } from '../data/store';
 import { Thumb } from './Thumb';
 import { duration, ease, listDelay, spring } from '../motion/tokens';
@@ -47,7 +47,7 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
           {j.state === 'queued' && <span className="muted">Queued · {plural(j.count, 'variation')}</span>}
           {j.state === 'generating' && (
             <>
-              <Progress percent={Math.round(j.progress * 100)} size="small" showInfo={false} strokeColor="#f5582a" className="task-progress" />
+              <Progress percent={Math.round(j.progress * 100)} size="small" showInfo={false} strokeColor="#f66c30" className="task-progress" />
               <span className="muted">
                 Generating · {Math.round(j.progress * 100)}% · {timeLeft(j.progress)}
               </span>
@@ -137,11 +137,11 @@ function PanelBody({ onClose }: { onClose: () => void }) {
                     <span>
                       {j.state === 'ready' ? (
                         <>
-                          {plural(j.count - j.failed.length, 'variation')} ready for <b>{short(c.name, 22)}</b>
+                          {plural(j.count - j.failed.length, 'variation')} ready for <b>{c.name}</b>
                         </>
                       ) : (
                         <>
-                          Couldn't create variations for <b>{short(c.name, 22)}</b>. {j.cost} credits returned.
+                          Couldn't create variations for <b>{c.name}</b>. {j.cost} credits returned.
                         </>
                       )}
                       <span className="muted small block">{timeAgo(j.minutesAgo)}</span>

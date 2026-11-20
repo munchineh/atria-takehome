@@ -49,7 +49,7 @@ function RoundRow({ j }: { j: Job }) {
         <span className="t-help">{fixes}</span>
         {j.state === 'generating' || j.state === 'queued' ? (
           <span className="ov-round-progress">
-            <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="#f5582a" />
+            <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
             <span className="small muted">{j.state === 'queued' ? 'Queued' : `Generating ${j.count} · ${Math.round(j.progress * 100)}%`}</span>
           </span>
         ) : (
@@ -122,9 +122,9 @@ export function Overview() {
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-kpis" aria-label="Spend and results">
         <Kpi hero label="Spend" value={money(spend).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} />
         <Kpi label="Purchases" value={Math.round(purchases).toLocaleString('en-US')} help="From ads graded on CPA" />
-        <Kpi label="CPA" value={money(cpa)} help={`Account average ${money(account.avg.cpa)}`} />
-        <Kpi label="ROAS" value={roas.toFixed(2)} help="Revenue per $1 of spend" />
-        <Kpi label="CTR" value={`${ctr.toFixed(2)}%`} help={`Account average ${account.avg.ctr.toFixed(2)}%`} />
+        <Kpi label="CPA" value={money(cpa)} help={`Account average\u00a0${money(account.avg.cpa)}`} />
+        <Kpi label="ROAS" value={roas.toFixed(2)} help={"Revenue per $1 of\u00a0spend"} />
+        <Kpi label="CTR" value={`${ctr.toFixed(2)}%`} help={`Account average\u00a0${account.avg.ctr.toFixed(2)}%`} />
       </motion.section>
 
       <div className="ov-grid">
