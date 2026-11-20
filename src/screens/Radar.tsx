@@ -101,7 +101,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
       </>
     );
   return (
-    <Popover content={body} title={title} trigger="click" placement="rightTop" open={open} onOpenChange={setOpen} classNames={{ root: 'runs-pop' }}>
+    <Popover content={body} title={title} trigger="click" placement="rightTop" arrow={{ pointAtCenter: true }} open={open} onOpenChange={setOpen} classNames={{ root: 'runs-pop' }}>
       {trigger}
     </Popover>
   );

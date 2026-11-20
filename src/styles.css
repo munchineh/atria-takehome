@@ -784,3 +784,5 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .data-meter-num { font-size: 13px; color: #6b6b6b; font-variant-numeric: tabular-nums; }
 .data-meter-num b { color: #1f1f1f; font-weight: 600; }
 .data-meter .ant-progress { margin: 0; }
+.runs-copy:last-child { border-bottom: 0; }
+.runs-out { justify-self: end; margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; }
