@@ -1,10 +1,10 @@
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Badge, Button, Checkbox, Empty, Grid, Popover, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
+import { Alert, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, BranchesOutlined, DownOutlined, CloseOutlined } from '@ant-design/icons';
+import { FilterOutlined, SubnodeOutlined, DownOutlined, CloseOutlined, ExportOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { METRIC_META, RELIABLE_SPEND, TABS, WINDOW, money, sourceOf, statusOf as adStatusOf, plural, short, type Creative, type Media, type MetricKey } from '../data/mock';
+import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
@@ -14,27 +14,125 @@ import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../mo
 
 type TabKey = (typeof TABS)[number]['key'];
 
-const MediaTag = ({ m }: { m: Media }) => <Tag className={`media-tag media-${m.toLowerCase()}`}>{m}</Tag>;
+/** Variation number: order among the ads made from the same parent (layout 2, Mancini 20 Nov 17:06). */
+function variationNo(c: Creative) {
+  if (!c.variationOf) return 0;
+  return ALL_CREATIVES.filter((x) => x.variationOf === c.variationOf).findIndex((x) => x.id === c.id) + 1;
+}
 
-function NameCell({ c, morph = true }: { c: Creative; morph?: boolean }) {
+/** "Where it runs": floating panel on desktop, bottom sheet on mobile (Mancini, 20 Nov 17:03). */
+function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
+  const [open, setOpen] = useState(false);
+  const [openCopy, setOpenCopy] = useState<string | null>(c.ads[0]?.id ?? null);
+  const { windowDays } = useStore();
+  const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
+  const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
+  const body = (
+    <div className="runs" onClick={(e) => e.stopPropagation()}>
+      {c.ads.length > 1 && <div className="muted small">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</div>}
+      {anyPaused && <div className="runs-note small">Paused copies were turned off in Meta. Grades still cover the {win.short.toLowerCase()}.</div>}
+      <div className="runs-place">
+        <div className="muted small">Spend by placement</div>
+        <div className="placement-bar">
+          {c.placements.map((p, i) => (
+            <i key={p.label} style={{ width: `${p.share * 100}%` }} className={`seg seg-${i}`} />
+          ))}
+        </div>
+        <div className="small">{c.placements.map((p) => `${p.label} ${Math.round(p.share * 100)}%`).join(' · ')}</div>
+      </div>
+      <div className="runs-list">
+        {c.ads.map((a) => {
+          const f = copyFacts(a);
+          const st = copyStatus(c, a);
+          const isOpen = openCopy === a.id || c.ads.length === 1;
+          return (
+            <div key={a.id} className={`runs-copy ${isOpen ? 'open' : ''}`}>
+              <button className="runs-copy-head" onClick={() => setOpenCopy(isOpen ? null : a.id)} aria-expanded={isOpen} disabled={c.ads.length === 1}>
+                <i className={`live-dot ${st === 'Paused' ? 'paused' : ''}`} />
+                <span className="runs-camp">{a.campaign}</span>
+                <span className="muted small">
+                  {st === 'Paused' ? 'Paused' : 'Running'} · {Math.round((a.spend / c.spend) * 100)}% of spend
+                </span>
+                {c.ads.length > 1 && <DownOutlined className={`runs-chev ${isOpen ? 'up' : ''}`} />}
+              </button>
+              {isOpen && (
+                <div className="runs-kv small">
+                  <span className="muted">Platform</span>
+                  <span>Meta</span>
+                  <span className="muted">Audience</span>
+                  <span>{a.adSet}</span>
+                  <span className="muted">Status</span>
+                  <span>{st === 'Paused' ? `Paused · ran ${f.days} days from ${f.since}` : `Running since ${f.since} · ${f.days} days`}</span>
+                  <span className="muted">Spend</span>
+                  <span>{money(a.spend)} in the {win.short.toLowerCase()}</span>
+                  <span className="muted">{ACCOUNT.conversionMetric}</span>
+                  <span>
+                    {money(a.cpa)} · account average {money(ACCOUNT.avg.cpa)}
+                  </span>
+                  <Tooltip title="How many times the average person saw this copy">
+                    <span className="muted dotted">Frequency</span>
+                  </Tooltip>
+                  <span>{f.frequency}</span>
+                  <span className="muted">Ad ID</span>
+                  <span>{a.id}</span>
+                  <a className="runs-out" onClick={(e) => e.preventDefault()} href="#">
+                    Open in Meta Ads Manager <ExportOutlined />
+                  </a>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+  const title = `Where it runs · ${c.ads.length}`;
+  const trigger = (
+    <button
+      className="copies-link"
+      onClick={(e) => {
+        e.stopPropagation();
+        if (mobile) setOpen(true);
+      }}
+    >
+      {copiesLabel(c)}
+    </button>
+  );
+  if (mobile)
+    return (
+      <>
+        {trigger}
+        <Drawer open={open} onClose={() => setOpen(false)} placement="bottom" size="auto" title={title} className="runs-sheet" styles={{ body: { paddingTop: 4 } }}>
+          {body}
+        </Drawer>
+      </>
+    );
+  return (
+    <Popover content={body} title={title} trigger="click" placement="rightTop" open={open} onOpenChange={setOpen} classNames={{ root: 'runs-pop' }}>
+      {trigger}
+    </Popover>
+  );
+}
+
+function NameCell({ c, morph = true, mobile = false }: { c: Creative; morph?: boolean; mobile?: boolean }) {
   const parent = c.variationOf ? ALL_CREATIVES.find((x) => x.id === c.variationOf) : null;
+  const n = variationNo(c);
   return (
     <div className="name-cell">
       <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
-        <Tooltip title={c.name} placement="topLeft" mouseEnterDelay={0.6}>
-          <div className="name ellipsis">{c.name}</div>
-        </Tooltip>
-        <div className="name-sub">
-          <MediaTag m={c.media} />
-          <span className="muted">
-            {plural(c.ads.length, 'copy', 'copies')} {adStatusOf(c) === 'Paused' ? 'paused' : 'running'}
-          </span>
+        <div className="name-line">
+          <span className="name ellipsis">{c.name}</span>
           {parent && (
-            <Tag icon={<BranchesOutlined />} className="variation-tag">
-              Variation of {short(parent.name, 10)}
-            </Tag>
+            <Tooltip title={`Variation ${n} of ${parent.name}`}>
+              <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>
+                <SubnodeOutlined /> {n}
+              </span>
+            </Tooltip>
           )}
+        </div>
+        <div className="name-sub">
+          <WhereItRuns c={c} mobile={mobile} />
         </div>
       </div>
     </div>
@@ -77,6 +175,7 @@ const metricCol = (k: MetricKey, key: string, width: number) => ({
 });
 
 const FILTER_GROUPS: { label: string; options: string[] }[] = [
+  { label: 'Media', options: ['Image', 'Video', 'Carousel'] },
   { label: 'Placement', options: ['Feed', 'Stories', 'Reels'] },
   { label: 'Ad status', options: ['Active', 'Paused'] },
   { label: 'Source', options: ['Uploaded', 'Created in Atria'] },
@@ -84,22 +183,38 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
 
 type Picked = Record<string, string[]>;
 
-/** Icon-only Filters button (L-059). Media type lives here too; nothing picked in a group means all. */
+/** Icon-only Filters button (L-059). Compact rows; campaigns are searched, not listed (Mancini, 20 Nov 17:01). */
 function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
   const total = Object.values(picked).flat().length;
-  const groups = [{ label: 'Media', options: ['Image', 'Video', 'Carousel'] }, { label: 'Campaign', options: campaigns }, ...FILTER_GROUPS];
+  const row = (g: { label: string; options: string[] }) => (
+    <div key={g.label} className="filters-row">
+      <div className="filters-label">{g.label}</div>
+      <Checkbox.Group
+        value={picked[g.label] ?? []}
+        onChange={(v) => setPicked({ ...picked, [g.label]: v as string[] })}
+        options={g.options.map((o) => ({ label: o, value: o }))}
+      />
+    </div>
+  );
   const content = (
-    <div className="filters-pop">
-      {groups.map((g) => (
-        <div key={g.label} className="filters-group">
-          <div className="filters-label">{g.label}</div>
-          <Checkbox.Group
-            value={picked[g.label] ?? []}
-            onChange={(v) => setPicked({ ...picked, [g.label]: v as string[] })}
-            options={g.options.map((o) => ({ label: o, value: o }))}
-          />
-        </div>
-      ))}
+    <div className="filters-pop compact">
+      {row(FILTER_GROUPS[0])}
+      <div className="filters-row">
+        <div className="filters-label">Campaign</div>
+        <Select
+          mode="multiple"
+          allowClear
+          showSearch
+          placeholder="Search campaigns"
+          value={picked.Campaign ?? []}
+          onChange={(v) => setPicked({ ...picked, Campaign: v })}
+          options={campaigns.map((cmp) => ({ label: cmp, value: cmp }))}
+          className="filters-search"
+          maxTagCount="responsive"
+          getPopupContainer={(n) => n.parentElement ?? document.body}
+        />
+      </div>
+      {FILTER_GROUPS.slice(1).map(row)}
       <div className="filters-foot">
         <Button size="small" type="text" disabled={!total} onClick={() => setPicked({})}>
           Clear all
@@ -108,7 +223,7 @@ function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; 
     </div>
   );
   return (
-    <Popover content={content} trigger="click" placement="bottomLeft">
+    <Popover content={content} trigger="click" placement="bottomRight">
       <Badge count={total} size="small" color="#f5582a">
         <Tooltip title="Filters">
           <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn" />
@@ -146,9 +261,38 @@ export function Radar() {
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
   const cards = !bp.md; // below tablet width
-  const { statusOf, accountId } = useStore();
+  const { statusOf, accountId, windowDays, setWindowDays } = useStore();
+  const { message } = App.useApp();
   const account = DEMO_ACCOUNTS.find((a) => a.id === accountId) ?? DEMO_ACCOUNTS[0];
-  const CREATIVES = account.creatives;
+  // Grades follow the window: changing it re-grades every ad (mock: a few move).
+  const CREATIVES = account.creatives.map((c) => graded(c, windowDays));
+  const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
+  const changeWindow = (days: number, undo = false) => {
+    const before = account.creatives.map((c) => graded(c, windowDays).tab);
+    const moved = account.creatives.filter((c, i) => graded(c, days).tab !== before[i]).length;
+    const prev = windowDays;
+    setWindowDays(days);
+    if (undo) return;
+    const w = WINDOWS.find((x) => x.days === days)!;
+    message.open({
+      key: 'window',
+      type: 'success',
+      duration: 5,
+      content: (
+        <span>
+          Grades now cover the {w.short.toLowerCase()}.{moved ? ` ${plural(moved, 'ad')} moved to a different tab.` : ''}{' '}
+          <a
+            onClick={() => {
+              changeWindow(prev, true);
+              message.destroy('window');
+            }}
+          >
+            Undo
+          </a>
+        </span>
+      ),
+    });
+  };
   const lowSpend = account.monthlySpend < RELIABLE_SPEND;
   const [tab, setTab] = useState<TabKey>('potential');
   const [picked, setPicked] = useState<Picked>({});
@@ -169,9 +313,9 @@ export function Radar() {
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
   const columns: ColumnsType<Creative> = [
-    { title: 'Creative', key: 'name', width: 290, fixed: 'left', render: (_, c) => <NameCell c={c} /> },
+    { title: 'Ad', key: 'name', width: 300, fixed: 'left', render: (_, c) => <NameCell c={c} /> },
     {
-      title: <Head label="Next step" tip="The weakest grade on this creative. Click the row to see the fix" />,
+      title: <Head label="Next step" tip="The weakest grade on this ad. Click the row to see the fix" />,
       key: 'rec',
       width: 235,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} />,
@@ -191,7 +335,7 @@ export function Radar() {
         <Typography.Title level={3} style={{ margin: 0 }}>
           Radar
         </Typography.Title>
-        <p className="muted desc">Grades each creative against the others in this account, so you can see what to fix first</p>
+        <p className="muted desc">Grades each ad against the others in this account, so you can see what to fix first</p>
       </div>
 
       <AnimatePresence initial={false}>
@@ -208,8 +352,18 @@ export function Radar() {
 
       <div className="filter-bar">
         <span className="window muted">
-          <span className="window-long">{WINDOW.long}</span>
-          <span className="window-short">{WINDOW.short}</span> ·{' '}
+          <span className="muted">Grades from the</span>
+          <Select
+            size="small"
+            variant="borderless"
+            value={windowDays}
+            onChange={(d) => changeWindow(d)}
+            popupMatchSelectWidth={false}
+            className="window-select"
+            aria-label="Grade window"
+            options={WINDOWS.map((w) => ({ value: w.days, label: w.short.replace('Last', 'last') }))}
+          />
+          <span className="window-long">· {win.long.split(' · ')[1]}</span> ·{' '}
           <Popover content={HOW_GRADING} title="How grading works" trigger="click" placement="bottomRight">
             <Button type="link" size="small" className="inline-link">
               How grading works
@@ -245,11 +399,11 @@ export function Radar() {
       {rows.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" className="radar-empty">
           {tab === 'winners' && Object.values(picked).flat().length === 0 ? (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>Nothing in Best in the last 60 days</b><br />No creative is strong on every graded metric yet. The closest are under Improve.</>}>
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>Nothing in Best in the {win.short.toLowerCase()}</b><br />No ad is strong on every graded metric yet. The closest are under Improve.</>}>
               <Button onClick={() => setTab('potential')}>View Improve</Button>
             </Empty>
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No creatives match these filters in this tab</b>}>
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters in this tab</b>}>
               {!(Object.values(picked).flat().length === 0) && <Button onClick={() => setPicked({})}>Clear filters</Button>}
             </Empty>
           )}
@@ -266,7 +420,7 @@ export function Radar() {
                 animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
                 exit={{ opacity: 0, transition: { duration: duration.instant } }}
               >
-                <NameCell c={c} morph={false} />
+                <NameCell c={c} morph={false} mobile />
                 <StatusCell creative={c} status={statusOf(c.id)} />
                 <div className="card-row">
                   <span className="card-overall">
@@ -323,7 +477,7 @@ export function Radar() {
           size="middle"
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
-          pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'creative'), showSizeChanger: false }}
+          pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false }}
         />
       )}
     </motion.div>

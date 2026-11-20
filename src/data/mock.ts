@@ -55,6 +55,8 @@ export interface MetaAd {
   adSet: string;
   spend: number;
   cpa: number;
+  /** Per-copy status; falls back to the ad's status. */
+  status?: 'Active' | 'Paused';
 }
 
 export interface Recommendation {
@@ -107,10 +109,10 @@ export const sourceOf = (c: Creative) => (c.variationOf ? 'Created in Atria' : '
 export const statusOf = (c: Creative) => c.status ?? 'Active';
 
 const camp = {
-  prosp: 'MM_Prospecting_Broad_US_Advantage+_Squishies_Q4-2026_CBO_7DC',
-  retarget: 'MM_Retargeting_Website-Visitors-30D_US_Squishies_Q4-2026_ABO',
-  test: 'MM_Creative-Testing_Static_US_Multi-Mood_Oct-2026',
-  gifting: 'MM_Prospecting_Gifting_US-CA_Holiday-2026_Advantage+_CBO',
+  prosp: 'Squishies · Broad US · Q4',
+  retarget: 'Retargeting · Site visitors',
+  test: 'Creative testing · October',
+  gifting: 'Holiday gifting · US and CA',
 };
 const feedHeavy = [
   { label: 'Feed', share: 0.7 },
@@ -133,7 +135,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1090245',
     accountId: 'moody-mochi',
-    name: 'MM-1090245_Static_ar1:1_Hero_Sad-Pink_Squish-Deal',
+    name: 'Sad Pink · Feeling squishy?',
     product: 'Sad Pink mochi',
     media: 'Image',
     img: 'r01',
@@ -153,7 +155,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-carousel',
     accountId: 'moody-mochi',
-    name: 'MM_Carousel_All-Moods_Collection_8-Cards',
+    name: 'All moods · Collection',
     product: 'Mood collection',
     media: 'Carousel',
     img: 'r04',
@@ -170,12 +172,13 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1086424',
     accountId: 'moody-mochi',
-    name: 'MM-1086424_Static_ar1:1_In-Hand_Lifestyle',
+    name: 'Sad Pink · Fits in your palm',
     product: 'Sad Pink mochi',
     media: 'Image',
     img: 'r02',
     copy: { head: 'FITS IN YOUR PALM', cta: 'SHOP NOW', tone: 'dark' },
-    ads: ads(6, 29901000, camp.test, 'Static_Test', 13453.68, 26.4),
+    // One of six copies paused, to show the mixed state ("5 running · 1 paused").
+    ads: ads(6, 29901000, camp.test, 'Static_Test', 13453.68, 26.4).map((a, i) => (i === 5 ? { ...a, status: 'Paused' as const } : a)),
     overall: 'C-',
     grades: { conversion: 'C', hook: null, retention: null, ctr: 'D' },
     values: { cpa: 26.4, ctr: 0.92 },
@@ -187,7 +190,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1090245-v2',
     accountId: 'moody-mochi',
-    name: 'MM-1090245_v2_Specific-CTA_Pick-Your-Mood',
+    name: 'Sad Pink · Pick your mood',
     product: 'Sad Pink mochi',
     media: 'Image',
     img: 'x04',
@@ -205,7 +208,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1090247',
     accountId: 'moody-mochi',
-    name: 'MM-1090247_Static_ar4:5_Mystery-Box-Stack',
+    name: 'Mystery box · Stack',
     product: 'Mystery mood box',
     media: 'Image',
     img: 'r03',
@@ -222,7 +225,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-bau-030',
     accountId: 'moody-mochi',
-    name: 'mm_bau_none_Batch030B_Desk-Buddy_Static',
+    name: 'Desk buddy · Your new desk buddy',
     product: 'Desk buddy mochi',
     media: 'Image',
     img: 'r05',
@@ -239,7 +242,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'vid-unboxing',
     accountId: 'moody-mochi',
-    name: 'vid_creator_unboxing_Mystery-Box_Hook-v3',
+    name: 'Mystery box · Unboxing',
     product: 'Mystery mood box',
     media: 'Video',
     img: 'v01',
@@ -255,7 +258,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'vid-ugc',
     accountId: 'moody-mochi',
-    name: '261012.2 - UGC talking head - Squish Review_Video',
+    name: 'Sad Pink · Squish review',
     product: 'Sad Pink mochi',
     media: 'Video',
     img: 'v02',
@@ -271,7 +274,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1090245-v3',
     accountId: 'moody-mochi',
-    name: 'MM-1090245_v3_Bold-Offer_3-for-36',
+    name: 'Sad Pink · 3 for $36',
     product: 'Sad Pink mochi',
     media: 'Image',
     img: 'x05c',
@@ -289,7 +292,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1090245-v4',
     accountId: 'moody-mochi',
-    name: 'MM-1090245_v4_Demonstration_Back-In-Shape',
+    name: 'Sad Pink · Back in shape',
     product: 'Sad Pink mochi',
     media: 'Image',
     img: 'x03c',
@@ -307,7 +310,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1088102',
     accountId: 'moody-mochi',
-    name: 'MM-1088102_Static_ar9:16_Close-Up_Squish-Me',
+    name: 'Sad Pink · Squish me',
     product: 'Sad Pink mochi',
     media: 'Image',
     img: 'x01',
@@ -325,7 +328,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'mm-1087530',
     accountId: 'moody-mochi',
-    name: 'MM-1087530_Static_ar1:1_Comparison_Not-Your-Usual',
+    name: 'Sad Pink · Not your usual',
     product: 'Mood collection',
     media: 'Image',
     img: 'x02',
@@ -343,7 +346,7 @@ export const CREATIVES: Creative[] = [
   {
     id: 'vid-asmr',
     accountId: 'moody-mochi',
-    name: 'vid_asmr_slow-rise_Squish-Loop_15s',
+    name: 'Sad Pink · Slow-rise ASMR',
     product: 'Sad Pink mochi',
     media: 'Video',
     img: 'v02',
@@ -476,12 +479,12 @@ export const SMALL_CREATIVES: Creative[] = [
   {
     id: 'tt-toaster-static',
     accountId: 'tiny-toast',
-    name: 'TTC_Mini-Toaster_Static_ar4:5_Morning-Ritual',
+    name: 'Mini toaster · Morning ritual',
     product: 'Mini toaster',
     media: 'Image',
     img: 't01',
     copy: { head: 'TOAST FOR ONE', cta: 'SHOP NOW', tone: 'dark' },
-    ads: [{ id: '120240118830021', campaign: 'TTC_Prospecting_Broad_US_Mini-Toaster_Q4-2026', adSet: 'Broad_25-54', spend: 3120.4, cpa: 31.2 }],
+    ads: [{ id: '120240118830021', campaign: 'Mini toaster · Broad US · Q4', adSet: 'Broad_25-54', spend: 3120.4, cpa: 31.2 }],
     overall: 'C',
     grades: { conversion: 'C', hook: null, retention: null, ctr: 'D' },
     values: { cpa: 31.2, ctr: 0.71 },
@@ -493,11 +496,11 @@ export const SMALL_CREATIVES: Creative[] = [
   {
     id: 'tt-ugc-video',
     accountId: 'tiny-toast',
-    name: 'TTC_UGC_Video_Breakfast-Review_v2',
+    name: 'Mini toaster · Breakfast review',
     product: 'Mini toaster',
     media: 'Video',
     img: 't02',
-    ads: [{ id: '120240118830044', campaign: 'TTC_Prospecting_Broad_US_Mini-Toaster_Q4-2026', adSet: 'Broad_25-54', spend: 2410.0, cpa: 26.8 }],
+    ads: [{ id: '120240118830044', campaign: 'Mini toaster · Broad US · Q4', adSet: 'Broad_25-54', spend: 2410.0, cpa: 26.8 }],
     overall: 'B-',
     grades: { conversion: 'B', hook: 'B', retention: 'C', ctr: 'B' },
     values: { cpa: 26.8, ctr: 1.21, hookRate: 27, retention: 16 },
@@ -509,12 +512,12 @@ export const SMALL_CREATIVES: Creative[] = [
   {
     id: 'tt-bundle-static',
     accountId: 'tiny-toast',
-    name: 'TTC_Bundle_Static_ar1:1_Save-20',
+    name: 'Breakfast bundle · Save 20%',
     product: 'Toast bundle',
     media: 'Image',
     img: 't03',
     copy: { head: 'SAVE 20% ON THE SET', cta: 'SHOP NOW', tone: 'dark' },
-    ads: [{ id: '120240118830067', campaign: 'TTC_Retargeting_Website-Visitors-30D_US', adSet: 'WebVisitors_30D', spend: 1650.2, cpa: 41.9 }],
+    ads: [{ id: '120240118830067', campaign: 'Retargeting · Site visitors', adSet: 'WebVisitors_30D', spend: 1650.2, cpa: 41.9 }],
     overall: 'D+',
     grades: { conversion: 'D', hook: null, retention: null, ctr: 'C' },
     values: { cpa: 41.9, ctr: 0.96 },
@@ -527,9 +530,9 @@ export const SMALL_CREATIVES: Creative[] = [
 
 /** RA-15. One line per tab, saying what is true of the rows. */
 export const TABS: { key: TabKey; label: string; desc: string }[] = [
-  { key: 'winners', label: 'Best', desc: 'Strong on every graded metric. Scale these.' },
-  { key: 'potential', label: 'Improve', desc: 'Strong on one metric, weak on another. Fix the weak one.' },
-  { key: 'candidates', label: 'Rework', desc: 'Low grades on most metrics, with enough spend to be worth a new version.' },
+  { key: 'winners', label: 'Best', desc: 'Your strongest ads. Every graded metric is B or above.' },
+  { key: 'potential', label: 'Improve', desc: 'Doing well in places. A few changes could lift the rest.' },
+  { key: 'candidates', label: 'Rework', desc: 'Struggling on most metrics, but spending enough to be worth trying new variations.' },
 ];
 
 /** Sidebar accounts (all fictional). Only the first two are clickable demo accounts. */
@@ -541,3 +544,49 @@ export const SIZES = [
   { value: '9:16', label: '9:16 · 1080×1920 · Stories and Reels', placement: 'Stories' },
   { value: '1:1', label: '1:1 · 1080×1080 · Feed', placement: 'Feed square' },
 ];
+
+
+/** Status of one running copy (copy-level wins, else the ad's). */
+export const copyStatus = (c: Creative, a: MetaAd) => a.status ?? c.status ?? 'Active';
+
+/** Row sub-line: "2 copies running", "2 copies paused" or "5 running · 1 paused". */
+export function copiesLabel(c: Creative) {
+  const paused = c.ads.filter((a) => copyStatus(c, a) === 'Paused').length;
+  const running = c.ads.length - paused;
+  if (!paused) return `${plural(running, 'copy', 'copies')} running`;
+  if (!running) return `${plural(paused, 'copy', 'copies')} paused`;
+  return `${running} running · ${paused} paused`;
+}
+
+const hash = (s: string) => [...s].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+/** Mock per-copy facts for the "Where it runs" panel: start date, days live, frequency. */
+export function copyFacts(a: MetaAd) {
+  const h = hash(a.id);
+  const days = 6 + (h % 70);
+  const d = new Date(2026, 10, 20 - days);
+  return { days, since: `${d.getDate()} ${MONTHS[d.getMonth()]}`, frequency: (1.3 + ((h >> 3) % 22) / 10).toFixed(1) };
+}
+
+/** Grade windows (deck A7). Changing the window re-grades every ad; a few mock ads change. */
+export const WINDOWS = [
+  { days: 30, long: 'Last 30 days · 21 Oct to 19 Nov', short: 'Last 30 days' },
+  { days: 60, long: 'Last 60 days · 21 Sep to 19 Nov', short: 'Last 60 days' },
+  { days: 90, long: 'Last 90 days · 22 Aug to 19 Nov', short: 'Last 90 days' },
+];
+type Regrade = Partial<Pick<Creative, 'overall' | 'tab'>> & { grades?: Partial<Creative['grades']> };
+const REGRADE: Record<number, Record<string, Regrade>> = {
+  30: {
+    // Newer variations look better on recent data; an older static slips.
+    'mm-1090245-v4': { overall: 'B', tab: 'winners', grades: { conversion: 'B' } },
+    'mm-1088102': { overall: 'C', tab: 'candidates', grades: { ctr: 'D' } },
+  },
+  90: {
+    'mm-1090245-v3': { overall: 'B+', grades: { ctr: 'B' } },
+    'mm-1086424': { overall: 'C', tab: 'potential', grades: { conversion: 'B' } },
+  },
+};
+export function graded(c: Creative, days: number): Creative {
+  const r = REGRADE[days]?.[c.id];
+  return r ? { ...c, ...r, grades: { ...c.grades, ...r.grades } } : c;
+}

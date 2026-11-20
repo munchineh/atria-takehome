@@ -15,7 +15,7 @@ import {
   short,
   type Creative as CreativeT,
   type MetricKey,
-  type Recommendation, statusOf as adStatusOf } from '../data/mock';
+  type Recommendation, statusOf as adStatusOf, copyStatus } from '../data/mock';
 import { ALL_CREATIVES, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative, Thumb } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -230,7 +230,7 @@ export function AdDetail() {
                   {ads.map((a) => (
                     <div key={a.id} className="ad-row">
                       <div className="ad-row-id">
-                        <i className={`live-dot ${adStatusOf(c) === 'Paused' ? 'paused' : ''}`} aria-label={adStatusOf(c)} /> <span className="campaign">{a.campaign}</span>
+                        <i className={`live-dot ${copyStatus(c, a) === 'Paused' ? 'paused' : ''}`} aria-label={copyStatus(c, a)} /> <span className="campaign">{a.campaign}</span>
                         <ExportOutlined className="muted" aria-label="Open in Meta Ads Manager" role="link" />
                       </div>
                       <div className="ad-fields muted small">

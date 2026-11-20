@@ -107,6 +107,9 @@ interface Store {
   deleteVariation: (jobId: string, vid: string) => void;
   /** Demo 1: add shortlisted variations as paused ads. */
   launch: (jobId: string, vids: string[], audience: string) => void;
+  /** Grade window in days (30, 60, 90). The account default is 60. */
+  windowDays: number;
+  setWindowDays: (d: number) => void;
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -129,6 +132,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [bump, setBump] = useState(0);
   const [finished, setFinished] = useState<Job[]>([]);
   const counter = useRef(0);
+  const [windowDays, setWindowDays] = useState(60);
   const [versions, setVersions] = useState<Record<string, Version[]>>(SEED_VERSIONS);
 
   useEffect(() => {
@@ -305,8 +309,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       deleteVariation: (jid, vid) => setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (v.id === vid ? { ...v, deleted: true } : v)) } : j))),
       launch: (jid, vids, audience) =>
         setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (vids.includes(v.id) ? { ...v, launched: { audience, date: TODAY_LABEL() } } : v)) } : j))),
+      windowDays,
+      setWindowDays,
     }),
-    [jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch],
+    [jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -1,4 +1,4 @@
-import { Progress } from 'antd';
+import { Progress, Tooltip } from 'antd';
 import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, METRIC_META, type Creative, type MetricKey } from '../data/mock';
@@ -11,7 +11,7 @@ export function diagnosis(c: Creative) {
   const rank = (g: string | null) => (g ? 'ABCD'.indexOf(g[0]) : -1);
   const worst = order.reduce<MetricKey | null>((w, k) => (rank(c.grades[k]) > (w ? rank(c.grades[w]) : -1) ? k : w), null);
   if (!worst) return 'Not enough data to grade';
-  if (rank(c.grades[worst]) <= 1) return 'No fix needed · all grades B or above';
+  if (rank(c.grades[worst]) <= 1) return 'No fix needed';
   const metric = worst === 'conversion' ? ACCOUNT.conversionMetric : worst === 'ctr' ? 'CTR' : METRIC_META[worst].label.toLowerCase();
   return `Fix ${metric} · ${c.grades[worst]}`;
 }
@@ -26,7 +26,13 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
           {status.kind === 'idle' && (
             <>
               {healthy ? <CheckCircleFilled className="status-icon calm" /> : <ThunderboltOutlined className="status-icon" />}
-              <span>{diagnosis(creative)}</span>
+              {healthy ? (
+                <Tooltip title="All grades are B or above">
+                  <span>{diagnosis(creative)}</span>
+                </Tooltip>
+              ) : (
+                <span>{diagnosis(creative)}</span>
+              )}
               <RightOutlined className="status-chev" />
             </>
           )}
@@ -39,7 +45,7 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
           {status.kind === 'generating' && (
             <>
               <Progress type="circle" percent={Math.round(status.progress * 100)} size={14} showInfo={false} strokeWidth={14} />
-              <span>Generating {status.count}…</span>
+              <span>Generating {status.count}</span>
             </>
           )}
           {status.kind === 'ready' && (

@@ -1,5 +1,6 @@
-import { Popover, Tag, Tooltip } from 'antd';
-import { ACCOUNT, METRIC_META, WINDOW, gradeBand, type Creative, type Grade, type MetricKey } from '../data/mock';
+import { Grid, Popover, Tag, Tooltip } from 'antd';
+import { useStore } from '../data/store';
+import { ACCOUNT, METRIC_META, WINDOWS, gradeBand, type Creative, type Grade, type MetricKey } from '../data/mock';
 
 const COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'red' };
 
@@ -17,8 +18,17 @@ export function GradeChip({ g }: { g: Grade }) {
   );
 }
 
+/** Hover on desktop, tap on touch (Mancini, 20 Nov 17:00). */
+function useGradeTrigger() {
+  const bp = Grid.useBreakpoint();
+  const { windowDays } = useStore();
+  const touch = typeof window !== 'undefined' && window.matchMedia?.('(pointer: coarse)').matches;
+  return { trigger: (!bp.md || touch ? 'click' : 'hover') as 'click' | 'hover', windowLong: (WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1]).long };
+}
+
 /** R6: click a grade for the band, the number and whether lower or higher is better (RA-35 to RA-38). */
 export function GradeTag({ creative, metric }: { creative: Creative; metric: MetricKey }) {
+  const { trigger, windowLong } = useGradeTrigger();
   const g = creative.grades[metric];
   if (!g) return <GradeChip g={g} />;
   const meta = METRIC_META[metric];
@@ -35,11 +45,11 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
       <p className="grade-pop-num">
         {name} {meta.unit(value)}. <span className="muted">Account average {meta.unit(avg)}. {meta.lowerIsBetter ? 'Lower' : 'Higher'} is better.</span>
       </p>
-      <p className="muted small">{WINDOW.long}</p>
+      <p className="muted small">{windowLong}</p>
     </div>
   );
   return (
-    <Popover content={content} trigger="click" placement="bottom">
+    <Popover content={content} trigger={trigger} placement="bottom" mouseEnterDelay={0.15}>
       <button className="grade-btn" onClick={(e) => e.stopPropagation()} aria-label={`${meta.label} grade ${g}. Show explanation`}>
         <GradeChip g={g} />
       </button>
@@ -49,6 +59,7 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
 
 /** Overall grade shows its breakdown (RA-39, RA-40). */
 export function OverallTag({ creative }: { creative: Creative }) {
+  const { trigger, windowLong } = useGradeTrigger();
   const parts = (Object.keys(METRIC_META) as MetricKey[]).filter((k) => creative.grades[k]);
   const content = (
     <div className="grade-pop" onClick={(e) => e.stopPropagation()}>
@@ -64,11 +75,11 @@ export function OverallTag({ creative }: { creative: Creative }) {
         ))}
       </div>
       {creative.media !== 'Video' && <p className="muted small">Hook and retention are graded on video only</p>}
-      <p className="muted small">{WINDOW.long}</p>
+      <p className="muted small">{windowLong}</p>
     </div>
   );
   return (
-    <Popover content={content} trigger="click" placement="bottom">
+    <Popover content={content} trigger={trigger} placement="bottom" mouseEnterDelay={0.15}>
       <button className="grade-btn" onClick={(e) => e.stopPropagation()} aria-label={`Overall grade ${creative.overall}. Show explanation`}>
         <GradeChip g={creative.overall} />
       </button>

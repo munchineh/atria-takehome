@@ -154,7 +154,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                 <SyncOutlined /> Synced 1 day ago
               </span>
             )}
-            <Tooltip title={`Credits left in this workspace. One variation uses ${ACCOUNT.creditsPerImage}`}>
+            <Tooltip title={`Credits left in this workspace. Each image Atria makes uses ${ACCOUNT.creditsPerImage} credits.`}>
               <span className="credits">{credits.toLocaleString()} credits</span>
             </Tooltip>
             <Tooltip title={tasksOpen ? '' : 'Tasks'}>
