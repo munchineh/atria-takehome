@@ -622,8 +622,14 @@ Run for every page touched, before `npm run build` and commit.
 
 New decisions go here, newest last. A row here overrides any "Open" default above. Owner is who implements it.
 
-Open items waiting for Mancini (defaults are in force until a row is added): date and time format (R-M10), "copy" collision (R-T4), suggestion vs recommendation (R-T5), period rule (R-M3), radius 6/8 vs 10/14 (7.4), B grade color (7.3), active tab color (7.3), white text on orange (R-C3), grade tag text darkening (R-C6), motion ladder (R-MO2), page title size 20 or 24 (section 1), Radar one-liner (11), page subtitles in build (11), "Recommended" tag color (K37), teaching card title (K55), "Next steps" header (K56).
+Open items waiting for Mancini (defaults are in force until a row is added): "copy" collision (R-T4), suggestion vs recommendation (R-T5), period rule (R-M3), radius 6/8 vs 10/14 (7.4), B grade color (7.3), active tab color (7.3), white text on orange (R-C3), grade tag text darkening (R-C6), motion ladder (R-MO2), page title size 20 or 24 (section 1), Radar one-liner (11), page subtitles in build (11), "Recommended" tag color (K37), teaching card title (K55), "Next steps" header (K56).
 
 | ID | Date | Question | Decision | Rules | Owner (Claude / Antigravity) | Status |
 |---|---|---|---|---|---|---|
-| DL-01 | | | | | | |
+| DL-01 | 21 Nov | Item 14: replace "Grades" with health tiers? | Keep "grade", A to D with plus and minus, and the plain-word bands (Top, Above average, Below average, Lowest). Tiers go in the roadmap as a question to test. | R-T | Both | Decided |
+| DL-02 | 21 Nov | Item 13: rename the switch to "My Brand Performance" and "Market Radar"? | Keep "Overview" and "Radar". Radar grades the account's own ads; it is not market data. Sliding pill polish only. | R-T, R-MO | Antigravity | Decided |
+| DL-03 | 21 Nov | Date format (R-M10) | Align with Atria's product: month first. "Sep 21 to Nov 19", "Nov 19, 13:43", year only when not the current year ("Oct 21, 2025"). Ranges still use "to". This replaces the R-M10 default. Date strings in data are Claude's; dates built in JSX are Antigravity's. | R-M10 | Both | Decided |
+| DL-04 | 21 Nov | Items 16, 17: lineage scope | Build the full lineage now: chain per ad (original, variation ads, versions), a change summary and reason on each step, grade change vs parent, and a repeat warning when a step goes back to something already tried. Claude ships data and logic (`src/data/lineage.ts`); Antigravity builds the timeline or tree UI. | R-H, R-R | Both | In progress |
+| DL-05 | 21 Nov | Item 12: "D.CTR" banner | There is no metric called D.CTR. The banner shows the metric and its grade ("CTR" with a D tag), then the full issue line with no truncation. | R-L, R-T | Antigravity | Decided |
+| DL-06 | 21 Nov | Items 1, 18: Creation sends people to Analytics | Gallery tiles open inside Creation and stay there. "View in Radar" is an explicit link. Claude owns routes and the gallery's account scoping. | R-P | Both | In progress |
+| DL-07 | 21 Nov | Revision vs Iteration (glossary) | Open: waiting for Mancini. Default: the UI keeps "version" and "variation". | R-T | Both | Open |
