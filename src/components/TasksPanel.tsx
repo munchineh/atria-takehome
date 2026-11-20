@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button, Empty, Progress } from 'antd';
 import { CloseOutlined, RightOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
+import { useWorkspace } from '../data/nav';
 import { useNavigate } from 'react-router-dom';
 import { plural } from '../data/mock';
 import { accountOf, findCreative, recName, timeAgo, useStore, type Job } from '../data/store';
@@ -80,12 +81,14 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
 function PanelBody({ onClose }: { onClose: () => void }) {
   const { jobs, markSeen } = useStore();
   const nav = useNavigate();
+  const ws = useWorkspace();
   const [tab, setTab] = useState<'tasks' | 'notes'>('tasks');
   const recent = jobs.filter((j) => j.minutesAgo < WEEK).sort((a, b) => a.minutesAgo - b.minutesAgo);
   const notes = recent.filter((j) => j.state === 'ready' || j.state === 'failed');
   const open = (j: Job) => {
     markSeen(j.id);
-    nav(`/ad/${j.creativeId}/variations?round=${j.id}`);
+    // Tasks keep you where you are: Creation stays in Creation, Analytics in Analytics.
+    nav(ws.roundPath(j.creativeId, j.id));
     onClose();
   };
 

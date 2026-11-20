@@ -93,16 +93,16 @@ const mk = (j: Omit<Job, 'variations' | 'count'>): Job => {
 /** Seeded jobs, consistent with the Radar rows and ad detail footers. */
 const SEED: Job[] = [
   // The round that produced the v2 variation. Older than 7 days, so it's not in Tasks (TR-10).
-  { ...mk({ id: 'job-hero-1', creativeId: 'mm-1090245', recIds: ['cta'], perRec: 8, cost: 32, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: '12 Nov', minutesAgo: 8 * 1440 }) },
+  { ...mk({ id: 'job-hero-1', creativeId: 'mm-1090245', recIds: ['cta'], perRec: 8, cost: 32, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: 'Nov 12', minutesAgo: 8 * 1440 }) },
   // Partly failed, ready and unseen: the dot on the bell and on the row.
   mk({ id: 'job-1086424', creativeId: 'mm-1086424', recIds: ['stop', 'offer'], perRec: 4, cost: 32, size: '2:3', state: 'ready', progress: 1, failed: [3, 7], unseen: true, date: TODAY_LABEL(), minutesAgo: 120 }),
   // Running now.
   mk({ id: 'job-1090247', creativeId: 'mm-1090247', recIds: ['different', 'offer'], perRec: 4, cost: 32, size: '2:3', state: 'generating', progress: 0.45, failed: [], unseen: false, date: TODAY_LABEL(), minutesAgo: 1 }),
   // Failed on the other account: Tasks spans accounts.
   // Cloned and from-scratch projects (Image ads only).
-  mk({ id: 'job-clone-1', creativeId: 'clone-1', recIds: ['different'], perRec: 4, cost: 16, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: '3 Nov', minutesAgo: 17 * 1440 }),
-  mk({ id: 'job-scratch-1', creativeId: 'scratch-1', recIds: ['offer', 'cta'], perRec: 3, cost: 24, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: '28 Oct', minutesAgo: 23 * 1440 }),
-  mk({ id: 'job-tt-1', creativeId: 'tt-toaster-static', recIds: ['stop', 'offer'], perRec: 2, cost: 16, size: '2:3', state: 'failed', progress: 0, failed: [], unseen: false, date: '19 Nov', minutesAgo: 1100 }),
+  mk({ id: 'job-clone-1', creativeId: 'clone-1', recIds: ['different'], perRec: 4, cost: 16, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: 'Nov 3', minutesAgo: 17 * 1440 }),
+  mk({ id: 'job-scratch-1', creativeId: 'scratch-1', recIds: ['offer', 'cta'], perRec: 3, cost: 24, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: 'Oct 28', minutesAgo: 23 * 1440 }),
+  mk({ id: 'job-tt-1', creativeId: 'tt-toaster-static', recIds: ['stop', 'offer'], perRec: 2, cost: 16, size: '2:3', state: 'failed', progress: 0, failed: [], unseen: false, date: 'Nov 19', minutesAgo: 1100 }),
 ];
 /** Screen 7 demo: the Bold offer variation on mm-1086424 already has 2 edits (e02, e03 are edits of it; L-021). */
 const SEED_VERSIONS: Record<string, Version[]> = {
@@ -113,7 +113,7 @@ const SEED_VERSIONS: Record<string, Version[]> = {
   ],
 };
 function TODAY_LABEL() {
-  return '20 Nov';
+  return 'Nov 20';
 }
 
 export interface StartOpts {
@@ -413,8 +413,10 @@ export function recName(creativeId: string, recId: string) {
 }
 
 export function timeAgo(min: number) {
+  // R-M10: relative times are spelled out and agree in number ("1 day ago", never "1 days ago").
+  const n = (v: number, unit: string) => `${v} ${unit}${v === 1 ? '' : 's'} ago`;
   if (min < 1) return 'just now';
-  if (min < 60) return `${Math.round(min)} min ago`;
-  if (min < 1440) return `${Math.round(min / 60)} h ago`;
-  return `${Math.round(min / 1440)} days ago`;
+  if (min < 60) return n(Math.round(min), 'minute');
+  if (min < 1440) return n(Math.round(min / 60), 'hour');
+  return n(Math.round(min / 1440), 'day');
 }

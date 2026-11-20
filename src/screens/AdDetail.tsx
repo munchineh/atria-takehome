@@ -390,7 +390,7 @@ export function AdDetail() {
                 <div>
                   Variation of <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
                 </div>
-                <div className="muted small">From “{recName(parent.id, 'cta')}” · Brief v1 · 12 Nov</div>
+                <div className="muted small">From “{recName(parent.id, 'cta')}” · Brief v1 · Nov 12</div>
                 <Button size="small" type="link" style={{ padding: 0 }} onClick={() => nav(`/ad/${parent.id}/variations?round=job-hero-1`)}>
                   View brief and images
                 </Button>

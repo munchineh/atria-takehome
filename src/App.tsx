@@ -47,6 +47,9 @@ function Routed() {
           <Route path="/ad/:id/variations" element={<Results />} />
           <Route path="/ad/:id/variations/:vid" element={<Editor key={loc.pathname} />} />
           <Route path="/creation" element={<ImageAds />} />
+          {/* DL-06: rounds and the editor also live under Creation, so gallery tiles never leave it. */}
+          <Route path="/creation/:id" element={<Results />} />
+          <Route path="/creation/:id/:vid" element={<Editor key={loc.pathname} />} />
         </Routes>
       </LayoutGroup>
     </Shell>
