@@ -1,5 +1,6 @@
 import { motion } from 'motion/react';
-import { CaretRightFilled, AppstoreFilled } from '@ant-design/icons';
+import { CaretRightFilled, AppstoreFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { useRef, useState } from 'react';
 import type { AdCopy, Creative as CreativeT } from '../data/mock';
 
 /**
@@ -94,4 +95,59 @@ export function AdArt({
 
 export function Creative({ c, layoutId }: { c: CreativeT; layoutId?: string }) {
   return <AdArt slot={c.img} copy={c.copy} media={c.media} layoutId={layoutId} alt={c.name} ratio={c.img.startsWith('x') ? '3 / 4' : '1 / 1'} />;
+}
+
+/** 5d C5d-02: a carousel ad reads as a carousel. Swipe (or arrows on desktop) through its cards, with a "1 / 5" counter and dots. */
+const CAROUSEL_CARDS: { slot: string; copy: AdCopy }[] = [
+  { slot: 'x12', copy: { head: 'THE FULL SET', cta: 'SHOP' } },
+  { slot: 'x09', copy: { head: 'SAD PINK', cta: 'SHOP' } },
+  { slot: 'x07', copy: { head: 'GOLD EDITION', cta: 'SHOP' } },
+  { slot: 'x08', copy: { head: 'GIFT IT', cta: 'SHOP' } },
+];
+export function CarouselArt({ c }: { c: CreativeT }) {
+  const cards = [{ slot: c.img, copy: c.copy as AdCopy }, ...CAROUSEL_CARDS];
+  const [i, setI] = useState(0);
+  const track = useRef<HTMLDivElement>(null);
+  const go = (n: number) => {
+    const el = track.current;
+    if (!el) return;
+    const k = Math.max(0, Math.min(cards.length - 1, n));
+    el.scrollTo({ left: k * el.clientWidth, behavior: 'smooth' });
+  };
+  return (
+    <div className="car" aria-roledescription="carousel" aria-label={`${c.name}, ${cards.length} cards`}>
+      <div
+        ref={track}
+        className="car-track"
+        onScroll={(e) => {
+          const el = e.currentTarget;
+          setI(Math.round(el.scrollLeft / el.clientWidth));
+        }}
+      >
+        {cards.map((k, n) => (
+          <div key={n} className="car-card" aria-label={`Card ${n + 1} of ${cards.length}`}>
+            <AdArt slot={k.slot} copy={k.copy} alt={`${c.name}, card ${n + 1}`} ratio="1 / 1" />
+          </div>
+        ))}
+      </div>
+      <span className="car-count">
+        {i + 1} / {cards.length}
+      </span>
+      {i > 0 && (
+        <button className="car-arrow prev" aria-label="Previous card" onClick={() => go(i - 1)}>
+          <LeftOutlined />
+        </button>
+      )}
+      {i < cards.length - 1 && (
+        <button className="car-arrow next" aria-label="Next card" onClick={() => go(i + 1)}>
+          <RightOutlined />
+        </button>
+      )}
+      <div className="car-dots" aria-hidden>
+        {cards.map((_, n) => (
+          <i key={n} className={n === i ? 'on' : ''} />
+        ))}
+      </div>
+    </div>
+  );
 }

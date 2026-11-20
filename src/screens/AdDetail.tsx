@@ -3,7 +3,7 @@ import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip, theme as antdTheme } from 'antd';
-import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -19,7 +19,7 @@ import {
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
 import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
-import { Creative, Thumb } from '../components/Thumb';
+import { CarouselArt, Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { Body, CreateDialog } from '../components/CreateDialog';
@@ -306,7 +306,12 @@ export function AdDetail() {
         <aside className="detail-left">
           <div className="panel creative-panel">
             <h4 className="panel-title ad-name">{c.name}</h4>
-            <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />
+            {/* 5d C5d-02: the same media pill as Radar, so the type reads before the image does. */}
+            <span className={`media-pill ${c.media.toLowerCase()} ad-media`}>
+              {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
+              {c.media === 'Carousel' ? 'Carousel · 5 cards' : c.media}
+            </span>
+            {c.media === 'Carousel' ? <CarouselArt c={c} /> : <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />}
           </div>
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">

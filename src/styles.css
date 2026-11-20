@@ -1097,3 +1097,31 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .ads-list .placement { border-top: 0 !important; padding-top: 0 !important; margin: 4px 0 4px !important; }
 .ads-list .ad-row:last-of-type { border-bottom: 0; padding-bottom: 0; }
 .ads-list > .placement { margin-top: 8px !important; }
+/* 5d C5d-02: media pill on the ad page + carousel viewer */
+.ad-media { align-self: flex-start; margin: -4px 0 12px; }
+.car { position: relative; }
+.car-track { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; border-radius: 6px; scrollbar-width: none; }
+.car-track::-webkit-scrollbar { display: none; }
+.car-card { flex: 0 0 100%; scroll-snap-align: start; }
+.car-card .ad-art { border-radius: 0; }
+.car-count { position: absolute; top: 8px; right: 8px; padding: 2px 8px; border-radius: 10px; background: rgba(0, 0, 0, 0.55); color: #fff; font-size: 12px; line-height: 18px; font-variant-numeric: tabular-nums; pointer-events: none; }
+.car-arrow { position: absolute; top: calc(50% - 26px); width: 32px; height: 32px; border-radius: 16px; border: 0; background: rgba(255, 255, 255, 0.92); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; color: #1f1f1f; font-size: 12px; opacity: 0; transition: opacity 0.16s; }
+.car:hover .car-arrow, .car-arrow:focus-visible { opacity: 1; }
+.car-arrow.prev { left: 8px; }
+.car-arrow.next { right: 8px; }
+@media (hover: none) { .car-arrow { display: none; } }
+.car-dots { display: flex; justify-content: center; gap: 6px; margin-top: 10px; }
+.car-dots i { width: 6px; height: 6px; border-radius: 3px; background: rgba(0, 0, 0, 0.15); transition: background-color 0.16s, width 0.16s; }
+.car-dots i.on { background: #f66c30; width: 16px; }
+@media (max-width: 767px) {
+  .creative-panel { grid-template-columns: 128px 1fr; grid-template-areas: 'art name' 'art media' 'art .'; }
+  .creative-panel > .ad-art, .creative-panel > .car { grid-area: art; width: 128px; min-width: 0; }
+  .creative-panel .ad-name { grid-area: name; margin-bottom: 6px !important; }
+  .creative-panel .ad-media { grid-area: media; margin: 0; }
+  .creative-panel .car-dots { margin-top: 6px; gap: 4px; }
+  .creative-panel .car-count { top: 4px; right: 4px; font-size: 11px; padding: 0 6px; }
+}
+@media (max-width: 767px) {
+  .creative-panel .car .ad-art { width: 100%; }
+  .creative-panel .ad-media { justify-self: start; }
+}
