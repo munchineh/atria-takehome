@@ -1,9 +1,10 @@
 import { Button, Empty, Grid, Progress, Select, Typography } from 'antd';
-import { CalendarOutlined, RightOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, MinusOutlined, RightOutlined, WarningOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
-import { GOALS, METRIC_META, TABS, WINDOWS, goalOf, graded, money, plural, type Creative, type TabKey } from '../data/mock';
-import { DEMO_ACCOUNTS, findCreative, timeAgo, useStore, type Job } from '../data/store';
+import { TABS, WINDOWS, goalOf, graded, money, plural, type TabKey } from '../data/mock';
+import { DEMO_ACCOUNTS, findCreative, timeAgo, useStore } from '../data/store';
+import { overviewBriefing, type Delta } from '../data/insights';
 import { GradeChip, OverallTag } from '../components/GradeTag';
 import { Thumb } from '../components/Thumb';
 import { usePeriodSheet } from '../components/PopSheet';
@@ -11,56 +12,33 @@ import { GOAL_ICON } from '../components/Goal';
 import { fadeUp, pageTransition } from '../motion/tokens';
 
 /**
- * Overview (chat 5c, Mancini 20 Nov 19:08): one page that ties the account together, so the
- * Overview/Radar switch has somewhere to go. Every block hands off to the screen that does the work:
- * grade counts open Radar tabs, Fix first opens the ad, rounds open their variations page.
- * Same period as Radar (one store value), so the numbers match the table.
+ * Overview (Item 15, R-H, R-P): structured around the four core user questions
+ * from overviewBriefing() — What to know now, What to do next, What you did, What changed.
  */
 
 const TAB_TONE: Record<TabKey, string> = { winners: 'best', potential: 'improve', candidates: 'rework' };
 
-/** The grade the ad's goal cares about most; falls back to Conversion when that grade doesn't apply (hook on an image). */
-function goalGrade(c: Creative) {
-  const goal = goalOf(c);
-  const m = GOALS[goal].metric;
-  const key = c.grades[m] ? m : 'conversion';
-  return { goal, metric: key, grade: c.grades[key] };
-}
-
-function Kpi({ label, value, help, hero }: { label: string; value: string; help: string; hero?: boolean }) {
+function DeltaBadge({ d }: { d: Delta }) {
+  const Icon = d.pct > 0 ? ArrowUpOutlined : d.pct < 0 ? ArrowDownOutlined : MinusOutlined;
+  const word = d.pct > 0 ? 'up' : d.pct < 0 ? 'down' : 'unchanged';
   return (
-    <div className={`ov-kpi ${hero ? 'hero' : ''}`}>
-      <span className="t-label">{label}</span>
-      <span className="ov-kpi-val">{value}</span>
-      <span className="t-help">{help}</span>
-    </div>
+    <span className={`ov-delta tone-${d.tone}`} aria-label={`${d.label} ${word} ${Math.abs(d.pct)}% against the period before`}>
+      <Icon aria-hidden />
+      <span>{Math.abs(d.pct)}%</span>
+    </span>
   );
 }
 
-function RoundRow({ j }: { j: Job }) {
-  const c = findCreative(j.creativeId)!;
-  const nav = useNavigate();
-  const to = `/ad/${c.id}/variations?round=${j.id}`;
+function Kpi({ label, value, help, delta, hero }: { label: string; value: string; help: string; delta: Delta; hero?: boolean }) {
   return (
-    <button className="ov-row" onClick={() => nav(to)}>
-      <Thumb c={c} size={40} />
-      <span className="ov-row-text">
-        <b>{c.name}</b>
-        {j.state === 'generating' || j.state === 'queued' ? (
-          <span className="ov-round-progress">
-            <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
-            <span className="small muted">{j.state === 'queued' ? 'Queued' : `Generating ${j.count} · ${Math.round(j.progress * 100)}%`}</span>
-          </span>
-        ) : (
-          // 5d C5d-29: same status line as Tasks, no Ready tag beside the unseen dot.
-          <span className="small muted nw">
-            {plural(j.count - j.failed.length, 'variation')} ready · {timeAgo(j.minutesAgo)}
-          </span>
-        )}
-      </span>
-      {j.unseen && <i className="unseen-dot" aria-label="Not opened yet" />}
-      <RightOutlined className="ov-chev" />
-    </button>
+    <div className={`ov-kpi ${hero ? 'hero' : ''}`}>
+      <div className="ov-kpi-top">
+        <span className="t-label">{label}</span>
+        <DeltaBadge d={delta} />
+      </div>
+      <span className="ov-kpi-val">{value}</span>
+      <span className="t-help">{help}</span>
+    </div>
   );
 }
 
@@ -72,46 +50,33 @@ export function Overview() {
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const period = usePeriodSheet(windowDays, WINDOWS, (d) => setWindowDays(d));
   const ads = account.creatives.map((c) => graded(c, windowDays));
+  const briefing = overviewBriefing(account, windowDays, jobs);
 
-  // Spend and results for the period (same numbers Radar sums).
-  const spend = ads.reduce((s, c) => s + c.spend, 0);
-  const purchases = ads.reduce((s, c) => s + (c.values.cpa ? c.spend / c.values.cpa : 0), 0);
-  const cpa = purchases ? spend / purchases : 0;
-  const roas = spend ? ads.reduce((s, c) => s + (c.roas ?? 0) * c.spend, 0) / spend : 0;
-  const ctr = spend ? ads.reduce((s, c) => s + c.values.ctr * c.spend, 0) / spend : 0;
+  const deltaBy = (key: Delta['key']) => briefing.now.deltas.find((d) => d.key === key)!;
+  const dSpend = deltaBy('spend');
+  const dPurchases = deltaBy('purchases');
+  const dCpa = deltaBy('cpa');
+  const dRoas = deltaBy('roas');
+  const dCtr = deltaBy('ctr');
 
-  const counts = TABS.map((t) => ({ ...t, n: ads.filter((c) => c.tab === t.key).length }));
+  const tabCounts: { key: TabKey; label: string; n: number }[] = [
+    { key: 'winners', label: TABS[0].label, n: briefing.now.counts.best },
+    { key: 'potential', label: TABS[1].label, n: briefing.now.counts.improve },
+    { key: 'candidates', label: TABS[2].label, n: briefing.now.counts.rework },
+  ];
 
-  // Fix first: top 3 ads by spend with a C or D on their goal's metric.
-  const fixFirst = ads
-    .map((c) => ({ c, ...goalGrade(c) }))
-    .filter((x) => /^[CD]/.test(x.grade ?? ''))
-    .sort((a, b) => b.c.spend - a.c.spend)
-    .slice(0, 3);
-
-  // Rounds in progress or ready (last 7 days, this account).
-  const rounds = jobs
-    .filter((j) => findCreative(j.creativeId)?.accountId === account.id && !j.label)
-    .filter((j) => j.state === 'generating' || j.state === 'queued' || (j.state === 'ready' && j.minutesAgo < 7 * 1440))
-    .sort((a, b) => a.minutesAgo - b.minutesAgo)
-    .slice(0, 4);
-
-  // Variation ads vs their originals.
-  const pairs = ads
-    .filter((c) => c.variationOf)
-    .map((c) => ({ c, parent: ads.find((p) => p.id === c.variationOf) ?? findCreative(c.variationOf)! }))
-    .filter((x) => x.parent);
+  const { titles } = briefing;
+  const firstNext = briefing.next[0];
 
   return (
     <motion.div {...pageTransition} className="page overview">
       <div className="page-head ov-head">
         <div>
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title level={1} className="page-title">
             Overview
           </Typography.Title>
-          <p className="muted desc">How {account.name} is doing, and where to look first.</p>
+          <p className="muted desc">See how this account is doing and which ads to fix first.</p>
         </div>
-        {/* 5d Gm-14: the period was a pill that looked like Radar's control but did nothing; now it is the same control (one store value). */}
         <Select
           variant="filled"
           value={windowDays}
@@ -127,87 +92,144 @@ export function Overview() {
               {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
             </span>
           )}
-          options={WINDOWS.map((w) => ({ value: w.days, label: (<span className="window-opt"><span>{w.short}</span><span className="t-help">{w.long.split(' · ')[1]}</span></span>) }))}
+          options={WINDOWS.map((w) => ({
+            value: w.days,
+            label: (
+              <span className="window-opt">
+                <span>{w.short}</span>
+                <span className="t-help">{w.long.split(' · ')[1]}</span>
+              </span>
+            ),
+          }))}
         />
         {period.sheet}
       </div>
 
-      <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-kpis" aria-label="Spend and results">
-        <Kpi hero label="Spend" value={money(spend).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} />
-        <Kpi label="Purchases" value={Math.round(purchases).toLocaleString('en-US')} help="From ads graded on CPA" />
-        <Kpi label="CPA" value={money(cpa)} help={`Account average\u00a0${money(account.avg.cpa)}`} />
-        <Kpi label="ROAS" value={roas.toFixed(2)} help={"Revenue per $1 of\u00a0spend"} />
-        <Kpi label="CTR" value={`${ctr.toFixed(2)}%`} help={`Account average\u00a0${account.avg.ctr.toFixed(2)}%`} />
+      {/* 1. What to know now */}
+      <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-now" aria-labelledby="ov-sec-now">
+        <div className="ov-sec-head">
+          <div>
+            <h2 id="ov-sec-now" className="panel-title">{titles.now.title}</h2>
+            <p className="t-help ov-sec-help">{titles.now.help}</p>
+          </div>
+          <span className="t-help ov-period-note">Grades cover the {win.short.toLowerCase()}.</span>
+        </div>
+
+        <p className="ov-headline">{briefing.now.headline}</p>
+
+        <div className="ov-kpis" aria-label="Spend and results">
+          <Kpi hero label="Spend" value={money(dSpend.now).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} delta={dSpend} />
+          <Kpi label="Purchases" value={Math.round(dPurchases.now).toLocaleString('en-US')} help="From ads graded on CPA" delta={dPurchases} />
+          <Kpi label="CPA" value={money(dCpa.now)} help={`Account average\u00a0${money(account.avg.cpa)}`} delta={dCpa} />
+          <Kpi label="ROAS" value={dRoas.now.toFixed(2)} help={'Revenue per $1 of\u00a0spend'} delta={dRoas} />
+          <Kpi label="CTR" value={`${dCtr.now.toFixed(2)}%`} help={`Account average\u00a0${account.avg.ctr.toFixed(2)}%`} delta={dCtr} />
+        </div>
+
+        <div className="ov-grades-wrap">
+          <div className="ov-grades">
+            {tabCounts.map((t) => (
+              <Link key={t.key} to={`/?tab=${t.key}`} className={`ov-grade ${TAB_TONE[t.key]}`}>
+                <span className="ov-grade-n">{t.n}</span>
+                <span className="ov-grade-label">
+                  {t.label} <RightOutlined />
+                </span>
+              </Link>
+            ))}
+          </div>
+          <div className="ov-grade-bar" aria-hidden>
+            {tabCounts.map((t) => (
+              <i key={t.key} className={TAB_TONE[t.key]} style={{ flexGrow: t.n }} />
+            ))}
+          </div>
+        </div>
       </motion.section>
 
       <div className="ov-grid">
         <div className="ov-col">
-          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-fix">
+          {/* 2. What to do next */}
+          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-fix" aria-labelledby="ov-sec-next">
             <div className="ov-sec-head">
-              <h4 className="panel-title">Fix first</h4>
+              <h2 id="ov-sec-next" className="panel-title">{titles.next.title}</h2>
               <Link to="/" className="small">Open Radar</Link>
             </div>
-            <p className="t-help ov-sec-help">The ads spending most with a C or D on the metric their goal needs.</p>
-            {fixFirst.length === 0 ? (
+            <p className="t-help ov-sec-help">{titles.next.help}</p>
+            {briefing.next.length === 0 ? (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nothing to fix first. Every ad is B or above on its goal." />
             ) : (
               <ol className="ov-list">
-                {fixFirst.map(({ c, goal, metric, grade }) => (
-                  <li key={c.id}>
-                    <button className="ov-row" onClick={() => nav(`/ad/${c.id}`)}>
-                      <Thumb c={c} size={40} />
-                      <span className="ov-row-text">
-                        <b>{c.name}</b>
-                        <span className="ov-fix-line small">
-                          <GradeChip g={grade} />
-                          <span>{metric === 'conversion' ? 'CPA' : METRIC_META[metric].label}</span>
-                          <span className="muted">·</span>
-                          <span className="muted ov-goal">
-                            {GOAL_ICON[goal]} {goal}
+                {briefing.next.map((item) => {
+                  const ad = ads.find((x) => x.id === item.adId) ?? findCreative(item.adId);
+                  if (!ad) return null;
+                  const goal = goalOf(ad);
+                  return (
+                    <li key={item.adId}>
+                      <button className="ov-row" onClick={() => nav(`/ad/${item.adId}`)}>
+                        <Thumb c={ad} size={40} />
+                        <span className="ov-row-text">
+                          <b>{item.name}</b>
+                          <span className="ov-fix-line small">
+                            <GradeChip g={item.grade as never} />
+                            <span>{item.metric}</span>
+                            <span className="muted" aria-hidden>{'\u00a0'}·</span>
+                            <span className="muted ov-goal">
+                              {GOAL_ICON[goal]} {goal}
+                            </span>
                           </span>
+                          <span className="t-help ov-row-why">{item.why}</span>
                         </span>
-                      </span>
-                      <span className="ov-row-end small">{money(c.spend).replace(/\.\d\d$/, '')}</span>
-                      <RightOutlined className="ov-chev" />
-                    </button>
-                  </li>
-                ))}
+                        <span className="ov-row-end small">{money(item.spend).replace(/\.\d\d$/, '')}</span>
+                        <RightOutlined className="ov-chev" />
+                      </button>
+                    </li>
+                  );
+                })}
               </ol>
             )}
           </motion.section>
 
-          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-vars">
-            <h4 className="panel-title">Variation ads vs their originals</h4>
-            <p className="t-help ov-sec-help">Ads made in Atria, graded against the ad they came from.</p>
-            {pairs.length === 0 ? (
-              <p className="t-help">No variation ads running yet. Variations you test in Meta show up here once they have data.</p>
+          {/* 4. What changed */}
+          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-vars" aria-labelledby="ov-sec-changed">
+            <h2 id="ov-sec-changed" className="panel-title">{titles.changed.title}</h2>
+            <p className="t-help ov-sec-help">{titles.changed.help}</p>
+            {briefing.changed.length === 0 ? (
+              <p className="t-help">No ads made from variations running yet. Variations you test in Meta show up here once they have data.</p>
             ) : (
-              <div className="ov-pairs">
-                <div className="ov-pair ov-pair-head t-label">
-                  <span>Variation</span>
-                  <span>Overall</span>
-                  <span>CPA</span>
-                </div>
-                {pairs.map(({ c, parent }) => {
-                  const better = c.values.cpa < parent.values.cpa;
+              <div className="ov-changes">
+                {briefing.changed.map((item) => {
+                  const ad = ads.find((x) => x.id === item.adId) ?? findCreative(item.adId);
+                  if (!ad) return null;
+                  const parent = ad.variationOf ? ads.find((p) => p.id === ad.variationOf) ?? findCreative(ad.variationOf) : undefined;
+                  const hasRepeat = item.text.includes('Repeats an earlier test');
+                  const mainText = item.text.replace(/\s*Repeats an earlier test\.?$/, '');
                   return (
-                    // 5d Gm-05: a row, not a button, so the grade button inside isn't nested in another button.
-                    <div key={c.id} className="ov-pair" role="link" tabIndex={0} onClick={() => nav(`/ad/${c.id}`)} onKeyDown={(e) => e.key === 'Enter' && nav(`/ad/${c.id}`)}>
-                      <span className="ov-pair-name">
-                        <Thumb c={c} size={32} />
-                        <span className="ov-row-text">
-                          <b>{c.name}</b>
-                          <span className="t-help">From {parent.name}</span>
+                    <div
+                      key={item.adId}
+                      className="ov-change-row"
+                      role="link"
+                      tabIndex={0}
+                      onClick={() => nav(`/ad/${item.adId}`)}
+                      onKeyDown={(e) => e.key === 'Enter' && nav(`/ad/${item.adId}`)}
+                    >
+                      <Thumb c={ad} size={40} />
+                      <div className="ov-row-text">
+                        <div className="ov-change-head">
+                          <b>{item.name}</b>
+                          <span className="ov-pair-grade" onClick={(e) => e.stopPropagation()}>
+                            <OverallTag creative={ad} />
+                            {parent?.overall && <span className="muted small">vs {parent.overall}</span>}
+                          </span>
+                        </div>
+                        <span className={`ov-change-delta small tone-${item.tone}`}>
+                          {/\bdown\b/i.test(mainText) ? <ArrowDownOutlined aria-hidden /> : /\bup\b/i.test(mainText) ? <ArrowUpOutlined aria-hidden /> : <MinusOutlined aria-hidden />}
+                          <span>{mainText}</span>
                         </span>
-                      </span>
-                      <span className="ov-pair-grade">
-                        <OverallTag creative={c} />
-                        <span className="muted small">vs {parent.overall}</span>
-                      </span>
-                      <span className={`ov-pair-cpa small ${better ? 'up' : 'down'}`}>
-                        {money(c.values.cpa)}
-                        <span className="muted"> vs {money(parent.values.cpa)}</span>
-                      </span>
+                        {hasRepeat && (
+                          <span className="ov-repeat-note small">
+                            <WarningOutlined aria-hidden /> Repeats an earlier test.
+                          </span>
+                        )}
+                      </div>
+                      <RightOutlined className="ov-chev" />
                     </div>
                   );
                 })}
@@ -217,45 +239,54 @@ export function Overview() {
         </div>
 
         <div className="ov-col">
-          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-glance">
-            <h4 className="panel-title">Grades at a glance</h4>
-            <p className="t-help ov-sec-help">{plural(ads.length, 'ad')} graded on the {win.short.toLowerCase()}.</p>
-            <div className="ov-grades">
-              {counts.map((t) => (
-                <Link key={t.key} to={`/?tab=${t.key}`} className={`ov-grade ${TAB_TONE[t.key]}`}>
-                  <span className="ov-grade-n">{t.n}</span>
-                  <span className="ov-grade-label">
-                    {t.label} <RightOutlined />
-                  </span>
-                </Link>
-              ))}
+          {/* 3. What you did */}
+          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-rounds" aria-labelledby="ov-sec-done">
+            <div className="ov-sec-head">
+              <h2 id="ov-sec-done" className="panel-title">{titles.done.title}</h2>
+              <Link to="/creation" className="small">Creative gallery</Link>
             </div>
-            <div className="ov-grade-bar" aria-hidden>
-              {counts.map((t) => (
-                <i key={t.key} className={TAB_TONE[t.key]} style={{ flexGrow: t.n }} />
-              ))}
-            </div>
-          </motion.section>
-
-          <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-rounds">
-            <h4 className="panel-title">Variation rounds</h4>
-            <p className="t-help ov-sec-help">In progress or ready in the last 7 days.</p>
-            {rounds.length === 0 ? (
+            <p className="t-help ov-sec-help">{titles.done.help}</p>
+            {briefing.done.length === 0 ? (
               <div className="ov-empty-rounds">
-                <p className="t-help">No rounds yet for {account.name.replace(/\.$/, '')}. Pick an ad under Fix first to create variations.</p>
-                {fixFirst[0] && (
-                  <Button size="small" onClick={() => nav(`/ad/${fixFirst[0].c.id}`)}>
-                    Open {fixFirst[0].c.name}
+                <p className="t-help">No rounds yet for {account.name.replace(/\.$/, '')}. Pick an ad under {titles.next.title} to create variations.</p>
+                {firstNext && (
+                  <Button size="small" onClick={() => nav(`/ad/${firstNext.adId}`)}>
+                    Open {firstNext.name}
                   </Button>
                 )}
               </div>
             ) : (
               <ul className="ov-list">
-                {rounds.map((j) => (
-                  <li key={j.id}>
-                    <RoundRow j={j} />
-                  </li>
-                ))}
+                {briefing.done.slice(0, 5).map((item) => {
+                  const ad = findCreative(item.adId);
+                  const job = jobs.find((j) => j.id === item.jobId);
+                  if (!ad) return null;
+                  const active = job && (job.state === 'generating' || job.state === 'queued');
+                  return (
+                    <li key={item.jobId}>
+                      <button className="ov-row" onClick={() => nav(`/ad/${item.adId}/variations?round=${item.jobId}`)}>
+                        <Thumb c={ad} size={40} />
+                        <span className="ov-row-text">
+                          <b>{item.name}</b>
+                          {active ? (
+                            <span className="ov-round-progress">
+                              <Progress percent={Math.round(job.progress * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
+                              <span className="small muted">
+                                {job.state === 'queued' ? 'Queued' : `Generating ${job.count}\u00a0· ${Math.round(job.progress * 100)}%`}
+                              </span>
+                            </span>
+                          ) : (
+                            <span className="small muted">
+                              {item.text}{'\u00a0'}· {job ? timeAgo(job.minutesAgo) : item.date}
+                            </span>
+                          )}
+                        </span>
+                        {job?.unseen && <i className="unseen-dot" aria-label="Not opened yet" />}
+                        <RightOutlined className="ov-chev" />
+                      </button>
+                    </li>
+                  );
+                })}
               </ul>
             )}
           </motion.section>
