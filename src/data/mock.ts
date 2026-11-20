@@ -463,7 +463,11 @@ export function recommendationsFor(c: Creative): Recommendation[] {
       tried: undefined,
       ...(r.id === 'offer' ? { issueDetail: 'CPA improved to B, but the ad still carries two offers. One clear offer should close the gap.' } : {}),
     }));
-  if (c.media === 'Video') return VIDEO_RECS;
+  if (c.media === 'Video') {
+    // Only suggest a hook fix when the hook is actually weak (C or D).
+    const weakHook = /^[CD]/.test(c.grades.hook ?? '');
+    return weakHook ? VIDEO_RECS : VIDEO_RECS.filter((r) => r.id !== 'hook').map((r, i) => ({ ...r, priority: i + 1 }));
+  }
   if (c.grades.ctr?.[0] === 'D') return CTR_RECS;
   return HERO_RECS.slice(0, 2);
 }

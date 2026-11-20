@@ -80,7 +80,7 @@ function RecCard({
   disabled,
   onToggle,
   footer,
-  targetGrade,
+  targetGrade: _targetGrade,
 }: {
   r: Recommendation;
   selected: boolean;
@@ -112,10 +112,7 @@ function RecCard({
                   <Tag color="orange">Suggested</Tag>
                 </Tooltip>
               )}
-              <Tag>
-                Targets {r.target}
-                {targetGrade ? ` · ${targetGrade}` : ''}
-              </Tag>
+              <Tag>Improves {r.target === 'Hook' ? 'hook' : r.target}</Tag>
             </div>
           </div>
           <div className="rec-what">
@@ -396,7 +393,7 @@ export function AdDetail() {
 
           <motion.div variants={fadeUp} className="section-title">
             <h4>Suggestions</h4>
-            <span className="t-help">{iterable ? 'In priority order. The top 2 are selected for you.' : 'In priority order.'}</span>
+            <span className="t-help">{iterable ? 'Most important first. The top 2 are already selected.' : 'Most important first.'}</span>
             <span className="t-help rec-date">
               Updated {WINDOW.synced}
               <Tooltip title="Refresh">
