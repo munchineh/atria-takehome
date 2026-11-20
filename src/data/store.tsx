@@ -1,6 +1,6 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ACCOUNT, CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, type Creative } from './mock';
-import { buildVariations, type Variation } from './variations';
+import { applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
 
 export const DEMO_ACCOUNTS = [
   { ...ACCOUNT, creatives: CREATIVES },
@@ -56,6 +56,14 @@ const SEED: Job[] = [
   // Failed on the other account: Tasks spans accounts.
   mk({ id: 'job-tt-1', creativeId: 'tt-toaster-static', recIds: ['stop', 'offer'], perRec: 2, cost: 16, size: '2:3', state: 'failed', progress: 0, failed: [], unseen: false, date: '19 Nov', minutesAgo: 1100 }),
 ];
+/** Screen 7 demo: the Bold offer variation on mm-1086424 already has 2 edits (e02, e03 are edits of it; L-021). */
+const SEED_VERSIONS: Record<string, Version[]> = {
+  'job-1086424-offer-0': [
+    { n: 1, img: 'x05c', copy: { head: '3 FOR', price: '$36', cta: 'PICK 3' }, caption: 'Original', cost: 0, state: 'ready' },
+    { n: 2, img: 'e02', copy: { head: '3 FOR', price: '$36', cta: 'PICK 3' }, caption: 'Warmer background with confetti', cost: 4, state: 'ready' },
+    { n: 3, img: 'e03', copy: { head: '3 FOR', price: '$36', cta: 'PICK 3' }, caption: 'Make the product bigger', cost: 4, state: 'ready' },
+  ],
+};
 function TODAY_LABEL() {
   return '20 Nov';
 }
@@ -88,6 +96,17 @@ interface Store {
   bump: number;
   finished: Job[];
   clearFinished: () => void;
+  /** Screen 7: versions per variation (ED-07). */
+  versionsOf: (v: Variation) => Version[];
+  /** Apply a change. On the latest version it adds a version; on an older one it makes a new variation (O3, ED-08). Returns the variation to show. */
+  applyChange: (jobId: string, v: Variation, fromN: number, instruction: string) => string;
+  /** ED-09: free text edit on the editable layer; adds a version. */
+  saveText: (v: Variation, copy: Variation['copy']) => void;
+  /** ED-10 / ED-09b: a new variation from an edited prompt or as stylized text. Returns its id. */
+  branch: (jobId: string, v: Variation, how: 'prompt' | 'stylized', note: string) => string;
+  deleteVariation: (jobId: string, vid: string) => void;
+  /** Demo 1: add shortlisted variations as paused ads. */
+  launch: (jobId: string, vids: string[], audience: string) => void;
 }
 
 const Ctx = createContext<Store | null>(null);
@@ -110,6 +129,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [bump, setBump] = useState(0);
   const [finished, setFinished] = useState<Job[]>([]);
   const counter = useRef(0);
+  const [versions, setVersions] = useState<Record<string, Version[]>>(SEED_VERSIONS);
 
   useEffect(() => {
     const t = setInterval(() => {
@@ -186,6 +206,76 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [jobs],
   );
 
+  const versionsOf = useCallback(
+    (v: Variation): Version[] => versions[v.id] ?? [{ n: 1, img: v.img, copy: v.copy, caption: 'Original', cost: 0, state: 'ready' }],
+    [versions],
+  );
+
+  /** Adds a variation to its round (count follows, so the Results grid shows it). */
+  const addVariation = useCallback((jobId: string, nv: Variation) => {
+    setJobs((p) => p.map((j) => (j.id === jobId ? { ...j, variations: [...j.variations, nv], count: j.count + 1 } : j)));
+  }, []);
+
+  /** Simulated model call: the version shows "Applying your change", then lands. */
+  const land = useCallback((vid: string, n: number, delay = 2600) => {
+    setTimeout(() => setVersions((p) => ({ ...p, [vid]: (p[vid] ?? []).map((x) => (x.n === n ? { ...x, state: 'ready' } : x)) })), delay);
+  }, []);
+
+  const applyChange = useCallback(
+    (jobId: string, v: Variation, fromN: number, instruction: string) => {
+      const list = versionsOf(v);
+      const src = list.find((x) => x.n === fromN) ?? list.at(-1)!;
+      const out = applyToImage(src.img, src.copy, instruction);
+      setCredits((c) => c - ACCOUNT.creditsPerImage);
+      if (fromN === list.at(-1)!.n) {
+        const n = list.length + 1;
+        setVersions((p) => ({ ...p, [v.id]: [...list, { n, ...out, caption: instruction, cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
+        land(v.id, n);
+        return v.id;
+      }
+      counter.current += 1;
+      const nid = `${v.id}-b${counter.current}`;
+      const nv: Variation = { ...v, id: nid, img: out.img, copy: out.copy, typo: undefined, launched: undefined, from: { id: v.id, v: fromN, angle: v.angle, how: 'version' } };
+      setVersions((p) => ({
+        ...p,
+        [nid]: [
+          { n: 1, img: src.img, copy: src.copy, caption: `From v${fromN}`, cost: 0, state: 'ready' },
+          { n: 2, ...out, caption: instruction, cost: ACCOUNT.creditsPerImage, state: 'applying' },
+        ],
+      }));
+      addVariation(jobId, nv);
+      land(nid, 2);
+      return nid;
+    },
+    [versionsOf, land, addVariation],
+  );
+
+  const saveText = useCallback(
+    (v: Variation, copy: Variation['copy']) => {
+      const list = versionsOf(v);
+      setVersions((p) => ({ ...p, [v.id]: [...list, { n: list.length + 1, img: list.at(-1)!.img, copy, caption: 'Edited text', cost: 0, state: 'ready' }] }));
+    },
+    [versionsOf],
+  );
+
+  const branch = useCallback(
+    (jobId: string, v: Variation, how: 'prompt' | 'stylized', note: string) => {
+      const list = versionsOf(v);
+      const last = list.at(-1)!;
+      counter.current += 1;
+      const nid = `${v.id}-${how[0]}${counter.current}`;
+      const img = how === 'stylized' ? STYLIZED[last.img] ?? STYLIZED[v.img] ?? last.img : applyToImage(last.img, last.copy, note).img;
+      const copy = how === 'stylized' ? undefined : last.copy;
+      setCredits((c) => c - ACCOUNT.creditsPerImage);
+      const nv: Variation = { ...v, id: nid, img, copy, typo: undefined, launched: undefined, stylized: how === 'stylized', from: { id: v.id, v: last.n, angle: v.angle, how } };
+      setVersions((p) => ({ ...p, [nid]: [{ n: 1, img, copy, caption: how === 'stylized' ? 'Stylized text' : 'Edited prompt', cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
+      addVariation(jobId, nv);
+      land(nid, 1, 3000);
+      return nid;
+    },
+    [versionsOf, land, addVariation],
+  );
+
   const value = useMemo<Store>(
     () => ({
       jobs,
@@ -208,8 +298,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       bump,
       finished,
       clearFinished: () => setFinished([]),
+      versionsOf,
+      applyChange,
+      saveText,
+      branch,
+      deleteVariation: (jid, vid) => setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (v.id === vid ? { ...v, deleted: true } : v)) } : j))),
+      launch: (jid, vids, audience) =>
+        setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (vids.includes(v.id) ? { ...v, launched: { audience, date: TODAY_LABEL() } } : v)) } : j))),
     }),
-    [jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished],
+    [jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

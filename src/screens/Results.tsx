@@ -1,11 +1,12 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Segmented, Select, Tag, Tooltip } from 'antd';
-import { CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SwapOutlined } from '@ant-design/icons';
+import { BranchesOutlined, CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, short, type Creative as CreativeT, type Recommendation } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
-import { ANGLE_TIP, type Variation } from '../data/variations';
+import { ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
+import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
 import { CreateDialog } from '../components/CreateDialog';
 import { Rolling } from '../components/Rolling';
@@ -29,12 +30,16 @@ function VariationCard({
   mobile,
   onPick,
   onRefine,
+  onFixText,
   onMore,
   onRetry,
   moreCost,
   index,
+  versions,
 }: {
   v: Variation;
+  versions: Version[];
+  onFixText: () => void;
   state: CardState;
   rec?: Recommendation;
   original: CreativeT;
@@ -49,6 +54,10 @@ function VariationCard({
 }) {
   const [slide, setSlide] = useState(0);
   const strip = useRef<HTMLDivElement>(null);
+  // Cards show the latest finished version (E6: count on the card).
+  const cur = [...versions].reverse().find((x) => x.state === 'ready') ?? versions[0];
+  const typo = cur.n === 1 ? v.typo : undefined;
+  const applying = versions.at(-1)?.state === 'applying';
   return (
     <motion.article
       className={`var-card ${picked ? 'picked' : ''} ${state}`}
@@ -69,7 +78,7 @@ function VariationCard({
                     onScroll={(e) => setSlide(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))}
                   >
                     <div className="compare-slide">
-                      <AdArt slot={v.img} copy={v.copy} typo={v.typo} ratio="2 / 3" alt={`${v.angle} variation`} />
+                      <AdArt slot={cur.img} copy={cur.copy} typo={typo} ratio={ratioFor(cur.img)} alt={`${v.angle} variation`} />
                     </div>
                     <div className="compare-slide">
                       <AdArt slot={original.img} copy={original.copy} ratio="2 / 3" alt="Original" />
@@ -82,12 +91,15 @@ function VariationCard({
                   </div>
                 </>
               ) : (
-                <AdArt slot={v.img} copy={v.copy} typo={v.typo} ratio="2 / 3" alt={`${v.angle} variation`} />
+                <button className="art-btn" onClick={onRefine} aria-label={`Open ${v.angle} in the editor`}>
+                  <AdArt slot={cur.img} copy={cur.copy} typo={typo} ratio={ratioFor(cur.img)} alt={`${v.angle} variation`} />
+                </button>
               )}
+              {versions.length > 1 && <span className="ver-badge">{applying ? 'Applying' : `v${cur.n}`}</span>}
             </motion.div>
           ) : state === 'generating' ? (
             <motion.div key="gen" className="var-skeleton" exit={{ opacity: 0, transition: { duration: duration.fast } }}>
-              <span>Generating…</span>
+              <span>Generating</span>
             </motion.div>
           ) : (
             <motion.div key="fail" className="var-failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
@@ -101,7 +113,18 @@ function VariationCard({
         </AnimatePresence>
       </div>
       <div className="var-meta">
-        {state === 'ready' && v.typo && (
+        {state === 'ready' && (
+          <div className="var-flags">
+            <PredictedTag id={v.id} />
+            {v.from && (
+              <Tag icon={<BranchesOutlined />} className="from-tag">
+                {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
+              </Tag>
+            )}
+            {v.launched && <Tag>Paused in Meta</Tag>}
+          </div>
+        )}
+        {state === 'ready' && typo && (
           <Tooltip title={`The headline may contain a typo: ${v.typo}`}>
             <Tag color="error" className="typo-tag" icon={<ExclamationCircleOutlined />}>
               Check text
@@ -122,8 +145,8 @@ function VariationCard({
       </div>
       {state === 'ready' && (
         <div className="var-actions">
-          {v.typo ? (
-            <Button size="small" icon={<EditOutlined />} onClick={onRefine}>
+          {typo ? (
+            <Button size="small" icon={<EditOutlined />} onClick={onFixText}>
               Fix text
             </Button>
           ) : (
@@ -157,7 +180,7 @@ export function Results() {
   const mobile = !bp.md;
   const { message } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, startJob, retryJob, markSeen, credits, lastSettings } = useStore();
+  const { jobsFor, startJob, retryJob, markSeen, credits, lastSettings, versionsOf, launch } = useStore();
   const rounds = jobsFor(c.id);
   const job = rounds.find((j) => j.id === params.get('round')) ?? rounds.at(-1);
   const recs = useMemo(() => {
@@ -168,7 +191,7 @@ export function Results() {
   const recFilter = params.get('rec') ?? 'all';
   const [shortlist, setShortlist] = useState<string[]>([]);
   const [compare, setCompare] = useState(false);
-  const [preview, setPreview] = useState<Variation | null>(null);
+  const [testing, setTesting] = useState(false);
   const [nudgeOff, setNudgeOff] = useState(false);
   const [edit, setEdit] = useState(false);
 
@@ -193,7 +216,9 @@ export function Results() {
   const settings = lastSettings[c.id] ?? { perRec: job.perRec, size: job.size };
   const moreCount = recs.length * settings.perRec;
   const perRecCost = settings.perRec * ACCOUNT.creditsPerImage;
-  const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => recFilter === 'all' || v.recId === recFilter);
+  const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || v.recId === recFilter));
+  const openEditor = (v: Variation, text = false) => nav(`/ad/${c.id}/variations/${v.id}?round=${job.id}${text ? '&text=1' : ''}`);
+  const audience = c.ads[0]?.adSet ?? 'Variation_Test';
   const readyCount = job.variations.filter((_, i) => cardState(job, i) === 'ready').length;
   const allAngles = [...new Set(rounds.flatMap((r) => r.variations.map((v) => v.angle)))];
   const allVars = rounds.flatMap((r) => r.variations).slice(-12);
@@ -362,7 +387,9 @@ export function Results() {
                     mobile={mobile}
                     picked={shortlist.includes(v.id)}
                     onPick={() => setShortlist((p) => (p.includes(v.id) ? p.filter((x) => x !== v.id) : [...p, v.id]))}
-                    onRefine={() => setPreview(v)}
+                    onRefine={() => openEditor(v)}
+                    onFixText={() => openEditor(v, true)}
+                    versions={versionsOf(v)}
                     onMore={() => {
                       const j = startJob({ creativeId: c.id, recIds: [v.recId], perRec: 4, size: job.size, like: v });
                       message.success({ content: `Creating 4 variations like ${v.angle}.`, duration: 3 });
@@ -396,6 +423,9 @@ export function Results() {
               <Button icon={<SwapOutlined />} onClick={() => setCompare(true)}>
                 Compare with original
               </Button>
+              <Button icon={<SendOutlined />} onClick={() => setTesting(true)}>
+                Test in Meta
+              </Button>
               <Button
                 type="primary"
                 icon={<DownloadOutlined />}
@@ -422,20 +452,55 @@ export function Results() {
               </span>
             </figcaption>
           </figure>
-          {picks.map((v) => (
+          {picks.map((v) => {
+            const cur = versionsOf(v).filter((x) => x.state === 'ready').at(-1)!;
+            return (
             <figure key={v.id}>
-              <AdArt slot={v.img} copy={v.copy} typo={v.typo} ratio="2 / 3" alt={v.angle} />
+              <AdArt slot={cur.img} copy={cur.copy} typo={cur.n === 1 ? v.typo : undefined} ratio="2 / 3" alt={v.angle} />
               <figcaption>
                 <b>{v.angle}</b>
                 <span className="muted small">Fixes: {recs.find((r) => r.id === v.recId)?.issue}</span>
+                <PredictedTag id={v.id} />
               </figcaption>
             </figure>
-          ))}
+            );
+          })}
         </div>
       </Modal>
 
-      <Modal open={!!preview} onCancel={() => setPreview(null)} footer={null} title={preview ? `Refine · ${preview.angle}` : ''} width={420}>
-        {preview && <AdArt slot={preview.img} copy={preview.copy} typo={preview.typo} ratio="2 / 3" alt={preview.angle} />}
+      {/* Demo 1 (D1-02, D1-03): the closed loop. Paused, so nothing spends until the user turns them on. */}
+      <Modal
+        open={testing}
+        title={`Test ${plural(picks.length, 'variation')} in Meta`}
+        okText={`Add ${picks.length} paused ${picks.length === 1 ? 'ad' : 'ads'}`}
+        cancelText="Cancel"
+        onCancel={() => setTesting(false)}
+        onOk={() => {
+          launch(job.id, picks.map((p) => p.id), audience);
+          setTesting(false);
+          setShortlist([]);
+          message.success({
+            content: (
+              <span>
+                {plural(picks.length, 'paused ad')} added to {short(audience, 24)} ·{' '}
+                <a onClick={() => message.info('Opens Meta Ads Manager in a new tab')}>Open in Meta</a>
+              </span>
+            ),
+            duration: 5,
+          });
+        }}
+        width={480}
+      >
+        <p>
+          Atria adds them to {audience} as paused ads. Nothing spends until you turn them on in Meta.
+        </p>
+        <div className="test-thumbs">
+          {picks.map((p) => {
+            const cur = versionsOf(p).filter((x) => x.state === 'ready').at(-1)!;
+            return <AdArt key={p.id} slot={cur.img} copy={cur.copy} ratio={ratioFor(cur.img)} alt={p.angle} />;
+          })}
+        </div>
+        <p className="muted small">Their results come back to Radar as ads tagged “Variation of {short(c.name, 28)}”.</p>
       </Modal>
 
       <CreateDialog

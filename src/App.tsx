@@ -8,6 +8,7 @@ import { Radar } from './screens/Radar';
 import { AdDetail } from './screens/AdDetail';
 import { Results } from './screens/Results';
 import { ImageAds } from './screens/ImageAds';
+import { Editor } from './screens/Editor';
 import { theme } from './theme';
 import { ease, duration } from './motion/tokens';
 
@@ -39,6 +40,7 @@ function Routed() {
           <Route path="/" element={<Radar />} />
           <Route path="/ad/:id" element={<AdDetail key={loc.pathname} />} />
           <Route path="/ad/:id/variations" element={<Results />} />
+          <Route path="/ad/:id/variations/:vid" element={<Editor key={loc.pathname} />} />
           <Route path="/creation" element={<ImageAds />} />
         </Routes>
       </LayoutGroup>

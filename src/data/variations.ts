@@ -7,11 +7,82 @@ export interface Variation {
   recId: string;
   angle: string;
   img: string;
-  copy: AdCopy;
+  copy?: AdCopy;
   /** G5 / RS-14: a likely typo in the rendered text. */
   typo?: string;
   /** Set when the variation itself was later launched as a creative (lineage). */
   becameCreative?: string;
+  /** ED-08: made by editing an older version or the prompt of another variation. */
+  from?: { id: string; v: number; angle: string; how: 'version' | 'prompt' | 'stylized' };
+  /** ED-09b: text generated into the image (version B). */
+  stylized?: boolean;
+  deleted?: boolean;
+  /** Demo 1: added to an audience as a paused ad. */
+  launched?: { audience: string; date: string };
+}
+
+/** One edit of a variation (ED-07). v1 is the variation as generated. */
+export interface Version {
+  n: number;
+  img: string;
+  copy?: AdCopy;
+  caption: string;
+  cost: number;
+  state: 'applying' | 'ready';
+}
+
+/** ED-09b: base photos that have a stylized-text render (B) made for the comparison (L-020, L-026). */
+export const STYLIZED: Record<string, string> = { x05c: 'x05t', x03c: 'x03t' };
+/** Stylized renders are 3:4 with text to the edges, so they are never cropped to 2:3. */
+export const ratioFor = (slot: string) => (Object.values(STYLIZED).includes(slot) ? '3 / 4' : '2 / 3');
+
+/** ED-04 chips. "Fix the text" opens the free text layer instead of spending credits. */
+export const CHIPS = ['Fix the text', 'Simplify the layout', 'Make the product bigger', 'Change the background'];
+/** ED-06 reasons and the change each one pre-fills. */
+export const REASONS: { label: string; fill: string | null }[] = [
+  { label: 'Text is wrong', fill: null },
+  { label: 'Off-brand', fill: 'Use the brand colors and font' },
+  { label: 'Too busy', fill: 'Simplify the layout' },
+  { label: 'Wrong product image', fill: 'Use the Sad Pink product image' },
+];
+
+/** Prototype stand-in for the image model: which photo an instruction produces. */
+const BIGGER: Record<string, string> = { x05c: 'e03', x05: 'e03', e01: 'e03', e02: 'e03', x03c: 'l02', x03: 'l02', x07: 'l01' };
+const BACKGROUND: Record<string, string> = { x05c: 'e02', x05: 'e02', e01: 'e02', e03: 'e02', x01: 'x10', x02: 'x12', x04: 'x12' };
+const NEXT: Record<string, string> = { x05c: 'e02', e02: 'e03', x05: 'e02', e01: 'e02', x03c: 'l02', x03: 'l02', x07: 'l01', x04: 'x12', x01: 'x10' };
+
+export function applyToImage(img: string, copy: AdCopy | undefined, instruction: string): { img: string; copy?: AdCopy } {
+  const t = instruction.toLowerCase();
+  if (/bigger|larger|zoom|closer/.test(t)) return { img: BIGGER[img] ?? img, copy };
+  if (/background|color|colour|warm|confetti/.test(t)) return { img: BACKGROUND[img] ?? NEXT[img] ?? img, copy };
+  if (/simplif|busy|layout|clean/.test(t)) return { img, copy: copy && { ...copy, band: undefined } };
+  if (/shorter|headline/.test(t)) return { img, copy: copy && { ...copy, head: copy.head.split(' ').slice(0, 2).join(' ') } };
+  return { img: NEXT[img] ?? img, copy };
+}
+
+/** ED-10: the per-image prompt (E1: image level, below the campaign brief). */
+export function promptFor(v: Pick<Variation, 'angle' | 'copy'>, product = 'Sad Pink mochi') {
+  const text = v.copy ? `Headline "${[v.copy.head, v.copy.price].filter(Boolean).join(' ')}"${v.copy.cta ? `, button "${v.copy.cta}"` : ''}.` : '';
+  return `${v.angle} ad for Moody Mochi ${product}. Soft pastel set, product centered and in sharp focus, studio light, 2:3 for Feed. ${text} Brand colors pink and cream, Fredoka for text.`;
+}
+
+/** ED-11: how Atria reads the image (read-only, O4). */
+const EMOTION: Record<string, string> = { 'Bold offer': 'Excitement', Scarcity: 'Urgency', Urgency: 'Urgency', Gift: 'Warmth', Demonstration: 'Curiosity', Comparison: 'Confidence', 'Price anchor': 'Value', Bundle: 'Value', Choice: 'Playfulness', Personal: 'Playfulness' };
+const THEME: Record<string, string> = { 'Bold offer': 'Savings', Scarcity: 'Limited edition', 'Price anchor': 'Savings', Bundle: 'Collection', Gift: 'Gifting', Demonstration: 'Stress relief', Comparison: 'Quality', Collection: 'Collection' };
+export const tagsFor = (angle: string) => ({ Angle: angle, Emotion: EMOTION[angle] ?? 'Comfort', Theme: THEME[angle] ?? 'Self-care' });
+export const TAG_TIPS: Record<string, string> = {
+  Angle: ANGLE_TIP_TEXT(),
+  Emotion: 'The feeling the image is most likely to bring out',
+  Theme: 'The subject the image is about, used to group results in analytics',
+};
+function ANGLE_TIP_TEXT() {
+  return 'The approach an ad takes to get a response, such as scarcity or social proof';
+}
+
+/** Demo 2 (D2-01): predicted CTR grade before launch. Deterministic per variation. */
+export function predictedCtr(id: string): 'A' | 'B' | 'C' {
+  const h = [...id].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);
+  return (['B', 'A', 'B', 'C', 'B', 'A', 'B', 'C'] as const)[h % 8];
 }
 
 /** Angle definitions (RS-08 tooltip lives in the UI). */

@@ -16,8 +16,8 @@ import {
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, statusOf as adStatusOf } from '../data/mock';
-import { findCreative, recName, useStore, type RowStatus } from '../data/store';
-import { Creative } from '../components/Thumb';
+import { ALL_CREATIVES, findCreative, recName, useStore, type RowStatus } from '../data/store';
+import { Creative, Thumb } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
 import { CreateDialog } from '../components/CreateDialog';
@@ -133,7 +133,7 @@ export function AdDetail() {
   const nav = useNavigate();
   const c = findCreative(id) ?? CREATIVES[0];
   const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
-  const { statusOf, jobsFor, startJob, credits: balance } = useStore();
+  const { statusOf, jobsFor, startJob, credits: balance, versionsOf } = useStore();
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
   const iterable = c.media === 'Image';
@@ -168,6 +168,16 @@ export function AdDetail() {
   };
 
   const ads = showAllAds ? c.ads : c.ads.slice(0, 3);
+  /** Demo 1, lineage (D6, D7): ads made from this one, graded or still paused in Meta. */
+  const made = [
+    ...ALL_CREATIVES.filter((x) => x.variationOf === c.id).map((x) => ({ kind: 'ad' as const, id: x.id, c: x })),
+    ...jobs.flatMap((j) =>
+      j.variations
+        .filter((v) => v.launched && !v.deleted)
+        .map((v) => ({ kind: 'paused' as const, id: v.id, jobId: j.id, angle: v.angle, img: (versionsOf(v).filter((x) => x.state === 'ready').at(-1) ?? { img: v.img }).img })),
+    ),
+  ];
+  const statusLabel = (x: typeof c) => (adStatusOf(x) === 'Paused' ? 'Paused' : 'Active');
 
   return (
     <motion.div {...pageTransition} className="page detail">
@@ -285,6 +295,34 @@ export function AdDetail() {
               </div>
             )}
           </motion.div>
+                  {made.length > 0 && (
+            <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
+              <b>Made from this ad · {made.length}</b>
+              <div className="made-list">
+                {made.map((m) =>
+                  m.kind === 'ad' ? (
+                    <Link key={m.id} to={`/ad/${m.id}`} className="made-row">
+                      <Thumb c={m.c} size={40} />
+                      <span className="small">
+                        <span className="made-name">{short(m.c.name, 30)}</span>
+                        <span className="muted">
+                          Overall {m.c.overall} · {ACCOUNT.conversionMetric} {money(m.c.values.cpa)} · {statusLabel(m.c)}
+                        </span>
+                      </span>
+                    </Link>
+                  ) : (
+                    <Link key={m.id} to={`/ad/${c.id}/variations/${m.id}?round=${m.jobId}`} className="made-row">
+                      <Thumb c={{ img: m.img, media: 'Image', name: m.angle }} size={40} />
+                      <span className="small">
+                        <span className="made-name">{m.angle}</span>
+                        <span className="muted">Paused in Meta · not graded yet</span>
+                      </span>
+                    </Link>
+                  ),
+                )}
+              </div>
+            </motion.div>
+          )}
         </aside>
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
