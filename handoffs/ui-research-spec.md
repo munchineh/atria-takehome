@@ -645,23 +645,23 @@ Work top to bottom. Tick a box in the same commit that finishes the task. Data f
 - [x] Item 7: grade popover in three levels (grade and band, numbers, muted footer). (R-H)
 - [x] Item 8: ad summary card in three zones. (R-H)
 - [x] Item 10: thumbs up and down next to the image; Download and Delete in the toolbar. (R-I)
-- [ ] Item 4: suggestion card in four parts from `suggestionParts()`. (R-H, R-I)
-- [ ] Item 9: lay out the three brief starts, including "Start from the suggestions" (`.brief-prefill`). (R-E)
-- [ ] Items 1, 18: "View in Radar" link on Creation round and editor pages (`ws.radarPath`), plus a mode cue in the breadcrumb. (DL-06)
-- [ ] Item 11: style `.ad-copy.stylized`; "No preview yet" note in the editor when there is no ready-made render. (R-AI)
+- [x] Item 4: suggestion card in four parts from `suggestionParts()`. (R-H, R-I)
+- [x] Item 9: lay out the three brief starts, including "Start from the suggestions" (`.brief-prefill`). (R-E)
+- [x] Items 1, 18: "View in Radar" link on Creation round and editor pages (`ws.radarPath`), plus a mode cue in the breadcrumb. (DL-06)
+- [x] Item 11: style `.ad-copy.stylized`; "No preview yet" note in the editor when there is no ready-made render. (R-AI)
 
 ### P0: lineage
-- [ ] Items 16, 17: History drawer from `lineageOf()`: tree on desktop, opened from a "History" button on the ad page and on round pages. Each step: letter, date, placement, grade, summary, reason, result vs parent, repeat warning. Demo: `mm-1090245-v3`. (DL-04)
+- [x] Items 16, 17: History drawer from `lineageOf()`: tree on desktop, opened from a "History" button on the ad page and on round pages. Each step: letter, date, placement, grade, summary, reason, result vs parent, repeat warning. Demo: `mm-1090245-v3`. (DL-04)
 
 ### P1: phones, verify at 375 x 812
-- [ ] Item 6: every dense table becomes summary cards below 768 px (section 9 anatomy); no sideways scrolling tables.
-- [ ] Item 5: compact date and goal tags; extra tags fold into "+2"; nothing breaks mid-phrase. Dates month first. (DL-03)
-- [ ] Items 16, 17: History as a single-column timeline in a bottom sheet.
-- [ ] Sticky action bars use safe-area padding; one primary action per view; 44 px targets.
-- [ ] Filters open as a sheet with a count on the trigger (already built: check it at 375).
-- [ ] Recheck the Tasks status line: relative times are longer now ("2 hours ago").
+- [x] Item 6: every dense table becomes summary cards below 768 px (section 9 anatomy); no sideways scrolling tables.
+- [x] Item 5: compact date and goal tags; extra tags fold into "+2"; nothing breaks mid-phrase. Dates month first. (DL-03)
+- [x] Items 16, 17: History as a single-column timeline in a bottom sheet.
+- [x] Sticky action bars use safe-area padding; one primary action per view; 44 px targets.
+- [x] Filters open as a sheet with a count on the trigger (already built: check it at 375).
+- [x] Recheck the Tasks status line: relative times are longer now ("2 hours ago").
 
 ### P2
 - [x] Section 12.1 known issues, Essential first.
 - [x] Section 11 page one-liners under every title.
-- [ ] Item 3: reference strip on the round page (thumbnail plus two-line note) from each angle's reason.
+- [x] Item 3: reference strip on the round page (thumbnail plus two-line note) from each angle's reason.

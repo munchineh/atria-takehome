@@ -267,21 +267,40 @@ function FiltersButton({ campaigns, placements, goals, picked, setPicked, popOpe
   );
 }
 
-/** Active filters as light orange pills; each clears itself, plus one quick "Clear all". */
-function ActiveFilters({ picked, setPicked, panelOpen }: { picked: Picked; setPicked: (p: Picked) => void; panelOpen: boolean }) {
+/** Active filters as light orange pills; on phones collapse extra pills into a "+N" chip (Item 5). */
+function ActiveFilters({
+  picked,
+  setPicked,
+  panelOpen,
+  mobile,
+  onOpenFilters,
+}: {
+  picked: Picked;
+  setPicked: (p: Picked) => void;
+  panelOpen: boolean;
+  mobile: boolean;
+  onOpenFilters: () => void;
+}) {
   const items = Object.entries(picked).flatMap(([g, vs]) => vs.map((v) => ({ g, v })));
+  const shown = mobile && items.length > 2 ? items.slice(0, 2) : items;
+  const hiddenCount = items.length - shown.length;
   return (
     <AnimatePresence initial={false}>
       {items.length > 0 && (
         <motion.div className="active-filters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: duration.fast }}>
-          {items.map(({ g, v }) => (
+          {shown.map(({ g, v }) => (
             <span key={`${g}-${v}`} className="filter-pill">
-              {g === 'Media' ? v : `${g}: ${v}`}
+              {g === 'Media' ? v : `${g} ${v}`}
               <button aria-label={`Remove ${v}`} onClick={() => setPicked({ ...picked, [g]: picked[g].filter((x) => x !== v) })}>
                 <CloseOutlined />
               </button>
             </span>
           ))}
+          {hiddenCount > 0 && (
+            <button type="button" className="filter-pill filter-more" onClick={onOpenFilters} aria-label={`Show ${hiddenCount} more active filters`}>
+              +{hiddenCount}
+            </button>
+          )}
           {/* 5e Gm-15: one "Clear all" at a time. While the Filters panel is open, its own footer has it. */}
           {!panelOpen && (
             <Button type="link" size="small" className="inline-link clear-all" onClick={() => setPicked({})}>
@@ -368,14 +387,14 @@ export function Radar() {
       // 5d C5d-21 (Mancini's wording). Below 1200 px the cell carries the grade, since its column is hidden (Gm-07).
       title: <Head label="Next steps" tip="Suggested based on your ad performance." />,
       key: 'rec',
-      width: wide ? 170 : 160,
+      width: wide ? 170 : 144,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!wide} />,
     },
-    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: 84, render: (_, c) => <OverallTag creative={c} /> },
-    metricCol('conversion', 'conv', 104),
+    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 72, render: (_, c) => <OverallTag creative={c} /> },
+    metricCol('conversion', 'conv', wide ? 104 : 92),
     ...(wide ? [metricCol('hook', 'hook', 70), metricCol('retention', 'ret', 92)] : []),
-    metricCol('ctr', 'ctr', 64),
-    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 116, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
+    metricCol('ctr', 'ctr', wide ? 64 : 56),
+    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: wide ? 116 : 104, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
     ...(wide ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
   ];
 
@@ -469,7 +488,7 @@ export function Radar() {
         </div>
         <FiltersButton key={account.id} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
-      <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} />
+      <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} mobile={cards} onOpenFilters={() => setFiltersOpen(true)} />
 
       <Tabs
         activeKey={tab}
@@ -518,69 +537,87 @@ export function Radar() {
       ) : cards ? (
         <div className="radar-cards">
           <AnimatePresence initial>
-            {rows.map((c, i) => (
-              <motion.article
-                key={`${tab}-${c.id}`}
-                className="radar-card"
-                onClick={() => open(c)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
-                exit={{ opacity: 0, transition: { duration: duration.instant } }}
-              >
-                {/* 5d (Mancini 23:46): Overall fills the empty top-right corner and spend joins the name block,
-                    so the card is header + action row (C5d-17 kept: data first, action on the right). */}
-                <NameCell
-                  c={c}
-                  morph={false}
-                  mobile
-                  meta={<span className="card-spend">{money(c.spend)} spend</span>}
-                  aside={
-                    <span className="card-corner" onClick={(e) => e.stopPropagation()}>
-                      <span className="card-corner-label">Overall</span>
-                      <OverallTag creative={c} />
-                    </span>
-                  }
-                />
-                <div className="card-foot">
-                  <button
-                    className="card-more"
-                    aria-expanded={expanded === c.id}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setExpanded((x) => (x === c.id ? null : c.id));
-                    }}
-                  >
-                    Details{' '}
-                    <motion.span animate={{ rotate: expanded === c.id ? 180 : 0 }} transition={spring.snappy} style={{ display: 'inline-flex' }}>
-                      <DownOutlined />
-                    </motion.span>
-                  </button>
-                  <StatusCell creative={c} status={statusOf(c.id)} withGrade />
-                </div>
-                <AnimatePresence initial={false}>
-                  {expanded === c.id && (
-                    <motion.div
-                      className="card-grades"
-                      onClick={(e) => e.stopPropagation()}
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
-                      exit={{ opacity: 0, height: 0, transition: { duration: duration.fast, ease: ease.exit } }}
-                    >
-                      <div className="card-grades-inner">
-                        {(['conversion', 'hook', 'retention', 'ctr'] as const).map((k) => (
-                          <span key={k}>
-                            {METRIC_META[k].label} <GradeTag creative={c} metric={k} />
-                          </span>
-                        ))}
-                        <span>
-                          CPA <b className="ink">{money(c.values.cpa)}</b>
+            {rows.map((c, i) => {
+              // R-K4: Phone summary card shows Overall grade + ONE number top right (goal metric value, or Spend if ungraded).
+              const goal = goalOf(c);
+              const gm = GOALS[goal].metric;
+              const vKey = ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[gm];
+              const goalVal = c.overall && c.values[vKey] != null ? METRIC_META[gm].unit(c.values[vKey]!) : money(c.spend).replace(/\.\d\d$/, '');
+              const goalLabel = c.overall && c.values[vKey] != null ? (gm === 'conversion' ? ACCOUNT.conversionMetric : METRIC_META[gm].label) : 'Spend';
+              return (
+                <motion.article
+                  key={`${tab}-${c.id}`}
+                  className="radar-card"
+                  onClick={() => open(c)}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
+                  exit={{ opacity: 0, transition: { duration: duration.instant } }}
+                >
+                  <NameCell
+                    c={c}
+                    morph={false}
+                    mobile
+                    meta={
+                      <div className="card-tags">
+                        <span className="card-goal-chip">
+                          {GOAL_ICON[goal]} {goal}
                         </span>
                       </div>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </motion.article>
-            ))}
+                    }
+                    aside={
+                      <span className="card-corner" onClick={(e) => e.stopPropagation()}>
+                        <OverallTag creative={c} />
+                        <span className="card-corner-metric">
+                          <span className="card-corner-label">{goalLabel}</span>{' '}
+                          <b className="card-corner-val">{goalVal}</b>
+                        </span>
+                      </span>
+                    }
+                  />
+                  <div className="card-foot">
+                    <button
+                      className="card-more"
+                      aria-expanded={expanded === c.id}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setExpanded((x) => (x === c.id ? null : c.id));
+                      }}
+                    >
+                      Details{' '}
+                      <motion.span animate={{ rotate: expanded === c.id ? 180 : 0 }} transition={spring.snappy} style={{ display: 'inline-flex' }}>
+                        <DownOutlined />
+                      </motion.span>
+                    </button>
+                    <StatusCell creative={c} status={statusOf(c.id)} withGrade />
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {expanded === c.id && (
+                      <motion.div
+                        className="card-grades"
+                        onClick={(e) => e.stopPropagation()}
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
+                        exit={{ opacity: 0, height: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+                      >
+                        <div className="card-grades-inner">
+                          {(['conversion', 'hook', 'retention', 'ctr'] as const).map((k) => (
+                            <span key={k}>
+                              {METRIC_META[k].label} <GradeTag creative={c} metric={k} />
+                            </span>
+                          ))}
+                          <span>
+                            Spend <b className="ink">{money(c.spend)}</b>
+                          </span>
+                          <span>
+                            CPA <b className="ink">{money(c.values.cpa)}</b>
+                          </span>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </motion.article>
+              );
+            })}
           </AnimatePresence>
         </div>
       ) : (
