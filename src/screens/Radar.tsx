@@ -1,6 +1,6 @@
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
+import { Alert, Progress, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -351,11 +351,25 @@ export function Radar() {
       <AnimatePresence initial={false}>
         {lowSpend && (
           <motion.div key={account.id} variants={fadeUp} initial="hidden" animate="show" exit="exit" className="spend-alert">
-            <Alert
-              type="info"
-              showIcon
-              message={`Radar works best on accounts that spend over ${money(RELIABLE_SPEND).replace('.00', '')} a month. This one spends about ${money(account.monthlySpend).replace('.00', '')}, so read its grades as a rough guide.`}
-            />
+            {/* L-051: between 30% and 100% of $10,000 a month, a progress bar instead of a warning (Mancini, 19:02). */}
+            {account.monthlySpend >= RELIABLE_SPEND * 0.3 ? (
+              <div className="data-meter">
+                <div className="data-meter-head">
+                  <span className="t-label">Data for grading</span>
+                  <span className="data-meter-num">
+                    <b>{money(account.monthlySpend).replace('.00', '')}</b> of {money(RELIABLE_SPEND).replace('.00', '')} a month
+                  </span>
+                </div>
+                <Progress percent={Math.round((account.monthlySpend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f5582a" />
+                <span className="t-help">Grades get more accurate as your monthly spend grows.</span>
+              </div>
+            ) : (
+              <Alert
+                type="info"
+                showIcon
+                message="Radar is more accurate for accounts that spend over $10,000 a month. On smaller accounts, grades may change as more data comes in."
+              />
+            )}
           </motion.div>
         )}
       </AnimatePresence>

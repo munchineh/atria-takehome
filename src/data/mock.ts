@@ -623,10 +623,10 @@ const hash = (s: string) => [...s].reduce((a, ch) => (a * 31 + ch.charCodeAt(0))
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 /** Mock per-copy facts for the "Where it runs" panel: start date, days live, frequency. */
 export function copyFacts(a: MetaAd) {
-  const h = hash(a.id);
+  const h = Math.abs(hash(a.id));
   const days = 6 + (h % 70);
   const d = new Date(2026, 10, 20 - days);
-  return { days, since: `${d.getDate()} ${MONTHS[d.getMonth()]}`, frequency: (1.3 + ((h >> 3) % 22) / 10).toFixed(1) };
+  return { days, since: `${d.getDate()} ${MONTHS[d.getMonth()]}`, frequency: (1.3 + ((h >>> 3) % 22) / 10).toFixed(1) };
 }
 
 /** Grade windows (deck A7). Changing the window re-grades every ad; a few mock ads change. */
