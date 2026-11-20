@@ -13,6 +13,7 @@ import {
   DownloadOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
+  LeftOutlined,
   LikeFilled,
   LikeOutlined,
 } from '@ant-design/icons';
@@ -534,31 +535,51 @@ export function Editor() {
     </section>
   );
 
+  const roundLabel = `Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}`;
+
   return (
     <motion.div {...pageTransition} className="page editor">
       <div className="detail-head">
         <div className="ws-crumb-row">
-          {/* DL-06: mode cue in the breadcrumb when working inside Creation. */}
-          {ws.inCreation && (
-            <Tag className="ws-cue" icon={<BulbOutlined />}>
-              Creation
-            </Tag>
+          {/* E3 (R-L, R-R): on phones use one clean back link to the round instead of a 3-line breadcrumb. */}
+          {mobile ? (
+            <>
+              <Link to={back} className="phone-back">
+                <LeftOutlined /> {roundLabel}
+              </Link>
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+            </>
+          ) : (
+            <>
+              {/* DL-06: mode cue in the breadcrumb when working inside Creation. */}
+              {ws.inCreation && (
+                <Tag className="ws-cue" icon={<BulbOutlined />}>
+                  Creation
+                </Tag>
+              )}
+              <Breadcrumb
+                items={[
+                  ...(c.project || ws.inCreation
+                    ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
+                    : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> }]),
+                  { title: <Link to={back}>{roundLabel}</Link> },
+                  { title: v.angle },
+                ]}
+              />
+            </>
           )}
-          <Breadcrumb
-            items={[
-              ...(c.project || ws.inCreation
-                ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
-                : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> }]),
-              { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}`}</Link> },
-              { title: v.angle },
-            ]}
-          />
         </div>
         {/* DL-06: explicit "View in Radar" exit link when inside Creation on a Radar ad. */}
         {ws.inCreation && !c.project && (
-          <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
-            View in Radar
-          </Button>
+          <div className="detail-head-right">
+            <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
+              View in Radar
+            </Button>
+          </div>
         )}
       </div>
 
