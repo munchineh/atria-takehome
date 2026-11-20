@@ -1,7 +1,8 @@
+import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Segmented, Select, Tag, Tooltip } from 'antd';
-import { BranchesOutlined, CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
+import { CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, short, type Creative as CreativeT, type Recommendation } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
@@ -117,7 +118,7 @@ function VariationCard({
           <div className="var-flags">
             <PredictedTag id={v.id} />
             {v.from && (
-              <Tag icon={<BranchesOutlined />} className="from-tag">
+              <Tag icon={<MadeFromIcon />} className="from-tag">
                 {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
               </Tag>
             )}

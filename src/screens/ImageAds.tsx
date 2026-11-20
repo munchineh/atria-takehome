@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Empty, Grid, Popover, Select, Tag, Tooltip, Typography } from 'antd';
-import { BranchesOutlined, CopyOutlined, FormOutlined, RightOutlined } from '@ant-design/icons';
+import { CopyOutlined, FormOutlined, RightOutlined } from '@ant-design/icons';
+import { MadeFromIcon } from '../components/Icons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS, useStore, type Job } from '../data/store';
@@ -171,7 +172,7 @@ export function ImageAds() {
                     {SOURCE_LABEL[r.source]}
                   </Tag>
                   {r.variationOf && (
-                    <Tag icon={<BranchesOutlined />} className="variation-tag">
+                    <Tag icon={<MadeFromIcon />} className="variation-tag">
                       Variation
                     </Tag>
                   )}

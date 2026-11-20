@@ -1,7 +1,8 @@
+import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip } from 'antd';
-import { BranchesOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -214,8 +215,7 @@ export function AdDetail() {
         <Breadcrumb
           items={[
             { title: <Link to="/">Radar</Link> },
-            ...(parent ? [{ title: <Link to={`/ad/${parent.id}`}>{short(parent.name, 14)}</Link> }] : []),
-            { title: <Tooltip title={c.name}>{short(c.name, 22)}</Tooltip> },
+            { title: <Tooltip title={c.name}>{short(c.name, 36)}</Tooltip> },
           ]}
         />
         <span className="muted small window">{bp.md ? WINDOW.long : WINDOW.short}</span>
@@ -223,10 +223,7 @@ export function AdDetail() {
 
       {parent && (
         <motion.div className="lineage" variants={fadeUp} initial="hidden" animate="show">
-          <BranchesOutlined /> Made from
-          <Link to={`/ad/${parent.id}`}>{short(parent.name, 14)}</Link>
-          <span className="muted">›</span>
-          <b>{short(c.name, 18)}</b>
+          <MadeFromIcon /> Made from <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
         </motion.div>
       )}
 
@@ -294,7 +291,7 @@ export function AdDetail() {
             <b>Source</b>
             {parent ? (
               <div className="source-body">
-                <Tag color="orange" icon={<BranchesOutlined />}>
+                <Tag color="orange" icon={<MadeFromIcon />}>
                   Created in Atria
                 </Tag>
                 <div>

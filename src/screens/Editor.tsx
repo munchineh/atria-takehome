@@ -1,8 +1,9 @@
+import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
 import {
-  BranchesOutlined,
+  
   DeleteOutlined,
   DislikeFilled,
   DislikeOutlined,
@@ -339,7 +340,7 @@ export function Editor() {
             <Alert
               type="info"
               showIcon
-              icon={<BranchesOutlined />}
+              icon={<MadeFromIcon />}
               message={`You're on v${shown.n}. A change here makes a new variation, and v${latest.n} stays as it is.`}
               action={
                 <Button size="small" type="link" onClick={() => setSel(null)}>
@@ -439,7 +440,7 @@ export function Editor() {
             {rec && <span className="muted">Fixes: {rec.issue} ({rec.target})</span>}
             <PredictedTag id={v.id} />
             {v.from && (
-              <Tag icon={<BranchesOutlined />} className="from-tag">
+              <Tag icon={<MadeFromIcon />} className="from-tag">
                 {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
                 {parent ? (
                   <>
