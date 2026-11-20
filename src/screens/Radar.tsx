@@ -2,7 +2,7 @@ import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, SubnodeOutlined, DownOutlined, CloseOutlined, ExportOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -120,7 +120,7 @@ function NameCell({ c, morph = true, mobile = false }: { c: Creative; morph?: bo
           {parent && (
             <Tooltip title={`Variation ${n} of ${parent.name}`}>
               <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>
-                <SubnodeOutlined /> {n}
+                Var. {n}
               </span>
             </Tooltip>
           )}
