@@ -2,7 +2,8 @@ import { GoalPill, objectiveOf } from '../components/Goal';
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip, theme as antdTheme } from 'antd';
+import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
+import { darkBarTheme } from '../theme';
 import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -51,9 +52,9 @@ const val = (c: CreativeT, k: MetricKey) => {
   return METRIC_META[k].unit(c.values[key] ?? 0);
 };
 
-/** AD-13 to AD-15: the reading, then what to do. Numbers live in the stat strip below (P3, L-035). */
+/** AD-13 to AD-15: the reading, then what to do. Numbers live in the stat strip below (P3, L-035, R-M9). */
 function summary(c: CreativeT, parent?: CreativeT) {
-  if (parent) return `Converts better than the original. Let it run before you judge it: ${money(c.spend)} spent so far.`;
+  if (parent) return `Converts better than the original. Let it run before you judge it: about ${money(Math.round(c.spend)).replace(/\.\d\d$/, '')} spent so far.`;
   // C5d-41: the reading follows the ad's goal, like the suggestions (L-146). Goal metric first, then the ones that
   // support it; metrics the goal doesn't care about never drive the sentence (an Awareness ad gets no CPA reading).
   const goal = GOALS[goalOf(c)];
@@ -134,8 +135,9 @@ function RecCard({
     </Tooltip>
   );
   const recTag = suggested && !disabled && (
-    <Tooltip title="One of the top 2 by priority, so it's selected for you.">
-      <Tag color="orange" className="rec-suggested">Recommended</Tag>
+    <Tooltip title="High priority for this ad's goal.">
+      {/* K37 (R-I11, R-C1): neutral tag; orange stays on primary action, progress and selection only. */}
+      <Tag className="rec-suggested">Recommended</Tag>
     </Tooltip>
   );
   const tryBlock = r.examples.length > 0 && (
@@ -262,7 +264,7 @@ export function AdDetail() {
     const j = jobs.filter((x) => x.recIds.includes(r.id)).at(-1);
     if (!j) return undefined;
     if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}`, running: true };
-    if (j.state === 'failed') return { text: "Couldn't create variations. Credits returned." };
+    if (j.state === 'failed') return { text: `Couldn't create variations\u00a0· ${j.cost}\u00a0credits returned.` };
     const n = j.variations.filter((v, i) => v.recId === r.id && !j.failed.includes(i)).length;
     if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'variation')} ready`, action: () => viewRound(j.id, r.id) };
     return { text: `${plural(n, 'variation')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
@@ -291,6 +293,11 @@ export function AdDetail() {
     ),
   ];
   const statusLabel = (x: typeof c) => (adStatusOf(x) === 'Paused' ? 'Paused' : 'Active');
+  // R-K1 / R-K5: goal metric comes first after Overall, followed by the remaining graded metrics.
+  const goalMetric = GOALS[goalOf(c)].metric;
+  const gradedMetrics = (Object.keys(METRIC_META) as MetricKey[])
+    .filter((k) => c.grades[k])
+    .sort((a, b) => (a === goalMetric ? -1 : b === goalMetric ? 1 : 0));
 
   return (
     <motion.div {...pageTransition} className="page detail">
@@ -310,6 +317,11 @@ export function AdDetail() {
         </Tooltip>
       </div>
 
+      <div className="page-head detail-page-head">
+        <h1 className="page-title">{c.name}</h1>
+        <p className="muted desc">See why this ad performs as it does and pick the fixes to try.</p>
+      </div>
+
       {parent && (
         <motion.div className="lineage" variants={fadeUp} initial="hidden" animate="show">
           <MadeFromIcon /> Made from <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
@@ -319,12 +331,14 @@ export function AdDetail() {
       <div className="detail-grid">
         <aside className="detail-left">
           <div className="panel creative-panel">
-            <h4 className="panel-title ad-name">{c.name}</h4>
-            {/* 5d C5d-02: the same media pill as Radar, so the type reads before the image does. */}
-            <span className={`media-pill ${c.media.toLowerCase()} ad-media`}>
-              {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
-              {c.media === 'Carousel' ? 'Carousel · 5 cards' : c.media}
-            </span>
+            <div className="creative-panel-head">
+              <h2 className="panel-title">Creative</h2>
+              {/* 5d C5d-02: the same media pill as Radar, so the type reads before the image does. */}
+              <span className={`media-pill ${c.media.toLowerCase()} ad-media`}>
+                {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
+                {c.media === 'Carousel' ? 'Carousel\u00a0· 5 cards' : c.media}
+              </span>
+            </div>
             {c.media === 'Carousel' ? <CarouselArt c={c} /> : <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />}
           </div>
 
@@ -384,13 +398,12 @@ export function AdDetail() {
             <b className="panel-title">Source</b>
             {parent ? (
               <div className="source-body">
-                <Tag color="orange" icon={<MadeFromIcon />}>
-                  Created in Atria
-                </Tag>
+                {/* K37 (R-C1): neutral tag. */}
+                <Tag icon={<MadeFromIcon />}>Created in Atria</Tag>
                 <div>
                   Variation of <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
                 </div>
-                <div className="muted small">From “{recName(parent.id, 'cta')}” · Brief v1 · Nov 12</div>
+                <div className="muted small">From “{recName(parent.id, 'cta')}”{'\u00a0'}· Brief v1{'\u00a0'}· Nov 12</div>
                 <Button size="small" type="link" style={{ padding: 0 }} onClick={() => nav(`/ad/${parent.id}/variations?round=job-hero-1`)}>
                   View brief and images
                 </Button>
@@ -398,7 +411,7 @@ export function AdDetail() {
             ) : (
               <div className="source-body">
                 <Tag icon={<CloudUploadOutlined />}>Uploaded</Tag>
-                <div className="t-help">Made outside Atria and synced from Meta</div>
+                <div className="t-help">Made outside Atria and synced from {c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}.</div>
               </div>
             )}
           </motion.div>
@@ -433,63 +446,73 @@ export function AdDetail() {
         </aside>
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
+          {/* Item 8 (R-H, R-K1, R-K5, R-N3): Ad summary card structured in three clear zones. */}
           <motion.div variants={fadeUp} className="panel verdict">
-            <div className="verdict-head">
-              <span className="t-label">Summary</span>
+            {/* Zone 1: Identity, goal and live status */}
+            <div className="verdict-zone verdict-head">
+              <div className="verdict-head-left">
+                <h2 className="panel-title">Summary</h2>
+                <Tag className="status-pill">{statusLabel(c)}</Tag>
+              </div>
               <GoalPill c={c} />
             </div>
-            <p className="verdict-line">{summary(c, parent)}</p>
-            <div className="stat-strip">
-              <div className="stat">
-                <span className="t-label">Overall</span>
-                <span className="stat-val">
-                  <OverallTag creative={c} />
-                </span>
-              </div>
-              {(Object.keys(METRIC_META) as MetricKey[])
-                .filter((k) => c.grades[k])
-                .map((k) => (
-                  <div className="stat" key={k}>
+
+            {/* Zone 2: Plain-language diagnosis and action */}
+            <div className="verdict-zone verdict-reading">
+              <p className="verdict-line">{summary(c, parent)}</p>
+            </div>
+
+            {/* Zone 3: KPI stat strip (Overall -> goal metric -> other graded metrics -> Spend -> ROAS) */}
+            <div className="verdict-zone verdict-metrics">
+              <div className="stat-strip">
+                <div className="stat stat-primary">
+                  <span className="t-label">Overall</span>
+                  <span className="stat-val">
+                    <OverallTag creative={c} />
+                  </span>
+                </div>
+                {gradedMetrics.map((k, idx) => (
+                  <div className={`stat ${idx === 0 && k === goalMetric ? 'stat-goal' : ''}`} key={k}>
                     <span className="t-label">{METRIC_META[k].label}</span>
                     <span className="stat-val">
                       <GradeTag creative={c} metric={k} /> {val(c, k)}
                     </span>
                   </div>
                 ))}
-              <div className="stat">
-                <span className="t-label">Spend</span>
-                <span className="stat-val">{money(c.spend)}</span>
+                <div className="stat">
+                  <span className="t-label">Spend</span>
+                  <span className="stat-val">{money(c.spend)}</span>
+                </div>
+                <div className="stat">
+                  <span className="t-label">ROAS</span>
+                  <span className="stat-val">{(c.roas ?? 0).toFixed(2)}</span>
+                </div>
               </div>
-              <div className="stat">
-                <span className="t-label">ROAS</span>
-                <span className="stat-val">{c.roas}</span>
-              </div>
+              <span className="t-help">{bp.md ? "Hover over a grade to see how it's graded." : "Tap a grade to see how it's graded."}</span>
             </div>
-            <span className="t-help">{bp.md ? 'Hover over a grade to see how it\'s graded.' : 'Tap a grade to see how it\'s graded.'}</span>
           </motion.div>
 
           <motion.div variants={fadeUp} className="section-title">
-            <h4>Suggestions</h4>
+            <h2 className="panel-title">Suggestions</h2>
             <span className="t-help">{iterable && preselect().length === 2 ? 'Most important first. The top 2 are already selected.' : 'Most important first.'}</span>
             {!iterable && (
-              // 5d C5d-01: replaces the dark bar on video and carousel ads; teaches the feature without blocking anything.
-              <Tooltip title="Video and carousel support is coming. You can still apply these suggestions yourself.">
-                <span className="t-help image-only-note">
-                  <InfoCircleOutlined /> Atria can make variations of image&nbsp;ads.
-                </span>
-              </Tooltip>
+              /* K28 (R-I7, R-V6): no roadmap promise; visible line on the page. */
+              <span className="t-help image-only-note">
+                <InfoCircleOutlined /> Atria can make variations of image{'\u00a0'}ads. You can still apply these suggestions yourself.
+              </span>
             )}
             <span className="t-help rec-date">
               Updated {WINDOW.synced}
-              <Tooltip title="Refresh">
-                <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" onClick={() => message.success('Suggestions are up to date.')} />
+              <Tooltip title="Refresh suggestions.">
+                <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" onClick={() => message.success('Suggestions are up to date')} />
               </Tooltip>
             </span>
           </motion.div>
 
           {parent && (
             <motion.div variants={fadeUp} className="already-tried">
-              <HistoryOutlined /> <span>This variation already applies: <b>{recName(parent.id, 'cta')}</b></span>
+              {/* K23 (R-M7): drop colon. */}
+              <HistoryOutlined /> <span>This variation already applies <b>{recName(parent.id, 'cta')}</b></span>
             </motion.div>
           )}
 
@@ -507,8 +530,9 @@ export function AdDetail() {
           ))}
 
           <motion.div variants={fadeUp} className="panel personas">
-            <h4>Likely audience</h4>
-            <p className="t-help persona-help">Who this ad seems to speak to, read from its image and copy.</p>
+            <h2 className="panel-title">Likely audience</h2>
+            {/* K4 (R-T4): "text", never "copy" for ad words. */}
+            <p className="t-help persona-help">Who this ad seems to speak to, read from its image and text.</p>
             {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
             <div className="persona-cards">
               {accountOf(c).personas.map((p) => (
@@ -548,7 +572,7 @@ export function AdDetail() {
         style={{ borderRadius: bp.md ? 14 : 0 }}
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: spring.gentle }}
-        transition={{ layout: { type: 'spring', bounce: 0, duration: 0.42 } }}
+        transition={{ layout: spring.layout }}
         role={morph ? 'dialog' : undefined}
         aria-label={morph ? 'Create variations' : undefined}
       >
@@ -561,7 +585,7 @@ export function AdDetail() {
               animate={{ opacity: 1, transition: { delay: 0.16, duration: duration.base, ease: ease.standard } }}
               exit={{ opacity: 0, transition: { duration: duration.instant } }}
             >
-              <ConfigProvider theme={{ algorithm: antdTheme.darkAlgorithm, token: { colorPrimary: '#f66c30', colorBgContainer: '#2a272e', colorBgElevated: '#2a272e', colorBorder: '#3d3942', colorBorderSecondary: '#333037', colorText: '#ece9ef', colorTextSecondary: '#a8a3ad', colorTextTertiary: '#8c8791', colorTextPlaceholder: '#7d7883', colorTextDisabled: '#6b6670', colorBgContainerDisabled: '#2a272e', borderRadius: 6 } }}>
+              <ConfigProvider theme={darkBarTheme}>
                 <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} />
               </ConfigProvider>
             </motion.div>
@@ -575,27 +599,32 @@ export function AdDetail() {
             >
         <div className="sticky-summary">
           {busy ? (
-            // 5d C5d-10: the bar becomes the progress bar (same layout morph as the create panel): time left and that you can leave.
             <>
               <span className="bar-progress" aria-hidden>
                 <motion.i animate={{ scaleX: s.kind === 'generating' ? Math.max(0.04, s.progress) : 0.02 }} transition={{ duration: duration.slow, ease: ease.standard }} />
               </span>
-              <b>{s.kind === 'queued' ? `Queued · ${s.count} variations` : `Creating ${s.count} variations`}</b>
+              {/* K1 (R-T9), K24 (R-M6), K51 (R-L4, R-AI7): "Generating", lowercase after dot, authored phone line. */}
+              <b>{s.kind === 'queued' ? `Queued\u00a0· ${plural(s.count, 'variation')}` : `Generating ${plural(s.count, 'variation')}`}</b>
               <span className="muted small left">
-                {s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())} · ` : 'Starts when the current round finishes · '}
-                You can leave this page. Tasks will tell you when they're ready.
+                {!bp.md
+                  ? s.kind === 'generating'
+                    ? `${plural(s.count, 'variation')}\u00a0· ${timeLeft(s.progress)}`
+                    : 'Starts when the current round finishes.'
+                  : `${s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())}\u00a0· ` : 'Starts when the current round finishes\u00a0· '}you can leave this page. Tasks will tell you when they're ready.`}
               </span>
             </>
           ) : selected.length === 0 && s.kind === 'ready' ? (
             <>
-              <b>{s.count} new variations are ready</b>
-              <span className="muted small left">Or select a suggestion to create more.</span>
+              <b>{plural(s.count, 'new variation')} ready</b>
+              {/* K27 (R-M3, R-V2) */}
+              <span className="muted small left">Select more suggestions to create more variations.</span>
             </>
           ) : selected.length === 0 ? (
             <span>Select a suggestion to create variations</span>
           ) : short_ ? (
             <span>
-              Needs {cost} credits. You have {balance}.
+              {/* K18 (R-M8) */}
+              Needs {cost}{'\u00a0'}credits. You have {balance.toLocaleString('en-US')}.
             </span>
           ) : (
             <>
