@@ -15,8 +15,7 @@ import {
   short,
   type Creative as CreativeT,
   type MetricKey,
-  type Recommendation,
-} from '../data/mock';
+  type Recommendation, statusOf } from '../data/mock';
 import { findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { Creative } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -195,15 +194,17 @@ export function AdDetail() {
       <div className="detail-grid">
         <aside className="detail-left">
           <div className="panel creative-panel">
-            <div className="muted small">Creative name</div>
+            <div className="muted small">Ad</div>
             <div className="ad-name">{c.name}</div>
             <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />
           </div>
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
-              <b>Running in {plural(c.ads.length, 'ad')}</b>
-              {c.ads.length > 1 && <span className="muted small">Grades and spend combine {c.ads.length === 2 ? 'both ads' : `all ${c.ads.length} ads`}</span>}
+              <b>Where it runs · {c.ads.length}</b>
+              {c.ads.length > 1 && (
+                <span className="muted small">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</span>
+              )}
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
               </motion.span>
@@ -219,11 +220,14 @@ export function AdDetail() {
                   {ads.map((a) => (
                     <div key={a.id} className="ad-row">
                       <div className="ad-row-id">
-                        <i className="live-dot" /> Meta ad {a.id}
+                        <i className={`live-dot ${statusOf(c) === 'Paused' ? 'paused' : ''}`} aria-label={statusOf(c)} /> <span className="campaign">{a.campaign}</span>
                         <ExportOutlined className="muted" aria-label="Open in Meta Ads Manager" role="link" />
                       </div>
-                      <div className="campaign">{a.campaign}</div>
-                      <div className="muted small">Ad set: {a.adSet}</div>
+                      <div className="ad-fields muted small">
+                        <span>Platform: Meta</span>
+                        <span>Audience: {a.adSet}</span>
+                        <span>Ad ID: {a.id}</span>
+                      </div>
                       <div className="ad-row-nums">
                         <span>
                           <span className="muted">Spend</span> {money(a.spend)}

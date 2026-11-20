@@ -502,3 +502,9 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
   .radar-tabs .ant-tabs-nav-list { gap: 0; }
   .radar-tabs .ant-tabs-tab + .ant-tabs-tab { margin-left: 24px; }
 }
+
+.ad-fields { display: flex; flex-wrap: wrap; gap: 2px 12px; margin-top: 2px; }
+.ad-row-id { align-items: flex-start; }
+.ad-row-id .campaign { flex: 1; min-width: 0; font-weight: 500; }
+.ad-row-id .live-dot { margin-top: 6px; flex: none; }
+.live-dot.paused { background: #bfbfbf; }
