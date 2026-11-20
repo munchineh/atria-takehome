@@ -313,14 +313,14 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .dlg-scroll { overflow: auto; padding: 0 24px 16px; display: flex; flex-direction: column; gap: 18px; }
 .dlg-sub { margin: 2px 0 0; font-size: 13px; }
 .dlg-label { font-weight: 600; font-size: 13.5px; }
-.dlg-row { display: flex; gap: 16px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 10px; }
+.dlg-row { display: flex; gap: 16px; align-items: center; padding: 10px 12px; border: 1px solid var(--line); border-radius: 6px; }
 .brand-value { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
 .swatches { display: inline-flex; }
 .swatches i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid #fff; margin-left: -4px; box-shadow: 0 0 0 1px #eee; }
 .swatches i:first-child { margin-left: 0; }
 .dlg-block { display: flex; flex-direction: column; gap: 6px; }
 .brief-starts { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: stretch; }
-.brief-start { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 10px; justify-content: space-between; }
+.brief-start { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid var(--line); border-radius: 6px; justify-content: space-between; }
 .brief-start.inline { border: 0; padding: 0; }
 .brief-or { align-self: center; }
 .brief-field { display: flex; flex-direction: column; gap: 6px; }

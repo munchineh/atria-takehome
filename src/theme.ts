@@ -28,5 +28,10 @@ export const theme: ThemeConfig = {
     Notification: { borderRadiusLG: 14 },
     Drawer: { borderRadiusLG: 14 },
     Dropdown: { borderRadiusLG: 14 },
+    // Controls stay at 6 px at every size (L-030): large inputs, selects and buttons were picking up 10.
+    Input: { borderRadiusLG: 6 },
+    Select: { borderRadiusLG: 6 },
+    Button: { borderRadiusLG: 6 },
+    InputNumber: { borderRadiusLG: 6 },
   },
 };
