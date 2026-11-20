@@ -11,7 +11,9 @@
 }
 * { box-sizing: border-box; }
 html, body, #root { height: 100%; margin: 0; }
-body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; font-feature-settings: 'tnum' 1, 'cv11' 1; }
+body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); background: var(--bg); -webkit-font-smoothing: antialiased; font-feature-settings: 'cv11' 1; letter-spacing: 0; }
+/* Tabular figures only where numbers line up in columns (global tnum widened all text, 20 Nov 17:40). */
+.ant-table, .stat-val, .place-pct, .cpa, .runs-kv, .grade-pop-kv, .credits, .seg-count, .tab-count { font-variant-numeric: tabular-nums; }
 .muted { color: var(--muted); }
 .ink { color: var(--ink); }
 .small { font-size: 12px; }
@@ -543,7 +545,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .chip { border: 1px solid var(--line); background: #fff; border-radius: 6px; padding: 4px 10px; font: inherit; font-size: 13px; cursor: pointer; transition: border-color 0.1s, background 0.1s; }
 .chip:hover { border-color: var(--orange); color: var(--orange); }
 .chip:active { background: #fff1ea; }
-.ed-text-sum { padding: 8px 10px; border-radius: 6px; background: #fafafa; font-weight: 600; letter-spacing: 0.01em; }
+.ed-text-sum { padding: 8px 10px; border-radius: 6px; background: #fafafa; font-weight: 600; }
 .warn-line { color: #ad6800; }
 .self-start { align-self: flex-start; }
 .wrap-tag { white-space: normal; line-height: 1.4; padding: 2px 8px; margin: 0; }
@@ -618,7 +620,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
    key     13/400 #8c8c8c       field names in key-value lists
    help    13/400 #8c8c8c, own line, smaller gap above its value  explanations and helpers
    value   13-14/400 ink        the data itself                                   */
-.t-label { font-size: 12px; font-weight: 600; color: #6b6b6b; letter-spacing: 0.01em; line-height: 1.4; }
+.t-label { font-size: 12px; font-weight: 600; color: #6b6b6b; line-height: 1.4; }
 .t-help { font-size: 13px; color: #8c8c8c; line-height: 1.45; }
 .t-key { color: #8c8c8c; }
 .placements { display: flex; flex-direction: column; gap: 8px; }
@@ -633,3 +635,18 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .runs .t-help { margin-top: -6px; }
 /* Tooltips: tighter lines and padding (Mancini, 20 Nov 17:37) */
 .ant-tooltip .ant-tooltip-inner, .ant-tooltip .ant-tooltip-container { line-height: 1.4; padding: 6px 10px; font-size: 13px; }
+
+/* Summary stat strip and grade popover (20 Nov 17:40) */
+.stat-strip { display: flex; flex-wrap: wrap; gap: 14px 28px; margin: 4px 0 10px; }
+.stat { display: flex; flex-direction: column; gap: 4px; }
+.stat-val { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; color: var(--ink); }
+.stat-val .grade-tag { margin: 0; }
+.grade-pop { max-width: 280px; font-size: 13px; }
+.grade-pop p { margin: 0; }
+.grade-pop-title { font-size: 14px; margin-bottom: 6px; }
+.grade-pop-lead { color: var(--ink); line-height: 1.45; }
+.grade-pop-kv { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 10px 0 6px; padding: 8px 10px; background: #fafafa; border-radius: 6px; }
+.grade-pop-kv span:nth-child(even) { color: var(--ink); font-weight: 500; text-align: right; }
+.grade-pop .t-help { margin-top: 2px; }
+.grade-pop-meta { margin-top: 8px !important; font-size: 12px; color: #8c8c8c; }
+.grade-pop .grade-breakdown { margin: 10px 0 6px; }

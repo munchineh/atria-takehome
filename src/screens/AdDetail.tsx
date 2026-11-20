@@ -34,21 +34,20 @@ const val = (c: CreativeT, k: MetricKey) => {
   const key = ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[k];
   return METRIC_META[k].unit(c.values[key] ?? 0);
 };
-const mname = (k: MetricKey) => (k === 'conversion' ? ACCOUNT.conversionMetric : METRIC_META[k].label);
 
-/** AD-13 to AD-15: what happens, then the best and worst grade with numbers. No adjectives. */
+/** AD-13 to AD-15: the reading, then what to do. Numbers live in the stat strip below (P3, L-035). */
 function summary(c: CreativeT, parent?: CreativeT) {
-  if (parent)
-    return `Converts better than the original. ${mname('conversion')} is ${c.grades.conversion} (${money(c.values.cpa)}, original ${money(parent.values.cpa)}). CTR is still ${c.grades.ctr}. Early result: ${money(c.spend)} spent so far.`;
+  if (parent) return `Converts better than the original. Let it run before you judge it: ${money(c.spend)} spent so far.`;
   const keys = (Object.keys(METRIC_META) as MetricKey[]).filter((k) => c.grades[k]);
   const rank = (k: MetricKey) => 'ABCD'.indexOf(c.grades[k]![0]);
   const worst = keys.reduce((a, b) => (rank(b) > rank(a) ? b : a));
-  // Pair a weak conversion grade with CTR, so the sentence reads as one story.
-  const best = worst === 'conversion' && c.grades.ctr ? 'ctr' : keys.reduce((a, b) => (rank(b) < rank(a) ? b : a));
-  const lead =
-    rank(worst) <= 1 ? 'Strong on every graded metric' : worst === 'conversion' ? 'People click but few buy' : worst === 'ctr' ? 'Few people click' : worst === 'hook' ? 'People scroll past in the first seconds' : 'People stop watching early';
-  const avg = METRIC_META[worst].unit(ACCOUNT.avg[METRIC_META[worst].avgKey]);
-  return `${lead}. ${mname(best)} is ${c.grades[best]} (${val(c, best)}). ${mname(worst)} is ${c.grades[worst]} (${val(c, worst)}, account average ${avg}).`;
+  if (rank(worst) <= 1) return 'Strong on every graded metric. Use it as the starting point for new variations.';
+  return {
+    conversion: 'People click but few buy. Fix what happens after the click, starting with the fixes below.',
+    ctr: 'Few people click. Make the ad stop the scroll, starting with the fixes below.',
+    hook: 'People scroll past in the first seconds. Change the opening, starting with the fixes below.',
+    retention: 'People stop watching early. Tighten the middle of the video, starting with the fixes below.',
+  }[worst];
 }
 
 function RecCard({
@@ -316,29 +315,35 @@ export function AdDetail() {
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
           <motion.div variants={fadeUp} className="panel verdict">
-            <Typography.Text type="secondary" className="small">
-              Summary
-            </Typography.Text>
+            <span className="t-label">Summary</span>
             <p className="verdict-line">{summary(c, parent)}</p>
-            <div className="grade-row">
-              <span>
-                Overall <OverallTag creative={c} />
-              </span>
+            <div className="stat-strip">
+              <div className="stat">
+                <span className="t-label">Overall</span>
+                <span className="stat-val">
+                  <OverallTag creative={c} />
+                </span>
+              </div>
               {(Object.keys(METRIC_META) as MetricKey[])
                 .filter((k) => c.grades[k])
                 .map((k) => (
-                  <span key={k}>
-                    {METRIC_META[k].label} <GradeTag creative={c} metric={k} />
-                  </span>
+                  <div className="stat" key={k}>
+                    <span className="t-label">{METRIC_META[k].label}</span>
+                    <span className="stat-val">
+                      <GradeTag creative={c} metric={k} /> {val(c, k)}
+                    </span>
+                  </div>
                 ))}
-              <span className="muted">
-                Spend <b className="ink">{money(c.spend)}</b>
-              </span>
-              <span className="muted">
-                ROAS <b className="ink">{c.roas}</b>
-              </span>
+              <div className="stat">
+                <span className="t-label">Spend</span>
+                <span className="stat-val">{money(c.spend)}</span>
+              </div>
+              <div className="stat">
+                <span className="t-label">ROAS</span>
+                <span className="stat-val">{c.roas}</span>
+              </div>
             </div>
-            <span className="t-help">Select a grade to see how it's calculated</span>
+            <span className="t-help">{bp.md ? 'Hover over a grade to see how it\'s graded.' : 'Tap a grade to see how it\'s graded.'}</span>
             {s.kind !== 'idle' && (
               <div className="verdict-status">
                 <StatusCell creative={c} status={s} />
