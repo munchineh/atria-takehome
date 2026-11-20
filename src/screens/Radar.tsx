@@ -6,7 +6,7 @@ import { Alert, Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, GOALS, goalOf, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
+import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS, accountOf } from '../data/store';
 import { GOAL_ICON, objectiveOf } from '../components/Goal';
 import { useStore } from '../data/store';
@@ -121,7 +121,8 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
       <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
         <div className="name-line">
-          <span className="name clamp2">{c.name}</span>
+          {/* G1 (R-L): glue last words and keep middle dot bound so names never break right after "·". */}
+          <span className="name clamp2">{mobile ? glue(c.name).replace(/\u00a0· /g, '\u00a0·\u00a0') : c.name}</span>
           {parent && (
             <Tooltip title={`Variation ${n} of ${parent.name}.`}>
               <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>

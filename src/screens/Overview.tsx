@@ -112,7 +112,8 @@ export function Overview() {
             <h2 id="ov-sec-now" className="panel-title">{titles.now.title}</h2>
             <p className="t-help ov-sec-help">{titles.now.help}</p>
           </div>
-          <span className="t-help ov-period-note">Grades cover the {win.short.toLowerCase()}.</span>
+          {/* G5 (R-L): keep one period line in the first card on phones (period selector sits directly above). */}
+          {bp.md && <span className="t-help ov-period-note">Grades cover the {win.short.toLowerCase()}.</span>}
         </div>
 
         <p className="ov-headline">{briefing.now.headline}</p>
