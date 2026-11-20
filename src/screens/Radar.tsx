@@ -2,7 +2,7 @@ import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -361,25 +361,49 @@ export function Radar() {
       </AnimatePresence>
 
       <div className="filter-bar">
-        <span className="window muted">
-          <span className="muted">Grades from the</span>
+        {/* Grade window as a date-range control (Mancini, 18:58): presets only, since grades need enough data;
+            the range shows inside the control so it can't be missed. */}
+        <div className="window">
           <Select
-            size="small"
             variant="filled"
             value={windowDays}
             onChange={(d) => changeWindow(d)}
             popupMatchSelectWidth={false}
             className="window-select"
-            aria-label="Grade window"
-            options={WINDOWS.map((w) => ({ value: w.days, label: w.short.replace('Last', 'last') }))}
+            aria-label="Grading period"
+            prefix={<CalendarOutlined className="window-icon" />}
+            labelRender={({ value }) => {
+              const w = WINDOWS.find((x) => x.days === value) ?? win;
+              return (
+                <span className="window-value">
+                  <b>{w.short}</b>
+                  <span className="window-dates">{w.long.split(' · ')[1].replace(' to ', ' – ')}</span>
+                </span>
+              );
+            }}
+            popupRender={(menu) => (
+              <div>
+                <div className="window-pop-head t-label">Grade ads on data from</div>
+                {menu}
+              </div>
+            )}
+            options={WINDOWS.map((w) => ({
+              value: w.days,
+              label: (
+                <span className="window-opt">
+                  <span>{w.short}</span>
+                  <span className="t-help">{w.long.split(' · ')[1].replace(' to ', ' – ')}</span>
+                </span>
+              ),
+            }))}
           />
-          <span className="window-long">· {win.long.split(' · ')[1]}</span> ·{' '}
           <Popover content={HOW_GRADING} title="How grading works" trigger="click" placement="bottomRight">
-            <Button type="link" size="small" className="inline-link">
-              How grading works
+            <Button type="link" size="small" className="inline-link hgw" aria-label="How grading works">
+              <QuestionCircleOutlined className="hgw-icon" />
+              <span className="hgw-text">How grading works</span>
             </Button>
           </Popover>
-        </span>
+        </div>
         <FiltersButton key={account.id} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
       <ActiveFilters picked={picked} setPicked={setPicked} />

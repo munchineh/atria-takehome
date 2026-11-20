@@ -500,8 +500,8 @@ function recsFor(c: Creative): Recommendation[] {
 }
 
 export const PERSONAS = [
-  { label: 'Gift shoppers', why: 'Likely to respond to gift and collectible messages.' },
-  { label: 'Stress-relief seekers', why: 'Likely to respond to calm and comfort messages.' },
+  { label: 'Gift shoppers', why: 'Likely to respond to gift and collectible messages.', icon: 'gift', tint: '#fde4ec' },
+  { label: 'Stress-relief seekers', why: 'Likely to respond to calm and comfort messages.', icon: 'calm', tint: '#e6f2dc' },
 ];
 
 /** Bands for R6 (quartiles assumed, A4). */

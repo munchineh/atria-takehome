@@ -78,10 +78,11 @@ export function OverallTag({ creative }: { creative: Creative }) {
         <GradeChip g={creative.overall} /> Overall · {creative.overall ? BAND[creative.overall[0]] : ''}
       </div>
       <p className="grade-pop-lead">Combines this ad's grades into one.</p>
-      <div className="grade-breakdown">
+      <div className="grade-pop-kv overall-kv">
         {parts.map((k) => (
-          <span key={k}>
-            {METRIC_META[k].label} <GradeChip g={creative.grades[k]} />
+          <span key={k} className="kv-pair">
+            <span className="t-key">{METRIC_META[k].label}</span>
+            <GradeChip g={creative.grades[k]} />
           </span>
         ))}
       </div>

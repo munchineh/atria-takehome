@@ -2,7 +2,7 @@ import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip, theme as antdTheme } from 'antd';
-import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, GiftOutlined, SmileOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -10,6 +10,8 @@ import {
   METRIC_META,
   PERSONAS,
   WINDOW,
+  WINDOWS,
+  graded,
   money,
   plural,
   recommendationsFor,
@@ -159,9 +161,11 @@ export function AdDetail() {
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
   const nav = useNavigate();
-  const c = findCreative(id) ?? CREATIVES[0];
+  const { statusOf, jobsFor, startJob, credits: balance, versionsOf, windowDays } = useStore();
+  // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
+  const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
+  const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
-  const { statusOf, jobsFor, startJob, credits: balance, versionsOf } = useStore();
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
   const iterable = c.media === 'Image';
@@ -234,7 +238,13 @@ export function AdDetail() {
             { title: <Tooltip title={c.name}>{short(c.name, 36)}</Tooltip> },
           ]}
         />
-        <span className="muted small window">{bp.md ? WINDOW.long : WINDOW.short}</span>
+        <Tooltip title="Set on Radar. Grades on this page use the same period.">
+          <span className="period-chip">
+            <CalendarOutlined />
+            <span>{win.short}</span>
+            {bp.md && <span className="window-dates">{win.long.split(' · ')[1].replace(' to ', ' – ')}</span>}
+          </span>
+        </Tooltip>
       </div>
 
       {parent && (
@@ -422,13 +432,19 @@ export function AdDetail() {
 
           <motion.div variants={fadeUp} className="panel personas">
             <h4>Likely audience</h4>
-            <div className="persona-tags">
+            <p className="t-help persona-help">Who this ad seems to speak to, read from its image and copy.</p>
+            {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
+            <div className="persona-cards">
               {PERSONAS.map((p) => (
-                <Tooltip key={p.label} title={p.why}>
-                  <Tag className="persona">
-                    {p.label} <InfoCircleOutlined />
-                  </Tag>
-                </Tooltip>
+                <div key={p.label} className="persona-card">
+                  <span className="persona-avatar" style={{ background: p.tint }}>
+                    {p.icon === 'gift' ? <GiftOutlined /> : <SmileOutlined />}
+                  </span>
+                  <span className="persona-text">
+                    <b>{p.label}</b>
+                    <span className="t-help">{p.why}</span>
+                  </span>
+                </div>
               ))}
             </div>
           </motion.div>

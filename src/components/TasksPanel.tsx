@@ -35,12 +35,13 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
     >
       <Thumb c={c} size={44} />
       <div className="task-body">
+        {/* No truncation (Mancini, 19:00): the ad is the title, the fixes wrap underneath, the account moves to the foot. */}
         <div className="task-title">
-          <span className="ellipsis">{jobTitle(j)}</span>
+          <span className="clamp-2">{c.name}</span>
           {j.unseen && <i className="unseen-dot" aria-label="New" />}
         </div>
-        <div className="task-sub ellipsis">
-          {short(c.name, 24)} · {accountOf(c).name}
+        <div className="task-sub clamp-2">
+          {j.label ?? j.recIds.map((r) => recName(j.creativeId, r)).join(' · ')}
         </div>
         <div className="task-status">
           {j.state === 'queued' && <span className="muted">Queued · {plural(j.count, 'variation')}</span>}
@@ -76,7 +77,8 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
         </div>
         <div className="task-foot">
           <span className="muted small">
-            {j.cost} credits · {timeAgo(j.minutesAgo)}
+            <span className="nw">{timeAgo(j.minutesAgo)}</span> · <span className="nw">{j.cost} credits</span> ·{' '}
+            <span className="nw">{accountOf(c).name}</span>
           </span>
           {j.state === 'ready' && (
             <Button size="small" type="primary" ghost onClick={() => onOpen(j)}>
