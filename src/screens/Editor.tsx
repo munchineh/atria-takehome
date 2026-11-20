@@ -622,7 +622,14 @@ export function Editor() {
           <div className="ed-diag-main">
             <div className="ed-diag-head">
               <span className="ed-diag-metric">{recMetricLabel}</span>
-              {recGrade && <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>}
+              {/* G9 (R-I): show the grey "No grade" tag + tooltip when a metric (like ROAS) is ungraded on this account. */}
+              {recGrade ? (
+                <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
+              ) : (
+                <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                  <Tag className="rec-grade no-grade">No grade</Tag>
+                </Tooltip>
+              )}
               {recVal && <span className="ed-diag-val">{recVal}</span>}
               {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
             </div>
@@ -648,19 +655,28 @@ export function Editor() {
         </aside>
       </div>
 
-      {mobile && (
-        <>
-          <div className="sticky-spacer" />
-          <motion.div className="sticky-bar" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1, transition: spring.gentle }}>
-            <div className="sticky-summary">
-              <span className="small">{costLine}</span>
-            </div>
-            <Button type="primary" block disabled={!ask.trim() || (applying && !onOlder)} onClick={() => apply(ask)}>
-              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
-            </Button>
-          </motion.div>
-        </>
-      )}
+      {/* G6 (R-R): on phones only show the docked Apply bar once there is a change to apply so the image stays clear. */}
+      <AnimatePresence>
+        {mobile && ask.trim().length > 0 && (
+          <>
+            <div className="sticky-spacer" />
+            <motion.div
+              key="ed-sticky"
+              className="sticky-bar"
+              initial={{ y: 24, opacity: 0 }}
+              animate={{ y: 0, opacity: 1, transition: spring.gentle }}
+              exit={{ y: 24, opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+            >
+              <div className="sticky-summary">
+                <span className="small">{costLine}</span>
+              </div>
+              <Button type="primary" block disabled={applying && !onOlder} onClick={() => apply(ask)}>
+                {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
+              </Button>
+            </motion.div>
+          </>
+        )}
+      </AnimatePresence>
 
       <Modal
         open={confirmDelete}
