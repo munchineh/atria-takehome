@@ -73,6 +73,8 @@ function RateRow() {
   );
 }
 
+const GRADE_COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'red' };
+
 function RecCard({
   r,
   selected,
@@ -80,7 +82,7 @@ function RecCard({
   disabled,
   onToggle,
   footer,
-  targetGrade: _targetGrade,
+  targetGrade,
 }: {
   r: Recommendation;
   selected: boolean;
@@ -100,36 +102,34 @@ function RecCard({
       tabIndex={disabled ? undefined : 0}
       onKeyDown={(e) => !disabled && (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), onToggle())}
     >
-      {/* How > What > Why (Mancini, 20 Nov 17:43): the action leads, the problem it fixes, then why it works. */}
+      {/* How > What > Why (Mancini, 20 Nov 17:43). 18:49 hierarchy pass: the problem is a coloured eyebrow
+          (grade + metric + issue), the fix is the title, the reason is quiet, examples are chips. */}
       <div className="rec-head">
         {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
         <div className="rec-body">
-          <div className="rec-title-row">
-            <b className="rec-how">{r.fix}</b>
-            <div className="rec-tags">
-              {suggested && !disabled && (
-                <Tooltip title="One of the top 2 by priority.">
-                  <Tag color="orange">Suggested</Tag>
-                </Tooltip>
-              )}
-              <Tag>Improves {r.target === 'Hook' ? 'hook' : r.target}</Tag>
-            </div>
+          <div className="rec-eyebrow">
+            {targetGrade && <Tag className="rec-grade" color={GRADE_COLOR[targetGrade[0]]}>{targetGrade}</Tag>}
+            <span className="rec-metric">{r.target}</span>
+            <span className="rec-issue-text">{r.issue}</span>
+            {suggested && !disabled && (
+              <Tooltip title="One of the top 2 by priority.">
+                <Tag color="orange" className="rec-suggested">Suggested</Tag>
+              </Tooltip>
+            )}
           </div>
-          <div className="rec-what">
-            <span className="t-key">Fixes</span> {r.issue}
-          </div>
+          <b className="rec-how">{r.fix}</b>
           <p className="rec-why">{r.why}</p>
-          {r.examples.length > 0 && (
-            <div className="rec-try">
-              <span className="t-label">Try</span>
-              <ul>
+          <div className="rec-bottom">
+            {r.examples.length > 0 && (
+              <div className="rec-try">
+                <span className="t-label">Try</span>
                 {r.examples.map((e) => (
-                  <li key={e}>{e}</li>
+                  <span key={e} className="rec-chip">{e}</span>
                 ))}
-              </ul>
-            </div>
-          )}
-          <RateRow />
+              </div>
+            )}
+            <RateRow />
+          </div>
         </div>
       </div>
       <AnimatePresence initial={false}>
@@ -248,7 +248,7 @@ export function AdDetail() {
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
               <b>Where it runs · {c.ads.length}</b>
               {c.ads.length > 1 && (
-                <span className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</span>
+                <span className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}.</span>
               )}
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />

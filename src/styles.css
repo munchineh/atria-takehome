@@ -691,3 +691,33 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .bar-panel .swatches i { border-color: #1f1d22; box-shadow: 0 0 0 1px #3d3942; }
 .bar-panel .dlg-foot { background: #1f1d22; border-top: 1px solid #333037; padding: 12px 12px 12px 24px; }
 .bar-panel .dlg-sum span { color: #fff; }
+
+/* Suggestion card hierarchy pass (20 Nov 18:49) */
+.rec-eyebrow { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 13px; min-width: 0; }
+.rec-eyebrow .ant-tag { margin: 0; }
+.rec-grade { font-weight: 600; min-width: 22px; text-align: center; padding: 0 5px; }
+.rec-metric { font-weight: 600; color: var(--ink); }
+.rec-issue-text { color: #6b6b6b; }
+.rec-issue-text::before { content: '·'; margin-right: 6px; color: #bfbfbf; }
+.rec-suggested { margin-left: auto !important; }
+.rec-card .rec-how { font-size: 16px; line-height: 1.35; margin-top: 2px; }
+.rec-card .rec-why { color: #6b6b6b; }
+.rec-bottom { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-top: 4px; }
+.rec-card .rec-try { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 6px; padding: 0; background: none; margin: 0; flex: 1; min-width: 0; }
+.rec-card .rec-try .t-label { margin-right: 2px; }
+.rec-chip { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 6px; background: #f5f5f5; font-size: 13px; color: #1f1f1f; line-height: 1.4; }
+.rec-card.selected .rec-chip { background: #fff; box-shadow: inset 0 0 0 1px #ffe0d3; }
+.rec-card .rec-rate { margin: 0 0 0 auto; }
+.rec-card { padding: 16px; }
+.rec-bottom { min-height: 26px; }
+.rec-card .rec-rate .ant-btn { height: 26px; width: 26px; }
+/* Where it runs header: chevron centred on the title line, helper underneath (18:50) */
+.panel-toggle { display: grid; grid-template-columns: 1fr auto; column-gap: 8px; row-gap: 2px; align-items: center; }
+.panel-toggle > b { grid-column: 1; grid-row: 1; }
+.panel-toggle > .t-help, .panel-toggle > .muted { grid-column: 1; grid-row: 2; }
+.panel-toggle > .chev { grid-column: 2; grid-row: 1; margin-left: 0; display: inline-grid; place-items: center; height: 24px; }
+/* Suggestion card on narrow screens: feedback on its own line */
+@media (max-width: 767px) {
+  .rec-bottom { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .rec-card .rec-rate { margin-left: 0; }
+}
