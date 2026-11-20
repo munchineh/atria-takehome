@@ -302,6 +302,98 @@ export function AdDetail() {
     .filter((k) => c.grades[k])
     .sort((a, b) => (a === goalMetric ? -1 : b === goalMetric ? 1 : 0));
 
+  // E1 (375px) & E2 (1440px): desktop docks inline above suggestions so no card is covered; phones dock compactly at bottom.
+  const actionBar = iterable ? (
+    <motion.div
+      layout
+      className={`sticky-bar ${bp.md && !morph ? 'inline-dock' : ''} ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
+      style={{ borderRadius: bp.md ? 12 : 0 }}
+      initial={{ y: bp.md ? 0 : 24, opacity: 0 }}
+      animate={{ y: 0, opacity: 1, transition: spring.gentle }}
+      transition={{ layout: spring.layout }}
+      role={morph ? 'dialog' : undefined}
+      aria-label={morph ? 'Create variations' : undefined}
+    >
+      <AnimatePresence mode="popLayout" initial={false}>
+        {morph ? (
+          <motion.div
+            key="panel"
+            className="bar-panel"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.16, duration: duration.base, ease: ease.standard } }}
+            exit={{ opacity: 0, transition: { duration: duration.instant } }}
+          >
+            <ConfigProvider theme={darkBarTheme}>
+              <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} />
+            </ConfigProvider>
+          </motion.div>
+        ) : (
+          <motion.div
+            key="row"
+            className="bar-row"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { delay: 0.12, duration: duration.fast } }}
+            exit={{ opacity: 0, transition: { duration: duration.instant } }}
+          >
+            <div className="sticky-summary">
+              {busy ? (
+                <>
+                  <span className="bar-progress" aria-hidden>
+                    <motion.i animate={{ scaleX: s.kind === 'generating' ? Math.max(0.04, s.progress) : 0.02 }} transition={{ duration: duration.slow, ease: ease.standard }} />
+                  </span>
+                  {/* K1 (R-T9), K24 (R-M6), K51 (R-L4, R-AI7): "Generating", lowercase after dot, authored phone line. */}
+                  <b>{s.kind === 'queued' ? `Queued\u00a0· ${plural(s.count, 'variation')}` : `Generating ${plural(s.count, 'variation')}`}</b>
+                  <span className="muted small left">
+                    {!bp.md
+                      ? s.kind === 'generating'
+                        ? `${plural(s.count, 'variation')}\u00a0· ${timeLeft(s.progress)}`
+                        : 'Starts when the current round finishes.'
+                      : `${s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())}\u00a0· ` : 'Starts when the current round finishes\u00a0· '}you can leave this page. Tasks will tell you when they're ready.`}
+                  </span>
+                </>
+              ) : selected.length === 0 && s.kind === 'ready' ? (
+                <>
+                  <b>{plural(s.count, 'new variation')} ready</b>
+                  {/* K27 (R-M3, R-V2) */}
+                  {bp.md && <span className="muted small left">Select more suggestions to create more variations.</span>}
+                </>
+              ) : selected.length === 0 ? (
+                <span>Select a suggestion to create variations</span>
+              ) : short_ ? (
+                <span>
+                  {/* K18 (R-M8) */}
+                  Needs {cost}{'\u00a0'}credits. You have {balance.toLocaleString('en-US')}.
+                </span>
+              ) : (
+                <>
+                  <b>
+                    <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
+                  </b>
+                  {/* E1: hide secondary helper on phones so docked bar stays one compact row. */}
+                  {bp.md && <span className="muted small left">Choose how many variations and the size in the next step.</span>}
+                </>
+              )}
+            </div>
+            {!busy &&
+              (short_ && selected.length ? (
+                <Button size="large" onClick={() => message.info("In the live product, this opens billing. It's not part of this prototype.")}>
+                  Get credits
+                </Button>
+              ) : selected.length === 0 && s.kind === 'ready' ? (
+                <Button type="primary" size="large" onClick={() => viewRound(s.jobId)}>
+                  View variations
+                </Button>
+              ) : (
+                <Button type="primary" size="large" disabled={selected.length === 0} onClick={() => setDialog(true)}>
+                  Create variations
+                </Button>
+              ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </motion.div>
+  ) : null;
+
   return (
     <motion.div {...pageTransition} className="page detail">
       <div className="detail-head">
@@ -523,6 +615,9 @@ export function AdDetail() {
             </motion.div>
           )}
 
+          {/* E2: on desktop, dock the action bar cleanly above the suggestions so it never obscures cards. */}
+          {bp.md && actionBar}
+
           {recs.map((r) => (
             <RecCard
               key={r.id}
@@ -556,9 +651,9 @@ export function AdDetail() {
           </motion.div>
         </motion.section>
       </div>
-      {iterable && <div className="sticky-spacer" />}
+      {iterable && !bp.md && <div className="sticky-spacer" />}
 
-      {/* Always present (AD-27). On desktop the bar itself grows into the create panel (Mancini's morphing reference, 20 Nov 17:59). */}
+      {/* On desktop the inline bar morphs into the centered create panel; on phones the bar stays docked at bottom. */}
       <AnimatePresence>
         {morph && (
           <motion.div
@@ -571,93 +666,7 @@ export function AdDetail() {
           />
         )}
       </AnimatePresence>
-      {iterable && (
-      <motion.div
-        layout
-        className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
-        style={{ borderRadius: bp.md ? 14 : 0 }}
-        initial={{ y: 24, opacity: 0 }}
-        animate={{ y: 0, opacity: 1, transition: spring.gentle }}
-        transition={{ layout: spring.layout }}
-        role={morph ? 'dialog' : undefined}
-        aria-label={morph ? 'Create variations' : undefined}
-      >
-        <AnimatePresence mode="popLayout" initial={false}>
-          {morph ? (
-            <motion.div
-              key="panel"
-              className="bar-panel"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { delay: 0.16, duration: duration.base, ease: ease.standard } }}
-              exit={{ opacity: 0, transition: { duration: duration.instant } }}
-            >
-              <ConfigProvider theme={darkBarTheme}>
-                <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} />
-              </ConfigProvider>
-            </motion.div>
-          ) : (
-            <motion.div
-              key="row"
-              className="bar-row"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { delay: 0.12, duration: duration.fast } }}
-              exit={{ opacity: 0, transition: { duration: duration.instant } }}
-            >
-        <div className="sticky-summary">
-          {busy ? (
-            <>
-              <span className="bar-progress" aria-hidden>
-                <motion.i animate={{ scaleX: s.kind === 'generating' ? Math.max(0.04, s.progress) : 0.02 }} transition={{ duration: duration.slow, ease: ease.standard }} />
-              </span>
-              {/* K1 (R-T9), K24 (R-M6), K51 (R-L4, R-AI7): "Generating", lowercase after dot, authored phone line. */}
-              <b>{s.kind === 'queued' ? `Queued\u00a0· ${plural(s.count, 'variation')}` : `Generating ${plural(s.count, 'variation')}`}</b>
-              <span className="muted small left">
-                {!bp.md
-                  ? s.kind === 'generating'
-                    ? `${plural(s.count, 'variation')}\u00a0· ${timeLeft(s.progress)}`
-                    : 'Starts when the current round finishes.'
-                  : `${s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())}\u00a0· ` : 'Starts when the current round finishes\u00a0· '}you can leave this page. Tasks will tell you when they're ready.`}
-              </span>
-            </>
-          ) : selected.length === 0 && s.kind === 'ready' ? (
-            <>
-              <b>{plural(s.count, 'new variation')} ready</b>
-              {/* K27 (R-M3, R-V2) */}
-              <span className="muted small left">Select more suggestions to create more variations.</span>
-            </>
-          ) : selected.length === 0 ? (
-            <span>Select a suggestion to create variations</span>
-          ) : short_ ? (
-            <span>
-              {/* K18 (R-M8) */}
-              Needs {cost}{'\u00a0'}credits. You have {balance.toLocaleString('en-US')}.
-            </span>
-          ) : (
-            <>
-              <b>
-                <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
-              </b>
-              <span className="muted small left">Choose how many variations and the size in the next step.</span>
-            </>
-          )}
-        </div>
-        {iterable && !busy &&
-          (short_ && selected.length ? (
-            <Button size="large" onClick={() => message.info("In the live product, this opens billing. It's not part of this prototype.")}>Get credits</Button>
-          ) : (
-            selected.length === 0 && s.kind === 'ready' ? (
-              <Button type="primary" size="large" onClick={() => viewRound(s.jobId)}>View variations</Button>
-            ) : (
-            <Button type="primary" size="large" disabled={selected.length === 0} onClick={() => setDialog(true)}>
-              Create variations
-            </Button>
-            )
-          ))}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </motion.div>
-      )}
+      {!bp.md && actionBar}
 
       <CreateDialog
         open={dialog && !bp.md}

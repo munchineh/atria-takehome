@@ -440,14 +440,14 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
   .pl-campaign-select { min-width: 0; flex-basis: 100% !important; }
 }
 
-/* Teaching card (6b) */
-.teach-card { position: fixed; right: 24px; bottom: 24px; z-index: 50; width: 320px; background: #fff; border: 1px solid var(--line); border-radius: 14px; box-shadow: 0 16px 40px rgba(0,0,0,.16); padding: 12px; display: flex; flex-direction: column; gap: 10px; }
+/* Teaching card (6b, E4: inline above gallery list so it never covers rows on desktop or phones) */
+.teach-card { position: relative; width: 100%; margin-bottom: 14px; background: var(--ant-color-bg-container, #fff); border: 1px solid var(--ant-color-border-secondary, var(--line)); border-radius: 10px; padding: 12px 16px; display: grid; grid-template-columns: 168px minmax(0, 1fr) auto; align-items: center; gap: 16px; }
 .teach-x { all: unset; position: absolute; top: 8px; right: 8px; width: 28px; height: 28px; display: grid; place-items: center; border-radius: 6px; color: var(--muted); cursor: pointer; z-index: 2; background: rgba(255,255,255,.85); }
-.teach-text { display: flex; flex-direction: column; gap: 3px; font-size: 13px; padding: 0 2px; }
-.teach-text b { font-size: 14px; }
-.teach-text span { color: var(--muted); line-height: 1.45; }
-.teach-actions { display: flex; gap: 8px; padding: 0 2px 2px; }
-.teach-demo { position: relative; height: 132px; border-radius: 9px; background: #faf7f5; overflow: hidden; border: 1px solid #f1ece8; }
+.teach-text { display: flex; flex-direction: column; gap: 4px; font-size: 13px; min-width: 0; }
+.teach-text b { font-size: 14px; font-weight: 600; color: var(--ant-color-text, rgba(0, 0, 0, 0.88)); }
+.teach-text span { color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.65)); line-height: 1.45; }
+.teach-actions { display: flex; gap: 8px; flex: none; }
+.teach-demo { position: relative; height: 96px; border-radius: 8px; background: #faf7f5; overflow: hidden; border: 1px solid #f1ece8; }
 .td-frame { position: absolute; inset: 12px; opacity: 0; animation: td-cycle 6s infinite; }
 .td-radar { animation-delay: 0s; display: flex; flex-direction: column; gap: 8px; justify-content: center; }
 .td-ad { animation-delay: 2s; display: flex; gap: 12px; align-items: center; }
@@ -468,7 +468,7 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .td-vars i:nth-child(2n) { background: #dcebc6; }
 .td-vars i:nth-child(3n) { background: #d6e4f3; }
 @keyframes td-pop { 0%, 66% { opacity: 0; } 70%, 96% { opacity: 1; } 100% { opacity: 0; } }
-@media (max-width: 767px) { .teach-demo { height: 96px; } .td-img { width: 56px; height: 56px; } .teach-card { left: 12px; right: 12px; bottom: calc(12px + env(safe-area-inset-bottom)); width: auto; } .teach-actions .ant-btn { flex: 1; height: 40px; } }
+@media (max-width: 767px) { .teach-card { grid-template-columns: 1fr; gap: 10px; padding: 12px; } .teach-demo { height: 88px; } .td-img { width: 52px; height: 52px; } .teach-actions { width: 100%; } .teach-actions .ant-btn { flex: 1; height: 44px; } }
 @media (prefers-reduced-motion: reduce) {
   .td-frame, .td-cursor, .td-vars i { animation: none; }
   .td-vars { opacity: 1; }
@@ -1444,4 +1444,38 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
   .creative-panel > .ad-art, .creative-panel > .car { width: 100%; }
   .creative-panel-head { margin-bottom: 4px; }
   .tasks-sheet { max-height: 86svh; }
+}
+
+
+/* ===== Review fixes: E1, E2, E4 ===== */
+/* E2 (1440px): desktop AdDetail action bar docks inline above suggestions so zero cards are obscured. */
+.sticky-bar.inline-dock {
+  position: sticky;
+  top: 68px;
+  bottom: auto;
+  left: auto;
+  translate: none;
+  width: 100%;
+  z-index: 15;
+  padding: 10px 12px 10px 16px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+}
+/* E1 (375px): single compact docked row on AdDetail phones. */
+@media (max-width: 767px) {
+  .detail .sticky-bar:not(.progressing) .bar-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .detail .sticky-bar:not(.progressing) .sticky-summary {
+    flex: 1;
+    min-width: 0;
+  }
+  .detail .sticky-bar:not(.progressing) .ant-btn {
+    width: auto;
+    flex: none;
+    padding-inline: 16px;
+    min-height: 44px;
+  }
 }
