@@ -98,7 +98,13 @@ export interface Creative {
   tab: TabKey;
   variationOf?: string;
   placements: { label: string; share: number }[];
+  /** Filters (mock). Default Active. */
+  status?: 'Active' | 'Paused';
 }
+
+/** Where an ad came from: a variation made in Atria, or uploaded to the ad account. */
+export const sourceOf = (c: Creative) => (c.variationOf ? 'Created in Atria' : 'Uploaded');
+export const statusOf = (c: Creative) => c.status ?? 'Active';
 
 const camp = {
   prosp: 'MM_Prospecting_Broad_US_Advantage+_Squishies_Q4-2026_CBO_7DC',
@@ -115,6 +121,11 @@ const storiesHeavy = [
   { label: 'Stories', share: 0.3 },
   { label: 'Feed', share: 0.15 },
 ];
+const reelsOnly = [
+  { label: 'Reels', share: 0.8 },
+  { label: 'Stories', share: 0.2 },
+];
+const feedOnly = [{ label: 'Feed', share: 1 }];
 const ads = (n: number, base: number, campaign: string, adSet: string, spend: number, cpa: number): MetaAd[] =>
   Array.from({ length: n }, (_, i) => ({ id: `1202${base + i}`, campaign: i === 1 && n > 2 ? camp.gifting : campaign, adSet, spend: spend / n, cpa }));
 
@@ -256,6 +267,94 @@ export const CREATIVES: Creative[] = [
     roas: 1.18,
     tab: 'candidates',
     placements: storiesHeavy,
+  },
+  {
+    id: 'mm-1090245-v3',
+    accountId: 'moody-mochi',
+    name: 'MM-1090245_v3_Bold-Offer_3-for-36',
+    product: 'Sad Pink mochi',
+    media: 'Image',
+    img: 'x05c',
+    copy: { head: '3 FOR', price: '$36', cta: 'PICK 3' },
+    ads: [{ id: '120234411208577', campaign: camp.gifting, adSet: 'Gifting_Interests_US', spend: 3410.25, cpa: 19.4 }],
+    overall: 'A',
+    grades: { conversion: 'A', hook: null, retention: null, ctr: 'B' },
+    values: { cpa: 19.4, ctr: 1.74 },
+    spend: 3410.25,
+    roas: 1.92,
+    tab: 'winners',
+    variationOf: 'mm-1090245',
+    placements: feedOnly,
+  },
+  {
+    id: 'mm-1090245-v4',
+    accountId: 'moody-mochi',
+    name: 'MM-1090245_v4_Demonstration_Back-In-Shape',
+    product: 'Sad Pink mochi',
+    media: 'Image',
+    img: 'x03c',
+    copy: { head: 'BACK IN SHAPE IN 8 SECONDS', cta: 'TRY IT', tone: 'dark' },
+    ads: [{ id: '120234411208590', campaign: camp.test, adSet: 'Variation_Test', spend: 1265.4, cpa: 33.1 }],
+    overall: 'C+',
+    grades: { conversion: 'C', hook: null, retention: null, ctr: 'A' },
+    values: { cpa: 33.1, ctr: 2.05 },
+    spend: 1265.4,
+    roas: 1.09,
+    tab: 'potential',
+    variationOf: 'mm-1090245',
+    placements: storiesHeavy,
+  },
+  {
+    id: 'mm-1088102',
+    accountId: 'moody-mochi',
+    name: 'MM-1088102_Static_ar9:16_Close-Up_Squish-Me',
+    product: 'Sad Pink mochi',
+    media: 'Image',
+    img: 'x01',
+    copy: { head: 'SQUISH ME', cta: 'SHOP NOW' },
+    ads: ads(2, 27710000, camp.retarget, 'WebVisitors_30D', 6120.8, 22.6),
+    overall: 'B',
+    grades: { conversion: 'B', hook: null, retention: null, ctr: 'C' },
+    values: { cpa: 22.6, ctr: 1.18 },
+    spend: 6120.8,
+    roas: 1.44,
+    tab: 'potential',
+    placements: reelsOnly,
+    status: 'Paused',
+  },
+  {
+    id: 'mm-1087530',
+    accountId: 'moody-mochi',
+    name: 'MM-1087530_Static_ar1:1_Comparison_Not-Your-Usual',
+    product: 'Mood collection',
+    media: 'Image',
+    img: 'x02',
+    copy: { head: 'NOT YOUR USUAL SQUISHY', cta: 'SHOP NOW', tone: 'dark' },
+    ads: ads(3, 27530000, camp.test, 'Static_Test', 5480.1, 39.4),
+    overall: 'D+',
+    grades: { conversion: 'D', hook: null, retention: null, ctr: 'C' },
+    values: { cpa: 39.4, ctr: 1.04 },
+    spend: 5480.1,
+    roas: 0.84,
+    tab: 'candidates',
+    placements: feedOnly,
+    status: 'Paused',
+  },
+  {
+    id: 'vid-asmr',
+    accountId: 'moody-mochi',
+    name: 'vid_asmr_slow-rise_Squish-Loop_15s',
+    product: 'Sad Pink mochi',
+    media: 'Video',
+    img: 'v02',
+    ads: ads(2, 33120000, camp.prosp, 'Broad_F_18-34', 8890.0, 24.1),
+    overall: 'A',
+    grades: { conversion: 'B', hook: 'A', retention: 'A', ctr: 'B' },
+    values: { cpa: 24.1, ctr: 1.62, hookRate: 41, retention: 33 },
+    spend: 8890.0,
+    roas: 1.58,
+    tab: 'winners',
+    placements: reelsOnly,
   },
 ];
 

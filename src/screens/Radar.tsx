@@ -1,10 +1,10 @@
-import { useEffect, useMemo, useState, type HTMLAttributes } from 'react';
+import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Badge, Button, Checkbox, Empty, Grid, Popover, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, BranchesOutlined, DownOutlined, CloseOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { METRIC_META, RELIABLE_SPEND, TABS, WINDOW, money, plural, short, type Creative, type Media, type MetricKey } from '../data/mock';
+import { METRIC_META, RELIABLE_SPEND, TABS, WINDOW, money, sourceOf, statusOf as adStatusOf, plural, short, type Creative, type Media, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
@@ -27,7 +27,9 @@ function NameCell({ c, morph = true }: { c: Creative; morph?: boolean }) {
         </Tooltip>
         <div className="name-sub">
           <MediaTag m={c.media} />
-          <span className="muted">Running in {c.ads.length} {c.ads.length === 1 ? 'ad' : 'ads'}</span>
+          <span className="muted">
+            {plural(c.ads.length, 'copy', 'copies')} {adStatusOf(c) === 'Paused' ? 'paused' : 'running'}
+          </span>
           {parent && (
             <Tag icon={<BranchesOutlined />} className="variation-tag">
               Variation of {short(parent.name, 10)}
@@ -153,20 +155,16 @@ export function Radar() {
   useEffect(() => {
     setPicked({});
   }, [account.id]);
-  const mediaPicked = picked.Media ?? [];
-  const campPicked = picked.Campaign ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const rows = useMemo(
-    () =>
-      CREATIVES.filter((c) => c.tab === tab)
-        .filter((c) => !mediaPicked.length || mediaPicked.includes(c.media))
-        .filter((c) => !campPicked.length || c.ads.some((a) => campPicked.includes(a.campaign)))
-        .sort((a, b) => b.spend - a.spend),
-    [tab, mediaPicked, campPicked, CREATIVES],
-  );
+  const any = (g: string, test: (v: string) => boolean) => !(picked[g] ?? []).length || picked[g].some(test);
   const matches = (c: Creative) =>
-    (!mediaPicked.length || mediaPicked.includes(c.media)) && (!campPicked.length || c.ads.some((a) => campPicked.includes(a.campaign)));
+    any('Media', (v) => v === c.media) &&
+    any('Campaign', (v) => c.ads.some((a) => a.campaign === v)) &&
+    any('Placement', (v) => c.placements.some((p) => p.label === v)) &&
+    any('Ad status', (v) => v === adStatusOf(c)) &&
+    any('Source', (v) => v === sourceOf(c));
+  const rows = CREATIVES.filter((c) => c.tab === tab && matches(c)).sort((a, b) => b.spend - a.spend);
   const count = (k: TabKey) => CREATIVES.filter((c) => c.tab === k && matches(c)).length;
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
