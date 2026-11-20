@@ -483,7 +483,7 @@ export function AdDetail() {
             >
         <div className="sticky-summary">
           {!iterable ? (
-            <span>Variations work for image ads only. You can still use the suggestions above.</span>
+            <span>AI-generated variations currently support image ads only. You can still apply the suggestions above yourself.</span>
           ) : busy ? (
             <>
               <b>Generating {s.kind === 'generating' || s.kind === 'queued' ? s.count : total}</b>
