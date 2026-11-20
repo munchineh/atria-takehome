@@ -447,11 +447,9 @@ export function AdDetail() {
           ) : (
             <>
               <b>
-                <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} × {ACCOUNT.variationsPerRecommendation} variations each
+                <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
               </b>
-              <span className="muted small left">
-                Uses <Rolling value={cost} /> of {balance.toLocaleString()} credits. You can change the count in the next step.
-              </span>
+              <span className="muted small left">Choose how many variations and the size in the next step.</span>
             </>
           )}
         </div>
@@ -460,7 +458,7 @@ export function AdDetail() {
             <Button size="large" onClick={() => message.info('Opens billing in a new tab.')}>Get credits</Button>
           ) : (
             <Button type="primary" size="large" disabled={busy || selected.length === 0} onClick={() => setDialog(true)}>
-              {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}` : `Create ${total || ''} variations`.replace('  ', ' ')}
+              {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}` : 'Create variations'}
             </Button>
           ))}
       </motion.div>
