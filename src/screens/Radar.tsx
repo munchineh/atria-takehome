@@ -1,6 +1,6 @@
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Alert, Progress, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
+import { Alert, Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -71,7 +71,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                   <span>{f.frequency}</span>
                   <span className="t-key">Ad ID</span>
                   <span>{a.id}</span>
-                  <a className="runs-out" onClick={(e) => { e.preventDefault(); message.info(`Opens ${platformOf(a)} Ads Manager in a new tab.`); }} href="#">
+                  <a className="runs-out" onClick={(e) => { e.preventDefault(); message.info(`In the live product, this opens the ad in ${platformOf(a)} Ads Manager. It's not part of this prototype.`); }} href="#">
                     Open in {platformOf(a) === 'TikTok' ? 'TikTok Ads Manager' : 'Meta Ads Manager'} <ExportOutlined />
                   </a>
                 </div>
@@ -153,12 +153,19 @@ const MotionRow = (props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'
   );
 };
 
+// 5d C5d-20: titled "How Radar grades your ads" so it answers the page's subtitle; the scale is a 2 x 2 list (Gm-11).
 const HOW_GRADING = (
   <div className="grade-pop how-pop">
-    <p>Each metric is ranked against the other ads in this account. Ads with more spend count for more.</p>
-    <p className="grade-pop-scale">A · Top · B · Above average · C · Below average · D · Lowest</p>
-    <p>Overall combines the grades an ad has, so it can carry a plus or minus. Hook and retention are graded on video ads only.</p>
-    <p className="grade-pop-meta">More accurate for accounts that spend over $10,000 a month.</p>
+    <p>Radar compares each ad with the other ads in this account, one metric at a time. Ads that spend more count for more.</p>
+    <div className="how-scale">
+      {(['A', 'B', 'C', 'D'] as const).map((g) => (
+        <span key={g}>
+          <Tag className={`grade-tag g-${g}`} bordered>{g}</Tag> {({ A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' } as const)[g]}
+        </span>
+      ))}
+    </div>
+    <p>Overall combines an ad's grades, so it can carry a plus or minus. Hook and retention apply to video ads&nbsp;only.</p>
+    <p className="grade-pop-meta">Grades are more accurate for accounts that spend over $10,000 a&nbsp;month.</p>
   </div>
 );
 
@@ -347,10 +354,11 @@ export function Radar() {
   const columns: ColumnsType<Creative> = [
     { title: 'Ad', key: 'name', render: (_, c) => <NameCell c={c} /> },
     {
-      title: <Head label="Next step" tip="The grade to fix first on this ad. Click the row to see how." />,
+      // 5d C5d-21 (Mancini's wording). Below 1200 px the cell carries the grade, since its column is hidden (Gm-07).
+      title: <Head label="Next steps" tip="Suggested based on your ad performance." />,
       key: 'rec',
-      width: wide ? 170 : 150,
-      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} />,
+      width: wide ? 170 : 160,
+      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!wide} />,
     },
     { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: 84, render: (_, c) => <OverallTag creative={c} /> },
     metricCol('conversion', 'conv', 104),
@@ -366,7 +374,7 @@ export function Radar() {
         <Typography.Title level={3} style={{ margin: 0 }}>
           Radar
         </Typography.Title>
-        <p className="muted desc">Each ad is graded against your other ads in this account, so you know what to fix first.</p>
+        <p className="muted desc">Radar grades every ad in this account and suggests what to fix next.</p>
       </div>
 
       <AnimatePresence initial={false}>
@@ -432,12 +440,18 @@ export function Radar() {
               ),
             }))}
           />
-          <Popover content={HOW_GRADING} title="How grading works" trigger="click" placement="bottomRight">
-            <Button type="link" size="small" className="inline-link hgw" aria-label="How grading works">
+          <Popover content={HOW_GRADING} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+            <Button type="link" size="small" className="inline-link hgw" aria-label="How Radar grades your ads">
               <QuestionCircleOutlined className="hgw-icon" />
-              <span className="hgw-text">How grading works</span>
+              <span className="hgw-text">How Radar grades your ads</span>
             </Button>
           </Popover>
+          {/* 5d OG-02: Atria shows the attribution window beside its Radar settings; ours had none. */}
+          {!cards && (
+            <Tooltip title="Purchases count when they happen within 7 days of a click or 1 day of a view. Set in Meta.">
+              <span className="attr-note t-help">7-day click, 1-day view</span>
+            </Tooltip>
+          )}
         </div>
         <FiltersButton key={account.id} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
@@ -490,12 +504,14 @@ export function Radar() {
                 exit={{ opacity: 0, transition: { duration: duration.instant } }}
               >
                 <NameCell c={c} morph={false} mobile />
-                <StatusCell creative={c} status={statusOf(c.id)} />
+                {/* 5d C5d-17: data first, then the action on the right at a 44 px tap size (not full width). */}
                 <div className="card-row">
                   <span className="card-overall">
                     Overall <OverallTag creative={c} />
                   </span>
                   <span className="muted small">{money(c.spend)} spend</span>
+                </div>
+                <div className="card-foot">
                   <button
                     className="card-more"
                     aria-expanded={expanded === c.id}
@@ -509,6 +525,7 @@ export function Radar() {
                       <DownOutlined />
                     </motion.span>
                   </button>
+                  <StatusCell creative={c} status={statusOf(c.id)} withGrade />
                 </div>
                 <AnimatePresence initial={false}>
                   {expanded === c.id && (
@@ -547,6 +564,18 @@ export function Radar() {
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
           pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false }}
+          // 5d OG-05: Atria's table ends with a totals row; ours had none.
+          summary={() =>
+            rows.length ? (
+              <Table.Summary.Row className="radar-total">
+                {columns.map((col, i) => (
+                  <Table.Summary.Cell key={String(col.key)} index={i} align={col.key === 'spend' ? 'right' : undefined}>
+                    {col.key === 'name' ? <span className="t-label">Total · {plural(rows.length, 'ad')}</span> : col.key === 'spend' ? <b>{money(rows.reduce((a, c) => a + c.spend, 0))}</b> : null}
+                  </Table.Summary.Cell>
+                ))}
+              </Table.Summary.Row>
+            ) : null
+          }
         />
       )}
     </motion.div>

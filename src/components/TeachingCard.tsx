@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { Button } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { duration, ease } from '../motion/tokens';
@@ -22,7 +21,7 @@ const write = () => {
 };
 
 /**
- * 6b. One card, triggered by arriving where the old habit lived (Creation › Image ads).
+ * 6b. One card, triggered by arriving where the old habit lived (Creation › Creative gallery).
  * Never blocks, permanent dismiss, not a tour. ?teach=1 brings it back for demos.
  */
 export function TeachingCard() {
@@ -50,14 +49,11 @@ export function TeachingCard() {
         <motion.aside
           className="teach-card"
           role="status"
-          aria-label="Variations have moved to their ad"
+          aria-label="Variations now live with their ad"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1, transition: { duration: duration.base, ease: ease.standard, delay: 0.6 } }}
           exit={{ opacity: 0, transition: { duration: duration.fast, ease: ease.exit } }}
         >
-          <button className="teach-x" onClick={dismiss} aria-label="Dismiss">
-            <CloseOutlined />
-          </button>
           {/* Looping mini demo: Radar row → the ad → its variations. CSS only. */}
           <div className="teach-demo" aria-hidden>
             <div className="td-frame td-radar">
@@ -84,15 +80,15 @@ export function TeachingCard() {
             </div>
           </div>
           <div className="teach-text">
-            <b>Variations have moved to their ad</b>
-            <span>Open an ad in Radar to see everything made from it.</span>
+            <b>Variations now live with their ad</b>
+            <span>Each round is saved on the ad it came from. Open that ad in Radar to see every round, or find them here, grouped by&nbsp;ad.</span>
           </div>
           <div className="teach-actions">
             <Button type="primary" size="small" onClick={() => nav('/')}>
               Open Radar
             </Button>
             <Button size="small" onClick={dismiss}>
-              Dismiss
+              Got it
             </Button>
           </div>
         </motion.aside>

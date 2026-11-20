@@ -7,6 +7,14 @@ import type { RowStatus } from '../data/store';
 import { spring, swap } from '../motion/tokens';
 
 /** R5 / RA-28 to RA-30: the weakest grade, on every row (video included, decided 20 Nov). */
+/** The metric and grade behind the diagnosis (5d Gm-07: shown in the cell when its column is hidden). */
+export function weakest(c: Creative) {
+  const order: MetricKey[] = ['conversion', 'hook', 'retention', 'ctr'];
+  const rank = (g: string | null) => (g ? 'ABCD'.indexOf(g[0]) : -1);
+  const worst = order.reduce<MetricKey | null>((w, k) => (rank(c.grades[k]) > (w ? rank(c.grades[w]) : -1) ? k : w), null);
+  return worst ? { metric: worst, grade: c.grades[worst] as string } : null;
+}
+
 export function diagnosis(c: Creative) {
   const order: MetricKey[] = ['conversion', 'hook', 'retention', 'ctr'];
   const rank = (g: string | null) => (g ? 'ABCD'.indexOf(g[0]) : -1);
@@ -17,7 +25,8 @@ export function diagnosis(c: Creative) {
   return `Fix ${metric}`;
 }
 
-export function StatusCell({ creative, status }: { creative: Creative; status: RowStatus }) {
+export function StatusCell({ creative, status, withGrade }: { creative: Creative; status: RowStatus; withGrade?: boolean }) {
+  const weak = weakest(creative);
   const healthy = status.kind === 'idle' && diagnosis(creative).startsWith('No fix');
   const key = status.kind === 'generating' ? 'gen' : status.kind;
   const nav = useNavigate();
@@ -47,7 +56,10 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
                   <span>{diagnosis(creative)}</span>
                 </Tooltip>
               ) : (
-                <span>{diagnosis(creative)}</span>
+                <span>
+                  {diagnosis(creative)}
+                  {withGrade && weak && <span className="status-grade"> · {weak.grade}</span>}
+                </span>
               )}
               <RightOutlined className="status-chev" />
             </>

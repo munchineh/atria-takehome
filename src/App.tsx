@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { App as AntApp, ConfigProvider, Segmented } from 'antd';
+import { BarChartOutlined, RadarChartOutlined } from '@ant-design/icons';
 import { HashRouter, Route, Routes, useLocation, useNavigate } from 'react-router-dom';
 import { LayoutGroup, MotionConfig } from 'motion/react';
 import { StoreProvider } from './data/store';
@@ -22,9 +23,10 @@ function TopNav() {
       className="top-nav"
       value={loc.pathname.startsWith('/overview') ? 'overview' : 'radar'}
       onChange={(v) => nav(v === 'overview' ? '/overview' : '/')}
+      // 5d C5d-25: matches Atria's own switch (grey track, solid orange active item, icons).
       options={[
-        { label: 'Overview', value: 'overview' },
-        { label: 'Radar', value: 'radar' },
+        { label: 'Overview', value: 'overview', icon: <BarChartOutlined /> },
+        { label: 'Radar', value: 'radar', icon: <RadarChartOutlined /> },
       ]}
     />
   );

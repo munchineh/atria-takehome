@@ -100,14 +100,14 @@ export function Body({
               <span>
                 {brand.name} · {brand.colors.length} colors · {brand.font}
               </span>
-              <Button type="link" size="small" className="inline-link" onClick={() => message.info({ content: 'Brands open in a new tab.', key: 'brand' })}>
+              <Button type="link" size="small" className="inline-link" onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
                 Change
               </Button>
             </span>
           ) : (
             <span className="brand-value">
               <span className="muted">No brand linked to this ad account</span>
-              <Button size="small" onClick={() => message.info({ content: 'Brands open in a new tab.', key: 'brand' })}>
+              <Button size="small" onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
                 Link a brand
               </Button>
               <span className="muted small block-sm">Colors and fonts come from the brand</span>
@@ -117,7 +117,15 @@ export function Body({
 
         {/* Ad brief (I1). */}
         <section className="dlg-block">
-          <div className="dlg-label">Ad brief</div>
+          {/* 5d C5d-08: one help line only; the rewrite link sits on the label row. */}
+          <div className="dlg-label-row">
+            <span className="dlg-label">Ad brief</span>
+            {mode === 'filled' && saved && (
+              <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
+                Rewrite from a product page
+              </Button>
+            )}
+          </div>
           <AnimatePresence mode="wait" initial={false}>
             {(mode === 'empty' || mode === 'url' || mode === 'reading' || mode === 'error') && !saved ? (
               <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="brief-starts">
@@ -174,22 +182,16 @@ export function Body({
               </motion.div>
             ) : (
               <motion.div key="field" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="brief-field">
-                <span className="t-help">Cover the product, who it's for, the goal and the tone</span>
                 <Input.TextArea
+                  // 5d OG-18: Atria's structured brief, as a placeholder (product, who it's for, goal, tone).
+                  placeholder={'Product: what it is and what makes it different\nWho it\'s for: the people you want to reach\nGoal: what the ad should get people to do\nTone: how it should sound'}
                   value={brief}
                   onChange={(e) => setDraft(e.target.value)}
                   autoSize={{ minRows: 3, maxRows: 7 }}
                   autoFocus={mode === 'write'}
                   aria-label="Ad brief"
                 />
-                {mode === 'filled' && saved && (
-                  <span className="t-help">
-                    Saved for {creative.product}. Used for every variation of this product.{' '}
-                    <Button type="link" size="small" className="inline-link" onClick={() => setMode('url')}>
-                      Rewrite from a product page
-                    </Button>
-                  </span>
-                )}
+                {mode === 'filled' && saved && <span className="brief-foot">Saved for {creative.product}. Used for every variation of this product.</span>}
               </motion.div>
             )}
           </AnimatePresence>

@@ -34,8 +34,8 @@ interface Row {
 
 const HOW = (
   <div className="grade-pop">
-    <p>Variations you create from an ad in Radar are kept here, grouped by that ad. Each time you create variations is one round.</p>
-    <p>Cloned ads and ads made from scratch stay as their own entries.</p>
+    <p>Every creative you make in Atria is kept here. Variations are grouped by the ad they came from, and each time you create variations is one round.</p>
+    <p>Cloned ads and ads made from scratch have their own&nbsp;entries.</p>
   </div>
 );
 
@@ -99,13 +99,13 @@ export function ImageAds() {
       <div className="page-head pl-head">
         <div>
           <Typography.Title level={3} style={{ margin: 0 }}>
-            Image ads
+            Creative gallery
           </Typography.Title>
           <p className="muted desc">{plural(rows.filter((r) => r.source === 'radar').length, 'ad')} with variations</p>
         </div>
-        <Popover content={HOW} title="How image ads work" trigger="click" placement="bottomRight">
+        <Popover content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
           <Button type="link" className="inline-link">
-            How image ads work
+            How the gallery works
           </Button>
         </Popover>
       </div>

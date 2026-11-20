@@ -5,6 +5,7 @@ import { Alert, App, Breadcrumb, Button, Empty, Grid, Input, Modal, Segmented, T
 import {
   
   DeleteOutlined,
+  FlagOutlined,
   DislikeFilled,
   DislikeOutlined,
   DownloadOutlined,
@@ -28,12 +29,19 @@ const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
 ];
 
 /** D2-01 / D2-02: always says "Predicted" (P8). */
-export function PredictedTag({ id }: { id: string }) {
+export function PredictedTag({ id, bare }: { id: string; bare?: boolean }) {
   const g = predictedCtr(id);
-  return (
+  // 5d C5d-13: "Predicted CTR" is a label beside a dashed grade tag, not "Predicted CTR: C" in one box.
+  const tag = (
     <Tooltip title="An estimate from how similar ads performed in this account. Not a guarantee.">
-      <Tag className={`predicted p-${g}`}>Predicted CTR: {g}</Tag>
+      <Tag className={`predicted grade-tag g-${g}`}>{g}</Tag>
     </Tooltip>
+  );
+  if (bare) return tag;
+  return (
+    <span className="kv">
+      <span className="kv-k">Predicted CTR</span> {tag}
+    </span>
   );
 }
 
@@ -92,6 +100,7 @@ export function Editor() {
 
   const recs = useMemo(() => recommendationsFor(c), [c]);
   const rec = recs.find((r) => r.id === v?.recId) ?? recommendationsFor(findCreative('mm-1090245')!).find((r) => r.id === v?.recId);
+  const recGrade = rec ? (c.grades[({ CPA: 'conversion', CTR: 'ctr', Hook: 'hook' } as Record<string, 'conversion' | 'ctr' | 'hook'>)[rec.target]] ?? null) : null;
 
   if (!job || !v || !shown || !latest)
     return (
@@ -217,15 +226,15 @@ export function Editor() {
       <AnimatePresence mode="wait" initial={false}>
         {v.stylized ? (
           <motion.div key="baked" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            <Tag className="wrap-tag">Text is part of the image. Edits create a new variation.</Tag>
+            {/* 5d C5d-11: one message (was a tag plus a helper saying the same thing). */}
+            <Alert type="info" showIcon message="AI drew this text into the image" description="To change it, regenerate the image." />
             <Button block onClick={() => apply('Regenerate the text')} disabled={applying}>
               Regenerate · uses {cost} credits
             </Button>
           </motion.div>
         ) : textMode === 'stylized' ? (
           <motion.div key="styl" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            <Tag className="wrap-tag">Text is part of the image. Edits create a new variation.</Tag>
-            <p className="t-help">Richer type, but a typo or a price change means a new image. Editable text stays free to change.</p>
+            <Alert type="info" showIcon message="AI draws the text into the image" description="Richer type, but it can misspell words. Any change to the text makes a new image." />
             <Button
               block
               onClick={() => {
@@ -312,7 +321,8 @@ export function Editor() {
         )}
       </AnimatePresence>
       <label className="ed-field">
-        <b>What should change?</b>
+        {/* 5d C5d-14: field labels are regular, like the library's form labels; "Refine" is the panel title. */}
+        <span className="ed-label">What should change?</span>
         <Input.TextArea
           ref={input as never}
           value={ask}
@@ -401,21 +411,24 @@ export function Editor() {
 
   const tags = tagsFor(v.angle);
   const tagBlock = (
-    <section className="ed-block">
-      <span className="t-label">How Atria reads this image</span>
+    // 5d C5d-12: title styled like "Text"; labels in a column with the dotted line hugging the word; Report on its own row.
+    <section className="ed-block ed-tagblock">
+      <div className="ed-block-head">
+        <b>How Atria reads this image</b>
+      </div>
       <div className="ed-tags">
         {Object.entries(tags).map(([k, val]) => (
-          <div key={k} className="ed-tag-row small">
+          <div key={k} className="ed-tag-row">
             <Tooltip title={TAG_TIPS[k]}>
-              <span className="muted dotted">{k}</span>
+              <span className="kv-k dotted">{k}</span>
             </Tooltip>
             <Tag>{val}</Tag>
           </div>
         ))}
       </div>
-      <button className="link-btn small" onClick={() => message.success('Thanks for the feedback')}>
+      <Button type="text" size="small" icon={<FlagOutlined />} className="ed-report" onClick={() => message.success('Thanks for the feedback')}>
         Report a wrong tag
-      </button>
+      </Button>
     </section>
   );
 
@@ -425,7 +438,7 @@ export function Editor() {
         <Breadcrumb
           items={[
             ...(c.project
-              ? [{ title: <Link to="/creation">Image ads</Link> }]
+              ? [{ title: <Link to="/creation">Creative gallery</Link> }]
               : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> }]),
             { title: <Link to={back}>{`Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)} · ${job.date}`}</Link> },
             { title: v.angle },
@@ -437,7 +450,14 @@ export function Editor() {
         <div className="ed-title">
           <h3>{v.angle}</h3>
           <div className="row-gap wrap small">
-            {rec && <span className="muted">Improves {rec.target} · {rec.issue}</span>}
+            {/* 5d C5d-13: same top line as the suggestion card ([grade] metric · issue), then the prediction with its label. */}
+            {rec && (
+              <span className="rec-eyebrow-main">
+                {recGrade && <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>}
+                <span className="rec-metric">{rec.target}</span>
+                <span className="muted">· {rec.issue}</span>
+              </span>
+            )}
             <PredictedTag id={v.id} />
             {v.from && (
               <Tag icon={<MadeFromIcon />} className="from-tag">

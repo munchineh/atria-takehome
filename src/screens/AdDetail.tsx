@@ -3,7 +3,7 @@ import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip, theme as antdTheme } from 'antd';
-import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined } from '@ant-design/icons';
+import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -22,8 +22,8 @@ import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStat
 import { Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
-import { StatusCell } from '../components/StatusCell';
 import { Body, CreateDialog } from '../components/CreateDialog';
+import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
@@ -86,7 +86,12 @@ function RateRow() {
   );
 }
 
-const GRADE_COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'red' };
+/** 5d C5d-13: label + value, no colon. */
+const KV = ({ k, v }: { k: string; v: string }) => (
+  <span className="kv">
+    <span className="kv-k">{k}</span> <span className="kv-v">{v}</span>
+  </span>
+);
 
 function RecCard({
   r,
@@ -123,7 +128,14 @@ function RecCard({
           <div className="rec-eyebrow">
             {/* 5c A-19: grade, metric and issue wrap inside their own group, so "Recommended" keeps the first line. */}
             <span className="rec-eyebrow-main">
-              {targetGrade && <Tag className="rec-grade" color={GRADE_COLOR[targetGrade[0]]}>{targetGrade}</Tag>}
+              {targetGrade ? (
+                <Tag className={`rec-grade grade-tag g-${targetGrade[0]}`}>{targetGrade}</Tag>
+              ) : (
+                // 5d C5d-04: Radar grades one conversion metric per account (Atria's "ROAS-G" when ROAS is the setting); here it's CPA.
+                <Tooltip title={`${r.target} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                  <Tag className="rec-grade no-grade">No grade</Tag>
+                </Tooltip>
+              )}
               <span className="rec-metric">{r.target}</span>
               <span className="rec-issue-text">{r.issue}</span>
             </span>
@@ -223,8 +235,8 @@ export function AdDetail() {
   const morph = dialog && !!bp.md;
   const create = ({ perRec, size }: { perRec: number; size: string }) => {
     setDialog(false);
-    const j = startJob({ creativeId: c.id, recIds: selected, perRec, size });
-    message.success({ content: `Creating ${j.count} variations. This will take a couple of minutes.`, duration: 4 });
+    // 5d C5d-10: no start toast; the bar below turns into the progress bar, so the news is said once.
+    startJob({ creativeId: c.id, recIds: selected, perRec, size });
   };
   useEffect(() => {
     if (!morph) return;
@@ -293,13 +305,14 @@ export function AdDetail() {
                     <div key={a.id} className="ad-row">
                       <div className="ad-row-id">
                         <i className={`live-dot ${copyStatus(c, a) === 'Paused' ? 'paused' : ''}`} aria-label={copyStatus(c, a)} /> <span className="campaign">{a.campaign}</span>
-                        <ExportOutlined className="muted ext-link" aria-label="Open in Ads Manager" role="link" onClick={() => message.info(`Opens ${platformOf(a)} Ads Manager in a new tab.`)} />
+                        <ExportOutlined className="muted ext-link" aria-label="Open in Ads Manager" role="link" onClick={() => message.info(`In the live product, this opens the ad in ${platformOf(a)} Ads Manager. It's not part of this prototype.`)} />
                       </div>
-                      <div className="ad-fields muted small">
-                        <span>Platform: {platformOf(a)}</span>
-                        <span>Goal: {objectiveOf(a)}</span>
-                        <span>Audience: {a.adSet}</span>
-                        <span>Ad ID: {a.id}</span>
+                      {/* 5d C5d-13: label + value, no colons (Atria's own label style: grey regular label, dark value). */}
+                      <div className="ad-fields kv-line">
+                        <KV k="Platform" v={platformOf(a)} />
+                        <KV k="Goal" v={objectiveOf(a)} />
+                        <KV k="Audience" v={a.adSet} />
+                        <KV k="Ad ID" v={a.id} />
                       </div>
                       <div className="ad-row-nums">
                         <span>
@@ -410,16 +423,19 @@ export function AdDetail() {
               </div>
             </div>
             <span className="t-help">{bp.md ? 'Hover over a grade to see how it\'s graded.' : 'Tap a grade to see how it\'s graded.'}</span>
-            {s.kind !== 'idle' && (
-              <div className="verdict-status">
-                <StatusCell creative={c} status={s} />
-              </div>
-            )}
           </motion.div>
 
           <motion.div variants={fadeUp} className="section-title">
             <h4>Suggestions</h4>
             <span className="t-help">{iterable && preselect().length === 2 ? 'Most important first. The top 2 are already selected.' : 'Most important first.'}</span>
+            {!iterable && (
+              // 5d C5d-01: replaces the dark bar on video and carousel ads; teaches the feature without blocking anything.
+              <Tooltip title="Video and carousel support is coming. You can still apply these suggestions yourself.">
+                <span className="t-help image-only-note">
+                  <InfoCircleOutlined /> Atria can make variations of image&nbsp;ads.
+                </span>
+              </Tooltip>
+            )}
             <span className="t-help rec-date">
               Updated {WINDOW.synced}
               <Tooltip title="Refresh">
@@ -467,7 +483,7 @@ export function AdDetail() {
           </motion.div>
         </motion.section>
       </div>
-      <div className="sticky-spacer" />
+      {iterable && <div className="sticky-spacer" />}
 
       {/* Always present (AD-27). On desktop the bar itself grows into the create panel (Mancini's morphing reference, 20 Nov 17:59). */}
       <AnimatePresence>
@@ -482,9 +498,10 @@ export function AdDetail() {
           />
         )}
       </AnimatePresence>
+      {iterable && (
       <motion.div
         layout
-        className={`sticky-bar ${morph ? 'expanded' : ''}`}
+        className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
         style={{ borderRadius: 14 }}
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: spring.gentle }}
@@ -514,12 +531,17 @@ export function AdDetail() {
               exit={{ opacity: 0, transition: { duration: duration.instant } }}
             >
         <div className="sticky-summary">
-          {!iterable ? (
-            <span>AI-generated variations currently support image ads only. You can still apply the suggestions above yourself.</span>
-          ) : busy ? (
+          {busy ? (
+            // 5d C5d-10: the bar becomes the progress bar (same layout morph as the create panel): time left and that you can leave.
             <>
-              <b>Generating {s.kind === 'generating' || s.kind === 'queued' ? s.count : total}</b>
-              <span className="muted small left">{balance.toLocaleString()} credits left</span>
+              <span className="bar-progress" aria-hidden>
+                <motion.i animate={{ scaleX: s.kind === 'generating' ? Math.max(0.04, s.progress) : 0.02 }} transition={{ duration: duration.slow, ease: ease.standard }} />
+              </span>
+              <b>{s.kind === 'queued' ? `Queued · ${s.count} variations` : `Creating ${s.count} variations`}</b>
+              <span className="muted small left">
+                {s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())} · ` : 'Starts when the current round finishes · '}
+                You can leave this page. Tasks will tell you when they're ready.
+              </span>
             </>
           ) : selected.length === 0 && s.kind === 'ready' ? (
             <>
@@ -541,15 +563,15 @@ export function AdDetail() {
             </>
           )}
         </div>
-        {iterable &&
-          (short_ && !busy && selected.length ? (
-            <Button size="large" onClick={() => message.info('Opens billing in a new tab.')}>Get credits</Button>
+        {iterable && !busy &&
+          (short_ && selected.length ? (
+            <Button size="large" onClick={() => message.info("In the live product, this opens billing. It's not part of this prototype.")}>Get credits</Button>
           ) : (
             selected.length === 0 && s.kind === 'ready' ? (
               <Button type="primary" size="large" onClick={() => viewRound(s.jobId)}>View variations</Button>
             ) : (
-            <Button type="primary" size="large" disabled={busy || selected.length === 0} onClick={() => setDialog(true)}>
-              {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}` : 'Create variations'}
+            <Button type="primary" size="large" disabled={selected.length === 0} onClick={() => setDialog(true)}>
+              Create variations
             </Button>
             )
           ))}
@@ -557,6 +579,7 @@ export function AdDetail() {
           )}
         </AnimatePresence>
       </motion.div>
+      )}
 
       <CreateDialog
         open={dialog && !bp.md}

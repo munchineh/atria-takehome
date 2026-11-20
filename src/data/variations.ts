@@ -152,3 +152,21 @@ export function buildVariations(jobId: string, recIds: string[], perRec: number,
 }
 
 export const ANGLE_TIP = 'The approach an ad takes to get a response, such as scarcity or social proof.';
+
+/** 5d OG-13: Atria gives every generated image a one-line reason; ours showed the angle only. */
+export const ANGLE_REASON: Record<string, string> = {
+  'Product detail': 'Shows the slow-rise texture up close, so people can almost feel the squish.',
+  Comparison: 'Says in one line why it beats other squishies.',
+  Demonstration: 'Shows the toy in use, so the benefit is obvious at a glance.',
+  Collection: 'Shows the whole range, so people pick a favorite.',
+  'Bold offer': 'Puts one clear price up front for buyers on the fence.',
+  'Price anchor': 'Shows the old price beside the new one, so the deal reads at a glance.',
+  Bundle: 'Makes buying the full set the easy choice.',
+  Scarcity: 'A limited edition gives a reason to buy now.',
+  'Close-up': 'A tight crop that stops the scroll.',
+  'Bold color': 'One strong color that stands out in the feed.',
+  Choice: 'Lets people pick their mood, with the offer in the band.',
+  Gift: 'Frames it as a small gift for someone else.',
+  Urgency: 'Same-day shipping gives a reason to order today.',
+  Personal: 'A question that invites people to see themselves in it.',
+};

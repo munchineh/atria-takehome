@@ -1,9 +1,9 @@
-import { Button, Empty, Grid, Progress, Tag, Tooltip, Typography } from 'antd';
+import { Button, Empty, Grid, Progress, Select, Typography } from 'antd';
 import { CalendarOutlined, RightOutlined } from '@ant-design/icons';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { GOALS, METRIC_META, TABS, WINDOWS, goalOf, graded, money, plural, type Creative, type TabKey } from '../data/mock';
-import { DEMO_ACCOUNTS, findCreative, recName, timeAgo, useStore, type Job } from '../data/store';
+import { DEMO_ACCOUNTS, findCreative, timeAgo, useStore, type Job } from '../data/store';
 import { GradeChip, OverallTag } from '../components/GradeTag';
 import { Thumb } from '../components/Thumb';
 import { GOAL_ICON } from '../components/Goal';
@@ -40,22 +40,20 @@ function RoundRow({ j }: { j: Job }) {
   const c = findCreative(j.creativeId)!;
   const nav = useNavigate();
   const to = `/ad/${c.id}/variations?round=${j.id}`;
-  const fixes = j.recIds.map((r) => recName(c.id, r)).join(' · ');
   return (
     <button className="ov-row" onClick={() => nav(to)}>
       <Thumb c={c} size={40} />
       <span className="ov-row-text">
         <b>{c.name}</b>
-        <span className="t-help">{fixes}</span>
         {j.state === 'generating' || j.state === 'queued' ? (
           <span className="ov-round-progress">
             <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
             <span className="small muted">{j.state === 'queued' ? 'Queued' : `Generating ${j.count} · ${Math.round(j.progress * 100)}%`}</span>
           </span>
         ) : (
-          <span className="small">
-            <Tag color="success" className="task-tag">Ready</Tag>
-            {plural(j.count - j.failed.length, 'variation')} · {timeAgo(j.minutesAgo)}
+          // 5d C5d-29: same status line as Tasks, no Ready tag beside the unseen dot.
+          <span className="small muted nw">
+            {plural(j.count - j.failed.length, 'variation')} ready · {timeAgo(j.minutesAgo)}
           </span>
         )}
       </span>
@@ -66,7 +64,7 @@ function RoundRow({ j }: { j: Job }) {
 }
 
 export function Overview() {
-  const { accountId, windowDays, jobs } = useStore();
+  const { accountId, windowDays, setWindowDays, jobs } = useStore();
   const bp = Grid.useBreakpoint();
   const nav = useNavigate();
   const account = DEMO_ACCOUNTS.find((a) => a.id === accountId) ?? DEMO_ACCOUNTS[0];
@@ -111,12 +109,23 @@ export function Overview() {
           </Typography.Title>
           <p className="muted desc">How {account.name} is doing, and where to look first.</p>
         </div>
-        <Tooltip title="Set on Radar. Overview uses the same period.">
-          <span className="period-chip">
-            <CalendarOutlined /> {win.short}
-            {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
-          </span>
-        </Tooltip>
+        {/* 5d Gm-14: the period was a pill that looked like Radar's control but did nothing; now it is the same control (one store value). */}
+        <Select
+          variant="filled"
+          value={windowDays}
+          onChange={(d) => setWindowDays(d)}
+          popupMatchSelectWidth={false}
+          className="window-select"
+          aria-label="Grading period"
+          prefix={<CalendarOutlined className="window-icon" />}
+          labelRender={() => (
+            <span className="window-value">
+              <b>{win.short}</b>
+              {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
+            </span>
+          )}
+          options={WINDOWS.map((w) => ({ value: w.days, label: (<span className="window-opt"><span>{w.short}</span><span className="t-help">{w.long.split(' · ')[1]}</span></span>) }))}
+        />
       </div>
 
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-kpis" aria-label="Spend and results">
@@ -178,7 +187,8 @@ export function Overview() {
                 {pairs.map(({ c, parent }) => {
                   const better = c.values.cpa < parent.values.cpa;
                   return (
-                    <button key={c.id} className="ov-pair" onClick={() => nav(`/ad/${c.id}`)}>
+                    // 5d Gm-05: a row, not a button, so the grade button inside isn't nested in another button.
+                    <div key={c.id} className="ov-pair" role="link" tabIndex={0} onClick={() => nav(`/ad/${c.id}`)} onKeyDown={(e) => e.key === 'Enter' && nav(`/ad/${c.id}`)}>
                       <span className="ov-pair-name">
                         <Thumb c={c} size={32} />
                         <span className="ov-row-text">
@@ -194,7 +204,7 @@ export function Overview() {
                         {money(c.values.cpa)}
                         <span className="muted"> vs {money(parent.values.cpa)}</span>
                       </span>
-                    </button>
+                    </div>
                   );
                 })}
               </div>
@@ -228,7 +238,7 @@ export function Overview() {
             <p className="t-help ov-sec-help">In progress or ready in the last 7 days.</p>
             {rounds.length === 0 ? (
               <div className="ov-empty-rounds">
-                <p className="t-help">No rounds yet for {account.name}. Pick an ad under Fix first to create variations.</p>
+                <p className="t-help">No rounds yet for {account.name.replace(/\.$/, '')}. Pick an ad under Fix first to create variations.</p>
                 {fixFirst[0] && (
                   <Button size="small" onClick={() => nav(`/ad/${fixFirst[0].c.id}`)}>
                     Open {fixFirst[0].c.name}

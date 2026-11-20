@@ -1,8 +1,7 @@
 import { Grid, Popover, Tag, Tooltip } from 'antd';
 import { accountOf, useStore } from '../data/store';
-import { ACCOUNT, METRIC_META, WINDOWS, type Creative, type Grade, type MetricKey } from '../data/mock';
+import { METRIC_META, WINDOWS, type Creative, type Grade, type MetricKey } from '../data/mock';
 
-const COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 'red' };
 
 export function GradeChip({ g }: { g: Grade }) {
   if (!g)
@@ -12,7 +11,8 @@ export function GradeChip({ g }: { g: Grade }) {
       </Tooltip>
     );
   return (
-    <Tag color={COLOR[g[0]]} className="grade-tag" bordered>
+    // 5d LP-07: Atria's own grade colours (A #18B723, B #1677FF, C #F38D05, D #ED383B), not antd presets.
+    <Tag className={`grade-tag g-${g[0]}`} bordered>
       {g}
     </Tag>
   );
@@ -42,8 +42,7 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
   const valueKey = ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[metric];
   const value = creative.values[valueKey] ?? 0;
   const avg = accountOf(creative).avg[meta.avgKey];
-  const name = metric === 'conversion' ? ACCOUNT.conversionMetric : meta.label;
-  const content = (
+    const content = (
     <div className="grade-pop" onClick={(e) => e.stopPropagation()}>
       <div className="grade-pop-title">
         <GradeChip g={g} /> {meta.label} · {BAND[g[0]]}
@@ -51,11 +50,11 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
       <p className="grade-pop-lead">Beats {beats(creative.id, metric, g)}% of the ads in this account.</p>
       <div className="grade-pop-kv">
         <span className="t-key">This ad</span>
-        <span>{metric === 'conversion' ? `${name} ${meta.unit(value)}` : meta.unit(value)}</span>
+        {/* 5d C5d-03: green when better than the account average, red when worse; direction follows the metric. */}
+        <span className={(meta.lowerIsBetter ? value < avg : value > avg) ? 'val-good' : 'val-bad'}>{meta.unit(value)}</span>
         <span className="t-key">Account average</span>
         <span>{meta.unit(avg)}</span>
       </div>
-      <p className="t-help">{meta.lowerIsBetter ? 'Lower' : 'Higher'} is better.</p>
       <p className="grade-pop-meta">{windowLong}</p>
     </div>
   );
@@ -86,7 +85,7 @@ export function OverallTag({ creative }: { creative: Creative }) {
           </span>
         ))}
       </div>
-      {creative.media !== 'Video' && <p className="t-help">Hook and retention are graded on video ads only.</p>}
+      {creative.media !== 'Video' && <p className="t-help">Hook and retention apply to video ads&nbsp;only.</p>}
       <p className="grade-pop-meta">{windowLong}</p>
     </div>
   );

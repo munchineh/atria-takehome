@@ -4,9 +4,9 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
 import { CopyOutlined, DownloadOutlined, EditOutlined, ExclamationCircleOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT, type Recommendation } from '../data/mock';
+import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
-import { ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
+import { ANGLE_REASON, ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
 import { CreateDialog } from '../components/CreateDialog';
@@ -25,7 +25,6 @@ function cardState(j: Job, i: number): CardState {
 function VariationCard({
   v,
   state,
-  rec,
   original,
   picked,
   mobile,
@@ -42,7 +41,6 @@ function VariationCard({
   versions: Version[];
   onFixText: () => void;
   state: CardState;
-  rec?: Recommendation;
   original: CreativeT;
   picked: boolean;
   mobile: boolean;
@@ -116,7 +114,6 @@ function VariationCard({
       <div className="var-meta">
         {state === 'ready' && (
           <div className="var-flags">
-            <PredictedTag id={v.id} />
             {v.from && (
               <Tag icon={<MadeFromIcon />} className="from-tag">
                 {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
@@ -132,39 +129,43 @@ function VariationCard({
             </Tag>
           </Tooltip>
         )}
-        <div className="small">
-          <Tooltip title={ANGLE_TIP}>
-            <span className="muted dotted">Angle:</span>
-          </Tooltip>{' '}
-          <b>{v.angle}</b>
+        {/* 5d C5d-13 / C5d-19 / OG-13: one meta line with label + value (no colons), then the reason in one line. */}
+        <div className="var-meta-line">
+          <span className="kv">
+            <Tooltip title={ANGLE_TIP}>
+              <span className="kv-k">Angle</span>
+            </Tooltip>{' '}
+            <span className="kv-v">{v.angle}</span>
+          </span>
+          {state === 'ready' && (
+            <span className="kv">
+              <span className="kv-k">Predicted CTR</span> <PredictedTag id={v.id} bare />
+            </span>
+          )}
         </div>
-        {rec && (
-          <div className="small muted">
-            Improves {rec.target} · {rec.issue}
-          </div>
-        )}
+        {ANGLE_REASON[v.angle] && <p className="var-reason">{ANGLE_REASON[v.angle]}</p>}
       </div>
       {state === 'ready' && (
-        <div className="var-actions">
+        <div className={`var-actions ${mobile ? 'phone' : ''}`}>
+          {/* C5d-19: on phones the row is Shortlist (wide), Refine and More like this as 44 px icon buttons. */}
+          <Button size={mobile ? 'large' : 'small'} className={`pick-btn ${picked ? 'on' : ''}`} type={picked ? 'primary' : 'default'} onClick={onPick} aria-pressed={picked} aria-label="Add to shortlist">
+            {!mobile && <Checkbox checked={picked} tabIndex={-1} />} {picked ? 'Shortlisted' : 'Shortlist'}
+          </Button>
           {typo ? (
-            <Button size="small" icon={<EditOutlined />} onClick={onFixText}>
-              Fix text
+            <Button size={mobile ? 'large' : 'small'} icon={<EditOutlined />} onClick={onFixText} aria-label="Fix text">
+              {!mobile && 'Fix text'}
             </Button>
           ) : (
             <Tooltip title="Change this image.">
-              <Button size="small" icon={<EditOutlined />} onClick={onRefine}>
-                Refine
+              <Button size={mobile ? 'large' : 'small'} icon={<EditOutlined />} onClick={onRefine} aria-label="Refine">
+                {!mobile && 'Refine'}
               </Button>
             </Tooltip>
           )}
-          <Button size="small" className={`pick-btn ${picked ? 'on' : ''}`} onClick={onPick} aria-pressed={picked} aria-label="Add to shortlist">
-            <Checkbox checked={picked} tabIndex={-1} /> {picked ? 'Shortlisted' : 'Shortlist'}
-          </Button>
-          {/* 5c A-33: two bordered actions on one row, "More like this" as a quieter link below. */}
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
             <Tooltip title={`Create 4 new variations close to this one. ${moreCost}.`}>
-              <Button size="small" type="link" icon={<CopyOutlined />} className="more-like">
-                More like this
+              <Button size={mobile ? 'large' : 'small'} type={mobile ? 'default' : 'link'} icon={<CopyOutlined />} className="more-like" aria-label="More like this">
+                {!mobile && 'More like this'}
               </Button>
             </Tooltip>
           </Popconfirm>
@@ -244,7 +245,7 @@ export function Results() {
         <Breadcrumb
           items={[
             ...(c.project
-              ? [{ title: <Link to="/creation">Image ads</Link> }, { title: <span className="crumb-name">{c.name}</span> }]
+              ? [{ title: <Link to="/creation">Creative gallery</Link> }, { title: <span className="crumb-name">{c.name}</span> }]
               : [
                   { title: <Link to="/">Radar</Link> },
                   { title: <Link to={`/ad/${c.id}`} className="crumb-name">{c.name}</Link> },
@@ -276,12 +277,6 @@ export function Results() {
                 .map((r, i) => ({ value: r.id, label: `Round ${rounds.length - i} · ${r.date} · ${r.count}` }))}
             />
           )}
-          <Popconfirm title={`Create ${moreCount} more with the same settings?`} description={`Uses ${moreCount * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`} okText={`Create ${moreCount}`} onConfirm={() => createMore(job.recIds)}>
-            <Button type="primary">Create {moreCount} more</Button>
-          </Popconfirm>
-          <Button type="link" onClick={() => setEdit(true)}>
-            Edit settings
-          </Button>
         </div>
       </div>
 
@@ -362,15 +357,9 @@ export function Results() {
                         Improves {r.target === 'Hook' ? 'hook' : r.target} · {plural(items.length, 'variation')}
                       </span>
                       <h4>{r.fix}</h4>
+                      {/* 5d OG-14: Atria says why under each section; ours didn't. */}
+                      {r.why && <p className="t-help var-group-why">{r.why}</p>}
                     </div>
-                    <Popconfirm
-                      title={`Create ${settings.perRec} more for this suggestion?`}
-                      description={`Uses ${perRecCost} of ${credits.toLocaleString()} credits`}
-                      okText={`Create ${settings.perRec}`}
-                      onConfirm={() => createMore([r.id])}
-                    >
-                      <Button size="small">Create {settings.perRec} more</Button>
-                    </Popconfirm>
                   </div>
                   {items.length === 0 ? (
                     <p className="t-help">No variations for this suggestion yet.</p>
@@ -402,9 +391,30 @@ export function Results() {
                       </AnimatePresence>
                     </div>
                   )}
+                  {/* 5d C5d-18: review first, so creating more comes after the cards. */}
+                  <div className="var-group-more">
+                    <Popconfirm
+                      title={`Create ${settings.perRec} more for this suggestion?`}
+                      description={`Uses ${perRecCost} of ${credits.toLocaleString()} credits`}
+                      okText={`Create ${settings.perRec}`}
+                      onConfirm={() => createMore([r.id])}
+                    >
+                      <Button size={mobile ? 'large' : 'middle'}>Create {settings.perRec} more</Button>
+                    </Popconfirm>
+                  </div>
                 </section>
               );
             })}
+          {/* C5d-18: round-wide actions at the end of the page. */}
+          <div className="results-end">
+            <span className="t-help">Want more options?</span>
+            <Popconfirm title={`Create ${moreCount} more with the same settings?`} description={`Uses ${moreCount * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`} okText={`Create ${moreCount}`} onConfirm={() => createMore(job.recIds)}>
+              <Button>Create {moreCount} more</Button>
+            </Popconfirm>
+            <Button type="link" onClick={() => setEdit(true)}>
+              Edit settings
+            </Button>
+          </div>
         </section>
       </div>
       <div className="sticky-spacer" />
@@ -486,7 +496,7 @@ export function Results() {
             content: (
               <span>
                 {plural(picks.length, 'paused ad')} added to {audience} ·{' '}
-                <a onClick={() => message.info('Opens Meta Ads Manager in a new tab.')}>Open in Meta</a>
+                <a onClick={() => message.info("In the live product, this opens the ads in Meta Ads Manager. It's not part of this prototype.")}>Open in Meta</a>
               </span>
             ),
             duration: 5,

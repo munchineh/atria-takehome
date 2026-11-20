@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Empty, Progress, Tag } from 'antd';
-import { CloseOutlined } from '@ant-design/icons';
+import { Button, Empty, Progress } from 'antd';
+import { CloseOutlined, RightOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { plural } from '../data/mock';
@@ -18,80 +18,61 @@ export function jobTitle(j: Job) {
 }
 
 /** TR-05 time left, on the ~2 minute scale the copy promises (A17). */
-const timeLeft = (p: number) => {
+export const timeLeft = (p: number) => {
   const s = (1 - p) * 120;
   return s < 50 ? 'less than a minute left' : `about ${Math.ceil(s / 60)} min left`;
 };
 
 function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void }) {
-  const { retryJob } = useStore();
+  const { retryJob, accountId } = useStore();
   const c = findCreative(j.creativeId)!;
   const failedN = j.failed.length;
+  const acct = accountOf(c);
+  // 5d C5d-29: one status signal per row. Unseen = semibold name + dot; nothing else is coloured unless it failed.
+  // The fixes and credits live on the round page. The account shows as a small eyebrow only when it isn't the one you're in (Gm-10), so the status line never has to share its width.
+  const other = acct.id !== accountId ? acct.name : '';
+  const ago = timeAgo(j.minutesAgo);
+  const status =
+    j.state === 'queued'
+      ? `Queued · ${plural(j.count, 'variation')}`
+      : j.state === 'generating'
+        ? `Creating ${j.count} · ${timeLeft(j.progress)}`
+        : j.state === 'ready'
+          ? failedN
+            ? `${j.count - failedN} of ${j.count} ready · ${failedN} failed, credits returned`
+            : `${plural(j.count, 'variation')} ready · ${ago}`
+          : `Failed · ${j.cost} credits returned`;
+  const openable = j.state === 'ready';
   return (
     <motion.li
-      className={`task-row ${j.state}`}
+      className={`task-row ${j.state} ${j.unseen ? 'unseen' : ''} ${openable ? 'openable' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
+      onClick={openable ? () => onOpen(j) : undefined}
+      role={openable ? 'link' : undefined}
+      tabIndex={openable ? 0 : undefined}
+      onKeyDown={openable ? (e) => e.key === 'Enter' && onOpen(j) : undefined}
     >
-      <Thumb c={c} size={44} />
+      <Thumb c={c} size={48} />
       <div className="task-body">
-        {/* No truncation (Mancini, 19:00): the ad is the title, the fixes wrap underneath, the account moves to the foot. */}
+        {other && <div className="task-acct">{other}</div>}
         <div className="task-title">
-          <span className="clamp-2">{c.name}</span>
+          <span className="task-name">{c.name}</span>
           {j.unseen && <i className="unseen-dot" aria-label="New" />}
         </div>
-        <div className="task-sub clamp-2">
-          {j.label ?? j.recIds.map((r) => recName(j.creativeId, r)).join(' · ')}
-        </div>
-        <div className="task-status">
-          {j.state === 'queued' && <span className="muted">Queued · {plural(j.count, 'variation')}</span>}
-          {j.state === 'generating' && (
-            <>
-              <Progress percent={Math.round(j.progress * 100)} size="small" showInfo={false} strokeColor="#f66c30" className="task-progress" />
-              <span className="muted">
-                Generating · {Math.round(j.progress * 100)}% · {timeLeft(j.progress)}
-              </span>
-            </>
-          )}
-          {j.state === 'ready' &&
-            (failedN ? (
-              <span>
-                {j.count - failedN} of {j.count} ready. {failedN} failed, {failedN * 4} credits returned.
-              </span>
-            ) : (
-              <span>
-                <Tag color="success" className="task-tag">
-                  Ready
-                </Tag>
-                {plural(j.count, 'variation')}
-              </span>
-            ))}
-          {j.state === 'failed' && (
-            <span>
-              <Tag color="error" className="task-tag">
-                Failed
-              </Tag>
-              {j.cost} credits returned
-            </span>
-          )}
-        </div>
-        <div className="task-foot">
-          <span className="muted small">
-            <span className="nw">{timeAgo(j.minutesAgo)}</span> · <span className="nw">{j.cost} credits</span> ·{' '}
-            <span className="nw">{accountOf(c).name}</span>
+        <div className={`task-line ${j.state === 'failed' ? 'bad' : ''}`}>
+          <span className="task-line-text">
+            {status}
           </span>
-          {j.state === 'ready' && (
-            <Button size="small" type="primary" ghost onClick={() => onOpen(j)}>
-              View variations
-            </Button>
-          )}
           {j.state === 'failed' && (
-            <Button size="small" onClick={() => retryJob(j.id)}>
+            <Button type="link" size="small" className="inline-link" onClick={(e) => { e.stopPropagation(); retryJob(j.id); }}>
               Retry
             </Button>
           )}
         </div>
+        {j.state === 'generating' && <Progress percent={Math.round(j.progress * 100)} size="small" showInfo={false} strokeColor="#f66c30" className="task-progress" />}
       </div>
+      {openable && <RightOutlined className="task-chev" />}
     </motion.li>
   );
 }
@@ -156,7 +137,8 @@ function PanelBody({ onClose }: { onClose: () => void }) {
         )}
       </div>
       <div className="tasks-foot small muted">
-        Showing the last 7 days. Older work is in Image ads.{' '}
+        {/* 5d C5d-30/32: one line, link inline; the page is now the Creative gallery. */}
+        Last 7 days. See everything in{' '}
         <Button
           type="link"
           size="small"
@@ -166,8 +148,9 @@ function PanelBody({ onClose }: { onClose: () => void }) {
             onClose();
           }}
         >
-          Open Image ads
+          Creative gallery
         </Button>
+        .
       </div>
     </>
   );

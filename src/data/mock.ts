@@ -648,7 +648,7 @@ export function copiesLabel(c: Creative) {
   const running = c.ads.length - paused;
   if (!paused) return `${plural(running, 'copy', 'copies')} running`;
   if (!running) return `${plural(paused, 'copy', 'copies')} paused`;
-  return `${running} running · ${paused} paused`;
+  return `${running} running · ${paused}\u00a0paused`; // 5d Gm-08: "1 paused" never splits
 }
 
 const hash = (s: string) => [...s].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7);

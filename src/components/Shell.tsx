@@ -14,7 +14,7 @@ import {
 import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ACCOUNT, SIDEBAR_ACCOUNTS, plural } from '../data/mock';
-import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
+import { DEMO_ACCOUNTS, accountOf, findCreative, useStore } from '../data/store';
 import { TasksPanel } from './TasksPanel';
 import { Thumb } from './Thumb';
 import { duration, ease } from '../motion/tokens';
@@ -66,7 +66,7 @@ function AccountList({ onPick }: { onPick?: () => void }) {
 
 /** TR-13: completion toast, one action. */
 function useCompletionToasts(mobile: boolean) {
-  const { finished, clearFinished, markSeen } = useStore();
+  const { finished, clearFinished, markSeen, accountId } = useStore();
   const { notification } = App.useApp();
   const nav = useNavigate();
   useEffect(() => {
@@ -79,7 +79,8 @@ function useCompletionToasts(mobile: boolean) {
         className: 'done-toast',
         icon: c ? <Thumb c={c} size={40} /> : undefined,
         message: `${plural(j.count - j.failed.length, 'variation')} ready`,
-        description: c?.name ?? '',
+        // 5d Gm-10: name the account when the round belongs to another one.
+        description: c ? (accountOf(c).id !== accountId ? `${accountOf(c).name} · ${c.name}` : c.name) : '',
         placement: mobile ? 'top' : 'topRight',
         duration: 6,
         btn: (
@@ -98,7 +99,7 @@ function useCompletionToasts(mobile: boolean) {
       });
     }
     clearFinished();
-  }, [finished, clearFinished, notification, nav, markSeen, mobile]);
+  }, [finished, clearFinished, notification, nav, markSeen, mobile, accountId]);
 }
 
 export function Shell({ children, header }: { children: ReactNode; header?: ReactNode }) {
@@ -130,7 +131,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                   className={`rail-item link ${active ? 'active' : ''}`}
                   role="link"
                   tabIndex={0}
-                  onClick={() => (r.to ? nav(r.to) : message.info({ content: `${r.label} isn't part of this prototype.`, key: 'rail' }))}
+                  onClick={() => (r.to ? nav(r.to) : message.info({ content: `${r.label} is part of Atria, but not of this prototype.`, key: 'rail' }))}
                 >
                   {r.icon}
                   <span>{r.label}</span>
@@ -180,7 +181,13 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
         <main className="content">{children}</main>
       </div>
       <TasksPanel mobile={mobile} />
-      <Drawer open={drawer} onClose={() => setDrawer(false)} placement="left" size={300} title="Analytics" className="dark-drawer">
+      <Drawer open={drawer} onClose={() => setDrawer(false)} placement="left" size={300} title={inCreation ? 'Creation' : 'Analytics'} className="dark-drawer">
+        {/* 5d Gm-01: phones hide the top bar switch, so Overview and Radar sit at the top of the drawer. */}
+        {mobile && !inCreation && header && (
+          <div className="drawer-nav" onClick={() => setDrawer(false)}>
+            {header}
+          </div>
+        )}
         <AccountList onPick={() => setDrawer(false)} />
       </Drawer>
     </div>
