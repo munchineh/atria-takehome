@@ -32,9 +32,10 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const { message } = App.useApp();
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
+  const pausedPlatform = [...new Set(c.ads.filter((a) => copyStatus(c, a) === 'Paused').map(platformOf))].join(' or ') || 'Meta';
   const body = (
     <div className="runs" onClick={(e) => e.stopPropagation()}>
-      {anyPaused && <div className="runs-note small">Paused copies were turned off in Meta. Grades still cover the {win.short.toLowerCase()}.</div>}
+      {anyPaused && <div className="runs-note small">Paused copies were turned off in {pausedPlatform}. Grades still cover the {win.short.toLowerCase()}.</div>}
       <Placements items={c.placements} />
       <div className="runs-list">
         {c.ads.map((a) => {
@@ -122,9 +123,9 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
         <div className="name-line">
           <span className="name clamp2">{c.name}</span>
           {parent && (
-            <Tooltip title={`Variation ${n} of ${parent.name}`}>
+            <Tooltip title={`Variation ${n} of ${parent.name}.`}>
               <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>
-                Var. {n}
+                Variation {n}
               </span>
             </Tooltip>
           )}
@@ -157,19 +158,19 @@ const MotionRow = (props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'
   );
 };
 
-// 5d C5d-20: titled "How Radar grades your ads" so it answers the page's subtitle; the scale is a 2 x 2 list (Gm-11).
-const HOW_GRADING = (
+// K15 (R-E9): one owner for the $10,000 accuracy point — omit here when the page Alert/meter already says it.
+const howGrading = (lowSpend: boolean) => (
   <div className="grade-pop how-pop">
     <p>Radar compares each ad with the other ads in this account, one metric at a time. Ads that spend more count for more.</p>
     <div className="how-scale">
       {(['A', 'B', 'C', 'D'] as const).map((g) => (
         <span key={g}>
-          <Tag className={`grade-tag g-${g}`} bordered>{g}</Tag> {({ A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' } as const)[g]}
+          <Tag className={`grade-tag g-${g}`}>{g}</Tag> {({ A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' } as const)[g]}
         </span>
       ))}
     </div>
     <p>Overall combines an ad's grades, so it can carry a plus or minus. Hook and retention apply to video ads&nbsp;only.</p>
-    <p className="grade-pop-meta">Grades are more accurate for accounts that spend over $10,000 a&nbsp;month.</p>
+    <p className="grade-pop-meta">An estimate from how ads performed in this account. Not a guarantee.{lowSpend ? '' : ' Grades are more accurate for accounts that spend over $10,000 a\u00a0month.'}</p>
   </div>
 );
 
@@ -381,7 +382,7 @@ export function Radar() {
   return (
     <motion.div {...pageTransition} className="page radar">
       <div className="page-head">
-        <Typography.Title level={3} style={{ margin: 0 }}>
+        <Typography.Title level={1} className="page-title">
           Radar
         </Typography.Title>
         <p className="muted desc">Radar grades every ad in this account and suggests what to fix next.</p>
@@ -431,7 +432,8 @@ export function Radar() {
               return (
                 <span className="window-value">
                   <b>{w.short}</b>
-                  <span className="window-dates">{w.long.split(' · ')[1]}</span>
+                  {/* K49 (R-L4, R-R11): hide range in trigger below md; full range stays in the period sheet. */}
+                  {bp.md && <span className="window-dates">{w.long.split(' · ')[1]}</span>}
                 </span>
               );
             }}
@@ -452,7 +454,7 @@ export function Radar() {
             }))}
           />
           {period.sheet}
-          <PopSheet content={HOW_GRADING} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+          <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
             <Button type="link" size="small" className="inline-link hgw" aria-label="How Radar grades your ads">
               <QuestionCircleOutlined className="hgw-icon" />
               <span className="hgw-text">How Radar grades your ads</span>
@@ -493,13 +495,23 @@ export function Radar() {
 
       {rows.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" className="radar-empty">
-          {tab === 'winners' && Object.values(picked).flat().length === 0 ? (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>Nothing in Best in the {win.short.toLowerCase()}</b><br />No ad is strong on every graded metric yet. The closest are under Improve.</>}>
-              <Button onClick={() => setTab('potential')}>View Improve</Button>
+          {Object.values(picked).flat().length === 0 ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <>
+                  {/* K26, K35 (R-V2, R-I9, R-E5): distinct empty copy when no filters are active. */}
+                  <b>No {TABS.find((t) => t.key === tab)!.label} ads in the {win.short.toLowerCase()}</b>
+                  <br />
+                  {tab === 'winners' ? 'No ad is strong on every graded metric yet. The closest are under Improve.' : 'Ads appear here once their grades land in this group.'}
+                </>
+              }
+            >
+              {tab === 'winners' && <Button onClick={() => setTab('potential')}>View Improve</Button>}
             </Empty>
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters in this tab</b>}>
-              {!(Object.values(picked).flat().length === 0) && <Button onClick={() => setPicked({})}>Clear filters</Button>}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters</b>}>
+              <Button onClick={() => setPicked({})}>Clear filters</Button>
             </Empty>
           )}
         </motion.div>
@@ -578,7 +590,6 @@ export function Radar() {
           columns={columns}
           dataSource={rows}
           showSorterTooltip={false}
-          size="middle"
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
           pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false }}

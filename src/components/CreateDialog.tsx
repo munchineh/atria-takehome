@@ -85,9 +85,9 @@ export function Body({
 
   const addFile = (f?: File) => {
     if (!f) return;
-    if (images.length >= 4) return setUploadError('You can add up to 4 images');
-    if (!/image\/(png|jpe?g)/.test(f.type)) return setUploadError('Use a PNG or JPG file');
-    if (f.size > 5 * 1024 * 1024) return setUploadError('That file is over 5 MB');
+    if (images.length >= 4) return setUploadError('You can add up to 4 images.');
+    if (!/image\/(png|jpe?g)/.test(f.type)) return setUploadError('Use a PNG or JPG file.');
+    if (f.size > 5 * 1024 * 1024) return setUploadError('That file is over 5\u00a0MB.');
     setUploadError('');
     setImages((p) => [...p, URL.createObjectURL(f)]);
   };
@@ -224,7 +224,7 @@ export function Body({
         {/* Product images (I2). */}
         <section className="dlg-block">
           <div className="dlg-label">Product images</div>
-          <span className="t-help">Up to 4. PNG or JPG, under 5 MB each</span>
+          <span className="t-help">Up to 4. PNG or JPG, under 5{'\u00a0'}MB each.</span>
           <div className="img-tiles">
             <AnimatePresence initial={false}>
               {images.map((s) => (
@@ -281,7 +281,7 @@ export function Body({
             {plural(recCount, 'suggestion')} × {perRec} = <b><Rolling value={total} /> variations</b>
           </span>
           <span className="t-help">
-            Uses <Rolling value={cost} /> of {credits.toLocaleString()} credits
+            Uses <Rolling value={cost} /> of {credits.toLocaleString('en-US')}{'\u00a0'}credits
           </span>
           {quota.live && quota.left > 0 && (
             <span className="t-help live-left">

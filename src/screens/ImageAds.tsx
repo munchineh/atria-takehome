@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Empty, Grid, Popover, Select, Tag, Tooltip, Typography } from 'antd';
+import { Button, Empty, Grid, Select, Tag, Tooltip, Typography } from 'antd';
 import { CopyOutlined, FormOutlined, RightOutlined } from '@ant-design/icons';
 import { MadeFromIcon } from '../components/Icons';
 import { motion } from 'motion/react';
@@ -8,6 +8,7 @@ import { plural } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS, useStore, type Job } from '../data/store';
 import { Thumb } from '../components/Thumb';
 import { GradeChip } from '../components/GradeTag';
+import { PopSheet } from '../components/PopSheet';
 import { TeachingCard } from '../components/TeachingCard';
 import { duration, ease, listDelay, pageTransition } from '../motion/tokens';
 
@@ -32,9 +33,10 @@ interface Row {
 }
 
 
+// K3 (R-T3), K38 (R-T7): one round definition per screen; never "a creative".
 const HOW = (
   <div className="grade-pop">
-    <p>Every creative you make in Atria is kept here. Variations are grouped by the ad they came from, and each time you create variations is one round.</p>
+    <p>Every variation you create is kept here, grouped by the ad it came from. Each time you create variations is one round.</p>
     <p>Cloned ads and ads made from scratch have their own&nbsp;entries.</p>
   </div>
 );
@@ -103,29 +105,34 @@ export function ImageAds() {
     <motion.div {...pageTransition} className="page image-ads">
       <div className="page-head pl-head">
         <div>
-          <Typography.Title level={3} style={{ margin: 0 }}>
+          <Typography.Title level={1} className="page-title">
             Creative gallery
           </Typography.Title>
-          <p className="muted desc">{plural(shown.length, 'ad')} with variations</p>
+          <p className="muted desc">Find every variation you've created, grouped by the ad it came from.</p>
+          <p className="t-help pl-meta">{plural(shown.length, 'ad')} with variations</p>
         </div>
-        <Popover content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
+        {/* K41 (R-R6): PopSheet so it opens as a bottom sheet on phones. */}
+        <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
           <Button type="link" className="inline-link">
             How the gallery works
           </Button>
-        </Popover>
+        </PopSheet>
       </div>
 
       <div className="filter-bar pl-filters">
         <Select
           value={brand}
           onChange={setBrand}
+          aria-label="Brand"
           options={[{ value: 'all', label: 'All brands' }, ...DEMO_ACCOUNTS.map((a) => ({ value: a.name, label: a.name }))]}
           popupMatchSelectWidth={false}
         />
+        {/* K11 (R-T1): gallery filter named Origin. */}
         <Select
           value={source}
           onChange={setSource}
-          options={[{ value: 'all', label: 'All sources' }, ...(['radar', 'clone', 'scratch'] as Source[]).map((s) => ({ value: s, label: SOURCE_LABEL[s] }))]}
+          aria-label="Origin"
+          options={[{ value: 'all', label: 'All origins' }, ...(['radar', 'clone', 'scratch'] as Source[]).map((s) => ({ value: s, label: SOURCE_LABEL[s] }))]}
           popupMatchSelectWidth={false}
         />
         <Select
@@ -133,8 +140,9 @@ export function ImageAds() {
           value={campaign}
           onChange={setCampaign}
           placeholder="Search campaigns"
+          aria-label="Campaign"
           className="pl-campaign-select"
-          popupClassName="wrap-options"
+          classNames={{ popup: { root: 'wrap-options' } }}
           popupMatchSelectWidth={bp.md ? 420 : true}
           optionFilterProp="label"
           options={[{ value: 'all', label: 'All campaigns' }, ...campaigns.map((c) => ({ value: c, label: c }))]}
@@ -187,10 +195,7 @@ export function ImageAds() {
               </div>
               <div className="pl-side">
                 <div className="small">
-                  <Tooltip title="Each time you create variations is one round.">
-                    <span className="dotted">{plural(r.rounds, 'round')}</span>
-                  </Tooltip>{' '}
-                  · {plural(r.variations, 'variation')}
+                  {plural(r.rounds, 'round')}{'\u00a0'}· {plural(r.variations, 'variation')}
                 </div>
                 <div className="muted small">Last round {r.last}</div>
                 <div className="pl-status">

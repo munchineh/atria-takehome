@@ -1,10 +1,10 @@
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, App, Breadcrumb, Button, Checkbox, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
-import { CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, ExclamationCircleOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
+import { Alert, App, Breadcrumb, Button, Checkbox, Dropdown, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
+import { CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, WINDOW, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
+import { ACCOUNT, CREATIVES, WINDOW, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
 import { useWorkspace } from '../data/nav';
 import { ANGLE_REASON, ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
@@ -212,13 +212,20 @@ function VariationCard({
       </div>
       {state === 'ready' && (
         <div className={`var-actions ${mobile ? 'phone' : ''}`}>
-          {/* C5d-19: on phones the row is Shortlist (wide), Refine and More like this as 44 px icon buttons. */}
-          <Button size={mobile ? 'large' : 'small'} className={`pick-btn ${picked ? 'on' : ''}`} type={picked ? 'primary' : 'default'} onClick={onPick} aria-pressed={picked} aria-label="Add to shortlist">
+          {/* K42 (R-A4): state-aware aria-label; K9 (R-T8, R-A4): "Edit text" with distinct icon; K30 (R-I7): cost stays in Popconfirm. */}
+          <Button
+            size={mobile ? 'large' : 'small'}
+            className={`pick-btn ${picked ? 'on' : ''}`}
+            type={picked ? 'primary' : 'default'}
+            onClick={onPick}
+            aria-pressed={picked}
+            aria-label={picked ? 'Remove from shortlist' : 'Add to shortlist'}
+          >
             {!mobile && <Checkbox checked={picked} tabIndex={-1} />} {picked ? 'Shortlisted' : 'Shortlist'}
           </Button>
           {typo ? (
-            <Button size={mobile ? 'large' : 'small'} icon={<EditOutlined />} onClick={onFixText} aria-label="Fix text">
-              {!mobile && 'Fix text'}
+            <Button size={mobile ? 'large' : 'small'} icon={<FontSizeOutlined />} onClick={onFixText} aria-label="Edit text">
+              {!mobile && 'Edit text'}
             </Button>
           ) : (
             <Tooltip title="Change this image.">
@@ -228,7 +235,7 @@ function VariationCard({
             </Tooltip>
           )}
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
-            <Tooltip title={`Create 4 new variations close to this one. ${moreCost}.`}>
+            <Tooltip title="Create 4 new variations close to this one.">
               <Button size={mobile ? 'large' : 'small'} type={mobile ? 'default' : 'link'} icon={<CopyOutlined />} className="more-like" aria-label="More like this">
                 {!mobile && 'More like this'}
               </Button>
@@ -262,7 +269,10 @@ export function Results() {
   const [compare, setCompare] = useState(false);
   const [testing, setTesting] = useState(false);
   const [nudgeOff, setNudgeOff] = useState(false);
+  const [sameRecOff, setSameRecOff] = useState(false);
+  const [nextAngle, setNextAngle] = useState<string | null>(null);
   const [edit, setEdit] = useState(false);
+  const platform = c.ads[0] ? platformOf(c.ads[0]) : 'Meta';
 
   useEffect(() => {
     if (job?.unseen && job.state === 'ready') markSeen(job.id);
@@ -300,7 +310,7 @@ export function Results() {
   const go = (extra: Record<string, string>) => setParams({ round: job.id, ...(recFilter !== 'all' ? { rec: recFilter } : {}), ...extra }, { replace: true });
   const createMore = (recIds: string[], perRec = settings.perRec, size = settings.size) => {
     const j = startJob({ creativeId: c.id, recIds, perRec, size });
-    message.success({ content: `Creating ${j.count} variations. This takes about 2 minutes. You can leave this page.`, duration: 3 });
+    message.success({ content: `Generating ${plural(j.count, 'variation')}`, duration: 3 });
     setParams({ round: j.id }, { replace: false });
   };
 
@@ -335,10 +345,12 @@ export function Results() {
 
       <div className="results-head">
         <div className="results-title">
-          <h3>{mobile && !c.project ? `Round ${Math.max(1, rounds.findIndex((r) => r.id === job.id) + 1)} variations` : `Variations of ${c.name}`}</h3>
-          <p className="muted small">
-            {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')} · {job.date}
-            {job.label ? ` · ${job.label}` : ''}
+          {/* K43 (R-P1) & Section 11: identical title at every width + one-liner. */}
+          <h1 className="page-title">Variations of {c.name}</h1>
+          <p className="muted desc">Review this round, shortlist the best and test them in {platform}.</p>
+          <p className="t-help results-meta">
+            {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')}{'\u00a0'}· {job.date}
+            {job.label ? `\u00a0· ${job.label}` : ''}
           </p>
         </div>
         <div className="results-actions">
@@ -368,7 +380,8 @@ export function Results() {
               <div className="muted small">{c.project === 'clone' ? 'Cloned ad' : 'Made from scratch'} · not on Radar</div>
             ) : (
               <>
-                <div className="muted small">Data from {WINDOW.synced}</div>
+                {/* K13 (R-T11): Synced, not Data from. */}
+                <div className="muted small">Synced {WINDOW.synced}</div>
                 <Button size="small" block onClick={() => nav(`/ad/${c.id}`)}>
                   Open the ad
                 </Button>
@@ -384,12 +397,20 @@ export function Results() {
                 <Alert
                   type="info"
                   showIcon
-                  message={`${topN} of your last ${allVars.length} variations use ${topAngle}.`}
+                  title={nextAngle ? `Next round will include ${nextAngle}.` : `${topN} of your last ${allVars.length} variations use ${topAngle}.`}
                   action={
                     <span className="row-gap">
-                      <Button size="small" onClick={() => message.info(`Next round will try ${unused}`)}>
-                        Try {unused}
-                      </Button>
+                      {!nextAngle && (
+                        <Button
+                          size="small"
+                          onClick={() => {
+                            setNextAngle(unused);
+                            message.info(`Next round will try ${unused}`);
+                          }}
+                        >
+                          Try {unused}
+                        </Button>
+                      )}
                       <Button size="small" type="text" onClick={() => setNudgeOff(true)}>
                         Dismiss
                       </Button>
@@ -398,16 +419,22 @@ export function Results() {
                 />
               </motion.div>
             )}
-            {sameRec && otherRec && (
+            {sameRec && otherRec && !sameRecOff && (
               <motion.div key="pick-hint" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="nudge">
+                {/* K10 (R-T1), K36 (R-I3): "shortlisted variations" + same Dismiss control on both Alerts. */}
                 <Alert
                   type="info"
                   showIcon
-                  message={`All ${picks.length} picks fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
+                  title={`All ${picks.length} shortlisted variations fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
                   action={
-                    <Button size="small" onClick={() => go({ rec: otherRec.id })}>
-                      Show {otherRec.target}
-                    </Button>
+                    <span className="row-gap">
+                      <Button size="small" onClick={() => go({ rec: otherRec.id })}>
+                        Show {otherRec.target}
+                      </Button>
+                      <Button size="small" type="text" onClick={() => setSameRecOff(true)}>
+                        Dismiss
+                      </Button>
+                    </span>
                   }
                 />
               </motion.div>
@@ -459,10 +486,10 @@ export function Results() {
                         versions={versionsOf(v)}
                         onMore={() => {
                           const j = startJob({ creativeId: c.id, recIds: [v.recId], perRec: 4, size: job.size, like: v });
-                          message.success({ content: `Creating 4 variations like ${v.angle}.`, duration: 3 });
+                          message.success({ content: `Generating 4 variations like ${v.angle}`, duration: 3 });
                           setParams({ round: j.id });
                         }}
-                        moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`}
+                        moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString('en-US')}\u00a0credits`}
                         onRetry={() => retryJob(job.id)}
                       />
                         ))}
@@ -485,8 +512,9 @@ export function Results() {
             })}
           {/* C5d-18: round-wide actions at the end of the page. */}
           <div className="results-end">
-            <span className="t-help">Want more options?</span>
-            <Popconfirm title={`Create ${moreCount} more with the same settings?`} description={`Uses ${moreCount * ACCOUNT.creditsPerImage} of ${credits.toLocaleString()} credits`} okText={`Create ${moreCount}`} onConfirm={() => createMore(job.recIds)}>
+            {/* K10 (R-T1): "Need more variations?" */}
+            <span className="t-help">Need more variations?</span>
+            <Popconfirm title={`Create ${moreCount} more with the same settings?`} description={`Uses ${moreCount * ACCOUNT.creditsPerImage} of ${credits.toLocaleString('en-US')}\u00a0credits`} okText={`Create ${moreCount}`} onConfirm={() => createMore(job.recIds)}>
               <Button>Create {moreCount} more</Button>
             </Popconfirm>
             <Button type="link" onClick={() => setEdit(true)}>
@@ -510,24 +538,46 @@ export function Results() {
                 <Rolling value={shortlist.length} /> shortlisted
               </b>
             </div>
-            <div className="row-gap wrap">
-              <Button icon={<SwapOutlined />} onClick={() => setCompare(true)}>
-                Compare with original
-              </Button>
-              <Button icon={<SendOutlined />} onClick={() => setTesting(true)}>
-                Test in Meta
-              </Button>
-              <Button
-                type="primary"
-                icon={<DownloadOutlined />}
-                onClick={() => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`)}
-              >
-                Download {shortlist.length}
-              </Button>
-              <Button type="text" className="on-dark" onClick={() => setShortlist([])}>
-                Clear
-              </Button>
-            </div>
+            {/* K50 (R-R7): on phones, one primary "Test in {platform}" + More menu so the bar stays one row. */}
+            {mobile ? (
+              <div className="row-gap">
+                <Button type="primary" icon={<SendOutlined />} onClick={() => setTesting(true)}>
+                  Test in {platform}
+                </Button>
+                <Dropdown
+                  trigger={['click']}
+                  menu={{
+                    items: [
+                      { key: 'compare', icon: <SwapOutlined />, label: 'Compare with original', onClick: () => setCompare(true) },
+                      { key: 'download', icon: <DownloadOutlined />, label: `Download ${shortlist.length}`, onClick: () => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`) },
+                      { type: 'divider' },
+                      { key: 'clear', label: 'Clear shortlist', onClick: () => setShortlist([]) },
+                    ],
+                  }}
+                >
+                  <Button icon={<EllipsisOutlined />} aria-label="More shortlist actions" />
+                </Dropdown>
+              </div>
+            ) : (
+              <div className="row-gap wrap">
+                <Button icon={<SwapOutlined />} onClick={() => setCompare(true)}>
+                  Compare with original
+                </Button>
+                <Button icon={<SendOutlined />} onClick={() => setTesting(true)}>
+                  Test in {platform}
+                </Button>
+                <Button
+                  type="primary"
+                  icon={<DownloadOutlined />}
+                  onClick={() => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`)}
+                >
+                  Download {shortlist.length}
+                </Button>
+                <Button type="text" className="on-dark" onClick={() => setShortlist([])}>
+                  Clear
+                </Button>
+              </div>
+            )}
           </motion.div>
         )}
       </AnimatePresence>
@@ -550,7 +600,8 @@ export function Results() {
               <AdArt slot={cur.img} copy={cur.copy} typo={cur.n === 1 ? v.typo : undefined} ratio="2 / 3" alt={v.angle} />
               <figcaption>
                 <b>{v.angle}</b>
-                <span className="muted small">Fixes: {recs.find((r) => r.id === v.recId)?.issue}</span>
+                {/* K23 (R-M7): drop colon; "Improves {metric}". */}
+                <span className="muted small">Improves {recs.find((r) => r.id === v.recId)?.target ?? 'CTR'}</span>
                 <PredictedTag id={v.id} />
               </figcaption>
             </figure>

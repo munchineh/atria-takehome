@@ -639,12 +639,12 @@ Open items waiting for Mancini (defaults are in force until a row is added): "co
 Work top to bottom. Tick a box in the same commit that finishes the task. Data for every item is listed in `handoffs/data-for-ui.md`. Plan numbers refer to `handoffs/execution-plan.md`; the decisions log above overrides the plan.
 
 ### P0: desktop, verify at 1440 x 900
-- [ ] Item 15: Overview in four sections from `overviewBriefing()` (titles and helps come from `titles`). Each change shows an arrow and a percent, never color alone. (R-H, R-P)
-- [ ] Item 13: Overview and Radar switch as a sliding pill; labels unchanged. (DL-02, R-MO)
-- [ ] Item 12: CTR banner on the editor: metric with its grade tag, full issue line, no truncation. (DL-05, R-L)
-- [ ] Item 7: grade popover in three levels (grade and band, numbers, muted footer). (R-H)
-- [ ] Item 8: ad summary card in three zones. (R-H)
-- [ ] Item 10: thumbs up and down next to the image; Download and Delete in the toolbar. (R-I)
+- [x] Item 15: Overview in four sections from `overviewBriefing()` (titles and helps come from `titles`). Each change shows an arrow and a percent, never color alone. (R-H, R-P)
+- [x] Item 13: Overview and Radar switch as a sliding pill; labels unchanged. (DL-02, R-MO)
+- [x] Item 12: CTR banner on the editor: metric with its grade tag, full issue line, no truncation. (DL-05, R-L)
+- [x] Item 7: grade popover in three levels (grade and band, numbers, muted footer). (R-H)
+- [x] Item 8: ad summary card in three zones. (R-H)
+- [x] Item 10: thumbs up and down next to the image; Download and Delete in the toolbar. (R-I)
 - [ ] Item 4: suggestion card in four parts from `suggestionParts()`. (R-H, R-I)
 - [ ] Item 9: lay out the three brief starts, including "Start from the suggestions" (`.brief-prefill`). (R-E)
 - [ ] Items 1, 18: "View in Radar" link on Creation round and editor pages (`ws.radarPath`), plus a mode cue in the breadcrumb. (DL-06)
@@ -662,6 +662,6 @@ Work top to bottom. Tick a box in the same commit that finishes the task. Data f
 - [ ] Recheck the Tasks status line: relative times are longer now ("2 hours ago").
 
 ### P2
-- [ ] Section 12.1 known issues, Essential first.
-- [ ] Section 11 page one-liners under every title.
+- [x] Section 12.1 known issues, Essential first.
+- [x] Section 11 page one-liners under every title.
 - [ ] Item 3: reference strip on the round page (thumbnail plus two-line note) from each angle's reason.

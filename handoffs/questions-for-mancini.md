@@ -1,0 +1,24 @@
+# Questions & Change Log for Mancini (`feat/ui-and-mobile`)
+
+Autonomous overnight execution log for Sprint 1 and Sprint 2 on `feat/ui-and-mobile`.
+
+## Summary of Changes
+
+| Sprint | Plan Item / Spec Ref | Area | Summary | Screenshots (`handoffs/screens/`) |
+|---|---|---|---|---|
+| — | Merge | Repo | Merged `origin/feat/architecture-and-data` into `feat/ui-and-mobile` (kept port `3001` in `package.json`). | — |
+| 1 | Item 15 (R-H, R-P, R-A8, R-K2) | `Overview.tsx`, `styles.css` | Reframed Overview around the 4 user questions from `overviewBriefing()` (`What to know now`, `What to do next`, `What you did`, `What changed`). Added direction arrow + percent delta badges on every KPI and directional arrows on variation changes (never color alone). | `before-overview-1440.png`, `after-overview-1440.png`, `after-overview-changed-1440.png` |
+| 1 | Item 13 (DL-02, R-MO) | `ModeSwitch.tsx`, `App.tsx`, `styles.css` | Upgraded the `Overview` / `Radar` switch into an animated sliding pill using `motion/react` `layoutId` and `spring.snappy` (`bounce: 0`). Labels stay `Overview` and `Radar`. | `before-overview-1440.png`, `after-overview-1440.png`, `after-radar-popover-1440.png` |
+| 1 | Item 12 (DL-05, R-L, R-T) | `Editor.tsx`, `styles.css` | Promoted the inline diagnostic metadata into a full-width diagnostic banner showing metric + grade tag (e.g. `CTR` + grade tag, never `D.CTR`), current value vs account average, full untruncated issue line, fix summary, and `Predicted CTR` on the right. | `before-editor-1440.png`, `after-editor-1440.png` |
+| 1 | Item 7 (R-H, DL-01, R-C6) | `GradeTag.tsx`, `styles.css` | Restructured metric and Overall grade popovers into 3 clear tiers: (1) header with grade + band + takeaway, (2) shaded breakdown box with `tabular-nums` and directional indicators, (3) divider + muted 2-line footer (window + scope caveat). Darkened grade tag text one step per hue to meet WCAG AA 4.5:1 (`R-C6`). | `before-radar-popover-1440.png`, `after-radar-popover-1440.png` |
+| 1 | Item 8 (R-H, R-K1, R-K5, R-N3) | `AdDetail.tsx`, `styles.css` | Restructured the Ad Summary card into 3 distinct zones: (1) header with Summary, Active/Paused status, and compact Goal pill, (2) plain-language diagnosis, (3) shaded KPI stat strip ordered strictly Overall → goal metric → other graded metrics → Spend → ROAS (2 decimals). Added page H1 + one-liner. | `before-addetail-1440.png`, `after-addetail-1440.png` |
+| 1 | Item 10 (R-I, R-H6) | `Editor.tsx`, `styles.css` | Moved thumbs up/down feedback (`Rate this result`: Good / Needs work) into a dedicated bar directly below the image canvas, leaving only utility actions (`Download`, `Delete variation`) in the top-right toolbar. | `before-editor-1440.png`, `after-editor-1440.png`, `after-editor-rating-1440.png` |
+| 1 | Section 7.4, 11, 12.1 (K1–K54, R-A2, R-C2, R-T) | `theme.ts`, `App.tsx`, `Shell.tsx`, `Goal.tsx`, `StatusCell.tsx`, `TasksPanel.tsx`, `Radar.tsx`, `AdDetail.tsx`, `Editor.tsx`, `Results.tsx`, `ImageAds.tsx`, `CreateDialog.tsx`, `styles.css` | Applied antd v6 tokens (`#a83411` links, `0.55` tertiary alpha, `darkBarTheme`, `token.motion` reduced-motion sync, v6 Notification `title`/`actions`), added Section 11 page one-liners on all routes and Tasks, and resolved all Essential K-items in Section 12.1 (glossary terms, `Generating` status, `Edit text` icon, `PopSheet` on gallery help, neutral tags, `All origins` filter, 2-line Tasks status wrap, K50 phone shortlist More menu). | Verified cleanly at 1440×900; full desktop + mobile verification pending Sprint 2 |
+
+## Open Questions for Mancini
+
+1. **R-C3 (Primary button & active sliding pill text color):** Kept white text on `#F66C30` per the Open default in `ui-research-spec.md` (brand match, 2.96:1 contrast). Confirm whether to keep white text or switch to `rgba(0,0,0,0.88)` (6.37:1 AA) before final submission.
+2. **R-C6 (Grade tag text darkening):** Applied the Open default in `ui-research-spec.md` — darkened A/B/C/D grade tag text one step (`#137333`, `#0958d9`, `#9a4e00`, `#cf1322`) on their original light tints so all four pass WCAG AA 4.5:1. Confirm you like the slightly deeper text tones.
+3. **K37 ("Recommended" & "Created in Atria" tags):** Applied the Open default in `ui-research-spec.md` (neutral tags per `R-C1`, reserving orange for primary actions, progress, selection, and current location). Let me know if you want either tag back in orange tint.
+4. **Section 11 (Radar one-liner):** Kept your wording (`"Radar grades every ad in this account and suggests what to fix next."`) per the Open default. Candidate `"See how every ad grades against this account's other ads, and what to fix first."` is ready if you want to align it with Overview's `"fix first"`.
+5. **Section 1 (Page title size):** Implemented `20px / 600` (`fontSizeHeading4`) across all routes per the Open default. Confirm `20px` vs `24px`.
