@@ -1395,8 +1395,9 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .lin-name-btn { all: unset; font-size: 14px; font-weight: 600; color: var(--ant-color-link, #a83411); cursor: pointer; text-align: left; }
 .lin-name-btn:hover { text-decoration: underline; }
 .lin-current-tag.ant-tag { margin: 0; font-size: 12px; }
-.lin-meta { font-size: 12px; color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.65)); }
-.lin-spend { font-variant-numeric: tabular-nums; }
+.lin-meta { display: flex; flex-direction: column; gap: 1px; font-size: 12px; color: var(--ant-color-text-secondary, rgba(0, 0, 0, 0.65)); }
+.lin-meta-line { line-height: 1.4; }
+.lin-spend { font-variant-numeric: tabular-nums; color: var(--ant-color-text-tertiary, rgba(0, 0, 0, 0.55)); }
 .lin-grade { flex: none; }
 .lin-grade .grade-tag { margin: 0; }
 .lin-result { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: 12px; font-weight: 600; padding: 4px 8px; border-radius: 6px; font-variant-numeric: tabular-nums; align-self: flex-start; }

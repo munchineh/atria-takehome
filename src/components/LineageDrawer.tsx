@@ -63,12 +63,12 @@ function StepCard({
               )}
               {step.current && <Tag className="lin-current-tag">Current</Tag>}
             </div>
+            {/* G2 (R-L) & G3 (R-N1): keep date + placement joined without trailing dot; spend on its own line in whole dollars. */}
             <div className="lin-meta">
-              {step.date && <span>{step.date}</span>}
-              {step.date && <span aria-hidden>{'\u00a0'}· </span>}
-              <span>{step.placement}</span>
-              <span aria-hidden>{'\u00a0'}· </span>
-              <span className="lin-spend">{money(step.spend)}</span>
+              <span className="lin-meta-line">
+                {step.date ? `${step.date}\u00a0·\u00a0${step.placement}` : step.placement}
+              </span>
+              <span className="lin-spend">{money(Math.round(step.spend)).replace(/\.\d\d$/, '')} spend</span>
             </div>
           </div>
           <div className="lin-grade">
@@ -157,6 +157,8 @@ export function LineageDrawer({
     nav(ws.roundPath(adId, jobId));
   };
 
+  const firstRepeat = lineage.steps.find((s) => s.repeat);
+
   return (
     <Drawer
       open={open}
@@ -182,11 +184,12 @@ export function LineageDrawer({
       <div className="lin-intro">
         <p className="t-help">Trace each step from the original ad, what changed, and how it performed against its parent.</p>
         {lineage.repeats > 0 && (
+          /* G4 (R-V): use the specific repeat explanation from the first repeating step instead of generic copy. */
           <Alert
             type="warning"
             showIcon
             title={`${plural(lineage.repeats, 'repeat pattern')} found in this chain.`}
-            description="A later step went back to something an earlier step had already moved away from."
+            description={firstRepeat?.repeat?.text ?? 'A later step went back to something an earlier step had already moved away from.'}
           />
         )}
       </div>
