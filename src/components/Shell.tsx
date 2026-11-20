@@ -58,7 +58,7 @@ function AccountList({ onPick }: { onPick?: () => void }) {
 }
 
 /** TR-13: completion toast, one action. */
-function useCompletionToasts() {
+function useCompletionToasts(mobile: boolean) {
   const { finished, clearFinished, markSeen } = useStore();
   const { notification } = App.useApp();
   const nav = useNavigate();
@@ -70,7 +70,7 @@ function useCompletionToasts() {
       notification.success({
         key,
         message: `${plural(j.count, 'variation')} ready for ${short(c?.name ?? '', 20)}`,
-        placement: 'topRight',
+        placement: mobile ? 'top' : 'topRight',
         duration: 6,
         btn: (
           <Button
@@ -88,7 +88,7 @@ function useCompletionToasts() {
       });
     }
     clearFinished();
-  }, [finished, clearFinished, notification, nav, markSeen]);
+  }, [finished, clearFinished, notification, nav, markSeen, mobile]);
 }
 
 export function Shell({ children, header }: { children: ReactNode; header?: ReactNode }) {
@@ -104,7 +104,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
   const unseen = jobs.some((j) => j.unseen);
   const bellLabel = running ? `Tasks, ${running} generating` : unseen ? 'Tasks, new results' : 'Tasks';
   const inCreation = loc.pathname.startsWith('/creation');
-  useCompletionToasts();
+  useCompletionToasts(mobile);
 
   return (
     <div className="shell">
