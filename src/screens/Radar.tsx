@@ -1,8 +1,8 @@
-import { useMemo, useState, type HTMLAttributes } from 'react';
+import { useEffect, useMemo, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Alert, Badge, Button, Checkbox, Empty, Grid, Popover, Segmented, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
+import { Alert, Badge, Button, Checkbox, Empty, Grid, Popover, Table, Tabs, Tag, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, BranchesOutlined, DownOutlined } from '@ant-design/icons';
+import { FilterOutlined, BranchesOutlined, DownOutlined, CloseOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { METRIC_META, RELIABLE_SPEND, TABS, WINDOW, money, plural, short, type Creative, type Media, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -80,18 +80,20 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
   { label: 'Source', options: ['Uploaded', 'Created in Atria'] },
 ];
 
-/** "Filters" with grouped options (groups are an assumption about Atria's dimensions). */
-function FiltersButton({ campaigns }: { campaigns: string[] }) {
-  const [picked, setPicked] = useState<Record<string, string[]>>({});
+type Picked = Record<string, string[]>;
+
+/** Icon-only Filters button (L-059). Media type lives here too; nothing picked in a group means all. */
+function FiltersButton({ campaigns, picked, setPicked }: { campaigns: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
   const total = Object.values(picked).flat().length;
+  const groups = [{ label: 'Media', options: ['Image', 'Video', 'Carousel'] }, { label: 'Campaign', options: campaigns }, ...FILTER_GROUPS];
   const content = (
     <div className="filters-pop">
-      {[{ label: 'Campaign', options: campaigns }, ...FILTER_GROUPS].map((g) => (
+      {groups.map((g) => (
         <div key={g.label} className="filters-group">
           <div className="filters-label">{g.label}</div>
           <Checkbox.Group
             value={picked[g.label] ?? []}
-            onChange={(v) => setPicked((p) => ({ ...p, [g.label]: v as string[] }))}
+            onChange={(v) => setPicked({ ...picked, [g.label]: v as string[] })}
             options={g.options.map((o) => ({ label: o, value: o }))}
           />
         </div>
@@ -106,9 +108,35 @@ function FiltersButton({ campaigns }: { campaigns: string[] }) {
   return (
     <Popover content={content} trigger="click" placement="bottomLeft">
       <Badge count={total} size="small" color="#f5582a">
-        <Button icon={<FilterOutlined />}>Filters</Button>
+        <Tooltip title="Filters">
+          <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn" />
+        </Tooltip>
       </Badge>
     </Popover>
+  );
+}
+
+/** Active filters as light orange pills; each clears itself, plus one quick "Clear all". */
+function ActiveFilters({ picked, setPicked }: { picked: Picked; setPicked: (p: Picked) => void }) {
+  const items = Object.entries(picked).flatMap(([g, vs]) => vs.map((v) => ({ g, v })));
+  return (
+    <AnimatePresence initial={false}>
+      {items.length > 0 && (
+        <motion.div className="active-filters" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: duration.fast }}>
+          {items.map(({ g, v }) => (
+            <span key={`${g}-${v}`} className="filter-pill">
+              {g === 'Media' ? v : `${g}: ${v}`}
+              <button aria-label={`Remove ${v}`} onClick={() => setPicked({ ...picked, [g]: picked[g].filter((x) => x !== v) })}>
+                <CloseOutlined />
+              </button>
+            </span>
+          ))}
+          <Button type="link" size="small" className="inline-link clear-all" onClick={() => setPicked({})}>
+            Clear all
+          </Button>
+        </motion.div>
+      )}
+    </AnimatePresence>
   );
 }
 
@@ -121,17 +149,25 @@ export function Radar() {
   const CREATIVES = account.creatives;
   const lowSpend = account.monthlySpend < RELIABLE_SPEND;
   const [tab, setTab] = useState<TabKey>('potential');
-  const [media, setMedia] = useState<'All' | Media>('All');
+  const [picked, setPicked] = useState<Picked>({});
+  useEffect(() => {
+    setPicked({});
+  }, [account.id]);
+  const mediaPicked = picked.Media ?? [];
+  const campPicked = picked.Campaign ?? [];
   const [expanded, setExpanded] = useState<string | null>(null);
 
   const rows = useMemo(
     () =>
-      CREATIVES.filter((c) => (tab === 'all' ? true : c.tab === tab))
-        .filter((c) => media === 'All' || c.media === media)
+      CREATIVES.filter((c) => c.tab === tab)
+        .filter((c) => !mediaPicked.length || mediaPicked.includes(c.media))
+        .filter((c) => !campPicked.length || c.ads.some((a) => campPicked.includes(a.campaign)))
         .sort((a, b) => b.spend - a.spend),
-    [tab, media, CREATIVES],
+    [tab, mediaPicked, campPicked, CREATIVES],
   );
-  const count = (k: TabKey) => (k === 'all' ? CREATIVES.length : CREATIVES.filter((c) => c.tab === k).length);
+  const matches = (c: Creative) =>
+    (!mediaPicked.length || mediaPicked.includes(c.media)) && (!campPicked.length || c.ads.some((a) => campPicked.includes(a.campaign)));
+  const count = (k: TabKey) => CREATIVES.filter((c) => c.tab === k && matches(c)).length;
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
   const columns: ColumnsType<Creative> = [
@@ -173,13 +209,6 @@ export function Radar() {
       </AnimatePresence>
 
       <div className="filter-bar">
-        <FiltersButton key={account.id} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} />
-        <Segmented
-          value={media}
-          onChange={(v) => setMedia(v as typeof media)}
-          options={['All', 'Image', 'Video', 'Carousel'].map((m) => ({ label: m === 'All' ? 'All media' : m, value: m }))}
-          aria-label="Media type"
-        />
         <span className="window muted">
           <span className="window-long">{WINDOW.long}</span>
           <span className="window-short">{WINDOW.short}</span> ·{' '}
@@ -189,18 +218,10 @@ export function Radar() {
             </Button>
           </Popover>
         </span>
+        <FiltersButton key={account.id} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} />
       </div>
+      <ActiveFilters picked={picked} setPicked={setPicked} />
 
-      {cards ? (
-        <div className="radar-grid-tabs" role="tablist" aria-label="Radar views">
-          {TABS.map((t) => (
-            <button key={t.key} role="tab" aria-selected={tab === t.key} className={tab === t.key ? 'active' : ''} onClick={() => setTab(t.key)}>
-              <span>{t.label}</span>
-              <span className="seg-count">{count(t.key)}</span>
-            </button>
-          ))}
-        </div>
-      ) : (
       <Tabs
         activeKey={tab}
         onChange={(k) => setTab(k as TabKey)}
@@ -214,7 +235,6 @@ export function Radar() {
           ),
         }))}
       />
-      )}
 
       <div className="tab-desc" aria-live="polite">
         <AnimatePresence mode="wait" initial={false}>
@@ -226,13 +246,13 @@ export function Radar() {
 
       {rows.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" className="radar-empty">
-          {tab === 'winners' && media === 'All' ? (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>No winners in the last 60 days</b><br />No creative is strong on every graded metric yet. The closest are under One weak metric.</>}>
-              <Button onClick={() => setTab('potential')}>View one weak metric</Button>
+          {tab === 'winners' && Object.values(picked).flat().length === 0 ? (
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>Nothing in Best in the last 60 days</b><br />No creative is strong on every graded metric yet. The closest are under Improve.</>}>
+              <Button onClick={() => setTab('potential')}>View Improve</Button>
             </Empty>
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No {media === 'All' ? '' : `${media.toLowerCase()} `}creatives in this tab</b>}>
-              {media !== 'All' && <Button onClick={() => setMedia('All')}>Show all media</Button>}
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No creatives match these filters in this tab</b>}>
+              {!(Object.values(picked).flat().length === 0) && <Button onClick={() => setPicked({})}>Clear filters</Button>}
             </Empty>
           )}
         </motion.div>
@@ -241,7 +261,7 @@ export function Radar() {
           <AnimatePresence initial>
             {rows.map((c, i) => (
               <motion.article
-                key={`${tab}-${media}-${c.id}`}
+                key={`${tab}-${c.id}`}
                 className="radar-card"
                 onClick={() => open(c)}
                 initial={{ opacity: 0 }}
@@ -263,7 +283,7 @@ export function Radar() {
                       setExpanded((x) => (x === c.id ? null : c.id));
                     }}
                   >
-                    All grades{' '}
+                    Details{' '}
                     <motion.span animate={{ rotate: expanded === c.id ? 180 : 0 }} transition={spring.snappy} style={{ display: 'inline-flex' }}>
                       <DownOutlined />
                     </motion.span>
@@ -297,7 +317,7 @@ export function Radar() {
         </div>
       ) : (
         <Table<Creative>
-          key={`${tab}-${media}`}
+          key={tab}
           rowKey="id"
           columns={columns}
           dataSource={rows}

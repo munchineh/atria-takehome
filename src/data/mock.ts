@@ -427,11 +427,10 @@ export const SMALL_CREATIVES: Creative[] = [
 ];
 
 /** RA-15. One line per tab, saying what is true of the rows. */
-export const TABS: { key: TabKey | 'all'; label: string; desc: string }[] = [
-  { key: 'winners', label: 'Winners', desc: 'Strong on every graded metric. Scale these.' },
-  { key: 'potential', label: 'One weak metric', desc: 'Strong on one metric, weak on another. One fix could lift them.' },
-  { key: 'candidates', label: 'Weak overall', desc: 'Low grades on most metrics, with enough spend to be worth a new version.' },
-  { key: 'all', label: 'All', desc: 'Every creative with spend in the last 60 days.' },
+export const TABS: { key: TabKey; label: string; desc: string }[] = [
+  { key: 'winners', label: 'Best', desc: 'Strong on every graded metric. Scale these.' },
+  { key: 'potential', label: 'Improve', desc: 'Strong on one metric, weak on another. Fix the weak one.' },
+  { key: 'candidates', label: 'Rework', desc: 'Low grades on most metrics, with enough spend to be worth a new version.' },
 ];
 
 /** Sidebar accounts (all fictional). Only the first two are clickable demo accounts. */
