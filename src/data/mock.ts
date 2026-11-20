@@ -105,6 +105,8 @@ export interface AdCopy {
   band?: string;
   cta?: string;
   tone?: 'light' | 'dark';
+  /** Plan item 11: text drawn into the image by the model (stylized). The overlay gets the class "stylized" until a live render replaces it. */
+  stylized?: boolean;
 }
 
 export interface Creative {

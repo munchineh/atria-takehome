@@ -562,7 +562,7 @@ export function AdDetail() {
               exit={{ opacity: 0, transition: { duration: duration.instant } }}
             >
               <ConfigProvider theme={{ algorithm: antdTheme.darkAlgorithm, token: { colorPrimary: '#f66c30', colorBgContainer: '#2a272e', colorBgElevated: '#2a272e', colorBorder: '#3d3942', colorBorderSecondary: '#333037', colorText: '#ece9ef', colorTextSecondary: '#a8a3ad', colorTextTertiary: '#8c8791', colorTextPlaceholder: '#7d7883', colorTextDisabled: '#6b6670', colorBgContainerDisabled: '#2a272e', borderRadius: 6 } }}>
-                <Body creative={c} recCount={selected.length} panel onCancel={() => setDialog(false)} onCreate={create} />
+                <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} />
               </ConfigProvider>
             </motion.div>
           ) : (
@@ -629,6 +629,7 @@ export function AdDetail() {
         mobile={!bp.md}
         creative={c}
         recCount={selected.length}
+        picked={recs.filter((r) => selected.includes(r.id))}
         onClose={() => setDialog(false)}
         onCreate={create}
       />

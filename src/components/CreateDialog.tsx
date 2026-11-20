@@ -1,3 +1,5 @@
+import { briefFromSuggestions } from '../data/insights';
+import type { Recommendation } from '../data/mock';
 import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
 import { Alert, App, Button, Drawer, Input, Modal, Select } from 'antd';
@@ -30,10 +32,13 @@ export interface CreateSettings {
 export function Body({
   creative,
   recCount,
+  picked,
   onCancel,
   onCreate,
   panel = false,
 }: {
+  /** Item 9: the suggestions picked on the ad page. When given, the brief can be filled in from them. */
+  picked?: Recommendation[];
   creative: Creative;
   recCount: number;
   onCancel: () => void;
@@ -60,6 +65,12 @@ export function Body({
   const total = recCount * perRec;
   const cost = total * ACCOUNT.creditsPerImage;
   const ready = brief.trim().length > 0 && (mode === 'filled' || mode === 'write');
+
+  // Item 9: fill the brief from the diagnosis. Everything stays editable; nothing is saved until Create.
+  const prefill = () => {
+    setDraft(briefFromSuggestions(creative, picked ?? [], account, saved));
+    setMode('write');
+  };
 
   const readPage = () => {
     setMode('reading');
@@ -151,6 +162,17 @@ export function Body({
                     {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                   </Button>
                 </div>
+                {picked && picked.length > 0 && (
+                  <>
+                    <div className="brief-or muted small">or</div>
+                    {/* Item 9 (logic branch): plain markup; layout and styling belong to the UI branch. */}
+                    <div className="brief-start brief-prefill">
+                      <b>Start from the suggestions</b>
+                      <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
+                      <Button onClick={prefill}>Fill in the brief</Button>
+                    </div>
+                  </>
+                )}
                 <div className="brief-or muted small">or</div>
                 <div className="brief-start">
                   <b>Write your own</b>
@@ -293,9 +315,11 @@ export function CreateDialog({
   mobile,
   creative,
   recCount,
+  picked,
   onClose,
   onCreate,
 }: {
+  picked?: Recommendation[];
   open: boolean;
   mobile: boolean;
   creative: Creative;
@@ -308,7 +332,7 @@ export function CreateDialog({
   useEffect(() => {
     if (open) setN((x) => x + 1);
   }, [open]);
-  const body = <Body key={n} creative={creative} recCount={recCount} onCancel={onClose} onCreate={onCreate} />;
+  const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} />;
   if (mobile)
     return (
       <Drawer open={open} onClose={onClose} placement="bottom" height="100%" title="Create variations" className="sheet-drawer" destroyOnHidden>

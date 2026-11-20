@@ -1,7 +1,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, type Creative } from './mock';
 import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
-import { ANGLE_REASON, applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
+import { ANGLE_REASON, applyToImage, buildVariations, stylizedRender, adText, type Variation, type Version } from './variations';
 import { generateLive } from './live';
 
 /**
@@ -349,14 +349,21 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       const last = list.at(-1)!;
       counter.current += 1;
       const nid = `${v.id}-${how[0]}${counter.current}`;
-      const img = how === 'stylized' ? STYLIZED[last.img] ?? STYLIZED[v.img] ?? last.img : applyToImage(last.img, last.copy, note).img;
-      const copy = how === 'stylized' ? undefined : last.copy;
+      const render = how === 'stylized' ? stylizedRender(last.img, v.img) : undefined;
+      const img = how === 'stylized' ? render ?? last.img : applyToImage(last.img, last.copy, note).img;
+      // Item 11: with a ready-made render the text is in the picture; without one the copy stays, flagged as stylized.
+      const copy = how === 'stylized' ? (render ? undefined : last.copy && { ...last.copy, stylized: true }) : last.copy;
       setCredits((c) => c - ACCOUNT.creditsPerImage);
       const nv: Variation = { ...v, id: nid, img, copy, typo: undefined, launched: undefined, stylized: how === 'stylized', from: { id: v.id, v: last.n, angle: v.angle, how } };
       setVersions((p) => ({ ...p, [nid]: [{ n: 1, img, copy, caption: how === 'stylized' ? 'Stylized text' : 'Edited prompt', cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
       addVariation(jobId, nv);
       land(nid, 1, 3000);
       if (how === 'prompt') liveVersion(nid, 1, last.img, note);
+      // No ready-made render: ask the model to draw the text in; when it lands, the overlay copy is dropped.
+      if (how === 'stylized' && !render && last.copy)
+        void generateLive(last.img, 'Keep the composition. Leave clear space for the text.', '3:4', adText(last.copy)).then((slot) => {
+          if (slot) setVersions((p) => ({ ...p, [nid]: (p[nid] ?? []).map((x) => (x.n === 1 ? { ...x, img: slot, copy: undefined } : x)) }));
+        });
       return nid;
     },
     [versionsOf, land, addVariation, liveVersion],

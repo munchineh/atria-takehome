@@ -127,6 +127,8 @@ export function Editor() {
   const typoNow = shown.n === 1 && v.typo && shown.copy?.head.includes(v.typo) ? v.typo : undefined;
   const fixedTypo = typoNow ? typoNow.replace(/(.)\1(?!.*\1\1)/, '$1') : '';
   const stylizedSlot = !v.stylized ? STYLIZED[shown.img] ?? STYLIZED[v.img] : undefined;
+  // Item 11: the Stylized text option is offered on every variation that has text, not only those with a ready-made render.
+  const canStylize = !v.stylized && Boolean(shown.copy);
   const preview = textMode === 'stylized' && stylizedSlot ? { img: stylizedSlot, copy: undefined } : editing && draft ? { img: shown.img, copy: draft } : shown;
   const canvasVersion = applying && !onOlder ? versions.at(-2) ?? shown : shown;
 
@@ -215,7 +217,7 @@ export function Editor() {
     <section className="ed-block">
       <div className="ed-block-head">
         <b>Text</b>
-        {stylizedSlot && (
+        {canStylize && (
           <Segmented
             size="small"
             value={textMode}

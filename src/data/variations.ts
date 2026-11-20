@@ -33,6 +33,10 @@ export interface Version {
 
 /** ED-09b: base photos that have a stylized-text render (B) made for the comparison (L-020, L-026). */
 export const STYLIZED: Record<string, string> = { x05c: 'x05t', x03c: 'x03t' };
+/** Plan item 11: every variation can get a stylized-text version. Only some photos have a ready-made render;
+ *  the rest keep their photo and mark the copy as stylized (live generation then draws the text in). */
+export const stylizedRender = (...slots: string[]) => slots.map((x) => STYLIZED[x]).find(Boolean);
+export const adText = (copy?: AdCopy) => (copy ? [copy.head, copy.price, copy.band, copy.cta].filter(Boolean).join(' · ') : '');
 /** Stylized renders are 3:4 with text to the edges, so they are never cropped to 2:3. */
 export const ratioFor = (slot: string) => (Object.values(STYLIZED).includes(slot) ? '3 / 4' : '2 / 3');
 
