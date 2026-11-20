@@ -29,6 +29,7 @@ const RAIL = [
 
 function AccountList({ onPick }: { onPick?: () => void }) {
   const { accountId, setAccount } = useStore();
+  const { message } = App.useApp();
   const nav = useNavigate();
   return (
     <div className="accounts">
@@ -41,10 +42,13 @@ function AccountList({ onPick }: { onPick?: () => void }) {
           <div
             key={a}
             className={`account ${demo?.id === accountId ? 'active' : ''} ${demo ? 'demo' : ''}`}
-            role={demo ? 'button' : undefined}
-            tabIndex={demo ? 0 : undefined}
+            role="button"
+            tabIndex={0}
             onClick={() => {
-              if (!demo) return;
+              if (!demo) {
+                message.info({ content: `${a} has no demo data. Try Moody Mochi or Tiny Toast Co.`, key: 'demo' });
+                return;
+              }
               setAccount(demo.id);
               nav('/');
               onPick?.();
@@ -100,6 +104,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
   const wide = bp.xl;
+  const { message } = App.useApp();
   const [drawer, setDrawer] = useState(false);
   const { jobs, credits, accountId, tasksOpen, setTasksOpen, bump } = useStore();
   const loc = useLocation();
@@ -121,10 +126,10 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             return (
               <Tooltip key={r.label} title={wide ? '' : r.label} placement="right">
                 <div
-                  className={`rail-item ${active ? 'active' : ''} ${r.to ? 'link' : ''}`}
-                  role={r.to ? 'link' : undefined}
-                  tabIndex={r.to ? 0 : undefined}
-                  onClick={() => r.to && nav(r.to)}
+                  className={`rail-item link ${active ? 'active' : ''}`}
+                  role="link"
+                  tabIndex={0}
+                  onClick={() => (r.to ? nav(r.to) : message.info({ content: `${r.label} isn't part of this prototype.`, key: 'rail' }))}
                 >
                   {r.icon}
                   <span>{r.label}</span>

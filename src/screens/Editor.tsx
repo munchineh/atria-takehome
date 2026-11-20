@@ -423,8 +423,9 @@ export function Editor() {
       <div className="detail-head">
         <Breadcrumb
           items={[
-            { title: <Link to="/">Radar</Link> },
-            { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 10 : 22)}</Link> },
+            ...(c.project
+              ? [{ title: <Link to="/creation">Image ads</Link> }]
+              : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 10 : 22)}</Link> }]),
             { title: <Link to={back}>Variations</Link> },
             { title: v.angle },
           ]}

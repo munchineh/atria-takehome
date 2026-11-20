@@ -205,9 +205,9 @@ export function Results() {
   if (!job)
     return (
       <div className="page">
-        <Empty description={<b>No variations for this creative yet</b>}>
+        <Empty description={<b>No variations for this ad yet</b>}>
           <Button type="primary" onClick={() => nav(`/ad/${c.id}`)}>
-            Open the creative
+            Open the ad
           </Button>
         </Empty>
       </div>
@@ -241,9 +241,13 @@ export function Results() {
       <div className="detail-head">
         <Breadcrumb
           items={[
-            { title: <Link to="/">Radar</Link> },
-            { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 12 : 22)}</Link> },
-            { title: 'Variations' },
+            ...(c.project
+              ? [{ title: <Link to="/creation">Image ads</Link> }, { title: short(c.name, mobile ? 18 : 30) }]
+              : [
+                  { title: <Link to="/">Radar</Link> },
+                  { title: <Link to={`/ad/${c.id}`}>{short(c.name, mobile ? 12 : 22)}</Link> },
+                  { title: 'Variations' },
+                ]),
           ]}
         />
       </div>
@@ -282,13 +286,19 @@ export function Results() {
       <div className="results-grid">
         {!mobile && (
           <aside className="original-panel panel">
-            <div className="t-label">Original</div>
+            <div className="t-label">{c.project ? 'Starting point' : 'Original'}</div>
             <Creative c={c} />
             <div className="small ad-name">{short(c.name, 34)}</div>
-            <div className="muted small">Data from {WINDOW.synced}</div>
-            <Button size="small" block onClick={() => nav(`/ad/${c.id}`)}>
-              Open the creative
-            </Button>
+            {c.project ? (
+              <div className="muted small">{c.project === 'clone' ? 'Cloned ad' : 'Made from scratch'} · not on Radar</div>
+            ) : (
+              <>
+                <div className="muted small">Data from {WINDOW.synced}</div>
+                <Button size="small" block onClick={() => nav(`/ad/${c.id}`)}>
+                  Open the ad
+                </Button>
+              </>
+            )}
           </aside>
         )}
 
@@ -483,7 +493,7 @@ export function Results() {
             content: (
               <span>
                 {plural(picks.length, 'paused ad')} added to {short(audience, 24)} ·{' '}
-                <a onClick={() => message.info('Opens Meta Ads Manager in a new tab')}>Open in Meta</a>
+                <a onClick={() => message.info('Opens Meta Ads Manager in a new tab.')}>Open in Meta</a>
               </span>
             ),
             duration: 5,

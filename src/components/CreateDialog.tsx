@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Drawer, Input, Modal, Select, Tooltip } from 'antd';
+import { App, Button, Drawer, Input, Modal, Select, Tooltip } from 'antd';
 import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, short, type Creative } from '../data/mock';
@@ -38,6 +38,7 @@ function Body({
   onCreate: (s: CreateSettings) => void;
 }) {
   const { briefs, setBrief, credits, lastSettings } = useStore();
+  const { message } = App.useApp();
   const account = accountOf(creative);
   const brand = 'brand' in account ? account.brand : null;
   const saved = briefs[creative.product];
@@ -95,14 +96,16 @@ function Body({
               <span>
                 {brand.name} · {brand.colors.length} colors · {brand.font}
               </span>
-              <Button type="link" size="small" className="inline-link">
+              <Button type="link" size="small" className="inline-link" onClick={() => message.info({ content: 'Brands open in a new tab.', key: 'brand' })}>
                 Change
               </Button>
             </span>
           ) : (
             <span className="brand-value">
               <span className="muted">No brand linked to this ad account</span>
-              <Button size="small">Link a brand</Button>
+              <Button size="small" onClick={() => message.info({ content: 'Brands open in a new tab.', key: 'brand' })}>
+                Link a brand
+              </Button>
               <span className="muted small block-sm">Colors and fonts come from the brand</span>
             </span>
           )}

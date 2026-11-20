@@ -1,12 +1,12 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ACCOUNT, CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, type Creative } from './mock';
+import { ACCOUNT, CREATIVES, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, type Creative } from './mock';
 import { applyToImage, buildVariations, STYLIZED, type Variation, type Version } from './variations';
 
 export const DEMO_ACCOUNTS = [
   { ...ACCOUNT, creatives: CREATIVES },
   { ...SMALL_ACCOUNT, creatives: SMALL_CREATIVES },
 ];
-export const ALL_CREATIVES: Creative[] = [...CREATIVES, ...SMALL_CREATIVES];
+export const ALL_CREATIVES: Creative[] = [...CREATIVES, ...SMALL_CREATIVES, ...PROJECT_CREATIVES];
 export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === id);
 export const accountOf = (c: Creative) => DEMO_ACCOUNTS.find((a) => a.id === c.accountId) ?? DEMO_ACCOUNTS[0];
 
@@ -54,6 +54,9 @@ const SEED: Job[] = [
   // Running now.
   mk({ id: 'job-1090247', creativeId: 'mm-1090247', recIds: ['different', 'offer'], perRec: 4, cost: 32, size: '2:3', state: 'generating', progress: 0.45, failed: [], unseen: false, date: TODAY_LABEL(), minutesAgo: 1 }),
   // Failed on the other account: Tasks spans accounts.
+  // Cloned and from-scratch projects (Image ads only).
+  mk({ id: 'job-clone-1', creativeId: 'clone-1', recIds: ['different'], perRec: 4, cost: 16, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: '3 Nov', minutesAgo: 17 * 1440 }),
+  mk({ id: 'job-scratch-1', creativeId: 'scratch-1', recIds: ['offer', 'cta'], perRec: 3, cost: 24, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: '28 Oct', minutesAgo: 23 * 1440 }),
   mk({ id: 'job-tt-1', creativeId: 'tt-toaster-static', recIds: ['stop', 'offer'], perRec: 2, cost: 16, size: '2:3', state: 'failed', progress: 0, failed: [], unseen: false, date: '19 Nov', minutesAgo: 1100 }),
 ];
 /** Screen 7 demo: the Bold offer variation on mm-1086424 already has 2 edits (e02, e03 are edits of it; L-021). */

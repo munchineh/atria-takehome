@@ -15,13 +15,14 @@ import { ease, duration } from './motion/tokens';
 function TopNav() {
   const loc = useLocation();
   const nav = useNavigate();
+  const { message } = AntApp.useApp();
   return (
     <Segmented
       className="top-nav"
       value="radar"
-      onChange={(v) => v === 'radar' && loc.pathname !== '/' && nav('/')}
+      onChange={(v) => (v === 'radar' ? loc.pathname !== '/' && nav('/') : message.info({ content: "Overview isn't part of this prototype.", key: 'overview' }))}
       options={[
-        { label: 'Overview', value: 'overview', disabled: true },
+        { label: 'Overview', value: 'overview' },
         { label: 'Radar', value: 'radar' },
       ]}
     />

@@ -106,6 +106,8 @@ export interface Creative {
   placements: { label: string; share: number }[];
   /** Filters (mock). Default Active. */
   status?: 'Active' | 'Paused';
+  /** Image ads projects that don't start from a Radar ad (Cloned, From scratch). Not on Radar. */
+  project?: 'clone' | 'scratch';
 }
 
 /** Where an ad came from: a variation made in Atria, or uploaded to the ad account. */
@@ -609,3 +611,9 @@ export function graded(c: Creative, days: number): Creative {
 }
 
 export const platformOf = (a: MetaAd) => a.platform ?? 'Meta';
+
+/** Cloned and from-scratch projects (P1: they keep today's logic). Reachable from Image ads only. */
+export const PROJECT_CREATIVES: Creative[] = [
+  { id: 'clone-1', accountId: 'moody-mochi', name: 'Clone · Pastel plush flat lay', product: 'Mood collection', media: 'Image', img: 'x10', copy: { head: 'SOFT THINGS ONLY', cta: 'SHOP NOW', tone: 'dark' }, ads: [], overall: null, grades: { conversion: null, hook: null, retention: null, ctr: null }, values: { cpa: 0, ctr: 0 }, spend: 0, roas: 0, tab: 'potential', placements: [], project: 'clone' },
+  { id: 'scratch-1', accountId: 'moody-mochi', name: 'Holiday gift guide', product: 'Mood collection', media: 'Image', img: 'x12', copy: { head: 'THE MOOD GIFT GUIDE', cta: 'SHOP GIFTS', tone: 'dark' }, ads: [], overall: null, grades: { conversion: null, hook: null, retention: null, ctr: null }, values: { cpa: 0, ctr: 0 }, spend: 0, roas: 0, tab: 'potential', placements: [], project: 'scratch' },
+];

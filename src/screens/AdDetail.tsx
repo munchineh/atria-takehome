@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip } from 'antd';
-import { BranchesOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { BranchesOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -48,6 +48,28 @@ function summary(c: CreativeT, parent?: CreativeT) {
     hook: 'People scroll past in the first seconds. Change the opening, starting with the fixes below.',
     retention: 'People stop watching early. Tighten the middle of the video, starting with the fixes below.',
   }[worst];
+}
+
+/** Per-suggestion feedback (Mancini, 20 Nov 17:48: rate each one, not the whole list). */
+function RateRow() {
+  const [v, setV] = useState<'up' | 'down' | null>(null);
+  return (
+    <div className="rec-rate" onClick={(e) => e.stopPropagation()}>
+      {v ? (
+        <span className="t-help">Thanks for the feedback.</span>
+      ) : (
+        <>
+          <span className="t-help">Useful?</span>
+          <Tooltip title="Useful">
+            <Button type="text" size="small" className="icon-only" icon={<LikeOutlined />} aria-label="Useful" onClick={() => setV('up')} />
+          </Tooltip>
+          <Tooltip title="Not useful">
+            <Button type="text" size="small" className="icon-only" icon={<DislikeOutlined />} aria-label="Not useful" onClick={() => setV('down')} />
+          </Tooltip>
+        </>
+      )}
+    </div>
+  );
 }
 
 function RecCard({
@@ -109,6 +131,7 @@ function RecCard({
               </ul>
             </div>
           )}
+          <RateRow />
         </div>
       </div>
       <AnimatePresence initial={false}>
@@ -151,7 +174,6 @@ export function AdDetail() {
   const [adsOpen, setAdsOpen] = useState(true);
   const [showAllAds, setShowAllAds] = useState(false);
   const [dialog, setDialog] = useState(false);
-  const [feedback, setFeedback] = useState<'yes' | 'no' | null>(null);
   useEffect(() => {
     setSelected(iterable ? recommendationsFor(c).slice(0, 2).map((r) => r.id) : []);
   }, [c, iterable]);
@@ -238,7 +260,7 @@ export function AdDetail() {
                     <div key={a.id} className="ad-row">
                       <div className="ad-row-id">
                         <i className={`live-dot ${copyStatus(c, a) === 'Paused' ? 'paused' : ''}`} aria-label={copyStatus(c, a)} /> <span className="campaign">{a.campaign}</span>
-                        <ExportOutlined className="muted" aria-label="Open in Meta Ads Manager" role="link" />
+                        <ExportOutlined className="muted ext-link" aria-label="Open in Ads Manager" role="link" onClick={() => message.info(`Opens ${platformOf(a)} Ads Manager in a new tab.`)} />
                       </div>
                       <div className="ad-fields muted small">
                         <span>Platform: {platformOf(a)}</span>
@@ -369,7 +391,7 @@ export function AdDetail() {
             <span className="t-help rec-date">
               Updated {WINDOW.synced}
               <Tooltip title="Refresh">
-                <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" />
+                <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" onClick={() => message.success('Suggestions are up to date.')} />
               </Tooltip>
             </span>
           </motion.div>
@@ -393,26 +415,6 @@ export function AdDetail() {
             />
           ))}
 
-          <motion.div variants={fadeUp} className="feedback small">
-            <span className="muted">Were these suggestions useful?</span>
-            <AnimatePresence mode="wait" initial={false}>
-              {feedback ? (
-                <motion.span key="thanks" variants={fadeUp} initial="hidden" animate="show" className="muted">
-                  Thanks for the feedback.
-                </motion.span>
-              ) : (
-                <motion.span key="ask" className="row-gap" exit={{ opacity: 0, transition: { duration: duration.instant } }}>
-                  <Button size="small" onClick={() => setFeedback('yes')}>
-                    Yes
-                  </Button>
-                  <Button size="small" onClick={() => setFeedback('no')}>
-                    No
-                  </Button>
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </motion.div>
-
           <motion.div variants={fadeUp} className="panel personas">
             <h4>Likely audience</h4>
             <div className="persona-tags">
@@ -433,14 +435,14 @@ export function AdDetail() {
       <motion.div className="sticky-bar" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1, transition: spring.gentle }}>
         <div className="sticky-summary">
           {!iterable ? (
-            <span>Variations work for image ads only. You can still use the recommendations above.</span>
+            <span>Variations work for image ads only. You can still use the suggestions above.</span>
           ) : busy ? (
             <>
-              <b>Generating {s.kind === 'generating' || s.kind === 'queued' ? s.count : total}…</b>
+              <b>Generating {s.kind === 'generating' || s.kind === 'queued' ? s.count : total}</b>
               <span className="muted small left">{balance.toLocaleString()} credits left</span>
             </>
           ) : selected.length === 0 ? (
-            <span>Select a recommendation to create variations</span>
+            <span>Select a suggestion to create variations</span>
           ) : short_ ? (
             <span>
               Needs {cost} credits. You have {balance}.
@@ -448,20 +450,20 @@ export function AdDetail() {
           ) : (
             <>
               <b>
-                <Rolling value={selected.length} /> {selected.length === 1 ? 'recommendation' : 'recommendations'} selected
+                <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} × {ACCOUNT.variationsPerRecommendation} variations each
               </b>
               <span className="muted small left">
-                Uses <Rolling value={cost} /> of {balance.toLocaleString()} credits
+                Uses <Rolling value={cost} /> of {balance.toLocaleString()} credits. You can change the count in the next step.
               </span>
             </>
           )}
         </div>
         {iterable &&
           (short_ && !busy && selected.length ? (
-            <Button size="large">Get credits</Button>
+            <Button size="large" onClick={() => message.info('Opens billing in a new tab.')}>Get credits</Button>
           ) : (
             <Button type="primary" size="large" disabled={busy || selected.length === 0} onClick={() => setDialog(true)}>
-              {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}…` : `Create ${total || ''} variations`.replace('  ', ' ')}
+              {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}` : `Create ${total || ''} variations`.replace('  ', ' ')}
             </Button>
           ))}
       </motion.div>
@@ -475,7 +477,7 @@ export function AdDetail() {
         onCreate={({ perRec, size }) => {
           setDialog(false);
           const j = startJob({ creativeId: c.id, recIds: selected, perRec, size });
-          message.success({ content: `Creating ${j.count} variations. This takes about 2 minutes. You can leave this page.`, duration: 4 });
+          message.success({ content: `Creating ${j.count} variations. This will take a couple of minutes.`, duration: 4 });
         }}
       />
     </motion.div>

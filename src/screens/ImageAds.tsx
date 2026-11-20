@@ -30,15 +30,10 @@ interface Row {
   variationOf?: string;
 }
 
-/** Work that doesn't start from an ad keeps today's logic (P1): one entry per project. */
-const OTHER: Row[] = [
-  { key: 'clone-1', source: 'clone', brand: 'Moody Mochi', name: 'Clone of a competitor ad · pastel plush flat lay', img: 'x13', campaigns: [], rounds: 1, variations: 4, last: '3 Nov' },
-  { key: 'scratch-1', source: 'scratch', brand: 'Moody Mochi', name: 'Holiday gift guide · from scratch', img: 'x14', campaigns: [], rounds: 1, variations: 6, last: '28 Oct' },
-];
 
 const HOW = (
   <div className="grade-pop">
-    <p>Variations you create from a creative in Radar are kept here, grouped by that creative. Each time you create variations is one round.</p>
+    <p>Variations you create from an ad in Radar are kept here, grouped by that ad. Each time you create variations is one round.</p>
     <p>Cloned ads and ads made from scratch stay as their own entries.</p>
   </div>
 );
@@ -75,7 +70,7 @@ export function ImageAds() {
       const unseen = js.find((j) => j.unseen);
       return {
         key: cid,
-        source: 'radar',
+        source: (c.project ?? 'radar') as Source,
         brand: DEMO_ACCOUNTS.find((a) => a.id === c.accountId)!.name,
         name: c.name,
         img: c.img,
@@ -90,7 +85,7 @@ export function ImageAds() {
         variationOf: c.variationOf,
       };
     });
-    return [...fromRadar, ...OTHER].filter((r) => r.variations > 0 || r.status);
+    return [...fromRadar].filter((r) => r.variations > 0 || r.status);
   }, [jobs]);
 
   const campaigns = [...new Set(rows.flatMap((r) => r.campaigns))];

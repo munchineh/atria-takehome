@@ -26,6 +26,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const [open, setOpen] = useState(false);
   const [openCopy, setOpenCopy] = useState<string | null>(c.ads[0]?.id ?? null);
   const { windowDays } = useStore();
+  const { message } = App.useApp();
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
   const body = (
@@ -68,7 +69,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                   <span>{f.frequency}</span>
                   <span className="t-key">Ad ID</span>
                   <span>{a.id}</span>
-                  <a className="runs-out" onClick={(e) => e.preventDefault()} href="#">
+                  <a className="runs-out" onClick={(e) => { e.preventDefault(); message.info(`Opens ${platformOf(a)} Ads Manager in a new tab.`); }} href="#">
                     Open in {platformOf(a) === 'TikTok' ? 'TikTok Ads Manager' : 'Meta Ads Manager'} <ExportOutlined />
                   </a>
                 </div>

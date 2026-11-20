@@ -671,3 +671,6 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .rec-card .rec-footer { margin-left: 28px; }
 .rec-card.read-only .rec-footer { margin-left: 0; }
 @media (max-width: 767px) { .rec-title-row { flex-direction: column; gap: 6px; } }
+.rec-rate { display: flex; align-items: center; gap: 2px; margin-top: 2px; }
+.rec-rate .t-help { margin-right: 4px; font-size: 12px; }
+.ext-link { cursor: pointer; }
