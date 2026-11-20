@@ -346,7 +346,7 @@ export function Radar() {
         <Typography.Title level={3} style={{ margin: 0 }}>
           Radar
         </Typography.Title>
-        <p className="muted desc">Grades each ad against the others in this account, so you can see what to fix first</p>
+        <p className="muted desc">Each ad is graded against your other ads in this account, so you know what to fix first.</p>
       </div>
 
       <AnimatePresence initial={false}>
