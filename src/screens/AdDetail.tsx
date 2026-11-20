@@ -15,6 +15,8 @@ import {
   money,
   plural,
   recommendationsFor,
+  GOALS,
+  goalOf,
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
@@ -52,16 +54,28 @@ const val = (c: CreativeT, k: MetricKey) => {
 /** AD-13 to AD-15: the reading, then what to do. Numbers live in the stat strip below (P3, L-035). */
 function summary(c: CreativeT, parent?: CreativeT) {
   if (parent) return `Converts better than the original. Let it run before you judge it: ${money(c.spend)} spent so far.`;
-  const keys = (Object.keys(METRIC_META) as MetricKey[]).filter((k) => c.grades[k]);
+  // C5d-41: the reading follows the ad's goal, like the suggestions (L-146). Goal metric first, then the ones that
+  // support it; metrics the goal doesn't care about never drive the sentence (an Awareness ad gets no CPA reading).
+  const goal = GOALS[goalOf(c)];
+  const toKey: Record<string, MetricKey> = { CPA: 'conversion', ROAS: 'conversion', CTR: 'ctr', Hook: 'hook' };
+  const tier = (ts: string[]) => [...new Set(ts.map((t) => toKey[t]))];
+  const primary = tier(goal.primary);
+  if (primary.includes('hook')) primary.push('retention');
+  const order = [...primary, ...tier(goal.supporting).filter((k) => !primary.includes(k))].filter((k) => c.grades[k]);
   const rank = (k: MetricKey) => 'ABCD'.indexOf(c.grades[k]![0]);
-  const worst = keys.reduce((a, b) => (rank(b) > rank(a) ? b : a));
-  if (rank(worst) <= 1) return 'Strong on every graded metric. Use it as the starting point for new variations.';
+  const weak = order.find((k) => rank(k) >= 2);
+  if (!weak) {
+    const allGood = (Object.keys(METRIC_META) as MetricKey[]).every((k) => !c.grades[k] || rank(k) <= 1);
+    return allGood
+      ? 'Strong on every graded metric. Use it as the starting point for new variations.'
+      : `Strong on what matters for ${goalOf(c).toLowerCase()}. Use it as the starting point for new variations.`;
+  }
   return {
-    conversion: 'People click but few buy. Fix what happens after the click, starting with the fixes below.',
+    conversion: `People click but few ${({ Leads: 'sign up', 'App promotion': 'install' } as Record<string, string>)[goalOf(c)] ?? 'buy'}. Fix what happens after the click, starting with the fixes below.`,
     ctr: 'Few people click. Make the ad stop the scroll, starting with the fixes below.',
     hook: 'People scroll past in the first seconds. Change the opening, starting with the fixes below.',
     retention: 'People stop watching early. Tighten the middle of the video, starting with the fixes below.',
-  }[worst];
+  }[weak];
 }
 
 /** Per-suggestion feedback (Mancini, 20 Nov 17:48: rate each one, not the whole list). */

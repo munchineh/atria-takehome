@@ -1127,3 +1127,20 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 }
 .live-alert { margin: 0 20px 12px; }
 @media (max-width: 767px) { .live-alert { margin: 0 16px 12px; } }
+/* 5e Gm-19: phone sheets for Filters, How Radar grades, grade popovers and the period list (PopSheet.tsx) */
+.pop-sheet .grade-pop, .pop-sheet .how-pop, .pop-sheet .filters-pop { width: auto; max-width: none; }
+.pop-sheet .grade-pop { font-size: 14px; }
+.pop-sheet .grade-pop > .grade-pop-title { display: none; }
+.pop-sheet .grade-pop-meta { font-size: 13px; }
+.pop-sheet .filters-pop.compact { width: auto; }
+.sheet-grade-title { display: inline-flex; align-items: center; gap: 8px; }
+.sheet-grade-title .ant-tag { margin: 0; }
+.filters-trigger { display: inline-flex; }
+.period-list { display: flex; flex-direction: column; margin: 0 -16px; }
+.period-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'name check' 'dates check'; align-items: center; column-gap: 12px; min-height: 56px; padding: 8px 16px; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; }
+.period-row + .period-row { border-top: 1px solid rgba(0, 0, 0, 0.06); }
+.period-name { grid-area: name; font-size: 16px; line-height: 24px; color: rgba(0, 0, 0, 0.88); }
+.period-dates { grid-area: dates; font-size: 14px; line-height: 22px; color: rgba(0, 0, 0, 0.45); }
+.period-check { grid-area: check; color: #f66c30; font-size: 16px; visibility: hidden; }
+.period-row.on .period-name { font-weight: 600; }
+.period-row.on .period-check { visibility: visible; }

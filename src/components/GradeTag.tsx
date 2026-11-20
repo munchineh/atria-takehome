@@ -1,4 +1,5 @@
-import { Grid, Popover, Tag, Tooltip } from 'antd';
+import { Grid, Tag, Tooltip } from 'antd';
+import { PopSheet } from './PopSheet';
 import { accountOf, useStore } from '../data/store';
 import { METRIC_META, WINDOWS, type Creative, type Grade, type MetricKey } from '../data/mock';
 
@@ -59,11 +60,11 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
     </div>
   );
   return (
-    <Popover content={content} trigger={trigger} placement="bottom" mouseEnterDelay={0.15}>
+    <PopSheet content={content} sheetTitle={<span className="sheet-grade-title"><GradeChip g={g} /> {meta.label} · {BAND[g[0]]}</span>} trigger={trigger} placement="bottom" mouseEnterDelay={0.15}>
       <button className="grade-btn" onClick={(e) => e.stopPropagation()} aria-label={`${meta.label} grade ${g}. Show how it's graded`}>
         <GradeChip g={g} />
       </button>
-    </Popover>
+    </PopSheet>
   );
 }
 
@@ -90,10 +91,10 @@ export function OverallTag({ creative }: { creative: Creative }) {
     </div>
   );
   return (
-    <Popover content={content} trigger={trigger} placement="bottom" mouseEnterDelay={0.15}>
+    <PopSheet content={content} sheetTitle={<span className="sheet-grade-title"><GradeChip g={creative.overall} /> Overall · {creative.overall ? BAND[creative.overall[0]] : ''}</span>} trigger={trigger} placement="bottom" mouseEnterDelay={0.15}>
       <button className="grade-btn" onClick={(e) => e.stopPropagation()} aria-label={`Overall grade ${creative.overall}. Show how it's graded`}>
         <GradeChip g={creative.overall} />
       </button>
-    </Popover>
+    </PopSheet>
   );
 }

@@ -6,6 +6,7 @@ import { GOALS, METRIC_META, TABS, WINDOWS, goalOf, graded, money, plural, type 
 import { DEMO_ACCOUNTS, findCreative, timeAgo, useStore, type Job } from '../data/store';
 import { GradeChip, OverallTag } from '../components/GradeTag';
 import { Thumb } from '../components/Thumb';
+import { usePeriodSheet } from '../components/PopSheet';
 import { GOAL_ICON } from '../components/Goal';
 import { fadeUp, pageTransition } from '../motion/tokens';
 
@@ -69,6 +70,7 @@ export function Overview() {
   const nav = useNavigate();
   const account = DEMO_ACCOUNTS.find((a) => a.id === accountId) ?? DEMO_ACCOUNTS[0];
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
+  const period = usePeriodSheet(windowDays, WINDOWS, (d) => setWindowDays(d));
   const ads = account.creatives.map((c) => graded(c, windowDays));
 
   // Spend and results for the period (same numbers Radar sums).
@@ -114,6 +116,7 @@ export function Overview() {
           variant="filled"
           value={windowDays}
           onChange={(d) => setWindowDays(d)}
+          {...period.selectProps}
           popupMatchSelectWidth={false}
           className="window-select"
           aria-label="Grading period"
@@ -126,6 +129,7 @@ export function Overview() {
           )}
           options={WINDOWS.map((w) => ({ value: w.days, label: (<span className="window-opt"><span>{w.short}</span><span className="t-help">{w.long.split(' · ')[1]}</span></span>) }))}
         />
+        {period.sheet}
       </div>
 
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-kpis" aria-label="Spend and results">

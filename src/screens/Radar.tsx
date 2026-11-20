@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Alert, Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
@@ -195,8 +196,7 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
 type Picked = Record<string, string[]>;
 
 /** Icon-only Filters button (L-059). Compact rows; campaigns are searched, not listed (Mancini, 20 Nov 17:01). */
-function FiltersButton({ campaigns, placements, goals, picked, setPicked }: { campaigns: string[]; placements: string[]; goals: string[]; picked: Picked; setPicked: (p: Picked) => void }) {
-  const [popOpen, setPopOpen] = useState(false);
+function FiltersButton({ campaigns, placements, goals, picked, setPicked, popOpen, setPopOpen }: { campaigns: string[]; placements: string[]; goals: string[]; picked: Picked; setPicked: (p: Picked) => void; popOpen: boolean; setPopOpen: (v: boolean) => void }) {
   const total = Object.values(picked).flat().length;
   const row = (g: { label: string; options: string[] }) => (
     <div key={g.label} className="filters-row">
@@ -253,19 +253,21 @@ function FiltersButton({ campaigns, placements, goals, picked, setPicked }: { ca
     </div>
   );
   return (
-    <Popover content={content} trigger="click" placement="bottomRight" open={popOpen} onOpenChange={setPopOpen}>
+    <PopSheet content={content} sheetTitle="Filters" trigger="click" placement="bottomRight" open={popOpen} onOpenChange={setPopOpen}>
+      <span className="filters-trigger">
       <Badge count={total} size="small" color="#f66c30">
         {/* 5c A-25: the name tooltip hides while the panel it names is open. */}
         <Tooltip title="Filters" open={popOpen ? false : undefined}>
           <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn" />
         </Tooltip>
       </Badge>
-    </Popover>
+      </span>
+    </PopSheet>
   );
 }
 
 /** Active filters as light orange pills; each clears itself, plus one quick "Clear all". */
-function ActiveFilters({ picked, setPicked }: { picked: Picked; setPicked: (p: Picked) => void }) {
+function ActiveFilters({ picked, setPicked, panelOpen }: { picked: Picked; setPicked: (p: Picked) => void; panelOpen: boolean }) {
   const items = Object.entries(picked).flatMap(([g, vs]) => vs.map((v) => ({ g, v })));
   return (
     <AnimatePresence initial={false}>
@@ -279,9 +281,12 @@ function ActiveFilters({ picked, setPicked }: { picked: Picked; setPicked: (p: P
               </button>
             </span>
           ))}
-          <Button type="link" size="small" className="inline-link clear-all" onClick={() => setPicked({})}>
-            Clear all
-          </Button>
+          {/* 5e Gm-15: one "Clear all" at a time. While the Filters panel is open, its own footer has it. */}
+          {!panelOpen && (
+            <Button type="link" size="small" className="inline-link clear-all" onClick={() => setPicked({})}>
+              Clear all
+            </Button>
+          )}
         </motion.div>
       )}
     </AnimatePresence>
@@ -324,6 +329,7 @@ export function Radar() {
       ),
     });
   };
+  const period = usePeriodSheet(windowDays, WINDOWS, (d) => changeWindow(d));
   const lowSpend = account.monthlySpend < RELIABLE_SPEND;
   // Overview's grade counts link to a tab (#/?tab=winners).
   const [search] = useSearchParams();
@@ -333,6 +339,7 @@ export function Radar() {
     if (asked && TABS.some((t) => t.key === asked)) setTab(asked);
   }, [asked]);
   const [picked, setPicked] = useState<Picked>({});
+  const [filtersOpen, setFiltersOpen] = useState(false);
   useEffect(() => {
     setPicked({});
   }, [account.id]);
@@ -414,6 +421,7 @@ export function Radar() {
             variant="filled"
             value={windowDays}
             onChange={(d) => changeWindow(d)}
+            {...period.selectProps}
             popupMatchSelectWidth={false}
             className="window-select"
             aria-label="Grading period"
@@ -443,12 +451,13 @@ export function Radar() {
               ),
             }))}
           />
-          <Popover content={HOW_GRADING} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+          {period.sheet}
+          <PopSheet content={HOW_GRADING} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
             <Button type="link" size="small" className="inline-link hgw" aria-label="How Radar grades your ads">
               <QuestionCircleOutlined className="hgw-icon" />
               <span className="hgw-text">How Radar grades your ads</span>
             </Button>
-          </Popover>
+          </PopSheet>
           {/* 5d OG-02: Atria shows the attribution window beside its Radar settings; ours had none. */}
           {!cards && (
             <Tooltip title="Purchases count when they happen within 7 days of a click or 1 day of a view. Set in Meta.">
@@ -456,9 +465,9 @@ export function Radar() {
             </Tooltip>
           )}
         </div>
-        <FiltersButton key={account.id} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
+        <FiltersButton key={account.id} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
-      <ActiveFilters picked={picked} setPicked={setPicked} />
+      <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} />
 
       <Tabs
         activeKey={tab}
