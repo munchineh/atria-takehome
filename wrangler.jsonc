@@ -1,9 +1,15 @@
 {
-  // Static-assets Worker. Build: npm run build. Unlisted: workers.dev URL only, noindex + robots.txt.
+  // Static assets + a small Worker for /api/* (live Gemini generation, ledger L-163). Build: npm run build.
+  // Unlisted: workers.dev URL only, noindex + robots.txt.
   "name": "atria-takehome",
+  "main": "worker/index.ts",
   "compatibility_date": "2026-11-01",
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "single-page-application"
-  }
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": { "PER_VISITOR": "10", "PER_DAY": "150" }
+  // KV binding "LIMITS" (namespace atria-limits) is added once its ID exists. Without it, live generation stays off.
 }
