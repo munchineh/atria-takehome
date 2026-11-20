@@ -15,17 +15,25 @@ import type { Job } from './store';
 import type { Variation, Version } from './variations';
 
 export type Origin = 'variation' | 'cloned' | 'scratch';
-export type GroupBy = 'none' | 'ad' | 'campaign' | 'origin';
+export type GroupBy = 'date' | 'ad' | 'campaign' | 'product';
 
 export const ORIGIN_LABEL: Record<Origin, string> = { variation: 'Made from an ad', cloned: 'Cloned', scratch: 'From scratch' };
+/** Atria's own Image Ads page groups by date by default and offers Product among others; Ad and Campaign are ours (DL-15). */
 export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
-  { value: 'none', label: 'No grouping' },
-  { value: 'ad', label: 'Group by ad' },
-  { value: 'campaign', label: 'Group by campaign' },
-  { value: 'origin', label: 'Group by origin' },
+  { value: 'date', label: 'Date' },
+  { value: 'ad', label: 'Ad' },
+  { value: 'campaign', label: 'Campaign' },
+  { value: 'product', label: 'Product' },
+];
+/** Origin is a tab row, as on Atria's page (All, Clone, Iterate, Raya). */
+export const ORIGIN_TABS: { value: 'all' | Origin; label: string }[] = [
+  { value: 'all', label: 'All' },
+  { value: 'variation', label: 'From ads' },
+  { value: 'cloned', label: 'Cloned' },
+  { value: 'scratch', label: 'From scratch' },
 ];
 /** Title of the last group, for creatives the grouping has no value for. */
-export const UNGROUPED_LABEL: Record<Exclude<GroupBy, 'none'>, string> = { ad: 'Not made from an ad', campaign: 'Not in a campaign yet', origin: 'Other' };
+export const UNGROUPED_LABEL: Record<GroupBy, string> = { date: 'Earlier', ad: 'Not made from an ad', campaign: 'Not in a campaign yet', product: 'No product' };
 
 export interface GalleryItem {
   /** Variation id. */
@@ -40,6 +48,7 @@ export interface GalleryItem {
   ad?: { id: string; name: string };
   /** Campaigns it is used in (as a paused or running ad). Empty until it is added to Meta. */
   campaigns: string[];
+  product: string;
   jobId: string;
   /** Round date ("Nov 20") and age, for sorting newest first. */
   date: string;
@@ -88,6 +97,7 @@ export function galleryItems(jobs: Job[], find: (id: string) => Creative | undef
         ad: origin === 'variation' ? { id: source.id, name: source.name } : undefined,
         // A creative joins a campaign when it is added to Meta; it goes into the source ad's main campaign.
         campaigns: v.launched && source.ads[0] ? [source.ads[0].campaign] : [],
+        product: source.product,
         jobId: j.id,
         date: j.date,
         minutesAgo: j.minutesAgo,
@@ -104,7 +114,6 @@ export function galleryItems(jobs: Job[], find: (id: string) => Creative | undef
 
 /** Group creatives. Groups keep the order of their newest creative; the catch-all group is always last. */
 export function groupGallery(items: GalleryItem[], by: GroupBy): GalleryGroup[] {
-  if (by === 'none') return [{ key: 'all', title: 'All creatives', meta: count(items.length), ungrouped: false, items }];
   const groups = new Map<string, GalleryGroup>();
   const rest: GalleryItem[] = [];
   const add = (key: string, title: string, item: GalleryItem, adId?: string) => {
@@ -113,11 +122,12 @@ export function groupGallery(items: GalleryItem[], by: GroupBy): GalleryGroup[] 
     groups.set(key, g);
   };
   for (const it of items) {
-    if (by === 'ad') it.ad ? add(it.ad.id, it.ad.name, it, it.ad.id) : rest.push(it);
+    if (by === 'date') add(it.date, it.date, it);
+    else if (by === 'ad') it.ad ? add(it.ad.id, it.ad.name, it, it.ad.id) : rest.push(it);
     else if (by === 'campaign') it.campaigns.length ? it.campaigns.forEach((c) => add(c, c, it)) : rest.push(it);
-    else add(it.origin, ORIGIN_LABEL[it.origin], it);
+    else it.product ? add(it.product, it.product, it) : rest.push(it);
   }
-  const out = [...groups.values()].map((g) => ({ ...g, meta: `${count(g.items.length)} · last made ${g.items[0].date}` }));
+  const out = [...groups.values()].map((g) => ({ ...g, meta: by === 'date' ? count(g.items.length) : `${count(g.items.length)} · last made ${g.items[0].date}` }));
   if (rest.length) out.push({ key: 'ungrouped', title: UNGROUPED_LABEL[by], meta: count(rest.length), ungrouped: true, items: rest });
   return out;
 }
