@@ -24,14 +24,14 @@ function variationNo(c: Creative) {
 /** "Where it runs": floating panel on desktop, bottom sheet on mobile (Mancini, 20 Nov 17:03). */
 function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const [open, setOpen] = useState(false);
-  const [openCopy, setOpenCopy] = useState<string | null>(c.ads[0]?.id ?? null);
+  const [openCopy, setOpenCopy] = useState<string | null>(c.ads.length === 1 ? c.ads[0].id : null);
   const { windowDays } = useStore();
   const { message } = App.useApp();
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
   const body = (
     <div className="runs" onClick={(e) => e.stopPropagation()}>
-      {c.ads.length > 1 && <div className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}</div>}
+      {c.ads.length > 1 && <div className="t-help">Spend and results are totals across {c.ads.length === 2 ? 'both' : `all ${c.ads.length}`}.</div>}
       {anyPaused && <div className="runs-note small">Paused copies were turned off in Meta. Grades still cover the {win.short.toLowerCase()}.</div>}
       <Placements items={c.placements} />
       <div className="runs-list">

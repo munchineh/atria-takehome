@@ -119,6 +119,8 @@ const camp = {
   retarget: 'Retargeting · Site visitors',
   test: 'Creative testing · October',
   gifting: 'Holiday gifting · US and CA',
+  lookalike: 'Lookalike · Past buyers',
+  always: 'Always on · Best sellers',
 };
 const feedHeavy = [
   { label: 'Feed', share: 0.7 },
@@ -134,8 +136,20 @@ const reelsOnly = [
   { label: 'Stories', share: 0.2 },
 ];
 const feedOnly = [{ label: 'Feed', share: 1 }];
-const ads = (n: number, base: number, campaign: string, adSet: string, spend: number, cpa: number): MetaAd[] =>
-  Array.from({ length: n }, (_, i) => ({ id: `1202${base + i}`, campaign: i === 1 ? (n > 2 || campaign === camp.retarget ? camp.gifting : camp.retarget) : campaign, adSet, spend: spend / n, cpa }));
+/** Copies of one ad: each copy in a different campaign, with uneven spend and slightly different CPA, like a real account. */
+const ads = (n: number, base: number, campaign: string, adSet: string, spend: number, cpa: number): MetaAd[] => {
+  const order = [campaign, ...Object.values(camp).filter((x) => x !== campaign)];
+  const weights = [0.42, 0.28, 0.18, 0.12, 0.08, 0.06].slice(0, n);
+  const total = weights.reduce((a, b) => a + b, 0);
+  const drift = [0, 0.08, -0.06, 0.12, -0.1, 0.05];
+  return Array.from({ length: n }, (_, i) => ({
+    id: `1202${base + i}`,
+    campaign: order[i % order.length],
+    adSet: i === 0 ? adSet : ['WebVisitors_30D', 'Gifting_Interests_US', 'Variation_Test', 'Lookalike_1%', 'Broad_25-54'][(i - 1) % 5],
+    spend: Math.round(((spend * weights[i]) / total) * 100) / 100,
+    cpa: Math.round(cpa * (1 + drift[i]) * 100) / 100,
+  }));
+};
 
 export const CREATIVES: Creative[] = [
   {
