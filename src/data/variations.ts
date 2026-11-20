@@ -27,9 +27,9 @@ export const POOLS: Record<string, Seed[]> = {
   ],
   offer: [
     { angle: 'Bold offer', img: 'x05c', copy: { head: '3 FOR', price: '$36', cta: 'PICK 3' } },
-    { angle: 'Price anchor', img: 'x06', copy: { head: '$14. WAS $18', cta: 'SHOP NOW' } },
-    { angle: 'Bundle', img: 'x07', copy: { head: 'THE FULL MOOD SET', band: '$72 FOR ALL 8', cta: 'GET THE SET' } },
-    { angle: 'Scarcity', img: 'x08', copy: { head: 'ONLY 200 SAD PINKS LEFT', cta: 'GET YOURS' } },
+    { angle: 'Price anchor', img: 'x09', copy: { head: 'NOW', price: '$14', band: 'WAS $18', cta: 'SHOP NOW', tone: 'dark' } },
+    { angle: 'Bundle', img: 'x12', copy: { head: 'THE FULL MOOD SET', band: '$72 FOR ALL 8', cta: 'GET THE SET', tone: 'dark' } },
+    { angle: 'Scarcity', img: 'x07', copy: { head: 'ONLY 200 GOLD ONES', cta: 'GET YOURS' } },
   ],
   stop: [
     { angle: 'Close-up', img: 'x01', copy: { head: 'SQUISH ME', cta: 'SHOP NOW' } },
@@ -39,14 +39,16 @@ export const POOLS: Record<string, Seed[]> = {
   ],
   cta: [
     { angle: 'Choice', img: 'x04', copy: { head: 'PICK YOUR MOOD', band: '3 FOR $36', cta: 'GET YOURS' } },
-    { angle: 'Gift', img: 'x09', copy: { head: 'GIFT A MOOD', cta: 'SEND ONE' } },
-    { angle: 'Urgency', img: 'x10', copy: { head: 'SHIPS TODAY', cta: 'ORDER BY 3 PM' } },
-    { angle: 'Personal', img: 'x11', copy: { head: 'WHICH ONE ARE YOU?', cta: 'FIND OUT' } },
+    { angle: 'Gift', img: 'x08', copy: { head: 'GIFT A MOOD', cta: 'SEND ONE', tone: 'dark' } },
+    { angle: 'Urgency', img: 'x06', copy: { head: 'SHIPS TODAY', cta: 'ORDER BY 3 PM', tone: 'dark' } },
+    { angle: 'Personal', img: 'x11', copy: { head: 'WHICH ONE ARE YOU?', cta: 'FIND OUT', tone: 'dark' } },
   ],
 };
 
-/** Extra slots for "More like this" and repeat rounds. */
-const EXTRA = ['x12', 'x13', 'x14', 'x15', 'x16'];
+/** Photos for repeat rounds once a pool's angles are used up (all generated, so no placeholders). */
+const EXTRA = ['x10', 'x12', 'x09', 'x06', 'x02'];
+/** "More like this" keeps the scene: direct children where we have them (l01 from x07, l02 from x03), else repeat photos. */
+const CHILDREN: Record<string, string[]> = { x07: ['l01'], x03: ['l02'], x03c: ['l02'] };
 
 /** used: how many variations each recommendation already produced for this creative (G9). */
 export function buildVariations(jobId: string, recIds: string[], perRec: number, used: Record<string, number> = {}, like?: Variation): Variation[] {
@@ -56,7 +58,7 @@ export function buildVariations(jobId: string, recIds: string[], perRec: number,
       jobId,
       recId: like.recId,
       angle: like.angle,
-      img: EXTRA[i % EXTRA.length],
+      img: [...(CHILDREN[like.img] ?? []), ...EXTRA][i % ((CHILDREN[like.img]?.length ?? 0) + EXTRA.length)],
       copy: like.copy,
     }));
   }
