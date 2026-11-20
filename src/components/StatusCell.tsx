@@ -27,7 +27,7 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
             <>
               {healthy ? <CheckCircleFilled className="status-icon calm" /> : <ThunderboltOutlined className="status-icon" />}
               {healthy ? (
-                <Tooltip title="All grades are B or above">
+                <Tooltip title="All grades are B or above.">
                   <span>{diagnosis(creative)}</span>
                 </Tooltip>
               ) : (
@@ -51,7 +51,9 @@ export function StatusCell({ creative, status }: { creative: Creative; status: R
           {status.kind === 'ready' && (
             <>
               <CheckCircleFilled className="status-icon ok" />
-              <span>{status.count} variations ready</span>
+              <Tooltip title={`Atria finished making ${status.count} new images from this ad. Open them to review and shortlist.`}>
+                <span>View {status.count} new variations</span>
+              </Tooltip>
               <AnimatePresence>
                 {status.unseen && (
                   <motion.i

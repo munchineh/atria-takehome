@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip } from 'antd';
-import { ArrowRightOutlined, BranchesOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
+import { BranchesOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -57,6 +57,7 @@ function RecCard({
   disabled,
   onToggle,
   footer,
+  targetGrade,
 }: {
   r: Recommendation;
   selected: boolean;
@@ -64,6 +65,7 @@ function RecCard({
   disabled?: boolean;
   onToggle: () => void;
   footer?: { text: string; action?: () => void; running?: boolean };
+  targetGrade?: string | null;
 }) {
   return (
     <motion.div
@@ -75,33 +77,38 @@ function RecCard({
       tabIndex={disabled ? undefined : 0}
       onKeyDown={(e) => !disabled && (e.key === ' ' || e.key === 'Enter') && (e.preventDefault(), onToggle())}
     >
-      <div className="rec-top">
-        {!disabled && <Checkbox checked={selected} tabIndex={-1} />}
-        <span className="rec-priority">{r.priority}</span>
-        <div className="rec-issue">
-          <span className="muted small">Issue</span>
-          <b>{r.issue}</b>
-        </div>
-        <div className="rec-tags">
-          {suggested && !disabled && (
-            <Tooltip title="One of the top 2 by priority">
-              <Tag color="orange">Suggested</Tag>
-            </Tooltip>
+      {/* How > What > Why (Mancini, 20 Nov 17:43): the action leads, the problem it fixes, then why it works. */}
+      <div className="rec-head">
+        {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
+        <div className="rec-body">
+          <div className="rec-title-row">
+            <b className="rec-how">{r.fix}</b>
+            <div className="rec-tags">
+              {suggested && !disabled && (
+                <Tooltip title="One of the top 2 by priority.">
+                  <Tag color="orange">Suggested</Tag>
+                </Tooltip>
+              )}
+              <Tag>
+                Targets {r.target}
+                {targetGrade ? ` · ${targetGrade}` : ''}
+              </Tag>
+            </div>
+          </div>
+          <div className="rec-what">
+            <span className="t-key">Fixes</span> {r.issue}
+          </div>
+          <p className="rec-why">{r.why}</p>
+          {r.examples.length > 0 && (
+            <div className="rec-try">
+              <span className="t-label">Try</span>
+              <ul>
+                {r.examples.map((e) => (
+                  <li key={e}>{e}</li>
+                ))}
+              </ul>
+            </div>
           )}
-          <Tag>Targets {r.target}</Tag>
-        </div>
-      </div>
-      <p className="rec-detail">{r.issueDetail}</p>
-      <div className="rec-fix">
-        <ArrowRightOutlined className="rec-arrow" />
-        <div>
-          <span className="muted small">Fix</span>
-          <b>{r.fix}</b>
-          <ul>
-            {r.examples.map((e) => (
-              <li key={e}>{e}</li>
-            ))}
-          </ul>
         </div>
       </div>
       <AnimatePresence initial={false}>
@@ -382,6 +389,7 @@ export function AdDetail() {
               disabled={!iterable}
               onToggle={() => toggle(r.id)}
               footer={footerFor(r)}
+              targetGrade={c.grades[({ CPA: 'conversion', CTR: 'ctr', Hook: 'hook', ROAS: '' } as Record<string, string>)[r.target] as MetricKey] ?? null}
             />
           ))}
 

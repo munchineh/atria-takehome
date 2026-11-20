@@ -125,7 +125,7 @@ function VariationCard({
           </div>
         )}
         {state === 'ready' && typo && (
-          <Tooltip title={`The headline may contain a typo: ${v.typo}`}>
+          <Tooltip title={`The headline may contain a typo: ${v.typo}.`}>
             <Tag color="error" className="typo-tag" icon={<ExclamationCircleOutlined />}>
               Check text
             </Tag>
@@ -150,14 +150,14 @@ function VariationCard({
               Fix text
             </Button>
           ) : (
-            <Tooltip title="Change this image">
+            <Tooltip title="Change this image.">
               <Button size="small" icon={<EditOutlined />} onClick={onRefine}>
                 Refine
               </Button>
             </Tooltip>
           )}
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
-            <Tooltip title={`Create 4 new variations close to this one. ${moreCost}`}>
+            <Tooltip title={`Create 4 new variations close to this one. ${moreCost}.`}>
               <Button size="small" icon={<CopyOutlined />}>
                 More like this
               </Button>

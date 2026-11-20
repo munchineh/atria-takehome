@@ -608,7 +608,8 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .filters-search { width: 100%; }
 @media (pointer: coarse) { .filters-row .ant-checkbox-wrapper { min-height: 36px; align-items: center; } }
 .window { display: inline-flex; align-items: center; gap: 2px; flex-wrap: wrap; }
-.window-select .ant-select-selector { padding: 0 4px !important; }
+.window-select { margin: 0 4px; }
+.window-select.ant-select-filled .ant-select-selector, .window-select.ant-select-filled { background: #f2f2f2; border-radius: 6px; }
 .window-select { font-size: 12.5px; }
 .window-select .ant-select-selection-item { color: var(--ink, #1f1f1f); font-weight: 500; }
 .runs-pop .runs-list { max-height: 46vh; overflow-y: auto; }
@@ -653,3 +654,20 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .rec-date { display: inline-flex; align-items: center; gap: 2px; }
 .icon-only.ant-btn { color: #8c8c8c; }
 .icon-only.ant-btn:hover { color: var(--orange) !important; }
+.how-pop { max-width: 300px; display: flex; flex-direction: column; gap: 8px; }
+.how-pop p { line-height: 1.45; }
+.grade-pop-scale { font-size: 12px; color: #595959; background: #fafafa; border-radius: 6px; padding: 6px 8px; }
+/* Rec cards: How > What > Why */
+.rec-head { display: flex; gap: 12px; align-items: flex-start; }
+.rec-check { margin-top: 2px; }
+.rec-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.rec-title-row { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; }
+.rec-how { font-size: 15px; line-height: 1.35; }
+.rec-what { font-size: 13px; color: var(--ink); }
+.rec-what .t-key { margin-right: 4px; }
+.rec-why { margin: 0; font-size: 13px; line-height: 1.5; color: #595959; }
+.rec-try { display: flex; flex-direction: column; gap: 4px; margin-top: 2px; padding: 8px 10px; background: #fafafa; border-radius: 6px; }
+.rec-try ul { margin: 0; padding-left: 18px; font-size: 13px; color: #1f1f1f; line-height: 1.5; }
+.rec-card .rec-footer { margin-left: 28px; }
+.rec-card.read-only .rec-footer { margin-left: 0; }
+@media (max-width: 767px) { .rec-title-row { flex-direction: column; gap: 6px; } }

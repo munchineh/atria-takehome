@@ -7,7 +7,7 @@ const COLOR: Record<string, string> = { A: 'green', B: 'blue', C: 'gold', D: 're
 export function GradeChip({ g }: { g: Grade }) {
   if (!g)
     return (
-      <Tooltip title="Graded on video only">
+      <Tooltip title="Graded on video ads only.">
         <span className="na">N/A</span>
       </Tooltip>
     );

@@ -72,11 +72,11 @@ const THEME: Record<string, string> = { 'Bold offer': 'Savings', Scarcity: 'Limi
 export const tagsFor = (angle: string) => ({ Angle: angle, Emotion: EMOTION[angle] ?? 'Comfort', Theme: THEME[angle] ?? 'Self-care' });
 export const TAG_TIPS: Record<string, string> = {
   Angle: ANGLE_TIP_TEXT(),
-  Emotion: 'The feeling the image is most likely to bring out',
-  Theme: 'The subject the image is about, used to group results in analytics',
+  Emotion: 'The feeling the image is most likely to bring out.',
+  Theme: 'The subject the image is about. Used to group results in analytics.',
 };
 function ANGLE_TIP_TEXT() {
-  return 'The approach an ad takes to get a response, such as scarcity or social proof';
+  return 'The approach an ad takes to get a response, such as scarcity or social proof.';
 }
 
 /** Demo 2 (D2-01): predicted CTR grade before launch. Deterministic per variation. */
@@ -151,4 +151,4 @@ export function buildVariations(jobId: string, recIds: string[], perRec: number,
   });
 }
 
-export const ANGLE_TIP = 'The approach an ad takes to get a response, such as scarcity or social proof';
+export const ANGLE_TIP = 'The approach an ad takes to get a response, such as scarcity or social proof.';

@@ -186,7 +186,7 @@ export function ImageAds() {
               </div>
               <div className="pl-side">
                 <div className="small">
-                  <Tooltip title="Each time you create variations is one round">
+                  <Tooltip title="Each time you create variations is one round.">
                     <span className="dotted">{plural(r.rounds, 'round')}</span>
                   </Tooltip>{' '}
                   · {plural(r.variations, 'variation')}

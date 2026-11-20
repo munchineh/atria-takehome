@@ -30,7 +30,7 @@ const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
 export function PredictedTag({ id }: { id: string }) {
   const g = predictedCtr(id);
   return (
-    <Tooltip title="An estimate from how similar ads performed in this account. Not a guarantee">
+    <Tooltip title="An estimate from how similar ads performed in this account. Not a guarantee.">
       <Tag className={`predicted p-${g}`}>Predicted CTR: {g}</Tag>
     </Tooltip>
   );

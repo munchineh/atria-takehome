@@ -66,6 +66,8 @@ export interface Recommendation {
   priority: number;
   issue: string;
   issueDetail: string;
+  /** Why the fix solves the issue (card order How > What > Why, Mancini 20 Nov 17:43). */
+  why: string;
   fix: string;
   target: 'ROAS' | 'CPA' | 'CTR' | 'Hook';
   examples: string[];
@@ -376,6 +378,7 @@ const HERO_RECS: Recommendation[] = [
     priority: 1,
     issue: 'No reason to choose this one',
     issueDetail: 'The ad shows a cute mochi but never says what makes it better than other squishies.',
+    why: `It shows a cute mochi but never says why to pick it. One clear difference gives people a reason to choose this one over other squishies.`,
     fix: 'Say what makes it different',
     target: 'ROAS',
     examples: ['"Slow-rise squish. Back in shape in 8 seconds."', '"Every face is hand-painted, so no two match."'],
@@ -385,6 +388,7 @@ const HERO_RECS: Recommendation[] = [
     priority: 2,
     issue: "Clicks don't turn into purchases",
     issueDetail: 'People click (CTR A) but few buy (CPA D). There is no price, and two offers compete for attention.',
+    why: `People click but few buy: there's no price, and two offers compete. One clear price makes buying an easy yes after the click.`,
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['Show the price: "$14 each, 3 for $36"', 'Keep one offer: drop "Free stickers" or "Buy 3, save 15%"'],
@@ -394,6 +398,7 @@ const HERO_RECS: Recommendation[] = [
     priority: 3,
     issue: 'The button says nothing specific',
     issueDetail: 'CTR is already strong, so this matters less than what happens after the click.',
+    why: `"Shop now" could be any brand. A specific button tells people what they get. CTR is already strong, so this comes last.`,
     fix: 'Use a more specific call to action',
     target: 'CTR',
     examples: ['"Pick your mood"', '"Get the Sad Pink one"'],
@@ -407,6 +412,7 @@ const CTR_RECS: Recommendation[] = [
     priority: 1,
     issue: 'Nothing stops the scroll',
     issueDetail: 'CTR is in the bottom 25% of this account. The product sits small in a busy scene.',
+    why: `The product sits small in a busy scene. Filling the frame with it gives people a reason to stop scrolling.`,
     fix: 'Make the product the first thing you see',
     target: 'CTR',
     examples: ['Crop in so the mochi fills half the frame', 'Use one bold background color'],
@@ -416,6 +422,7 @@ const CTR_RECS: Recommendation[] = [
     priority: 2,
     issue: "Clicks don't turn into purchases",
     issueDetail: 'There is no price on the ad, so people who click are still deciding.',
+    why: `There's no price on the ad, so people who click are still deciding. Showing it up front brings in people who are ready to buy.`,
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['"$14 each, 3 for $36"'],
@@ -428,6 +435,7 @@ const VIDEO_RECS: Recommendation[] = [
     priority: 1,
     issue: 'The first 3 seconds lose people',
     issueDetail: 'Hook is in the bottom 25%. The video opens on a talking head before the product appears.',
+    why: `The video opens on a talking head. Leading with the squish shows the product before people scroll away.`,
     fix: 'Show the squish in the first second',
     target: 'Hook',
     examples: ['Open on a close-up squeeze', 'Put the price on screen by second 3'],
@@ -437,6 +445,7 @@ const VIDEO_RECS: Recommendation[] = [
     priority: 2,
     issue: "Clicks don't turn into purchases",
     issueDetail: 'People watch and click, but the offer only appears in the caption.',
+    why: `The offer only appears in the caption, which most people don't read. Putting it on screen reaches everyone who watches.`,
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['End card: "3 for $36"'],
@@ -458,8 +467,8 @@ export function recommendationsFor(c: Creative): Recommendation[] {
 }
 
 export const PERSONAS = [
-  { label: 'Gift shoppers', why: 'Likely to respond to gift and collectible messages' },
-  { label: 'Stress-relief seekers', why: 'Likely to respond to calm and comfort messages' },
+  { label: 'Gift shoppers', why: 'Likely to respond to gift and collectible messages.' },
+  { label: 'Stress-relief seekers', why: 'Likely to respond to calm and comfort messages.' },
 ];
 
 /** Bands for R6 (quartiles assumed, A4). */

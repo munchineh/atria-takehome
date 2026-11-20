@@ -62,7 +62,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
                   <span>
                     {money(a.cpa)} · account average {money(ACCOUNT.avg.cpa)}
                   </span>
-                  <Tooltip title="How many times the average person saw this copy">
+                  <Tooltip title="How many times the average person saw this copy.">
                     <span className="t-key dotted">Frequency</span>
                   </Tooltip>
                   <span>{f.frequency}</span>
@@ -146,11 +146,11 @@ const MotionRow = (props: HTMLAttributes<HTMLTableRowElement> & { 'data-row-key'
 };
 
 const HOW_GRADING = (
-  <div className="grade-pop">
-    <p>Each metric is ranked against every other creative in this account. Creatives with more spend count for more.</p>
-    <p>A is the top 25%, D the bottom 25%. A plus or minus shows the upper or lower part of a band.</p>
-    <p>Overall combines the grades a creative has. Hook and retention are graded on video only.</p>
-    <p className="muted small">Built on patterns from over $1 billion in ad spend.</p>
+  <div className="grade-pop how-pop">
+    <p>Each metric is ranked against the other ads in this account. Ads with more spend count for more.</p>
+    <p className="grade-pop-scale">A · Top · B · Above average · C · Below average · D · Lowest</p>
+    <p>Overall combines the grades an ad has, so it can carry a plus or minus. Hook and retention are graded on video ads only.</p>
+    <p className="grade-pop-meta">Built on patterns from over $1 billion in ad spend. More accurate for accounts that spend over $10,000 a month.</p>
   </div>
 );
 
@@ -365,7 +365,7 @@ export function Radar() {
           <span className="muted">Grades from the</span>
           <Select
             size="small"
-            variant="borderless"
+            variant="filled"
             value={windowDays}
             onChange={(d) => changeWindow(d)}
             popupMatchSelectWidth={false}

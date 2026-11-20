@@ -249,7 +249,7 @@ function Body({
         </div>
         <div className="dlg-actions">
           <Button onClick={onCancel}>Cancel</Button>
-          <Tooltip title={ready ? '' : 'Add a brief to continue'}>
+          <Tooltip title={ready ? '' : 'Add a brief to continue.'}>
             <Button
               type="primary"
               disabled={!ready || cost > credits}
