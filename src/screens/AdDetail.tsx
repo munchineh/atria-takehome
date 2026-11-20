@@ -110,6 +110,28 @@ function RecCard({
   footer?: { text: string; action?: () => void; running?: boolean };
   targetGrade?: string | null;
 }) {
+  const phone = !Grid.useBreakpoint().md;
+  const gradeTag = targetGrade ? (
+    <Tag className={`rec-grade grade-tag g-${targetGrade[0]}`}>{targetGrade}</Tag>
+  ) : (
+    // 5d C5d-04: Radar grades one conversion metric per account (Atria's "ROAS-G" when ROAS is the setting); here it's CPA.
+    <Tooltip title={`${r.target} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+      <Tag className="rec-grade no-grade">No grade</Tag>
+    </Tooltip>
+  );
+  const recTag = suggested && !disabled && (
+    <Tooltip title="One of the top 2 by priority, so it's selected for you.">
+      <Tag color="orange" className="rec-suggested">Recommended</Tag>
+    </Tooltip>
+  );
+  const tryBlock = r.examples.length > 0 && (
+    <div className="rec-try">
+      <span className="t-label">Try</span>
+      {r.examples.map((e) => (
+        <span key={e} className="rec-chip">{e}</span>
+      ))}
+    </div>
+  );
   return (
     <motion.div
       variants={fadeUp}
@@ -122,44 +144,45 @@ function RecCard({
     >
       {/* How > What > Why (Mancini, 20 Nov 17:43). 18:49 hierarchy pass: the problem is a coloured eyebrow
           (grade + metric + issue), the fix is the title, the reason is quiet, examples are chips. */}
-      <div className="rec-head">
-        {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
-        <div className="rec-body">
-          <div className="rec-eyebrow">
-            {/* 5c A-19: grade, metric and issue wrap inside their own group, so "Recommended" keeps the first line. */}
-            <span className="rec-eyebrow-main">
-              {targetGrade ? (
-                <Tag className={`rec-grade grade-tag g-${targetGrade[0]}`}>{targetGrade}</Tag>
-              ) : (
-                // 5d C5d-04: Radar grades one conversion metric per account (Atria's "ROAS-G" when ROAS is the setting); here it's CPA.
-                <Tooltip title={`${r.target} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
-                  <Tag className="rec-grade no-grade">No grade</Tag>
-                </Tooltip>
-              )}
-              <span className="rec-metric">{r.target}</span>
-              <span className="rec-issue-text">{r.issue}</span>
-            </span>
-            {suggested && !disabled && (
-              <Tooltip title="One of the top 2 by priority, so it's selected for you.">
-                <Tag color="orange" className="rec-suggested">Recommended</Tag>
-              </Tooltip>
-            )}
+      {phone ? (
+        // 5d (Mancini 23:44): on phones the short items share one line (select, grade, metric, Recommended),
+        // so nothing wraps mid-phrase; the problem, fix and reason then run the full card width with no indent.
+        <div className="rec-phone">
+          <div className="rec-phone-top">
+            {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
+            {gradeTag}
+            <span className="rec-metric">{r.target}</span>
+            <span className="rec-phone-spacer" />
+            {recTag}
           </div>
+          <p className="rec-phone-issue">{r.issue}</p>
           <b className="rec-how">{r.fix}</b>
           <p className="rec-why">{r.why}</p>
-          <div className="rec-bottom">
-            {r.examples.length > 0 && (
-              <div className="rec-try">
-                <span className="t-label">Try</span>
-                {r.examples.map((e) => (
-                  <span key={e} className="rec-chip">{e}</span>
-                ))}
-              </div>
-            )}
-            <RateRow />
+          {tryBlock}
+          <RateRow />
+        </div>
+      ) : (
+        <div className="rec-head">
+          {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
+          <div className="rec-body">
+            <div className="rec-eyebrow">
+              {/* 5c A-19: grade, metric and issue wrap inside their own group, so "Recommended" keeps the first line. */}
+              <span className="rec-eyebrow-main">
+                {gradeTag}
+                <span className="rec-metric">{r.target}</span>
+                <span className="rec-issue-text">{r.issue}</span>
+              </span>
+              {recTag}
+            </div>
+            <b className="rec-how">{r.fix}</b>
+            <p className="rec-why">{r.why}</p>
+            <div className="rec-bottom">
+              {tryBlock}
+              <RateRow />
+            </div>
           </div>
         </div>
-      </div>
+      )}
       <AnimatePresence initial={false}>
         {footer && (
           <motion.div
@@ -502,7 +525,7 @@ export function AdDetail() {
       <motion.div
         layout
         className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
-        style={{ borderRadius: 14 }}
+        style={{ borderRadius: bp.md ? 14 : 0 }}
         initial={{ y: 24, opacity: 0 }}
         animate={{ y: 0, opacity: 1, transition: spring.gentle }}
         transition={{ layout: { type: 'spring', bounce: 0, duration: 0.42 } }}

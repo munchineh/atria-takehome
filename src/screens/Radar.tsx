@@ -1,3 +1,4 @@
+import type { ReactNode } from 'react';
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Alert, Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
@@ -110,7 +111,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   );
 }
 
-function NameCell({ c, morph = true, mobile = false }: { c: Creative; morph?: boolean; mobile?: boolean }) {
+function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creative; morph?: boolean; mobile?: boolean; meta?: ReactNode; aside?: ReactNode }) {
   const parent = c.variationOf ? ALL_CREATIVES.find((x) => x.id === c.variationOf) : null;
   const n = variationNo(c);
   return (
@@ -135,7 +136,9 @@ function NameCell({ c, morph = true, mobile = false }: { c: Creative; morph?: bo
           </span>
           <WhereItRuns c={c} mobile={mobile} />
         </div>
+        {meta}
       </div>
+      {aside}
     </div>
   );
 }
@@ -503,14 +506,20 @@ export function Radar() {
                 animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
                 exit={{ opacity: 0, transition: { duration: duration.instant } }}
               >
-                <NameCell c={c} morph={false} mobile />
-                {/* 5d C5d-17: data first, then the action on the right at a 44 px tap size (not full width). */}
-                <div className="card-row">
-                  <span className="card-overall">
-                    Overall <OverallTag creative={c} />
-                  </span>
-                  <span className="muted small">{money(c.spend)} spend</span>
-                </div>
+                {/* 5d (Mancini 23:46): Overall fills the empty top-right corner and spend joins the name block,
+                    so the card is header + action row (C5d-17 kept: data first, action on the right). */}
+                <NameCell
+                  c={c}
+                  morph={false}
+                  mobile
+                  meta={<span className="card-spend">{money(c.spend)} spend</span>}
+                  aside={
+                    <span className="card-corner" onClick={(e) => e.stopPropagation()}>
+                      <span className="card-corner-label">Overall</span>
+                      <OverallTag creative={c} />
+                    </span>
+                  }
+                />
                 <div className="card-foot">
                   <button
                     className="card-more"

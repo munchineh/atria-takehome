@@ -1049,3 +1049,35 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .ed-mode { margin-top: 12px; }
 .ed-mode-help { margin: 8px 0 0; font-size: 12px; line-height: 20px; color: rgba(0, 0, 0, 0.45); }
 @media (max-width: 767px) { .ed-mode-help { font-size: 14px; line-height: 22px; } }
+/* 5d (Mancini 23:43 to 23:45): phone suggestion card, flat docked bar, rounded sheets */
+.rec-phone { display: flex; flex-direction: column; gap: 6px; }
+.rec-phone-top { display: flex; align-items: center; gap: 8px; min-height: 28px; }
+.rec-phone-top .ant-tag { margin: 0; }
+.rec-phone-top .rec-check { margin-right: 4px; }
+.rec-phone-spacer { flex: 1; }
+.rec-phone-issue { margin: 2px 0 0; font-size: 14px; line-height: 22px; color: rgba(0, 0, 0, 0.65); }
+.rec-phone .rec-how { margin-top: 2px; }
+.rec-phone .rec-why { margin: 0; }
+.rec-phone .rec-try { display: flex; flex-direction: column; align-items: stretch; gap: 6px; margin-top: 6px; }
+.rec-phone .rec-try .rec-chip { margin: 0; }
+@media (max-width: 767px) {
+  .sticky-bar { left: 0; translate: none; width: 100%; bottom: 0; border-radius: 0; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.12); padding: 12px 16px calc(12px + env(safe-area-inset-bottom)); }
+  .ant-drawer-bottom .ant-drawer-section { border-radius: 16px 16px 0 0; overflow: hidden; }
+  .ant-drawer-bottom .ant-drawer-header { border-bottom: 0; padding: 20px 16px 8px; }
+  .ant-drawer-bottom .ant-drawer-header-title { flex-direction: row-reverse; gap: 12px; }
+  .ant-drawer-bottom .ant-drawer-title { font-size: 16px; font-weight: 600; line-height: 24px; }
+  .ant-drawer-bottom .ant-drawer-close { margin: 0; width: 44px; height: 44px; margin: -10px -12px -10px 0; display: inline-flex; align-items: center; justify-content: center; border-radius: 22px; }
+  .ant-drawer-bottom .ant-drawer-section:not(.sheet-drawer) .ant-drawer-body { padding: 8px 16px calc(16px + env(safe-area-inset-bottom)); }
+}
+/* 5d (Mancini 23:46): the active line reaches 8 px past the label on each side; nav pulled out 8 px so labels still align with the page */
+.ant-tabs-top:not(.ant-tabs-card) > .ant-tabs-nav { margin-left: -8px; margin-right: -8px; }
+.ant-tabs-top:not(.ant-tabs-card) > .ant-tabs-nav .ant-tabs-tab { padding-left: 8px; padding-right: 8px; }
+.ant-tabs-top:not(.ant-tabs-card) > .ant-tabs-nav .ant-tabs-tab + .ant-tabs-tab { margin-left: 16px; }
+/* 5d (Mancini 23:46): compact phone card */
+.radar-card { gap: 8px; padding: 14px 14px 12px; }
+.radar-card .name-cell { align-items: flex-start; }
+.card-spend { display: block; margin-top: 4px; font-size: 14px; line-height: 22px; color: rgba(0, 0, 0, 0.65); }
+.card-corner { margin-left: auto; flex: none; display: flex; flex-direction: column; align-items: flex-end; gap: 2px; }
+.card-corner-label { font-size: 12px; line-height: 16px; color: rgba(0, 0, 0, 0.45); }
+.card-corner .ant-tag { margin: 0; }
+.radar-card .card-foot { margin-top: 0; }
