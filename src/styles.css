@@ -674,3 +674,19 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .rec-rate { display: flex; align-items: center; gap: 2px; margin-top: 2px; }
 .rec-rate .t-help { margin-right: 4px; font-size: 12px; }
 .ext-link { cursor: pointer; }
+
+/* Morphing action bar → create panel (desktop), Mancini's reference 20 Nov 17:59 */
+.sticky-bar.expanded { display: block; padding: 0; width: min(720px, calc(100vw - 32px)); max-height: calc(100dvh - 96px); overflow: hidden; z-index: 60; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.32); }
+.bar-row { display: flex; align-items: center; gap: 16px; justify-content: space-between; width: 100%; }
+.bar-scrim { position: fixed; inset: 0; z-index: 55; background: rgba(20, 18, 22, 0.28); }
+.bar-panel { color: #ece9ef; }
+.bar-panel .dlg { max-height: calc(100dvh - 96px); }
+.bar-panel .dlg-scroll { padding: 20px 24px 8px; }
+.dlg-panel-title { margin: 0 0 2px; font-size: 18px; font-weight: 600; color: #fff; }
+.bar-panel .dlg-sub, .bar-panel .muted, .bar-panel .t-help { color: #a8a3ad !important; }
+.bar-panel .ink, .bar-panel b, .bar-panel .dlg-label, .bar-panel .brand-value { color: #fff; }
+.bar-panel .dlg-row, .bar-panel .brief-start { border-color: #3d3942; background: #26232a; }
+.bar-panel .img-tile.add { border-color: #4a4550; color: #a8a3ad; }
+.bar-panel .swatches i { border-color: #1f1d22; box-shadow: 0 0 0 1px #3d3942; }
+.bar-panel .dlg-foot { background: #1f1d22; border-top: 1px solid #333037; padding: 12px 12px 12px 24px; }
+.bar-panel .dlg-sum span { color: #fff; }

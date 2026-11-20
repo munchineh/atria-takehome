@@ -26,16 +26,19 @@ export interface CreateSettings {
   size: string;
 }
 
-function Body({
+export function Body({
   creative,
   recCount,
   onCancel,
   onCreate,
+  panel = false,
 }: {
   creative: Creative;
   recCount: number;
   onCancel: () => void;
   onCreate: (s: CreateSettings) => void;
+  /** Rendered inside the expanding action bar (Mancini's "morphing" reference, 20 Nov 17:59). */
+  panel?: boolean;
 }) {
   const { briefs, setBrief, credits, lastSettings } = useStore();
   const { message } = App.useApp();
@@ -77,8 +80,9 @@ function Body({
   };
 
   return (
-    <div className="dlg">
+    <div className={`dlg ${panel ? 'dlg-panel' : ''}`}>
       <div className="dlg-scroll">
+        {panel && <h4 className="dlg-panel-title">Create variations</h4>}
         <p className="dlg-sub muted">
           For <b className="ink">{short(creative.name, 28)}</b> · {plural(recCount, 'recommendation')}
         </p>

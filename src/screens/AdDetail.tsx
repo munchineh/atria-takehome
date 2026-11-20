@@ -1,7 +1,7 @@
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Grid, Button, Checkbox, Tag, Tooltip } from 'antd';
+import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip, theme as antdTheme } from 'antd';
 import { CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, InfoCircleOutlined, ReloadOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
@@ -22,7 +22,7 @@ import { Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
-import { CreateDialog } from '../components/CreateDialog';
+import { Body, CreateDialog } from '../components/CreateDialog';
 import { Rolling } from '../components/Rolling';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
@@ -198,6 +198,18 @@ export function AdDetail() {
   };
 
   const ads = showAllAds ? c.ads : c.ads.slice(0, 3);
+  const morph = dialog && !!bp.md;
+  const create = ({ perRec, size }: { perRec: number; size: string }) => {
+    setDialog(false);
+    const j = startJob({ creativeId: c.id, recIds: selected, perRec, size });
+    message.success({ content: `Creating ${j.count} variations. This will take a couple of minutes.`, duration: 4 });
+  };
+  useEffect(() => {
+    if (!morph) return;
+    const esc = (e: KeyboardEvent) => e.key === 'Escape' && setDialog(false);
+    window.addEventListener('keydown', esc);
+    return () => window.removeEventListener('keydown', esc);
+  }, [morph]);
   /** Demo 1, lineage (D6, D7): ads made from this one, graded or still paused in Meta. */
   const made = [
     ...ALL_CREATIVES.filter((x) => x.variationOf === c.id).map((x) => ({ kind: 'ad' as const, id: x.id, c: x })),
@@ -428,8 +440,50 @@ export function AdDetail() {
       </div>
       <div className="sticky-spacer" />
 
-      {/* Always present (AD-27): the bar explains itself instead of vanishing. */}
-      <motion.div className="sticky-bar" initial={{ y: 24, opacity: 0 }} animate={{ y: 0, opacity: 1, transition: spring.gentle }}>
+      {/* Always present (AD-27). On desktop the bar itself grows into the create panel (Mancini's morphing reference, 20 Nov 17:59). */}
+      <AnimatePresence>
+        {morph && (
+          <motion.div
+            key="scrim"
+            className="bar-scrim"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1, transition: { duration: duration.base } }}
+            exit={{ opacity: 0, transition: { duration: duration.fast } }}
+            onClick={() => setDialog(false)}
+          />
+        )}
+      </AnimatePresence>
+      <motion.div
+        layout
+        className={`sticky-bar ${morph ? 'expanded' : ''}`}
+        style={{ borderRadius: 14 }}
+        initial={{ y: 24, opacity: 0 }}
+        animate={{ y: 0, opacity: 1, transition: spring.gentle }}
+        transition={{ layout: { type: 'spring', bounce: 0, duration: 0.42 } }}
+        role={morph ? 'dialog' : undefined}
+        aria-label={morph ? 'Create variations' : undefined}
+      >
+        <AnimatePresence mode="popLayout" initial={false}>
+          {morph ? (
+            <motion.div
+              key="panel"
+              className="bar-panel"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { delay: 0.16, duration: duration.base, ease: ease.standard } }}
+              exit={{ opacity: 0, transition: { duration: duration.instant } }}
+            >
+              <ConfigProvider theme={{ algorithm: antdTheme.darkAlgorithm, token: { colorPrimary: '#f5582a', colorBgContainer: '#2a272e', colorBgElevated: '#2a272e', colorBorder: '#3d3942', colorBorderSecondary: '#333037', colorText: '#ece9ef', colorTextSecondary: '#a8a3ad', colorTextTertiary: '#8c8791', colorTextPlaceholder: '#7d7883', colorTextDisabled: '#6b6670', colorBgContainerDisabled: '#2a272e', borderRadius: 6 } }}>
+                <Body creative={c} recCount={selected.length} panel onCancel={() => setDialog(false)} onCreate={create} />
+              </ConfigProvider>
+            </motion.div>
+          ) : (
+            <motion.div
+              key="row"
+              className="bar-row"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1, transition: { delay: 0.12, duration: duration.fast } }}
+              exit={{ opacity: 0, transition: { duration: duration.instant } }}
+            >
         <div className="sticky-summary">
           {!iterable ? (
             <span>Variations work for image ads only. You can still use the suggestions above.</span>
@@ -461,19 +515,18 @@ export function AdDetail() {
               {busy ? `Generating ${s.kind === 'generating' || s.kind === 'queued' ? s.count : ''}` : 'Create variations'}
             </Button>
           ))}
+            </motion.div>
+          )}
+        </AnimatePresence>
       </motion.div>
 
       <CreateDialog
-        open={dialog}
+        open={dialog && !bp.md}
         mobile={!bp.md}
         creative={c}
         recCount={selected.length}
         onClose={() => setDialog(false)}
-        onCreate={({ perRec, size }) => {
-          setDialog(false);
-          const j = startJob({ creativeId: c.id, recIds: selected, perRec, size });
-          message.success({ content: `Creating ${j.count} variations. This will take a couple of minutes.`, duration: 4 });
-        }}
+        onCreate={create}
       />
     </motion.div>
   );
