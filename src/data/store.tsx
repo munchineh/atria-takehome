@@ -419,6 +419,9 @@ export function recName(creativeId: string, recId: string) {
   return (c && recommendationsFor(c).find((r) => r.id === recId)?.fix) ?? recId;
 }
 
+/** Credits a job gave back: all of them when the round failed, 4 per image when only some failed (R-AI8). */
+export const creditsReturned = (j: Pick<Job, 'state' | 'cost' | 'failed' | 'count'>) => (j.state === 'failed' ? j.cost : Math.round((j.cost / Math.max(1, j.count)) * j.failed.length));
+
 export function timeAgo(min: number) {
   // R-M10: relative times are spelled out and agree in number ("1 day ago", never "1 days ago").
   const n = (v: number, unit: string) => `${v} ${unit}${v === 1 ? '' : 's'} ago`;
