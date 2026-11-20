@@ -149,6 +149,9 @@ export function ImageAds() {
         />
       </div>
 
+      {/* E4 (R-E, R-H): inline teaching card above the list so it never covers gallery rows on desktop or phones. */}
+      <TeachingCard />
+
       {shown.length === 0 ? (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters</b>}>
           <Button
@@ -213,7 +216,6 @@ export function ImageAds() {
           ))}
         </ul>
       )}
-      <TeachingCard />
     </motion.div>
   );
 }
