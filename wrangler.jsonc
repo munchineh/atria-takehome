@@ -10,6 +10,7 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  "vars": { "PER_VISITOR": "10", "PER_DAY": "150" }
-  // KV binding "LIMITS" (namespace atria-limits) is added once its ID exists. Without it, live generation stays off.
+  "vars": { "PER_VISITOR": "10", "PER_DAY": "150" },
+  // Per-visitor and site-wide daily counts for live generation (namespace atria-limits).
+  "kv_namespaces": [{ "binding": "LIMITS", "id": "540a04f2ea8d4252b5929d1bd7a0ff02" }]
 }
