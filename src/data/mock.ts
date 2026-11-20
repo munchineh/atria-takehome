@@ -71,6 +71,8 @@ export interface Recommendation {
 /** CSS text drawn over the photo so creatives read as ads (and text stays editable). */
 export interface AdCopy {
   head: string;
+  /** Big price line under the headline, so offers fill the frame. */
+  price?: string;
   band?: string;
   cta?: string;
   tone?: 'light' | 'dark';

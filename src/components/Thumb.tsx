@@ -41,6 +41,7 @@ export function Overlay({ copy, typo }: { copy?: AdCopy; typo?: string }) {
           copy.head
         )}
       </b>
+      {copy.price && <b className="ad-price">{copy.price}</b>}
       {copy.band && <span className="ad-band">{copy.band}</span>}
       {copy.cta && <span className="ad-cta">{copy.cta}</span>}
     </span>

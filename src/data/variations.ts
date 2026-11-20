@@ -22,19 +22,19 @@ export const POOLS: Record<string, Seed[]> = {
   different: [
     { angle: 'Product detail', img: 'x01', copy: { head: 'SLOW-RISE SQUISH', cta: 'SHOP NOW' } },
     { angle: 'Comparison', img: 'x02', copy: { head: 'SOFTER THAN THE REST', cta: 'SHOP NOW', tone: 'dark' } },
-    { angle: 'Demonstration', img: 'x03', copy: { head: 'BACK IN SHAPE IN 8 SECONDDS', cta: 'TRY IT', tone: 'dark' }, typo: 'SECONDDS' },
+    { angle: 'Demonstration', img: 'x03c', copy: { head: 'BACK IN SHAPE IN 8 SECONDDS', cta: 'TRY IT', tone: 'dark' }, typo: 'SECONDDS' },
     { angle: 'Collection', img: 'x04', copy: { head: 'EVERY FACE HAND-PAINTED', cta: 'SEE ALL MOODS', tone: 'dark' } },
   ],
   offer: [
-    { angle: 'Bold offer', img: 'x05', copy: { head: '3 FOR $36', cta: 'PICK 3' } },
+    { angle: 'Bold offer', img: 'x05c', copy: { head: '3 FOR', price: '$36', cta: 'PICK 3' } },
     { angle: 'Price anchor', img: 'x06', copy: { head: '$14. WAS $18', cta: 'SHOP NOW' } },
     { angle: 'Bundle', img: 'x07', copy: { head: 'THE FULL MOOD SET', band: '$72 FOR ALL 8', cta: 'GET THE SET' } },
     { angle: 'Scarcity', img: 'x08', copy: { head: 'ONLY 200 SAD PINKS LEFT', cta: 'GET YOURS' } },
   ],
   stop: [
     { angle: 'Close-up', img: 'x01', copy: { head: 'SQUISH ME', cta: 'SHOP NOW' } },
-    { angle: 'Bold color', img: 'x05', copy: { head: 'ONE SAD PINK. $14', cta: 'SHOP NOW' } },
-    { angle: 'Demonstration', img: 'x03', copy: { head: 'PRESS. RELEASE. RELAX.', cta: 'TRY IT', tone: 'dark' } },
+    { angle: 'Bold color', img: 'x05c', copy: { head: 'ONE SAD PINK', price: '$14', cta: 'SHOP NOW' } },
+    { angle: 'Demonstration', img: 'x03c', copy: { head: 'PRESS. RELEASE. RELAX.', cta: 'TRY IT', tone: 'dark' } },
     { angle: 'Comparison', img: 'x02', copy: { head: 'NOT YOUR USUAL SQUISHY', cta: 'SHOP NOW', tone: 'dark' } },
   ],
   cta: [

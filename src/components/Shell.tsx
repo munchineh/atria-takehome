@@ -2,6 +2,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import { App, Badge, Button, Drawer, Grid, Tooltip } from 'antd';
 import {
   AppstoreOutlined,
+  ArrowRightOutlined,
   BarChartOutlined,
   BellOutlined,
   BulbOutlined,
@@ -78,14 +79,15 @@ function useCompletionToasts(mobile: boolean) {
         duration: 6,
         btn: (
           <Button
-            type="primary"
+            type="link"
+            className="toast-action"
             onClick={() => {
               markSeen(j.id);
               nav(`/ad/${j.creativeId}/variations?round=${j.id}`);
               notification.destroy(key);
             }}
           >
-            View variations
+            View variations <ArrowRightOutlined />
           </Button>
         ),
       });
