@@ -150,7 +150,7 @@ const HOW_GRADING = (
     <p>Each metric is ranked against the other ads in this account. Ads with more spend count for more.</p>
     <p className="grade-pop-scale">A · Top · B · Above average · C · Below average · D · Lowest</p>
     <p>Overall combines the grades an ad has, so it can carry a plus or minus. Hook and retention are graded on video ads only.</p>
-    <p className="grade-pop-meta">Built on patterns from over $1 billion in ad spend. More accurate for accounts that spend over $10,000 a month.</p>
+    <p className="grade-pop-meta">More accurate for accounts that spend over $10,000 a month.</p>
   </div>
 );
 
