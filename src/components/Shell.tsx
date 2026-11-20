@@ -15,6 +15,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { ACCOUNT, SIDEBAR_ACCOUNTS, short, plural } from '../data/mock';
 import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
 import { TasksPanel } from './TasksPanel';
+import { Thumb } from './Thumb';
 import { duration, ease } from '../motion/tokens';
 
 const RAIL = [
@@ -67,15 +68,17 @@ function useCompletionToasts(mobile: boolean) {
     for (const j of finished) {
       const c = findCreative(j.creativeId);
       const key = `done-${j.id}`;
-      notification.success({
+      notification.open({
         key,
-        message: `${plural(j.count, 'variation')} ready for ${short(c?.name ?? '', 20)}`,
+        className: 'done-toast',
+        icon: c ? <Thumb c={c} size={40} /> : undefined,
+        message: `${plural(j.count - j.failed.length, 'variation')} ready`,
+        description: short(c?.name ?? '', mobile ? 30 : 34),
         placement: mobile ? 'top' : 'topRight',
         duration: 6,
         btn: (
           <Button
             type="primary"
-            size="small"
             onClick={() => {
               markSeen(j.id);
               nav(`/ad/${j.creativeId}/variations?round=${j.id}`);

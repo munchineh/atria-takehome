@@ -477,6 +477,22 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 }
 .var-actions .pick-btn { flex-basis: 100%; }
 
-/* Completion banner: centred on mobile, never wider than the screen */
-@media (max-width: 767px) { .ant-notification.ant-notification-top { left: 0 !important; right: 0 !important; margin-inline: auto !important; } }
 @media (max-width: 767px) { .ant-notification-top { width: calc(100vw - 24px) !important; max-width: 400px; margin-inline: auto; left: 0 !important; right: 0 !important; transform: none !important; } .ant-notification-top .ant-notification-notice-wrapper, .ant-notification-top .ant-notification-notice { width: 100% !important; max-width: 100%; } }
+
+/* Completion toast: dark like the action bars, so it stands out from the white page */
+.ant-notification .done-toast.ant-notification-notice { background: #1f1d22; border-radius: 14px; box-shadow: 0 14px 36px rgba(0,0,0,.28); padding: 14px 16px 14px 14px; width: 400px; }
+.done-toast .ant-notification-notice-wrapper { display: flex; flex-wrap: wrap; column-gap: 12px; align-items: flex-start; }
+.done-toast .ant-notification-notice-icon { position: static; float: none; margin: 0; line-height: 0; flex: none; }
+.done-toast .ant-notification-notice-section { flex: 1; min-width: 0; margin: 0 !important; padding: 0 !important; }
+.done-toast .ant-notification-notice-icon .thumb { border-color: rgba(255,255,255,.12); }
+.done-toast .ant-notification-notice-message, .done-toast .ant-notification-notice-title { color: #fff; font-weight: 600; font-size: 15px; margin: 0 24px 2px 0 !important; padding: 0 !important; }
+.done-toast .ant-notification-notice-description { color: #b9b4bd; font-size: 13px; margin: 0 !important; padding: 0 !important; word-break: break-all; }
+.done-toast .ant-notification-notice-close { color: #8f8a93; top: 12px; inset-inline-end: 12px; }
+.done-toast .ant-notification-notice-close:hover { color: #fff; background: rgba(255,255,255,.08); }
+.done-toast .ant-notification-notice-btn, .done-toast .ant-notification-notice-actions { flex-basis: 100%; float: none; display: flex; justify-content: flex-end; margin-top: 12px; }
+.done-toast .ant-notification-notice-progress { display: none; }
+@media (max-width: 767px) {
+  .ant-notification.ant-notification-top { left: 0 !important; right: 0 !important; margin-inline: auto !important; width: calc(100vw - 16px) !important; max-width: 520px; padding: 20px 0 0 !important; }
+  .ant-notification-top .done-toast.ant-notification-notice { width: 100% !important; max-width: 100%; left: 0 !important; transform: none !important; inset-inline-start: 0 !important; }
+  .done-toast .ant-notification-notice-btn .ant-btn, .done-toast .ant-notification-notice-actions .ant-btn { width: 100%; height: 44px; }
+}
