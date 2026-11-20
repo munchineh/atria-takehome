@@ -2,7 +2,7 @@ import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Alert, Progress, App, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -125,6 +125,11 @@ function NameCell({ c, morph = true, mobile = false }: { c: Creative; morph?: bo
           )}
         </div>
         <div className="name-sub">
+          {/* Media type back on the row (Mancini, 19:05): only image ads can get variations, so the type has to read at a glance. */}
+          <span className={`media-pill ${c.media.toLowerCase()}`}>
+            {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
+            {c.media}
+          </span>
           <WhereItRuns c={c} mobile={mobile} />
         </div>
       </div>

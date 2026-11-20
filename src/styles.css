@@ -787,3 +787,9 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 .runs-copy:last-child { border-bottom: 0; }
 .runs-out { justify-self: end; margin-top: 8px; display: inline-flex; align-items: center; gap: 4px; }
 .tasks-title { font-size: 16px; font-weight: 600; }
+/* Media type pill on Radar rows (19:05) */
+.name-sub { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.media-pill { display: inline-flex; align-items: center; gap: 4px; height: 20px; padding: 0 6px; border-radius: 6px; font-size: 12px; font-weight: 500; line-height: 1; background: #f2f2f2; color: #4a4a4a; }
+.media-pill.video { background: #efeaf7; color: #5b4a86; }
+.media-pill.carousel { background: #e8f1f7; color: #3c6283; }
+.media-pill .anticon { font-size: 12px; }
