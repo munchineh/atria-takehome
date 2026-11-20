@@ -70,6 +70,8 @@ export function Editor() {
   const applying = latest?.state === 'applying';
 
   const [ask, setAsk] = useState('');
+  // 5d option A: one way in (Refine); the choice sits where you describe the change. ?new=1 presets it (gallery entry).
+  const [makeNew, setMakeNew] = useState(params.get('new') === '1');
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [textMode, setTextMode] = useState<'editable' | 'stylized'>('editable');
   const [editing, setEditing] = useState(params.get('text') === '1');
@@ -127,7 +129,7 @@ export function Editor() {
   const apply = (instruction: string) => {
     const text = instruction.trim();
     if (!text) return;
-    const out = applyChange(job.id, v, shown.n, text);
+    const out = applyChange(job.id, v, shown.n, text, makeNew);
     setAsk('');
     setRating(null);
     if (out !== v.id) {
@@ -361,11 +363,30 @@ export function Editor() {
           </motion.div>
         )}
       </AnimatePresence>
+      {!onOlder && (
+        <div className="ed-mode">
+          <Segmented
+            block
+            size={mobile ? 'large' : 'middle'}
+            value={makeNew ? 'variation' : 'version'}
+            onChange={(val) => setMakeNew(val === 'variation')}
+            options={[
+              { label: 'New version', value: 'version' },
+              { label: 'New variation', value: 'variation' },
+            ]}
+          />
+          <p className="ed-mode-help">
+            {makeNew
+              ? 'Makes a separate creative next to this one. You can shortlist and test it on its own.'
+              : `Adds v${latest.n + 1} to this creative. Earlier versions stay in the history below the image.`}
+          </p>
+        </div>
+      )}
       {!mobile && (
         <div className="ed-apply">
           <span className="muted small">{costLine}</span>
           <Button type="primary" disabled={!ask.trim() || (applying && !onOlder)} onClick={() => apply(ask)}>
-            {onOlder ? `New variation from v${shown.n}` : 'Apply change'}
+            {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Make new variation' : 'Apply change'}
           </Button>
         </div>
       )}
@@ -525,7 +546,7 @@ export function Editor() {
               <span className="small">{costLine}</span>
             </div>
             <Button type="primary" block disabled={!ask.trim() || (applying && !onOlder)} onClick={() => apply(ask)}>
-              {onOlder ? `New variation from v${shown.n}` : 'Apply change'}
+              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Make new variation' : 'Apply change'}
             </Button>
           </motion.div>
         </>

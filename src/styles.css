@@ -1045,3 +1045,7 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .bar-panel .brief-foot { color: rgba(255,255,255,0.45); }
 .dlg-label-row .inline-link { height: auto; padding: 0; }
 .task-acct { font-size: 12px; line-height: 20px; color: rgba(0, 0, 0, 0.45); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* 5d: version or variation choice in the Refine panel */
+.ed-mode { margin-top: 12px; }
+.ed-mode-help { margin: 8px 0 0; font-size: 12px; line-height: 20px; color: rgba(0, 0, 0, 0.45); }
+@media (max-width: 767px) { .ed-mode-help { font-size: 14px; line-height: 22px; } }

@@ -146,7 +146,7 @@ interface Store {
   /** Screen 7: versions per variation (ED-07). */
   versionsOf: (v: Variation) => Version[];
   /** Apply a change. On the latest version it adds a version; on an older one it makes a new variation (O3, ED-08). Returns the variation to show. */
-  applyChange: (jobId: string, v: Variation, fromN: number, instruction: string) => string;
+  applyChange: (jobId: string, v: Variation, fromN: number, instruction: string, asNew?: boolean) => string;
   /** ED-09: free text edit on the editable layer; adds a version. */
   saveText: (v: Variation, copy: Variation['copy']) => void;
   /** ED-10 / ED-09b: a new variation from an edited prompt or as stylized text. Returns its id. */
@@ -273,12 +273,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const applyChange = useCallback(
-    (jobId: string, v: Variation, fromN: number, instruction: string) => {
+    (jobId: string, v: Variation, fromN: number, instruction: string, asNew = false) => {
       const list = versionsOf(v);
       const src = list.find((x) => x.n === fromN) ?? list.at(-1)!;
       const out = applyToImage(src.img, src.copy, instruction);
       setCredits((c) => c - ACCOUNT.creditsPerImage);
-      if (fromN === list.at(-1)!.n) {
+      if (!asNew && fromN === list.at(-1)!.n) {
         const n = list.length + 1;
         setVersions((p) => ({ ...p, [v.id]: [...list, { n, ...out, caption: instruction, cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
         land(v.id, n);
