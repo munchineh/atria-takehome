@@ -13,7 +13,7 @@ export function diagnosis(c: Creative) {
   if (!worst) return 'Not enough data to grade';
   if (rank(c.grades[worst]) <= 1) return 'No fix needed';
   const metric = worst === 'conversion' ? ACCOUNT.conversionMetric : worst === 'ctr' ? 'CTR' : METRIC_META[worst].label.toLowerCase();
-  return `Fix ${metric} · ${c.grades[worst]}`;
+  return `Fix ${metric}`;
 }
 
 export function StatusCell({ creative, status }: { creative: Creative; status: RowStatus }) {
