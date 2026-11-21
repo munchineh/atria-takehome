@@ -2891,3 +2891,8 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ed-block .ed-hist-label { grid-row: 1 / span 4; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
 .ed-block .ed-hist-ad img, .ed-block .ed-hist-ad .thumb { width: 24px; height: 24px; }
 @media (max-width: 767px) { .ed-block .ed-hist-step { grid-template-columns: 104px minmax(0, 1fr); } .ed-block .ed-hist-step + .ed-hist-step { margin: 0; border: 0; } }
+
+/* 257 Editor, under the image: "Predicted CTR" and the grade on one line, nothing else. */
+.ed-predict { display: inline-flex; align-items: center; gap: 8px; }
+.ed-predict-label-inline { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
+.ed-predict .ant-tag { margin: 0; }

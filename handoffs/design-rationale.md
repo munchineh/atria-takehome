@@ -306,6 +306,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 254 | Ad page "Iteration history" is always shown. Ads made in Atria list their chain starting with the original ("Original" tag, its grade, "The first ad in this chain"). An original shows "This is the first ad. It wasn't made from another ad." | Mancini 16:24 | The original had no row because it has nothing before it to compare against, so "Squish me" listed only itself. |
 | 255 | The fade behind the ad page's action bar fades into the grey page colour, and both the fade and the bar line up with the content when the side panel is collapsed. | Mancini 16:25 | It faded to white on a grey page, so its top and left edges showed as a box. |
 | 256 | Editor "Iteration history" moves into the right panel under "How Atria reads this image" as label and value rows (Made from, Problem with its metric, Suggestion used), with a 24 px thumbnail. With two suggestions, the metric line sits under the problem it belongs to. | Mancini 16:26 | As a full-width card under the editor it left a wide empty area beside three short lines. |
+| 257 | Editor, under the image: just "Predicted CTR" and the predicted grade on one line. The original's grade, the arrow and "Better/Worse than the original" are removed (replaces row 236). | Mancini 16:28 | The comparison crowded the row; the original's score is already in Iteration history in the right panel. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

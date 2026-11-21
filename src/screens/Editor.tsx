@@ -4,7 +4,6 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Button, Dropdown, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
 import {
-  ArrowRightOutlined,
   CopyPlusOutlined,
   DeleteOutlined,
   DownloadOutlined,
@@ -263,25 +262,10 @@ export function Editor() {
         )}
 
         <div className="ed-meta-row">
-          {/* 236 (Mancini 16:10): label on its own line, then original grade → predicted grade and one word of direction. */}
-          <span className="ed-predict ed-predict-stack">
-            <span className="ed-predict-label">Predicted CTR</span>
-            <span className="ed-predict-val">
-              {c.grades.ctr && predictedCtr(v.id) !== c.grades.ctr[0] && (
-                <>
-                  <Tooltip title="The original's CTR grade">
-                    <Tag className={`grade-tag g-${c.grades.ctr[0]} ed-predict-orig`}>{c.grades.ctr}</Tag>
-                  </Tooltip>
-                  <ArrowRightOutlined className="ed-predict-arrow" aria-label="to" />
-                </>
-              )}
-              <PredictedTag id={v.id} bare />
-              {c.grades.ctr && (
-                <span className="t-help">
-                  {predictedCtr(v.id) === c.grades.ctr[0] ? 'Same as the original' : 'ABCD'.indexOf(predictedCtr(v.id)) < 'ABCD'.indexOf(c.grades.ctr[0]) ? 'Better than the original' : 'Worse than the original'}
-                </span>
-              )}
-            </span>
+          {/* 257 (Mancini 16:28): just the label and the predicted grade. The original's score is in Iteration history. */}
+          <span className="ed-predict">
+            <span className="ed-predict-label-inline">Predicted CTR</span>
+            <PredictedTag id={v.id} bare />
           </span>
           <Rating
             question="Is this result good?"
