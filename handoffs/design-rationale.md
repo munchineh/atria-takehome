@@ -292,6 +292,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 240 | "Where it runs" popover: placements are a two-column list of name and share (shares under 1% read "<1%"), not one wrapped line. | Mancini 16:12 | Twelve placements in one dotted line were hard to scan, and tiny shares read "0%". |
 | 241 | Body text is 14/20 site-wide (was 14/22): the `--lh-body` token and antd's `lineHeight`. Small stays 12/20 because tags are sized from it. | Mancini 16:13 | Body copy read loose, especially in cards and help lines. |
 | 242 | Ad page: the "Already applied" note above the suggestions is removed. | Mancini 16:14 | It repeated "Where it came from" and the left "Iteration history". |
+| 243 | Ad page: the line under the title uses the full column width, and a variation's line is shorter: "Costs more per purchase than the ad it was made from. Only $1,265 spent, so let it run." | Mancini 16:14 | It broke at 60 characters and left "spent so far." alone on a second line. |
+| 244 | Ad history: the repeat warning is a compact note (12/16 padding, 14 px icon, Body text). The current step's letter stays white on orange when it is also a repeat. Each card's grade sits at the top right, level with the thumbnail. | Mancini 16:15 | The warning box had large empty padding; "D" was orange on orange; grades floated mid-card. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

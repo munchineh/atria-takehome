@@ -66,7 +66,7 @@ function summary(c: CreativeT, parent?: CreativeT) {
     const spent = money(Math.round(c.spend)).replace(/\.\d\d$/, '');
     const a = parent.values.cpa, b = c.values.cpa;
     const verdict = a == null || b == null || a === b ? 'Converts about the same as the ad it was made from.' : b < a ? 'Converts better than the ad it was made from.' : 'Costs more per purchase than the ad it was made from.';
-    return `${verdict} Let it run before you judge it: about ${spent} spent so far.`;
+    return `${verdict} Only ${spent} spent, so let it run.`; // 243: shorter so it fits one line at 1504
   }
   // C5d-41: the reading follows the ad's goal, like the suggestions (L-146). Goal metric first, then the ones that
   // support it; metrics the goal doesn't care about never drive the sentence (an Awareness ad gets no CPA reading).

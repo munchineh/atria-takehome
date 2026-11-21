@@ -2832,3 +2832,17 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .runs2-place-grid > div { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-small); line-height: var(--lh-small); }
 .runs2-place-grid dt { color: var(--c-text-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .runs2-place-grid dd { margin: 0; color: var(--c-text); font-variant-numeric: tabular-nums; }
+
+/* 243 Ad page: the line under the title runs the full column width instead of breaking at 60 characters. */
+.ad-lead { max-width: none; }
+
+/* 244 Ad history: the repeat warning is a compact note (12/16 padding, 14 px icon, title and reason at Body size),
+   and the current step's letter stays white on orange even when that step is also a repeat. */
+.lin-intro .ant-alert { padding: 12px 16px; align-items: flex-start; gap: 8px; }
+.lin-intro .ant-alert .ant-alert-icon { font-size: 14px; margin: 3px 0 0; }
+.lin-intro .ant-alert .ant-alert-title, .lin-intro .ant-alert .ant-alert-message { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; margin: 0; }
+.lin-intro .ant-alert .ant-alert-description { font-size: var(--fs-body); line-height: var(--lh-body); margin: 2px 0 0; }
+.lin-letter.current, .lin-letter.current.repeat { background: var(--c-primary); color: #fff; border-color: var(--c-primary); }
+/* 244 (continued): each card's grade sits at the top right, level with the thumbnail's top edge, inside the 16 px padding. */
+.lin-card-head { align-items: flex-start; }
+.lin-card-head .lin-grade { align-self: flex-start; margin: 0 0 0 auto; }
