@@ -6,7 +6,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, ProfileOutlined, InsertRowRightOutlined, TrophyOutlined, FlagOutlined, EyeOutlined, InfoCircleOutlined } from '../components/AppIcons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, ProfileOutlined, InsertRowRightOutlined, LineChartOutlined, TrophyOutlined, FlagOutlined, EyeOutlined, InfoCircleOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -204,18 +204,21 @@ const howGrading = (lowSpend: boolean) => (
 const GradingNote = ({ spend }: { spend: number }) => {
   const showBar = spend >= RELIABLE_SPEND * 0.3;
   const amount = (n: number) => money(n).replace('.00', '');
+  // Mancini 13:43: same row pattern as the gallery's status card (icon, bold title, one help line).
   return (
-    <div className="grading-note">
-      <div className="grading-note-head">
-        <span className="grading-note-title">Grades are most accurate above {amount(RELIABLE_SPEND)}{"\u00a0"}a&nbsp;month</span>
-        {showBar && (
-          <span className="data-meter-num">
-            <b>{amount(spend)}</b> of {amount(RELIABLE_SPEND)} a month
+    <div className="panel gal-status grading-note">
+      <div className="gal-status-row">
+        <span className="gal-status-icon" aria-hidden>
+          <LineChartOutlined />
+        </span>
+        <span className="gal-status-body">
+          <strong className="gal-status-name">Grades are most accurate above {amount(RELIABLE_SPEND)}{'\u00a0'}a&nbsp;month</strong>
+          <span className="t-help">
+            {showBar ? `This account spends ${amount(spend)} a month, so grades may change as more data comes in.` : 'This account spends less, so grades may change as more data comes in.'}
           </span>
-        )}
+          {showBar && <Progress percent={Math.round((spend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="var(--c-primary)" />}
+        </span>
       </div>
-      {showBar && <Progress percent={Math.round((spend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f66c30" />}
-      <span className="t-help">This account spends less, so grades may change as more data comes in.</span>
     </div>
   );
 };

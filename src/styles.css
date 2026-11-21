@@ -1988,3 +1988,7 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
   .gal-status-actions .ant-btn:not(.ant-btn-icon-only) { flex: 1; }
 }
 .gal-origin-tabs > .ant-tabs-nav { margin-left: 0 !important; margin-right: 0 !important; }
+/* Mancini 13:43: Radar's accuracy note and the ad page's "already applied" note use the gallery status-row pattern. */
+.grading-note.gal-status { display: flex; flex-direction: column; gap: 0; padding: 0 16px; border: 1px solid var(--c-border-2); border-radius: var(--r-surface); background: #fff; max-width: none; }
+.already-tried.gal-status { display: flex; align-items: stretch; gap: 0; margin-bottom: 12px; font-size: inherit; color: inherit; }
+.already-tried.gal-status > .anticon { margin: 0; }

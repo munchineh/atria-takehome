@@ -601,9 +601,17 @@ export function AdDetail() {
           </motion.div>
 
           {parent && (
-            <motion.div variants={fadeUp} className="already-tried">
-              {/* K23 (R-M7): drop colon. */}
-              <HistoryOutlined /> <span>This variation already applies <b>{recName(parent.id, 'cta')}</b></span>
+            <motion.div variants={fadeUp} className="panel gal-status already-tried">
+              {/* Mancini 13:43: same row pattern as the gallery's status card. */}
+              <div className="gal-status-row">
+                <span className="gal-status-icon" aria-hidden>
+                  <HistoryOutlined />
+                </span>
+                <span className="gal-status-body">
+                  <strong className="gal-status-name">Already applied: {recName(parent.id, 'cta')}</strong>
+                  <span className="t-help">This variation was made to fix that. The suggestions below are what's left to try.</span>
+                </span>
+              </div>
             </motion.div>
           )}
 
