@@ -161,6 +161,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 109 | Continuous (Apple-style) corners everywhere: `corner-shape: superellipse(1.5)` on every rounded element, true circles excluded. Radii stay 4, 6, 8 and pills | Mancini 14:24 | Circular arcs meet the straight edge with a visible kink, most noticeable on pills. Chrome and Edge only; Safari and Firefox show the plain radius. Plain `squircle` at the same radii looked too square, so the milder value keeps the Figma feel |
 | 110 | No question-mark cursor on tooltip triggers (dotted column headers, N/A, grade placeholders) | Mancini 14:25 | The help cursor felt like an error state; the dotted underline already signals a definition |
 | 111 | Goal tag: "Goal" on the light tint in secondary text, the goal ("Sales") on the deeper tint in Semi Bold with a dark icon | Mancini 14:27 | The key had the stronger fill, so the label outweighed the answer |
+| 112 | Ad page "Where it came from": "Made in: Outside Atria" becomes "Source: Uploaded" (variations: "Source: Created in Atria"), the same values as Radar's Source filter. "Synced from: Meta" stays | Mancini 14:27 | "Made in Outside Atria" didn't parse, and the page used different words from the filter for the same fact |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

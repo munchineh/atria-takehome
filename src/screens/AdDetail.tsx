@@ -513,14 +513,15 @@ export function AdDetail() {
             <dl className="cp-kv">
               {parent ? (
                 <>
-                  <div><dt>Made in</dt><dd>Atria (variation)</dd></div>
+                  {/* Mancini 14:27: "Made in" read oddly. "Source" uses the same values as Radar's Source filter. */}
+                  <div><dt>Source</dt><dd>Created in Atria</dd></div>
                   <div><dt>Made from</dt><dd><Link to={`/ad/${parent.id}`}>{parent.name}</Link></dd></div>
                   <div><dt>To fix</dt><dd>{recName(parent.id, 'cta')}</dd></div>
                   <div><dt>Round</dt><dd><Link to={`/ad/${parent.id}/variations?round=job-hero-1`}>Round 1 · Nov 12</Link></dd></div>
                 </>
               ) : (
                 <>
-                  <div><dt>Made in</dt><dd>Outside Atria</dd></div>
+                  <div><dt>Source</dt><dd>Uploaded</dd></div>
                   <div><dt>Synced from</dt><dd>{c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}</dd></div>
                 </>
               )}
