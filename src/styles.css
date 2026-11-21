@@ -1854,3 +1854,27 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .goal-split-k { display: inline-flex; align-items: center; padding: 0 9px 0 11px; background: #ffe4d5; color: #a83411; font-weight: 500; }
 .goal-split-v { display: inline-flex; align-items: center; gap: 5px; padding: 0 11px 0 9px; background: #fff3ec; color: #1f1f1f; font-weight: 600; }
 .goal-split-v .anticon { color: #f66c30; font-size: 12px; }
+/* Where it runs, reworked (Mancini 10:41) */
+.runs-pop2 .ant-popover-inner { width: 340px; padding: 14px 16px 16px; }
+.runs-pop2 .ant-popover-title { margin-bottom: 10px; font-size: 15px; }
+.runs2 { display: flex; flex-direction: column; gap: 10px; }
+.runs2-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.runs2-row { display: grid; grid-template-columns: 8px minmax(0, 1fr) auto; grid-template-areas: 'dot name share' '. meta meta' '. bar bar'; column-gap: 8px; row-gap: 3px; align-items: center; }
+.runs2-row .live-dot { grid-area: dot; }
+.runs2-name { grid-area: name; font-size: 13px; font-weight: 500; color: #1f1f1f; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runs2-share { grid-area: share; font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; color: #1f1f1f; }
+.runs2-meta { grid-area: meta; font-size: 12px; color: #6b6b6b; font-variant-numeric: tabular-nums; }
+.runs2-meta .tone-good { color: var(--ant-color-success-text, #137333); }
+.runs2-meta .tone-bad { color: var(--ant-color-error-text, #cf1322); }
+.runs2-bar { grid-area: bar; height: 4px; border-radius: 999px; background: #f0eef2; overflow: hidden; }
+.runs2-bar i { display: block; height: 100%; border-radius: 999px; background: #f66c30; opacity: 0.8; }
+.runs2-more, .runs2-places, .runs2-note { margin: 0; }
+.runs2-places { padding-top: 10px; border-top: 1px solid var(--line); }
+.runs2-places .t-label { margin-right: 6px; }
+.runs2-cta { align-self: flex-start; margin-top: 2px; }
+.runs-sheet .runs2-cta { margin-top: 8px; }
+.runs-sheet .runs2-name, .runs-sheet .runs2-share { font-size: 15px; }
+.runs-sheet .runs2-meta { font-size: 13px; }
+.runs-pop2 .ant-popover-inner { width: auto; }
+.runs-pop2 .runs2 { width: 320px; }
+.runs-sheet .runs2 { width: auto; }

@@ -4,14 +4,13 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
-import { ALL_CREATIVES, DEMO_ACCOUNTS, accountOf } from '../data/store';
-import { GOAL_ICON, objectiveOf } from '../components/Goal';
+import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
+import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
+import { GOAL_ICON } from '../components/Goal';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
-import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
 import { IterationHistory } from '../components/IterationHistory';
@@ -20,71 +19,64 @@ import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../mo
 
 type TabKey = (typeof TABS)[number]['key'];
 
-/** "Where it runs": floating panel on desktop, bottom sheet on mobile (Mancini, 20 Nov 17:03). */
+/**
+ * "Where it runs" (reworked Mancini 10:41, after foundey.com/blog/popover-ux): one concept, no scrolling, one clear next step.
+ * The popover answers "where is this ad running and how is each copy doing". Per-copy details (audience, frequency, ID,
+ * Ads Manager link) live in the ad page's copies panel, one click away. Desktop: popover. Phones: bottom sheet, same content.
+ */
+const RUNS_MAX = 4;
 function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const [open, setOpen] = useState(false);
-  const [openCopy, setOpenCopy] = useState<string | null>(c.ads.length === 1 ? c.ads[0].id : null);
-  const { windowDays } = useStore();
-  const { message } = App.useApp();
-  const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
-  const anyPaused = c.ads.some((a) => copyStatus(c, a) === 'Paused');
-  const pausedPlatform = [...new Set(c.ads.filter((a) => copyStatus(c, a) === 'Paused').map(platformOf))].join(' or ') || 'Meta';
+  const go = useNavigate();
+  const paused = c.ads.filter((a) => copyStatus(c, a) === 'Paused').length;
+  const sorted = [...c.ads].sort((x, y) => y.spend - x.spend);
+  const shown = sorted.slice(0, RUNS_MAX);
+  const more = sorted.length - shown.length;
+  const places = [...c.placements].sort((x, y) => y.share - x.share);
+  const top = places.slice(0, 3).map((p) => `${p.label} ${Math.round(p.share * 100)}%`);
+  const placeLine = places.length > 3 ? `${top.join(' · ')} · ${places.length - 3} more` : top.join(' · ');
+  const openAd = () => {
+    setOpen(false);
+    go(`/ad/${c.id}`);
+  };
   const body = (
-    <div className="runs" onClick={(e) => e.stopPropagation()}>
-      {anyPaused && <div className="runs-note small">Paused copies were turned off in {pausedPlatform}. Grades still cover the {win.short.toLowerCase()}.</div>}
-      <Placements items={c.placements} />
-      <div className="runs-list">
-        {c.ads.map((a) => {
-          const f = copyFacts(a);
+    <div className="runs2" onClick={(e) => e.stopPropagation()}>
+      <ul className="runs2-list">
+        {shown.map((a) => {
           const st = copyStatus(c, a);
-          const isOpen = openCopy === a.id || c.ads.length === 1;
+          const share = a.spend / c.spend;
           return (
-            <div key={a.id} className={`runs-copy ${isOpen ? 'open' : ''}`}>
-              <button className="runs-copy-head" onClick={() => setOpenCopy(isOpen ? null : a.id)} aria-expanded={isOpen} disabled={c.ads.length === 1}>
-                <i className={`live-dot ${st === 'Paused' ? 'paused' : ''}`} />
-                <span className="runs-camp">{a.campaign}</span>
-                <span className="muted small">
-                  {st === 'Paused' ? 'Paused · ' : ''}{Math.round((a.spend / c.spend) * 100)}% of spend
-                </span>
-                {c.ads.length > 1 && <DownOutlined className={`runs-chev ${isOpen ? 'up' : ''}`} />}
-              </button>
-              {isOpen && (
-                <div className="runs-kv small">
-                  <span className="t-key">Platform</span>
-                  <span>{platformOf(a)}</span>
-                  <span className="t-key">Goal</span>
-                  <span className="goal-val">{GOAL_ICON[objectiveOf(a)]} {objectiveOf(a)} · {GOALS[objectiveOf(a)].plain}</span>
-                  <span className="t-key">Audience</span>
-                  <span>{a.adSet}</span>
-                  <span className="t-key">Status</span>
-                  <span>{st === 'Paused' ? `Paused · ran ${f.days} days from ${f.since}` : `Running since ${f.since} · ${f.days} days`}</span>
-                  <span className="t-key">Spend</span>
-                  <span>{money(a.spend)} in the {win.short.toLowerCase()}</span>
-                  <span className="t-key">{ACCOUNT.conversionMetric}</span>
-                  <span>
-                    {money(a.cpa)} · account average {money(accountOf(c).avg.cpa)}
-                  </span>
-                  <Tooltip title="How many times the average person saw this copy.">
-                    <span className="t-key dotted">Frequency</span>
-                  </Tooltip>
-                  <span>{f.frequency}</span>
-                  <span className="t-key">Ad ID</span>
-                  <span>{a.id}</span>
-                  <a className="runs-out" onClick={(e) => { e.preventDefault(); message.info(`In the live product, this opens the ad in ${platformOf(a)} Ads Manager. It's not part of this prototype.`); }} href="#">
-                    Open in {platformOf(a) === 'TikTok' ? 'TikTok Ads Manager' : 'Meta Ads Manager'} <ExportOutlined />
-                  </a>
-                </div>
-              )}
-            </div>
+            <li key={a.id} className="runs2-row">
+              <i className={`live-dot ${st === 'Paused' ? 'paused' : ''}`} aria-label={st} />
+              <span className="runs2-name">{a.campaign}</span>
+              <span className="runs2-share">{Math.round(share * 100)}%</span>
+              <span className="runs2-meta">
+                {money(a.spend).replace(/\.\d\d$/, '')} · CPA {money(a.cpa)}
+                {st === 'Paused' ? ' · Paused' : ''}
+              </span>
+              <span className="runs2-bar" aria-hidden>
+                <i style={{ width: `${Math.max(share * 100, 2)}%` }} />
+              </span>
+            </li>
           );
         })}
-      </div>
+      </ul>
+      {more > 0 && <p className="t-help runs2-more">And {plural(more, 'more copy', 'more copies')} on the ad page.</p>}
+      <p className="t-help runs2-places">
+        <span className="t-label">Placements</span> {placeLine}
+      </p>
+      {paused > 0 && <p className="t-help runs2-note">Paused copies still count toward this ad's grades.</p>}
+      <Button type={mobile ? 'primary' : 'default'} block={mobile} size={mobile ? 'large' : 'middle'} className="runs2-cta" onClick={openAd}>
+        See copy details
+      </Button>
     </div>
   );
   const title = copiesTitle(c);
   const trigger = (
     <button
       className="copies-link"
+      aria-haspopup="dialog"
+      aria-expanded={open}
       onClick={(e) => {
         e.stopPropagation();
         if (mobile) setOpen(true);
@@ -103,7 +95,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
       </>
     );
   return (
-    <Popover content={body} title={title} trigger="click" placement="rightTop" arrow={{ pointAtCenter: true }} open={open} onOpenChange={setOpen} classNames={{ root: 'runs-pop' }}>
+    <Popover content={body} title={title} trigger="click" placement="rightTop" arrow={{ pointAtCenter: true }} open={open} onOpenChange={setOpen} classNames={{ root: 'runs-pop runs-pop2' }}>
       {trigger}
     </Popover>
   );
