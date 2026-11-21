@@ -57,8 +57,11 @@ export interface GalleryItem {
   minutesAgo: number;
   versions: number;
   shortlisted: boolean;
-  /** Added to Meta as a paused ad. */
+  /** Added to Meta as a paused ad. In use means locked: it can be iterated, not edited. */
   inMeta: boolean;
+  archived: boolean;
+  /** Version shown on the card (chosen, or the newest). */
+  shownN: number;
   stylized: boolean;
   /** Opens the editor inside Creation. */
   to: string;
@@ -78,8 +81,17 @@ export interface GalleryGroup {
 
 const count = (n: number) => `${n} ${n === 1 ? 'creative' : 'creatives'}`;
 
-/** Every creative made in Atria, newest first. Failed and deleted ones are left out. */
-export function galleryItems(jobs: Job[], find: (id: string) => Creative | undefined, picks: string[] = [], versionsOf?: (v: Variation) => Version[]): GalleryItem[] {
+/**
+ * Saved creatives, newest first (Mancini 11:00): a round's options are drafts until starred, and anything added to an ad
+ * is saved automatically. Failed and deleted ones are left out. Archived ones are included and flagged; the page hides them.
+ */
+export function galleryItems(
+  jobs: Job[],
+  find: (id: string) => Creative | undefined,
+  picks: string[] = [],
+  versionsOf?: (v: Variation) => Version[],
+  opts: { archived?: string[]; chosen?: Record<string, number>; all?: boolean } = {},
+): GalleryItem[] {
   const out: GalleryItem[] = [];
   for (const j of jobs) {
     if (j.state !== 'ready') continue;
@@ -88,7 +100,9 @@ export function galleryItems(jobs: Job[], find: (id: string) => Creative | undef
     const origin: Origin = source.project === 'clone' ? 'cloned' : source.project === 'scratch' ? 'scratch' : 'variation';
     j.variations.forEach((v, i) => {
       if (v.deleted || j.failed.includes(i)) return;
-      const latest = versionsOf?.(v).at(-1);
+      if (!opts.all && !picks.includes(v.id) && !v.launched) return;
+      const list = versionsOf?.(v) ?? [];
+      const latest = list.find((x) => x.n === opts.chosen?.[v.id]) ?? list.at(-1);
       out.push({
         id: v.id,
         img: latest?.img ?? v.img,
@@ -106,6 +120,8 @@ export function galleryItems(jobs: Job[], find: (id: string) => Creative | undef
         versions: versionsOf ? versionsOf(v).length : 1,
         shortlisted: picks.includes(v.id),
         inMeta: Boolean(v.launched),
+        archived: Boolean(opts.archived?.includes(v.id)),
+        shownN: latest?.n ?? 1,
         stylized: Boolean(v.stylized),
         to: `/creation/${source.id}/${v.id}?round=${j.id}`,
       });

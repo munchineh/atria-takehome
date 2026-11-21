@@ -61,7 +61,7 @@ export function Editor() {
   const mobile = !bp.md;
   const { message } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, versionsOf, applyChange, saveText, branch, deleteVariation, credits } = useStore();
+  const { jobsFor, versionsOf, applyChange, saveText, branch, deleteVariation, credits, iterate } = useStore();
   const job = jobsFor(c.id).find((j) => j.variations.some((v) => v.id === vid));
   const v = job?.variations.find((x) => x.id === vid);
 
@@ -126,7 +126,9 @@ export function Editor() {
       </div>
     );
 
-  const back = ws.roundPath(c.id, job.id);
+  // Mancini 11:00: in Creation, editing is a step off the creative page, so back (and Done) return there.
+  const back = ws.inCreation ? `/creation/${c.id}/${v.id}` : ws.roundPath(c.id, job.id);
+  const locked = Boolean(v.launched);
   const parent = v.from ? job.variations.find((x) => x.id === v.from!.id) : undefined;
   const cost = ACCOUNT.creditsPerImage;
   // K17 (R-AI6), K24 (R-M6, R-M13): comma thousands, NBSP before credits, lowercase after dot, no parens.
@@ -548,7 +550,7 @@ export function Editor() {
           )}
         </div>
         {/* DL-06: explicit "View in Radar" exit link when inside Creation on a Radar ad. */}
-        {ws.inCreation && !c.project && (
+        {false && ws.inCreation && !c.project && (
           <div className="detail-head-right">
             <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
               View in Radar
@@ -559,8 +561,8 @@ export function Editor() {
 
       <div className="ed-head">
         <div className="ed-title">
-          <h1 className="page-title">{v.angle}</h1>
-          <p className="muted desc">Describe a change or edit the text, and every change is saved as a version.</p>
+          <h1 className="page-title">{ws.inCreation ? `Edit ${v.angle}` : v.angle}</h1>
+          <p className="muted desc">Describe a change or edit the text. Each change is saved as a new version.</p>
           {(v.from || v.launched || !rec) && (
             <div className="row-gap wrap small ed-subtags">
               {!rec && <PredictedTag id={v.id} />}
@@ -581,12 +583,20 @@ export function Editor() {
         </div>
         {/* Item 10 (R-I): Utility actions only in the top-right toolbar. */}
         <div className="ed-tools">
+          {ws.inCreation ? (
+            <Button type="primary" onClick={() => nav(back)}>
+              Done
+            </Button>
+          ) : (
+            <>
           <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded v${shown.n}`)} aria-label="Download">
             {mobile ? '' : 'Download'}
           </Button>
           <Button danger type="text" icon={<DeleteOutlined />} onClick={() => setConfirmDelete(true)} aria-label="Delete variation">
             {mobile ? '' : 'Delete variation'}
           </Button>
+            </>
+          )}
         </div>
       </div>
 
@@ -619,7 +629,23 @@ export function Editor() {
 
       <div className="ed-grid">
         {canvas}
-        <aside className="ed-panel panel">
+        <aside className={`ed-panel panel ${locked ? 'locked' : ''}`}>
+          {locked && (
+            <div className="ed-lock">
+              <span>
+                <b>This creative is in an ad, so it can't change.</b> Iterate to make a new creative from it.
+              </span>
+              <Button
+                type="primary"
+                onClick={() => {
+                  const nid = iterate(job.id, v);
+                  nav(ws.inCreation ? `/creation/${c.id}/${nid}/edit?round=${job.id}` : ws.editorPath(c.id, nid, job.id));
+                }}
+              >
+                Iterate
+              </Button>
+            </div>
+          )}
           <h4 className="ed-panel-title">Refine</h4>
           {changeBlock}
           {textBlock}

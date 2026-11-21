@@ -13,7 +13,7 @@ export const roundPath = (ws: Workspace, creativeId: string, jobId?: string) =>
   `${ws === 'creation' ? `/creation/${creativeId}` : `/ad/${creativeId}/variations`}${jobId ? `?round=${jobId}` : ''}`;
 
 export const editorPath = (ws: Workspace, creativeId: string, variationId: string, jobId: string, text = false) =>
-  `${ws === 'creation' ? `/creation/${creativeId}/${variationId}` : `/ad/${creativeId}/variations/${variationId}`}?round=${jobId}${text ? '&text=1' : ''}`;
+  `${ws === 'creation' ? `/creation/${creativeId}/${variationId}/edit` : `/ad/${creativeId}/variations/${variationId}`}?round=${jobId}${text ? '&text=1' : ''}`;
 
 export function useWorkspace() {
   const { pathname } = useLocation();

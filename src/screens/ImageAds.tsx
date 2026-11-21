@@ -1,37 +1,24 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Empty, Progress, Tabs, Typography } from 'antd';
+import { App, Button, Empty, Progress, Tabs, Typography } from 'antd';
 import { BarChartOutlined, PlusOutlined } from '../components/AppIcons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { findCreative, useStore } from '../data/store';
-import { galleryItems, gallerySummary, groupGallery, ORIGIN_TABS, type GroupBy } from '../data/gallery';
+import { galleryItems, groupGallery, ORIGIN_TABS, type GroupBy } from '../data/gallery';
 import { PopSheet } from '../components/PopSheet';
-import { TeachingCard } from '../components/TeachingCard';
 import { Thumb } from '../components/Thumb';
 import { timeLeft } from '../components/TasksPanel';
 import { GalleryCard } from '../components/gallery/GalleryCard';
-import { GalleryToolbar, type GalleryFilters } from '../components/gallery/GalleryToolbar';
+import { GalleryMenus, type GalleryFilters, type Order } from '../components/gallery/GalleryMenus';
 import { NewCreativeModal } from '../components/gallery/NewCreativeModal';
 import { pageTransition } from '../motion/tokens';
 
-const PICKS_KEY = 'atria.gallery.picks.v1';
-
-function loadPicks(fallback: string[]): string[] {
-  try {
-    const raw = localStorage.getItem(PICKS_KEY);
-    if (!raw) return fallback;
-    const parsed = JSON.parse(raw);
-    return Array.isArray(parsed) ? parsed : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
 const HOW = (
   <div className="grade-pop">
-    <p>Every creative you make in Atria is kept here, whether it came from an ad, a clone, or a brief from scratch.</p>
-    <p>Select any creative to refine it in the editor, or group the grid by ad, campaign, or&nbsp;origin.</p>
+    <p>A round gives you several options. Star the ones you want to keep and they're saved here. Anything you add to an ad is saved too.</p>
+    <p>Each creative keeps all its versions. Once it's in an ad it can't change, so you iterate on it instead, which makes a new&nbsp;creative.</p>
+    <p>Archive creatives you're done with. Turn on Show archived in Filter to see them&nbsp;again.</p>
   </div>
 );
 
@@ -41,14 +28,18 @@ const HOW = (
  */
 export function ImageAds() {
   const nav = useNavigate();
-  const { jobs, accountId, versionsOf } = useStore();
+  const { message } = App.useApp();
+  const { jobs, accountId, versionsOf, saved, archived, setArchived, chosen } = useStore();
 
   const [filters, setFilters] = useState<GalleryFilters>({
     accountId,
     origin: 'all',
     campaign: 'all',
-    shortlistedOnly: false,
+    use: 'all',
+    showArchived: false,
   });
+  const [order, setOrder] = useState<Order>('newest');
+  const [nudgeOff, setNudgeOff] = useState(false);
   useEffect(() => {
     setFilters((f) => ({ ...f, accountId, campaign: 'all' }));
   }, [accountId]);
@@ -73,24 +64,7 @@ export function ImageAds() {
   const itemsClass = view === 'grid' ? 'gal-grid' : 'gal-list';
   const [newOpen, setNewOpen] = useState(false);
 
-  // Seed 2 realistic shortlisted creatives on first visit so the Shortlisted filter works immediately.
-  const baseItems = useMemo(() => galleryItems(jobs, findCreative, [], versionsOf), [jobs, versionsOf]);
-  const [picks, setPicks] = useState<string[]>(() =>
-    loadPicks(baseItems.filter((x) => x.accountId === accountId).slice(0, 2).map((x) => x.id)),
-  );
-  const togglePick = (id: string) => {
-    setPicks((prev) => {
-      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
-      try {
-        localStorage.setItem(PICKS_KEY, JSON.stringify(next));
-      } catch {
-        /* ignore storage failures */
-      }
-      return next;
-    });
-  };
-
-  const allItems = useMemo(() => galleryItems(jobs, findCreative, picks, versionsOf), [jobs, picks, versionsOf]);
+  const allItems = useMemo(() => galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen }), [jobs, saved, versionsOf, archived, chosen]);
 
   const accountScoped = useMemo(
     () => (filters.accountId === 'all' ? allItems : allItems.filter((i) => i.accountId === filters.accountId)),
@@ -102,22 +76,26 @@ export function ImageAds() {
     [accountScoped],
   );
 
-  const filtered = useMemo(
-    () =>
-      accountScoped.filter(
-        (i) =>
-          (filters.origin === 'all' || i.origin === filters.origin) &&
-          (filters.campaign === 'all' || i.campaigns.includes(filters.campaign)) &&
-          (!filters.shortlistedOnly || i.shortlisted),
-      ),
-    [accountScoped, filters],
-  );
+  const filtered = useMemo(() => {
+    const out = accountScoped.filter(
+      (i) =>
+        (filters.origin === 'all' || i.origin === filters.origin) &&
+        (filters.campaign === 'all' || i.campaigns.includes(filters.campaign)) &&
+        (filters.use === 'all' || (filters.use === 'used') === i.inMeta) &&
+        (filters.showArchived || !i.archived),
+    );
+    if (order === 'oldest') out.reverse();
+    if (order === 'name') out.sort((a, b) => a.name.localeCompare(b.name));
+    return out;
+  }, [accountScoped, filters, order]);
 
   const groups = useMemo(() => groupGallery(filtered, groupBy), [filtered, groupBy]);
-  // Mancini 10:32: the count says what the button will show, so it follows the open tab.
-  const accountShortlisted = useMemo(
-    () => gallerySummary(accountScoped.filter((i) => filters.origin === 'all' || i.origin === filters.origin)).shortlisted,
-    [accountScoped, filters.origin],
+  // Suggest archiving saved creatives that never went into an ad and are over a week old.
+  const stale = useMemo(() => accountScoped.filter((i) => !i.archived && !i.inMeta && i.minutesAgo > 7 * 1440), [accountScoped]);
+  // Rounds with options still to review: their unstarred options aren't in the gallery.
+  const toReview = useMemo(
+    () => jobs.filter((j) => j.state === 'ready' && j.unseen && findCreative(j.creativeId) && (filters.accountId === 'all' || findCreative(j.creativeId)!.accountId === filters.accountId)),
+    [jobs, filters.accountId],
   );
 
   const activeJobs = useMemo(
@@ -130,19 +108,12 @@ export function ImageAds() {
     [jobs, filters.accountId],
   );
 
-  const clearFilters = () =>
-    setFilters({
-      accountId,
-      origin: 'all',
-      campaign: 'all',
-      shortlistedOnly: false,
-    });
-
-  const hasFilters =
-    filters.accountId !== accountId ||
-    filters.origin !== 'all' ||
-    filters.campaign !== 'all' ||
-    filters.shortlistedOnly;
+  const clearFilters = () => setFilters({ accountId, origin: filters.origin, campaign: 'all', use: 'all', showArchived: false });
+  const hasFilters = filters.accountId !== accountId || filters.campaign !== 'all' || filters.use !== 'all';
+  const onArchive = (id: string, on: boolean) => {
+    setArchived([id], on);
+    message.success(on ? 'Archived. Turn on Show archived in Filter to see it.' : 'Restored to the gallery');
+  };
 
 
   return (
@@ -153,7 +124,7 @@ export function ImageAds() {
             Creative gallery
           </Typography.Title>
           {/* Mancini 09:43: one line under the title, no extra meta line; counts live in the tabs below. */}
-          <p className="muted desc">Browse every creative you've made. Open one to edit it or add it to an ad.</p>
+          <p className="muted desc">Every creative you've kept, with its versions and the ads it runs in.</p>
         </div>
         <div className="gal-head-actions">
           <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
@@ -174,26 +145,66 @@ export function ImageAds() {
         activeKey={filters.origin}
         onChange={(k) => setFilters((f) => ({ ...f, origin: k as GalleryFilters['origin'] }))}
         items={ORIGIN_TABS.map((t) => {
-          const n = t.value === 'all' ? accountScoped.length : accountScoped.filter((i) => i.origin === t.value).length;
+          const live = accountScoped.filter((i) => filters.showArchived || !i.archived);
+          const n = t.value === 'all' ? live.length : live.filter((i) => i.origin === t.value).length;
           return { key: t.value, label: <span className="tab-label">{t.label}<span className="tab-count">{n}</span></span> };
         })}
       />
 
-      <GalleryToolbar
-        view={view}
-        onChangeView={changeView}
+      <GalleryMenus
         filters={filters}
-        onChangeFilters={setFilters}
-        onClearFilters={clearFilters}
-        groupBy={groupBy}
-        onChangeGroupBy={setGroupBy}
-        campaigns={campaigns}
-        shortlistedCount={accountShortlisted}
+        onChange={setFilters}
+        onClear={clearFilters}
         defaultAccountId={accountId}
+        campaigns={campaigns}
+        groupBy={groupBy}
+        onGroupBy={setGroupBy}
+        view={view}
+        onView={changeView}
+        order={order}
+        onOrder={setOrder}
       />
 
-      {/* DL-13 & E4: inline teaching card above the grid so nothing is covered on desktop or phones. */}
-      <TeachingCard />
+      {stale.length >= 3 && !nudgeOff && !filters.showArchived && (
+        <div className="gal-nudge" role="status">
+          <span>
+            <b>{plural(stale.length, 'creative')}</b> haven't gone into an ad in over a week. Archive them to keep the gallery tidy?
+          </span>
+          <span className="gal-nudge-actions">
+            <Button
+              size="small"
+              onClick={() => {
+                setArchived(stale.map((i) => i.id), true);
+                message.success(`Archived ${plural(stale.length, 'creative')}`);
+              }}
+            >
+              Archive {stale.length}
+            </Button>
+            <Button size="small" type="text" onClick={() => setNudgeOff(true)}>
+              Not now
+            </Button>
+          </span>
+        </div>
+      )}
+
+      {toReview.length > 0 && (
+        <div className="gal-live-list">
+          {toReview.map((j) => {
+            const src = findCreative(j.creativeId)!;
+            return (
+              <button key={j.id} type="button" className="panel gal-live-row gal-review-row" onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}>
+                <Thumb c={src} size={40} />
+                <span className="gal-live-body">
+                  <b>{src.name}</b>
+                  <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Star the ones to keep.</span>
+                </span>
+                <span className="gal-review-cta">Review</span>
+              </button>
+            );
+          })}
+        </div>
+      )}
+
 
       {/* Live generating strip for rounds currently in flight (including newly created standalone creatives). */}
       {activeJobs.length > 0 && (
@@ -261,7 +272,7 @@ export function ImageAds() {
               item={item}
               index={i}
               onOpen={(to) => nav(to)}
-              onToggleShortlist={togglePick}
+              onArchive={onArchive}
             />
           ))}
         </div>
@@ -293,7 +304,7 @@ export function ImageAds() {
                     item={item}
                     index={i}
                     onOpen={(to) => nav(to)}
-                    onToggleShortlist={togglePick}
+                    onArchive={onArchive}
                   />
                 ))}
               </div>
@@ -307,7 +318,7 @@ export function ImageAds() {
         onClose={() => setNewOpen(false)}
         onCreated={() => {
           // Stay in the gallery so the user watches the new creatives arrive into the grid.
-          setFilters((f) => ({ ...f, origin: 'all', campaign: 'all', shortlistedOnly: false }));
+          setFilters((f) => ({ ...f, origin: 'all', campaign: 'all', use: 'all' }));
         }}
       />
     </motion.div>

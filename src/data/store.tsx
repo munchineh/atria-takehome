@@ -176,6 +176,19 @@ interface Store {
   deleteVariation: (jobId: string, vid: string) => void;
   /** Demo 1: add shortlisted variations as paused ads. */
   launch: (jobId: string, vids: string[], audience: string) => void;
+  /**
+   * Creative model (Mancini 11:00). A round's options are drafts; starring one saves it to the gallery.
+   * Saved ids persist per browser. Archived ones leave the gallery until "Show archived" is on.
+   */
+  saved: string[];
+  setSaved: (scope: string[], next: string[]) => void;
+  archived: string[];
+  setArchived: (ids: string[], on: boolean) => void;
+  /** The version a creative shows and sends to an ad. Defaults to the newest. */
+  chosen: Record<string, number>;
+  choose: (vid: string, n: number | null) => void;
+  /** A creative in an ad can't change. Iterate copies its chosen version into a new saved creative, free, and returns its id. */
+  iterate: (jobId: string, v: Variation) => string;
   /** Grade window in days (30, 60, 90). The account default is 60. */
   windowDays: number;
   setWindowDays: (d: number) => void;
@@ -390,6 +403,65 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [versionsOf, land, addVariation, liveVersion],
   );
 
+  const persisted = <T,>(key: string, fallback: T): T => {
+    try {
+      const raw = localStorage.getItem(key);
+      return raw ? (JSON.parse(raw) as T) : fallback;
+    } catch {
+      return fallback;
+    }
+  };
+  const persist = (key: string, v: unknown) => {
+    try {
+      localStorage.setItem(key, JSON.stringify(v));
+    } catch {
+      /* storage can be unavailable */
+    }
+  };
+  // Seed: the first two options of every finished round, so the gallery isn't empty on first visit.
+  const [saved, setSavedState] = useState<string[]>(() =>
+    persisted('atria.saved.v1', SEED.filter((j) => j.state === 'ready').flatMap((j) => j.variations.slice(0, 2).map((v) => v.id))),
+  );
+  const [archived, setArchivedState] = useState<string[]>(() => persisted('atria.archived.v1', []));
+  const [chosen, setChosen] = useState<Record<string, number>>(() => persisted('atria.chosen.v1', {}));
+  const setSaved = useCallback((scope: string[], next: string[]) => {
+    setSavedState((p) => {
+      const out = [...p.filter((x) => !scope.includes(x)), ...next];
+      persist('atria.saved.v1', out);
+      return out;
+    });
+  }, []);
+  const setArchived = useCallback((ids: string[], on: boolean) => {
+    setArchivedState((p) => {
+      const out = on ? [...new Set([...p, ...ids])] : p.filter((x) => !ids.includes(x));
+      persist('atria.archived.v1', out);
+      return out;
+    });
+  }, []);
+  const choose = useCallback((vid: string, n: number | null) => {
+    setChosen((p) => {
+      const out = { ...p };
+      if (n == null) delete out[vid];
+      else out[vid] = n;
+      persist('atria.chosen.v1', out);
+      return out;
+    });
+  }, []);
+  const iterate = useCallback(
+    (jobId: string, v: Variation) => {
+      const list = versionsOf(v);
+      const src = list.find((x) => x.n === chosen[v.id]) ?? list.at(-1)!;
+      counter.current += 1;
+      const nid = `${v.id}-i${counter.current}`;
+      const nv: Variation = { ...v, id: nid, img: src.img, copy: src.copy, typo: undefined, launched: undefined, from: { id: v.id, v: src.n, angle: v.angle, how: 'version' } };
+      setVersions((p) => ({ ...p, [nid]: [{ n: 1, img: src.img, copy: src.copy, caption: `Copied from ${v.angle} v${src.n}`, cost: 0, state: 'ready' }] }));
+      addVariation(jobId, nv);
+      setSaved([], [nid]);
+      return nid;
+    },
+    [versionsOf, chosen, addVariation, setSaved],
+  );
+
   const value = useMemo<Store>(
     () => ({
       jobs,
@@ -421,8 +493,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (vids.includes(v.id) ? { ...v, launched: { audience, date: TODAY_LABEL() } } : v)) } : j))),
       windowDays,
       setWindowDays,
+      saved,
+      setSaved,
+      archived,
+      setArchived,
+      chosen,
+      choose,
+      iterate,
     }),
-    [jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
+    [saved, setSaved, archived, setArchived, chosen, choose, iterate, jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

@@ -9,6 +9,7 @@ import { Radar } from './screens/Radar';
 import { AdDetail } from './screens/AdDetail';
 import { Results } from './screens/Results';
 import { ImageAds } from './screens/ImageAds';
+import { CreativePage } from './screens/CreativePage';
 import { Editor } from './screens/Editor';
 import { Overview } from './screens/Overview';
 import { theme } from './theme';
@@ -35,7 +36,8 @@ function Routed() {
           <Route path="/creation" element={<ImageAds />} />
           {/* DL-06: rounds and the editor also live under Creation, so gallery tiles never leave it. */}
           <Route path="/creation/:id" element={<Results />} />
-          <Route path="/creation/:id/:vid" element={<Editor key={loc.pathname} />} />
+          <Route path="/creation/:id/:vid" element={<CreativePage key={loc.pathname} />} />
+          <Route path="/creation/:id/:vid/edit" element={<Editor key={loc.pathname} />} />
         </Routes>
       </LayoutGroup>
     </Shell>

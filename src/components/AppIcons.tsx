@@ -99,3 +99,7 @@ export const UserAddOutlined = make(L.UserPlus);
 export const VideoCameraOutlined = make(L.Video);
 export const WarningOutlined = make(L.TriangleAlert);
 export const CopyPlusOutlined = make(L.CopyPlus);
+export const SlidersOutlined = make(L.SlidersHorizontal);
+export const ArchiveOutlined = make(L.Archive);
+export const ArchiveRestoreOutlined = make(L.ArchiveRestore);
+export const LockOutlined = make(L.Lock);

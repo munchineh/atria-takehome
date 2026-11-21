@@ -223,14 +223,14 @@ function VariationCard({
               Refine
             </Button>
           )}
-          <Tooltip title={picked ? 'Remove from shortlist.' : 'Add to shortlist.'}>
+          <Tooltip title={picked ? 'Saved to the gallery. Click to remove it.' : 'Save to the gallery.'}>
             <Button
               size={mobile ? 'large' : 'middle'}
               className={`var-icon pick-btn ${picked ? 'on' : ''}`}
               icon={picked ? <StarFilled /> : <StarOutlined />}
               onClick={onPick}
               aria-pressed={picked}
-              aria-label={picked ? 'Remove from shortlist' : 'Add to shortlist'}
+              aria-label={picked ? 'Remove from gallery' : 'Save to gallery'}
             />
           </Tooltip>
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
@@ -262,7 +262,11 @@ export function Results() {
     return job ? job.recIds.map((rid) => all.find((r) => r.id === rid) ?? recommendationsFor(findCreative('mm-1090245')!).find((r) => r.id === rid)!).filter(Boolean) : [];
   }, [c, job]);
   const recFilter = params.get('rec') ?? 'all';
-  const [shortlist, setShortlist] = useState<string[]>([]);
+  // Mancini 11:00: starring an option saves it to the gallery, so the shortlist is the store's saved list for this round.
+  const { saved, setSaved } = useStore();
+  const roundIds = job ? job.variations.map((v) => v.id) : [];
+  const shortlist = roundIds.filter((id) => saved.includes(id));
+  const setShortlist = (f: string[] | ((p: string[]) => string[])) => setSaved(roundIds, typeof f === 'function' ? f(shortlist) : f);
   const [compare, setCompare] = useState(false);
   const [testing, setTesting] = useState(false);
   const [nudgeOff, setNudgeOff] = useState(false);
@@ -274,9 +278,6 @@ export function Results() {
   useEffect(() => {
     if (job?.unseen && job.state === 'ready') markSeen(job.id);
   }, [job, markSeen]);
-  useEffect(() => {
-    setShortlist([]);
-  }, [job?.id]);
 
   if (!job)
     return (
@@ -383,7 +384,7 @@ export function Results() {
         <div className="results-title">
           {/* K43 (R-P1) & Section 11: identical title at every width + one-liner. */}
           <h1 className="page-title">Variations of {c.name}</h1>
-          <p className="muted desc">Review this round, shortlist the best and test them in {platform}.</p>
+          <p className="muted desc">Star the options worth keeping. They're saved to the gallery, and you can test them in {platform}.</p>
           <p className="t-help results-meta">
             {plural(job.count, 'variation')} from {plural(job.recIds.length, 'suggestion')}{'\u00a0'}· {job.date}
             {job.label ? `\u00a0· ${job.label}` : ''}
@@ -679,7 +680,6 @@ export function Results() {
         onOk={() => {
           launch(job.id, picks.map((p) => p.id), audience);
           setTesting(false);
-          setShortlist([]);
           message.success({
             content: (
               <span>

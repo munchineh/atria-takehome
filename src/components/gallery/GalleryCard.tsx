@@ -1,5 +1,5 @@
-import { Tag, Tooltip } from 'antd';
-import { CopyOutlined, FormOutlined, StarFilled, StarOutlined } from '../AppIcons';
+import { Dropdown, Tag, Tooltip } from 'antd';
+import { ArchiveOutlined, ArchiveRestoreOutlined, CopyOutlined, EllipsisOutlined, FormOutlined, LockOutlined } from '../AppIcons';
 import { motion } from 'motion/react';
 import type { GalleryItem } from '../../data/gallery';
 import { AdArt } from '../Thumb';
@@ -14,12 +14,12 @@ export function GalleryCard({
   item,
   index,
   onOpen,
-  onToggleShortlist,
+  onArchive,
 }: {
   item: GalleryItem;
   index: number;
   onOpen: (to: string) => void;
-  onToggleShortlist: (id: string) => void;
+  onArchive: (id: string, on: boolean) => void;
 }) {
   const sourceChip = item.ad ? (
     <Tooltip title={`Made from ${item.ad.name}.`} mouseEnterDelay={0.5}>
@@ -39,7 +39,7 @@ export function GalleryCard({
 
   return (
     <motion.article
-      className={`gal-card ${item.shortlisted ? 'is-shortlisted' : ''}`}
+      className={`gal-card ${item.archived ? 'is-archived' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(index) } }}
     >
@@ -48,7 +48,7 @@ export function GalleryCard({
           type="button"
           className="gal-art-btn"
           onClick={() => onOpen(item.to)}
-          aria-label={`Open ${item.name} in the editor`}
+          aria-label={`Open ${item.name}`}
         >
           <AdArt slot={item.img} copy={item.copy} ratio="2 / 3" alt={`${item.name} creative`} />
         </button>
@@ -66,30 +66,38 @@ export function GalleryCard({
             <strong className="gal-name">{item.name}</strong>
             <span className="gal-date">
               {item.date}
-              {item.versions > 1 ? `\u00A0·\u00A0v${item.versions}` : ''}
+              {item.versions > 1 ? `\u00A0·\u00A0${item.versions} versions` : ''}
             </span>
           </div>
 
-          {/* R-A4 & Section 9: state-aware shortlist toggle kept off the ad art so headlines stay unobstructed. */}
-          <Tooltip title={item.shortlisted ? 'Remove from shortlist.' : 'Add to shortlist.'}>
-            <button
-              type="button"
-              className={`gal-star-btn ${item.shortlisted ? 'on' : ''}`}
-              aria-pressed={item.shortlisted}
-              aria-label={item.shortlisted ? 'Remove from shortlist' : 'Add to shortlist'}
-              onClick={(e) => {
-                e.stopPropagation();
-                onToggleShortlist(item.id);
-              }}
-            >
-              {item.shortlisted ? <StarFilled /> : <StarOutlined />}
+          {/* Mancini 11:00: everything here is saved, so the star is gone. Archive lives in the card menu. */}
+          <Dropdown
+            trigger={['click']}
+            placement="bottomRight"
+            menu={{
+              items: [
+                item.archived
+                  ? { key: 'unarchive', icon: <ArchiveRestoreOutlined />, label: 'Restore to gallery', onClick: (e) => (e.domEvent.stopPropagation(), onArchive(item.id, false)) }
+                  : { key: 'archive', icon: <ArchiveOutlined />, label: 'Archive', onClick: (e) => (e.domEvent.stopPropagation(), onArchive(item.id, true)) },
+              ],
+            }}
+          >
+            <button type="button" className="gal-star-btn" aria-label={`More actions for ${item.name}`} onClick={(e) => e.stopPropagation()}>
+              <EllipsisOutlined />
             </button>
-          </Tooltip>
+          </Dropdown>
         </div>
 
         <div className="gal-chips">
           {sourceChip}
-          {item.inMeta && <Tag className="gal-state">Paused in Meta</Tag>}
+          {item.inMeta && (
+            <Tooltip title="In an ad, so it can't be edited. Open it to iterate.">
+              <Tag className="gal-state gal-locked" icon={<LockOutlined />}>
+                In an ad
+              </Tag>
+            </Tooltip>
+          )}
+          {item.archived && <Tag className="gal-state">Archived</Tag>}
           {item.stylized && <Tag className="gal-state">Stylized</Tag>}
         </div>
       </div>
