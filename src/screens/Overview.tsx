@@ -113,7 +113,6 @@ export function Overview() {
           <p className="muted desc">See how this account is doing and where to look first.</p>
         </div>
         <Select
-          variant="filled"
           value={windowDays}
           onChange={(d) => setWindowDays(d)}
           {...period.selectProps}

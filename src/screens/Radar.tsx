@@ -472,7 +472,6 @@ export function Radar() {
             the range shows inside the control so it can't be missed. */}
         <div className="window">
           <Select
-            variant="filled"
             value={windowDays}
             onChange={(d) => changeWindow(d)}
             {...period.selectProps}

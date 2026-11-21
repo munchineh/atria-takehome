@@ -30,7 +30,7 @@ export function AskRaya({ account, windowDays, jobs }: { account: MockAccount; w
           ask(q);
         }}
       >
-        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="For example, which ad should I improve first?" aria-label="Ask Raya" variant="filled" />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="For example, which ad should I improve first?" aria-label="Ask Raya" />
         <Button type="primary" htmlType="submit" shape="circle" icon={<ArrowUpOutlined />} aria-label="Send" disabled={!q.trim()} />
       </form>
       <div className="raya-prompts">

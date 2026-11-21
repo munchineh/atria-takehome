@@ -12,10 +12,10 @@ import { duration } from './motion/tokens';
 export const theme: ThemeConfig = {
   token: {
     colorPrimary: '#f66c30',
-    // Mancini 10:48: brown text links read as muddy. Links are ink, weight 500, and turn brand orange with an underline on hover.
-    colorLink: '#1f1f1f',
-    colorLinkHover: '#e0561c',
-    colorLinkActive: '#1f1f1f',
+    // S-13, V-03: links in the library orange (not the old AA brown #a83411; contrast 3.0:1 is a known trade-off, annotated).
+    colorLink: '#f66c30',
+    colorLinkHover: '#ff8f5c',
+    colorLinkActive: '#d4531c',
     colorPrimaryText: '#a83411', // R-C2
     colorPrimaryTextHover: '#cf4e1f',
     colorPrimaryTextActive: '#821f07',
@@ -45,32 +45,13 @@ export const theme: ThemeConfig = {
     Notification: { borderRadiusLG: 14 },
     Drawer: { borderRadiusLG: 14 },
     Dropdown: { borderRadiusLG: 14 },
-    // Controls (Mancini 10:50, after Atria's Radar settings): fields and secondary buttons are tonal fills, not white boxes
-    // with grey outlines. Focus and selection turn orange. Radius 8 for every control.
-    Input: { borderRadius: 8, borderRadiusLG: 8, colorFillTertiary: '#f3f1f5', colorFillSecondary: '#ebe8ef', activeBg: '#ffffff', activeBorderColor: '#f66c30', hoverBorderColor: 'transparent' },
-    Select: { borderRadius: 8, borderRadiusLG: 8, optionSelectedBg: '#fff1e8', optionSelectedColor: '#1f1f1f', colorFillTertiary: '#f3f1f5', colorFillSecondary: '#ebe8ef', activeBorderColor: '#f66c30' },
-    InputNumber: { borderRadius: 8, borderRadiusLG: 8, colorFillTertiary: '#f3f1f5', activeBg: '#ffffff', activeBorderColor: '#f66c30' },
+    // Controls follow the asset library as drawn (S-11, S-22, V-02): white, 1 px outline, radius 6.
+    Input: { borderRadius: 6, borderRadiusLG: 6 },
+    Select: { borderRadius: 6, borderRadiusLG: 6, optionSelectedBg: '#fff7f0' },
+    InputNumber: { borderRadius: 6, borderRadiusLG: 6 },
     Checkbox: { borderRadiusSM: 4 },
-    Button: {
-      borderRadius: 8,
-      borderRadiusLG: 8,
-      borderRadiusSM: 8,
-      defaultBg: '#f3f1f5',
-      defaultBorderColor: 'transparent',
-      defaultColor: '#1f1f1f',
-      defaultHoverBg: '#ebe8ef',
-      defaultHoverBorderColor: 'transparent',
-      defaultHoverColor: '#1f1f1f',
-      defaultActiveBg: '#e3dfe8',
-      defaultActiveBorderColor: 'transparent',
-      defaultActiveColor: '#1f1f1f',
-      defaultShadow: 'none',
-      primaryShadow: 'none',
-      fontWeight: 500,
-    },
-    Switch: { colorTextQuaternary: '#d6d2db', colorTextTertiary: '#c4bfca', trackHeight: 22, handleSize: 18, trackMinWidth: 40 },
-    Segmented: { trackBg: '#f3f1f5', itemSelectedBg: '#ffffff', itemColor: 'rgba(0,0,0,0.6)', itemSelectedColor: '#1f1f1f', borderRadius: 8, borderRadiusSM: 6 },
-    Radio: { colorPrimary: '#f66c30' },
+    Button: { borderRadius: 6, borderRadiusLG: 6, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: 'none' },
+    Segmented: { borderRadius: 6, borderRadiusSM: 4 },
   },
 };
 

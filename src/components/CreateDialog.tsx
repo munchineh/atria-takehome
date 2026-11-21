@@ -160,7 +160,7 @@ export function Body({
                         </b>
                         <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
                       </div>
-                      <Button color="primary" variant="filled" onClick={prefill}>Fill in the brief</Button>
+                      <Button onClick={prefill}>Fill in the brief</Button>
                     </div>
                     <div className="brief-divider muted small">
                       <span>or start another way</span>
@@ -184,7 +184,7 @@ export function Body({
                       aria-label="Product page link"
                     />
                     {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
-                    <Button color="primary" variant="filled" onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                    <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
                       {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                     </Button>
                   </div>
@@ -192,7 +192,7 @@ export function Body({
                   <div className="brief-start">
                     <b>Write your own</b>
                     <span className="t-help">Cover the product, who it's for, the goal and the tone.</span>
-                    <Button color="primary" variant="filled" icon={<EditOutlined />} onClick={() => setMode('write')}>
+                    <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
                       Write it yourself
                     </Button>
                   </div>
@@ -212,7 +212,7 @@ export function Body({
                 />
                 {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
                 <span className="row-gap">
-                  <Button color="primary" variant="filled" onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                  <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
                     {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                   </Button>
                   <Button type="text" onClick={() => setMode(prefilled || !saved ? 'write' : 'filled')}>
