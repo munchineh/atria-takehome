@@ -186,6 +186,7 @@ Verify R-T: `grep -rnE "Creating|Regenerate|Fix text|Make new|Var\.|Data from|re
 | R-M2 | No period on titles, headings, buttons, labels, tabs, tags, menu items, column headers or fragments. | Read those elements. | E |
 | R-M3 | Every full sentence ends with a period, in any component. Fragments never do ("Variation deleted"). Open: default until Mancini decides is this rule (replaces copy deck helper rule and L-113). | Read tooltips, helpers, toasts, Alerts. | E |
 | R-M4 | No em dashes, no typed ellipses (three periods or U+2026), no "&". Only a component-drawn truncation ellipsis is allowed. | `grep -rnP "\x{2014}|\x{2026}|\.{3}| & " src/screens src/components` | E |
+| R-M4a | No tacked-on comma phrases ("Ways to improve this ad, sorted by priority."). Make it one clause ("in order of priority") or a second sentence (Mancini 13:12). | Read every help line and tooltip for ", sorted", ", ranked", ", based", ", with", ", by", ", and how". | E |
 | R-M6 | " · " separates facts on one line, with a non-breaking space before it. Text after it is lowercase unless a proper noun or new sentence. | Read every middle-dot line. | E |
 | R-M7 | No colon between label and value ("Goal Sales"); style instead (R-H3). Colons only before inputs or lists. `<Form colon={false}>` by default. | `grep -rn ":</" src` and read labels. | E |
 | R-M12 | Curly quotes for quoted ad text and examples. | Search for straight `"` inside rendered strings. | G |

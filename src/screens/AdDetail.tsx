@@ -511,7 +511,7 @@ export function AdDetail() {
             <dl className="cp-kv">
               {parent ? (
                 <>
-                  <div><dt>Made in</dt><dd>Atria, as a variation</dd></div>
+                  <div><dt>Made in</dt><dd>Atria (variation)</dd></div>
                   <div><dt>Made from</dt><dd><Link to={`/ad/${parent.id}`}>{parent.name}</Link></dd></div>
                   <div><dt>To fix</dt><dd>{recName(parent.id, 'cta')}</dd></div>
                   <div><dt>Round</dt><dd><Link to={`/ad/${parent.id}/variations?round=job-hero-1`}>Round 1 · Nov 12</Link></dd></div>
@@ -527,7 +527,7 @@ export function AdDetail() {
           {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
           {adHistory.length > 0 && (
             <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-              <SectionHead title="Iteration history" help="Rounds made from this ad, and how its variations did." />
+              <SectionHead title="Iteration history" help="Rounds made from this ad and how their variations did." />
               <IterationHistory items={adHistory} limit={4} empty="" />
             </motion.div>
           )}
@@ -586,7 +586,7 @@ export function AdDetail() {
                   <span>Hide suggestions</span>
                 </label>
               }
-              help={<>Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}
+              help={<>Ways to improve this ad in order of priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}
               meta={
                 <span className="rec-date">
                   Updated {WINDOW.synced}
@@ -630,7 +630,7 @@ export function AdDetail() {
                   </Tooltip>
                 </>
               }
-              help="Who this ad seems to speak to, based on its image and text."
+              help="Who this ad seems to speak to. Atria reads this from its image and text."
             />
             {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
             <div className="persona-cards">

@@ -500,7 +500,7 @@ export function Radar() {
     ...(shown('hook') ? [metricCol('hook', 'hook', 70)] : []),
     ...(shown('ret') ? [metricCol('retention', 'ret', 92)] : []),
     ...(shown('ctr') ? [metricCol('ctr', 'ctr', wide ? 64 : 56)] : []),
-    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 124, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
+    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period across all its copies." />, key: 'spend', width: 124, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
     ...(shown('cpa') ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
     ...(shown('roas') ? [{ title: <Head label="ROAS" tip="Purchase value divided by spend." />, key: 'roas', width: 76, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{c.roas.toFixed(2)}</span> }] : []),
   ];

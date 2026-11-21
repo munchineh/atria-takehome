@@ -167,7 +167,7 @@ export const ANGLE_REASON: Record<string, string> = {
   Scarcity: 'A limited edition gives a reason to buy now.',
   'Close-up': 'A tight crop that stops the scroll.',
   'Bold color': 'One strong color that stands out in the feed.',
-  Choice: 'Lets people pick their mood, with the offer in the band.',
+  Choice: 'Lets people pick their mood. The offer sits in the band.',
   Gift: 'Frames it as a small gift for someone else.',
   Urgency: 'Same-day shipping gives a reason to order today.',
   Personal: 'A question that invites people to see themselves in it.',

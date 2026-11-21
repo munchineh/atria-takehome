@@ -299,7 +299,7 @@ export function CreativePage() {
                 </div>
               ))}
               <div>
-                <Tooltip title="Atria's estimate of this image's CTR, from how similar ads did in this account.">
+                <Tooltip title="Atria's estimate of this image's CTR. It's based on how similar ads did in this account.">
                   <dt className="dotted">Predicted CTR</dt>
                 </Tooltip>
                 <dd>

@@ -189,7 +189,7 @@ export function NewCreativeModal({
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
-                  placeholder="e.g. Holiday gift drop"
+                  placeholder="For example, holiday gift drop"
                   aria-label="Creative name"
                 />
               </label>

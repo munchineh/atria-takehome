@@ -1939,3 +1939,5 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
   .results .sticky-bar .res-bar-actions .ant-btn { width: 100%; height: 44px; padding: 0 12px; }
   .results .sticky-bar .res-bar-actions .ant-btn-icon-only { width: 44px; padding: 0; }
 }
+/* Final pass: the four gallery tabs fit at 390 without antd's overflow menu. */
+@media (max-width: 767px) { .gal-origin-tabs .tab-count { display: none; } }

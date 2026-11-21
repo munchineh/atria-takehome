@@ -163,7 +163,7 @@ export function Overview() {
           <BarList rows={health} tone={(k) => TAB_TONE[k as TabKey]} onPick={(k) => nav(`/?tab=${k}`)} />
         </motion.section>
         <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-format">
-          <SectionHead id="ov-sec-format" title="Spend by format" help={<>Where this account's budget goes, by type of ad.</>} />
+          <SectionHead id="ov-sec-format" title="Spend by format" help={<>How this account's budget splits across ad types.</>} />
           <BarList rows={formats} tone={() => 'neutral'} />
         </motion.section>
       </div>
@@ -186,7 +186,7 @@ export function Overview() {
           </dl>
         </motion.section>
         <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-tags">
-          <SectionHead id="ov-sec-tags" title="Top creative tags" help={<>What your ads show and say, ranked by spend, with CPA against the account average.</>} />
+          <SectionHead id="ov-sec-tags" title="Top creative tags" help={<>What your ads show and say. Ranked by spend, with CPA against the account average.</>} />
           <ul className="tag-list">
             {tags.map((t) => (
               <li key={t.tag} className="tag-row">
@@ -265,7 +265,7 @@ export function Overview() {
         </div>
         <div className="ov-col">
           <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-history">
-            <SectionHead id="ov-sec-history" title="Iteration history" action={<Link to="/creation">Creative gallery</Link>} help={<>Rounds you made in Atria, and how the variations did once they ran.</>} />
+            <SectionHead id="ov-sec-history" title="Iteration history" action={<Link to="/creation">Creative gallery</Link>} help={<>Rounds you made in Atria and how their variations did once they ran.</>} />
             <IterationHistory items={history} empty={`No rounds yet for ${account.name.replace(/\.$/, '')}. Open an ad under Iteration suggestions to create variations.`} />
           </motion.section>
         </div>

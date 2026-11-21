@@ -182,7 +182,7 @@ export function LineageDrawer({
       destroyOnHidden
     >
       <div className="lin-intro">
-        <p className="t-help">Trace each step from the original ad, what changed, and how it performed against its parent.</p>
+        <p className="t-help">Trace each step from the original ad: what changed and how it did against its parent.</p>
         {lineage.repeats > 0 && (
           /* G4 (R-V): use the specific repeat explanation from the first repeating step instead of generic copy. */
           <Alert

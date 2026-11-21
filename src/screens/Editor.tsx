@@ -36,7 +36,7 @@ const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
 export function PredictedTag({ id, bare }: { id: string; bare?: boolean }) {
   const g = predictedCtr(id);
   const tag = (
-    <Tooltip title="Atria's estimate of this image's CTR, from how similar ads did in this account. It can be lower than the original's, which is a sign to refine before you launch.">
+    <Tooltip title="Atria's estimate of this image's CTR. It's based on how similar ads did in this account. It can be lower than the original's, which is a sign to refine before you launch.">
       <Tag className={`predicted grade-tag g-${g}`}>{g}</Tag>
     </Tooltip>
   );
@@ -407,7 +407,7 @@ export function Editor() {
           ref={input as never}
           value={ask}
           onChange={(e) => setAsk(e.target.value)}
-          placeholder="e.g. Make the headline shorter"
+          placeholder="For example, make the headline shorter"
           autoSize={{ minRows: 2, maxRows: 5 }}
           onPressEnter={(e) => {
             if (!e.shiftKey) {
