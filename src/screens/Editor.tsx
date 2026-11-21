@@ -468,8 +468,8 @@ export function Editor() {
           />
           <p className="t-help ed-mode-help">
             {makeNew
-              ? 'Makes a new variation next to this one. You can save it and test it on its own.'
-              : `Adds v${latest.n + 1} to this variation. Earlier versions stay in the history below the image.`}
+              ? 'Makes a new, separate creative and leaves this one as it is. Best for a different idea you want to test against this one. It adds one more creative to manage.'
+              : `Edits this creative and saves it as v${latest.n + 1}. Best for small fixes. It stays one creative, so you can go back to an earlier version but can't test two versions against each other.`}
           </p>
         </div>
       )}

@@ -226,6 +226,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 174 | Predicted grade tags keep the dashed stroke but in the grade's own color. | Mancini 15:14 | Grey dashes on a blue tag looked unrelated to the tag. |
 | 175 | "Show the brief" uses the set's chevron with an 8 px gap, it turns when open, and the focus ring shows for keyboards only. | Mancini 15:15 | The native marker sat too close to the label. |
 | 176 | Editor: the "Original ad" banner above the editor is now a "Related ads" section under it, with the ad as a linked row. Creative page empty state reads "Draft variation of {ad}. It isn't live yet." | Mancini 15:13, 15:15 | A creative is not an ad. The ad it came from is related information, and a list leaves room for more than one ad. |
+| 177 | Editor states the version and variation trade-off under the switch. **Version:** an edit saved inside the same creative (v2, v3). For: keeps the gallery clean, history stays in one place, good for small fixes. Against: it is still one creative, so versions can't run against each other in a test. **Variation:** a new, separate creative that leaves the current one untouched. For: can be saved, added to an ad and tested on its own. Against: one more creative to manage, and its history starts again. | Mancini 15:16 | The two words look alike and the old help lines only said where the result goes, not when to pick each. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
