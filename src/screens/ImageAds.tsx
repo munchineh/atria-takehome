@@ -178,7 +178,7 @@ export function ImageAds() {
     <motion.div {...pageTransition} className="page image-ads">
       <PageHeader
         title="Creative Gallery"
-        desc="Every creative you've kept. See its versions and the ads they run in."
+        desc="All your creatives in one place. Open one to see its history and the ads it's linked to."
         actions={
           <>
             <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
@@ -204,7 +204,7 @@ export function ImageAds() {
                 <Thumb c={src} size={40} />
                 <span className="gal-status-body">
                   <strong className="gal-status-name">{src.name}</strong>
-                  <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Save the ones to keep.</span>
+                  <span className="t-help">{plural(j.count - j.failed.length, 'new creative')} ready to compare.</span>
                 </span>
                 <span className="gal-status-actions">
                   <Button onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}>Review</Button>

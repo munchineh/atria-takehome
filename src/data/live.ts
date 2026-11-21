@@ -32,9 +32,21 @@ const visitor = (() => {
   }
 })();
 
+/** Owner key: open the site once with ?owner=KEY (before or after the #) and it's kept on this browser. The Worker skips the daily caps for it. */
+const owner = (() => {
+  try {
+    const m = (location.search + location.hash).match(/[?&]owner=([\w-]{8,64})/);
+    if (m) localStorage.setItem('atria.owner', m[1]);
+    return localStorage.getItem('atria.owner') ?? '';
+  } catch {
+    return '';
+  }
+})();
+const idHeaders = (): Record<string, string> => (owner ? { 'x-visitor': visitor, 'x-owner': owner } : { 'x-visitor': visitor });
+
 export async function refreshQuota() {
   try {
-    const r = await fetch('./api/quota', { headers: { 'x-visitor': visitor } });
+    const r = await fetch('./api/quota', { headers: idHeaders() });
     if (r.ok) set(await r.json());
   } catch {
     /* no Worker (vite preview, artifact): stays off */
@@ -76,7 +88,7 @@ export async function generateLive(fromSlot: string, instruction: string, ratio:
     if (!imageData) return null;
     const r = await fetch('./api/generate', {
       method: 'POST',
-      headers: { 'content-type': 'application/json', 'x-visitor': visitor },
+      headers: { 'content-type': 'application/json', ...idHeaders() },
       body: JSON.stringify({ imageData, mime: 'image/jpeg', instruction, ratio, ...(text ? { text } : {}), ...(style ? { style } : {}) }),
     });
     const out = (await r.json()) as { image?: string; left?: number; limit?: number; sample?: boolean; reason?: string };

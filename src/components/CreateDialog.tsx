@@ -115,7 +115,7 @@ export function Body({
   return (
     <div className={`dlg ${panel ? 'dlg-panel' : ''}`}>
       <div className="dlg-scroll">
-        {panel && <h4 className="dlg-panel-title">Create creatives</h4>}
+        {panel && <h4 className="dlg-panel-title">Generate new creatives</h4>}
         <p className="dlg-sub muted">
           For <b className="ink">{creative.name}</b> · {plural(recCount, 'suggestion')}
         </p>
@@ -342,7 +342,7 @@ export function Body({
             )}
           </label>
           <label className="dlg-field">
-            <span className="dlg-field-label">Variations per suggestion</span>
+            <span className="dlg-field-label">Creatives per suggestion</span>
             <Select value={perRec} onChange={setPerRec} options={[2, 4, 6, 8].map((n) => ({ value: n, label: n }))} />
           </label>
         </div>
@@ -354,13 +354,13 @@ export function Body({
         // L-163: the demo's daily cap for live Gemini images.
         <div className="demo-banner" role="status">
           <span className="demo-banner-tag">Demo</span>
-          <span>This prototype makes 10 live images a day, and they're used up. New variations use sample images until tomorrow.</span>
+          <span>This prototype makes 10 live images a day, and they're used up. New creatives use sample images until tomorrow.</span>
         </div>
       )}
       <footer className="dlg-foot">
         <div className="dlg-sum">
           <span>
-            {plural(recCount, 'suggestion')} × {perRec} = <b><Rolling value={total} /> variations</b>
+            {plural(recCount, 'suggestion')} × {perRec} = <b><Rolling value={total} /> creatives</b>
           </span>
           <span className="t-help">
             Uses <Rolling value={cost} /> of {credits.toLocaleString('en-US')}{'\u00a0'}credits
@@ -420,7 +420,7 @@ export function CreateDialog({
         placement="bottom"
         size="large"
         styles={{ wrapper: { height: 'auto', maxHeight: '92svh' } }}
-        title="Create creatives"
+        title="Generate new creatives"
         className="sheet-drawer create-sheet"
         destroyOnHidden
       >
@@ -428,7 +428,7 @@ export function CreateDialog({
       </Drawer>
     );
   return (
-    <Modal open={open} onCancel={onClose} title="Create creatives" footer={null} width={600} className="create-modal" destroyOnHidden
+    <Modal open={open} onCancel={onClose} title="Generate new creatives" footer={null} width={600} className="create-modal" destroyOnHidden
       styles={{ body: { padding: 0 } }}
     >
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }}>

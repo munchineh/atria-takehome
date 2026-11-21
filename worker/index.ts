@@ -20,6 +20,8 @@ interface Env {
   GEMINI_API_KEY?: string;
   PER_VISITOR?: string;
   PER_DAY?: string;
+  /** SHA-256 (hex) of the owner key. The owner skips both daily caps and doesn't count toward them (Mancini 20:24). */
+  OWNER_HASH?: string;
 }
 
 const MODEL = 'gemini-3.1-flash-image';
@@ -41,17 +43,26 @@ async function keys(req: Request) {
   return { v: `v:${d}:${visitor}`, ip: `ip:${d}:${ip}`, all: `all:${d}` };
 }
 
+async function isOwner(env: Env, req: Request) {
+  const key = req.headers.get('x-owner');
+  if (!key || !env.OWNER_HASH) return false;
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(key));
+  const hex = [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('');
+  return hex === env.OWNER_HASH.toLowerCase();
+}
+
 async function quota(env: Env, req: Request) {
   const perVisitor = Number(env.PER_VISITOR ?? 10);
   const perDay = Number(env.PER_DAY ?? 150);
   const live = Boolean(env.GEMINI_API_KEY && env.LIMITS);
-  if (!live) return { live, limit: perVisitor, left: 0, k: null as null | Awaited<ReturnType<typeof keys>>, used: 0, all: 0 };
+  if (!live) return { live, limit: perVisitor, left: 0, k: null as null | Awaited<ReturnType<typeof keys>>, used: 0, all: 0, owner: false };
+  if (await isOwner(env, req)) return { live, limit: 999, left: 999, k: null, used: 0, all: 0, owner: true };
   const k = await keys(req);
   const [v, ip, all] = await Promise.all([k.v, k.ip, k.all].map((x) => env.LIMITS!.get(x)));
   const used = Math.max(Number(v ?? 0), Number(ip ?? 0));
   const allN = Number(all ?? 0);
   const left = allN >= perDay ? 0 : Math.max(0, perVisitor - used);
-  return { live, limit: perVisitor, left, k, used, all: allN };
+  return { live, limit: perVisitor, left, k, used, all: allN, owner: false };
 }
 
 async function bump(env: Env, k: NonNullable<Awaited<ReturnType<typeof keys>>>) {
@@ -123,8 +134,8 @@ async function generate(req: Request, env: Env) {
   const part = out.candidates?.[0]?.content?.parts?.find((p) => p.inlineData);
   if (!part?.inlineData) return json({ error: 'no image' }, 502);
 
-  await bump(env, q.k!);
-  return json({ image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`, left: Math.max(0, q.left - 1), limit: q.limit });
+  if (!q.owner) await bump(env, q.k!);
+  return json({ image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`, left: q.owner ? q.left : Math.max(0, q.left - 1), limit: q.limit });
 }
 
 export default {

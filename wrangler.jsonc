@@ -10,7 +10,7 @@
     "not_found_handling": "single-page-application",
     "run_worker_first": ["/api/*"]
   },
-  "vars": { "PER_VISITOR": "10", "PER_DAY": "150" },
+  "vars": { "PER_VISITOR": "10", "PER_DAY": "150", "OWNER_HASH": "a0b8e22cb1649302992c93f43ca78b337b6761de869f5318e3643d05f1443cc4" },
   // Per-visitor and site-wide daily counts for live generation (namespace atria-limits).
   "kv_namespaces": [{ "binding": "LIMITS", "id": "540a04f2ea8d4252b5929d1bd7a0ff02" }]
 }
