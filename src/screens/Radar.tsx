@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, LineChartOutlined, TrophyOutlined, FlagOutlined, EyeOutlined, InfoCircleOutlined } from '../components/AppIcons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, LineChartOutlined, InfoCircleOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -23,9 +23,10 @@ import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../mo
 
 type TabKey = (typeof TABS)[number]['key'] | 'all';
 // FG1 tabs: All plus the three groups, each with an icon and an info button. Our names stay (Mancini 12:39).
-const RADAR_TABS: { key: TabKey; label: string; desc: string; icon?: React.ReactNode }[] = [
-  { key: 'all', label: 'All', desc: 'Every ad with spend in this period.' },
-  ...TABS.map((t) => ({ ...t, icon: t.key === 'winners' ? <TrophyOutlined /> : t.key === 'potential' ? <FlagOutlined /> : <EyeOutlined /> })),
+// Mancini 14:23: no icons on the tabs. The label, count and ⓘ carry the meaning.
+const RADAR_TABS: { key: TabKey; label: string; short: string; desc: string }[] = [
+  { key: 'all', label: 'All', short: 'All', desc: 'Every ad with spend in this period.' },
+  ...TABS,
 ];
 
 /**
@@ -602,8 +603,7 @@ export function Radar() {
           key: t.key,
           label: (
             <span className="tab-label">
-              {bp.md && t.icon && <span className="tab-icon" aria-hidden>{t.icon}</span>}
-              {t.label} <span className="tab-count">{count(t.key)}</span>
+              {bp.md ? t.label : t.short} <span className="tab-count">{count(t.key)}</span>
               {bp.md && t.key !== 'all' && (
                 <Tooltip title={t.desc}>
                   <InfoCircleOutlined className="tab-info" aria-label={`About ${t.label}`} />
@@ -635,11 +635,11 @@ export function Radar() {
                   {/* K26, K35 (R-V2, R-I9, R-E5): distinct empty copy when no filters are active. */}
                   <b>{tab === 'all' ? 'No ads' : `No ${RADAR_TABS.find((t) => t.key === tab)!.label} ads`} in the {win.short.toLowerCase()}</b>
                   <br />
-                  {tab === 'winners' ? 'No ad is strong on every graded metric yet. The closest are under Improve.' : 'Ads appear here once their grades land in this group.'}
+                  {tab === 'winners' ? 'No ad is strong on every graded metric yet. The closest are under To improve.' : 'Ads appear here once their grades land in this group.'}
                 </>
               }
             >
-              {tab === 'winners' && <Button onClick={() => setTab('potential')}>View Improve</Button>}
+              {tab === 'winners' && <Button onClick={() => setTab('potential')}>View To improve</Button>}
             </Empty>
           ) : (
             <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters</b>}>

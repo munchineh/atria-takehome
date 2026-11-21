@@ -608,10 +608,11 @@ export const SMALL_CREATIVES: Creative[] = [
 ];
 
 /** RA-15. One line per tab, saying what is true of the rows. */
-export const TABS: { key: TabKey; label: string; desc: string }[] = [
-  { key: 'winners', label: 'Best', desc: 'Your strongest ads. Build more of these.' },
-  { key: 'potential', label: 'Improve', desc: 'These ads do well in a few places, but could be better optimized.' },
-  { key: 'candidates', label: 'Rework', desc: 'These ads perform poorly on most metrics. Try new variations or a different approach.' },
+// Mancini 14:23: full group names. Phones use the short form so all four tabs fit at 390 px.
+export const TABS: { key: TabKey; label: string; short: string; desc: string }[] = [
+  { key: 'winners', label: 'Best-performing', short: 'Best', desc: 'Your strongest ads. Build more of these.' },
+  { key: 'potential', label: 'To improve', short: 'Improve', desc: 'These ads do well in a few places, but could be better optimized.' },
+  { key: 'candidates', label: 'Needs rework', short: 'Rework', desc: 'These ads perform poorly on most metrics. Try new variations or a different approach.' },
 ];
 
 /** Sidebar accounts (all fictional). Only the first two are clickable demo accounts. */

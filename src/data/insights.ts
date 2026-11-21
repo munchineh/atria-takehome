@@ -232,9 +232,9 @@ export function healthBreakdown(account: MockAccount, windowDays: number): BarRo
   const ads = account.creatives.map((c) => graded(c, windowDays));
   const total = ads.reduce((s, c) => s + c.spend, 0) || 1;
   const rows: [string, string][] = [
-    ['winners', 'Best'],
-    ['potential', 'Improve'],
-    ['candidates', 'Rework'],
+    ['winners', 'Best-performing'],
+    ['potential', 'To improve'],
+    ['candidates', 'Needs rework'],
   ];
   return rows.map(([key, label]) => {
     const group = ads.filter((c) => c.tab === key);
@@ -430,7 +430,7 @@ export function askRaya(q: string, account: MockAccount, windowDays: number, job
   const tags = topTags(account, windowDays, 8);
   if (/improve|fix|first|next/i.test(q)) {
     const n = b.next[0];
-    return n ? `Start with ${n.name}. ${n.why} It spent ${money(n.spend).replace(/\.\d\d$/, '')} this period, more than any other ad with a low grade on its goal.` : 'Every ad is B or above on the metric its goal needs, so nothing needs fixing first. Build more of your Best ads.';
+    return n ? `Start with ${n.name}. ${n.why} It spent ${money(n.spend).replace(/\.\d\d$/, '')} this period, more than any other ad with a low grade on its goal.` : 'Every ad is B or above on the metric its goal needs, so nothing needs fixing first. Build more of your best-performing ads.';
   }
   if (/tag|work|best|creative/i.test(q)) {
     const best = [...tags].filter((t) => t.count > 1).sort((a, b) => a.vsAccount - b.vsAccount)[0];

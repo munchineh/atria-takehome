@@ -2175,3 +2175,44 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .radar-card .card-foot .status-cell.healthy { padding: 0 14px; }
 /* 106 Grade scale in "How Radar grades your ads": every letter sits centered in a 24 px tag so the four line up. */
 .how-scale .grade-tag.ant-tag { width: 24px; padding: 0; justify-content: center; text-align: center; }
+/* 107 Radar tabs (Mancini 14:23). Every tab has the same box: 10 px top corners, flat bottom, flush with the strip's
+   bottom edge. Selected and hover differ only in fill, so the hover follows the selected tab's curve and nothing
+   shifts when the selection moves. The selection changes instantly, as in Chrome; only the hover fill fades. */
+.radar .radar-card-tabs .ant-tabs-tab,
+.radar .radar-card-tabs .ant-tabs-tab:first-child,
+.radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { margin: 0 !important; padding: 6px 12px 12px !important; border-radius: 10px 10px 0 0 !important; }
+.radar .radar-card-tabs .ant-tabs-tab { transition: background-color var(--dur-instant) var(--ease-standard) !important; }
+.radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active, .radar .radar-card-tabs .ant-tabs-tab .ant-tabs-tab-btn { transition: none !important; }
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active):hover { background: var(--c-fill) !important; }
+.radar .radar-card-tabs .ant-tabs-ink-bar { display: none; }
+.radar-card-tabs .tab-label { gap: 8px; }
+.radar-card-tabs .tab-info { margin-left: 0; }
+@media (max-width: 767px) {
+  .radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child, .radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { padding: 6px 8px 12px !important; }
+  .radar .radar-card-tabs > .ant-tabs-nav { padding: 6px 6px 0; }
+  .radar-card-tabs .tab-label { gap: 6px; }
+}
+/* 108 Grade popovers (Mancini 14:25): one 12 px rhythm. The lead line sits 4 px under the title row, then 12 px to the
+   breakdown box, 12 px to the note, 8 px to the period. No divider above the period: it is a quiet last line, not a footer. */
+.grade-pop-header { gap: 4px; }
+.grade-pop-header .grade-pop-title { min-height: 24px; }
+.grade-pop-kv { margin: 12px 0 0; padding: 8px 12px; gap: 8px 16px; border-radius: var(--r-control); }
+.grade-pop-kv .overall-spend { padding-top: 8px; margin-top: 0; }
+.grade-pop-note, .grade-pop .t-help.grade-pop-note { margin: 12px 0 0; }
+.grade-pop-footer { margin-top: 8px; padding-top: 0; border-top: 0; }
+.grade-pop-note + .grade-pop-footer { margin-top: 4px; }
+
+/* 109 Apple-style continuous corners (Mancini 14:24). Every rounded corner uses a superellipse instead of a circular arc,
+   so the curve eases into the straight edge with no visible kink. superellipse(1.5) keeps the Figma radii (4, 6, 8) and
+   pill ends while smoothing them; true circles (dots, avatars, round buttons) stay round. Browsers without corner-shape
+   (Safari, Firefox today) keep the plain radius. */
+@supports (corner-shape: superellipse(1.5)) {
+  *, *::before, *::after { corner-shape: superellipse(1.5); }
+  .unseen-dot, .live-dot, .swatches i, .td-cursor, .persona-avatar, .lin-letter, .img-remove, .play, .mochi-blob,
+  .filter-pill button, .ant-btn-circle, .ant-avatar-circle, .ant-badge-dot, .ant-badge-count, .ant-radio-inner,
+  .ant-switch-handle, .ant-switch-handle::before, .ant-slider-handle, .ant-slider-handle::after, .ant-steps-icon,
+  .ant-color-picker-color-block, .ant-spin-dot-item, .ant-timeline-item-head { corner-shape: round; }
+}
+/* 110 No question-mark cursor (Mancini 14:25). Tooltip triggers keep the cursor of whatever they sit in:
+   default on text, pointer on a sortable header or a button. */
+.na, .dotted, .col-head, .rec-grade.no-grade { cursor: inherit; }
