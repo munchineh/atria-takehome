@@ -2216,3 +2216,8 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 110 No question-mark cursor (Mancini 14:25). Tooltip triggers keep the cursor of whatever they sit in:
    default on text, pointer on a sortable header or a button. */
 .na, .dotted, .col-head, .rec-grade.no-grade { cursor: inherit; }
+/* 111 Goal tag (Mancini 14:27): the value carries the weight, not the key. "Goal" sits on the light tint in secondary
+   text; the goal itself ("Sales") sits on the deeper tint in Semi Bold, so the eye lands on what the ad is for. */
+.goal-split-k { background: var(--c-primary-tint); color: var(--c-text-2); font-weight: 400; }
+.goal-split-v { background: var(--c-primary-border); color: var(--c-text); font-weight: 600; }
+.goal-split-v .anticon { color: var(--c-text); }

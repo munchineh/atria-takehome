@@ -160,6 +160,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 108 | Grade popovers: lead line 4 px under the title row, 12 px to the breakdown box, 12 px to the note, period line under it with no divider | Mancini 14:25 | Text crowded the title and the box, and a divider made one quiet line look like a footer |
 | 109 | Continuous (Apple-style) corners everywhere: `corner-shape: superellipse(1.5)` on every rounded element, true circles excluded. Radii stay 4, 6, 8 and pills | Mancini 14:24 | Circular arcs meet the straight edge with a visible kink, most noticeable on pills. Chrome and Edge only; Safari and Firefox show the plain radius. Plain `squircle` at the same radii looked too square, so the milder value keeps the Figma feel |
 | 110 | No question-mark cursor on tooltip triggers (dotted column headers, N/A, grade placeholders) | Mancini 14:25 | The help cursor felt like an error state; the dotted underline already signals a definition |
+| 111 | Goal tag: "Goal" on the light tint in secondary text, the goal ("Sales") on the deeper tint in Semi Bold with a dark icon | Mancini 14:27 | The key had the stronger fill, so the label outweighed the answer |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
