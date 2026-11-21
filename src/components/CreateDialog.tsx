@@ -378,7 +378,7 @@ export function Body({
                 onCreate({ perRec, size });
               }}
             >
-              Create {total} variations
+              Generate {total} creatives
             </Button>
         </div>
       </footer>
