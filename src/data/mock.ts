@@ -522,6 +522,23 @@ export const glue = (s: string) => s.replace(/ (\S+)$/, '\u00a0$1');
 function recsFor(c: Creative): Recommendation[] {
   if (REC_PROVIDERS[c.accountId]) return REC_PROVIDERS[c.accountId](c);
   if (c.id === 'mm-1090245') return HERO_RECS;
+  // Mancini 15:48: "Back in shape in 8 seconds" already states a benefit, so "say what makes it different" made no sense here.
+  // This step's real gap is the price it dropped (see its lineage note), so that is its top suggestion.
+  if (c.id === 'mm-1090245-v4')
+    return HERO_RECS.filter((r) => r.id !== 'cta' && r.id !== 'different').map((r, i) => ({
+      ...r,
+      priority: i + 1,
+      tried: undefined,
+      ...(r.id === 'offer'
+        ? {
+            issue: "Customers don't see the price",
+            issueDetail: 'The headline says what the mochi does, but the ad no longer shows what it costs.',
+            why: 'The headline gives a reason to buy, but there is no price. The ad before this one led with "3 for $36" and cost less per purchase. Put the price back next to the benefit.',
+            fix: 'Bring the price back',
+            examples: ['"Back in shape in 8 seconds. 3 for $36."', '"$14 each"'],
+          }
+        : {}),
+    }));
   if (c.variationOf === 'mm-1090245')
     return HERO_RECS.filter((r) => r.id !== 'cta').map((r, i) => ({
       ...r,

@@ -263,6 +263,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 211 | Phones: cards on the ad page sit 12 px apart. | Mancini 15:45 | The left-column cards used the 20 px desktop column gap when stacked, wider than the 12 px between suggestion cards. |
 | 212 | Iteration history warning reads "Tests an idea you already tried" in place of "Repeats an earlier test". The full reason stays in Ad history (for example: this goes back to "no price", which A had before the price was changed). | Mancini 15:46 | "Repeats an earlier test" didn't say what was repeated or why it matters. |
 | 213 | Tooltip sweep: fragments lose their full stop ("Open in Meta Ads Manager", "Graded on video ads only", "Made from {ad}", the metric definitions on Radar and Overview). Full sentences keep theirs. | Mancini 15:47 (rule from 14:42) | The rule was applied to the tooltips he pointed at but not swept across the site. |
+| 214 | "Sad Pink · Back in shape" no longer gets "Say what makes it different". Its top suggestion is "Bring the price back": the problem reads "Customers don't see the price" and the evidence is the ad text with "no price". | Mancini 15:48 | The ad's headline, "Back in shape in 8 seconds", is a benefit, so evidence saying "no benefit or reason to choose it" contradicted the ad, and the first idea to try was the headline it already had. Its history shows the real change was dropping the price. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

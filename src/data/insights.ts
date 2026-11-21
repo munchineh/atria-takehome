@@ -56,6 +56,9 @@ function evidenceRow(c: Creative, r: Recommendation, label: string, shown: strin
   if (/clear\s+reason\s+to\s+buy/i.test(r.issue) && text) {
     return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'no benefit or reason to choose it' };
   }
+  if (/don't\s+see\s+the\s+price/i.test(r.issue) && text) {
+    return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'no price' };
+  }
   if (/clicking[\s\S]*aren't\s+buying|watch\s+but\s+aren't\s+buying/i.test(r.issue) && c.grades.ctr) {
     return { label: 'CTR', value: `${c.values.ctr.toFixed(2)}% (${c.grades.ctr})`, note: `but ${label} ${shown}${c.grades.conversion ? ` (${c.grades.conversion})` : ''}` };
   }
