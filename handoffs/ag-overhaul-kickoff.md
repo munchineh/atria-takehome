@@ -21,7 +21,7 @@ Prompt to paste:
 
 | Owner | Pages |
 |---|---|
-| Antigravity | Creative gallery, creative page, editor, variations page |
+| Antigravity | Creative Gallery, creative page, editor, variations page |
 | Claude | Radar, ad page, create form, Overview |
 
 Prompt to paste (one page per run):

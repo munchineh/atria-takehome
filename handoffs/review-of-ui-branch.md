@@ -11,13 +11,13 @@ Written by Claude on `feat/architecture-and-data`. Antigravity: read this after 
 |---|---|---|
 | Nov 21, 01:50 | `e181219` (port commit only) | Nothing to review yet |
 | Nov 21, 03:00 | `5385853` (7 commits, 02:00 to 02:19, **local only: push failed with 403**) | Reviewed from a bundle of the local worktree. Build passes. Trial merge with `feat/architecture-and-data` is clean and builds. See below |
-| Nov 21, 04:00 | `5385853` (no new commits; still local only) | Second pass on the pages not checked at 03:00: editor, Create panel, Creative gallery, Tasks, Radar at 834. No overflow, no console errors. Findings E3, E4, G6 to G9 below |
+| Nov 21, 04:00 | `5385853` (no new commits; still local only) | Second pass on the pages not checked at 03:00: editor, Create panel, Creative Gallery, Tasks, Radar at 834. No overflow, no console errors. Findings E3, E4, G6 to G9 below |
 
 ## Nov 21, 03:00: review of `a3e30d2` to `5385853`
 
 **Verdict:** on spec. All section 15 boxes are covered in code. Decisions hold: grades kept (DL-01), "Overview" and "Radar" kept (DL-02), month-first dates (DL-03), no "D.CTR" (DL-05), Creation routes with "View in Radar" (DL-06), "variation" and "version" (DL-07). No Tailwind. No edits to `src/data`, `worker/` or routes after the merge of my branch. No horizontal overflow at 1440 or 375 on Overview, Radar, ad page, Creation round, History. Only console error is `/api/quota` 404 on local preview (expected).
 
-Checked by screenshot: Overview, Radar, ad page (`mm-1090245-v3`), Creation round (`mm-1090247`), History drawer and sheet, at 1440 x 900 and 375 x 812. Not checked: editor, Create panel, Tasks, Creative gallery, 834.
+Checked by screenshot: Overview, Radar, ad page (`mm-1090245-v3`), Creation round (`mm-1090247`), History drawer and sheet, at 1440 x 900 and 375 x 812. Not checked: editor, Create panel, Tasks, Creative Gallery, 834.
 
 ### Essential
 | # | Page | Width | What | Fix | Rule |
@@ -43,15 +43,15 @@ Checked by screenshot: Overview, Radar, ad page (`mm-1090245-v3`), Creation roun
 ### Essential
 | # | Page | Width | What | Fix | Rule |
 |---|---|---|---|---|---|
-| E3 | Editor (Creation) | 375 | The breadcrumb "Creative gallery / Mystery box · Stack / Round 1 · Nov 20 / Product detail" wraps to 3 lines beside the Creation tag, with a slash ending two of them | On phones use one back link to the round ("‹ Round 1 · Nov 20"), as the round page does (`.phone-back`) | R-L, R-R |
-| E4 | Creative gallery | 375, 1440 | The floating teaching card covers the list: on phones it hides the second row and everything under it; on desktop it sits on the third row's status ("Generating 8", grade) | On phones show it inline above the list (or as a sheet); on desktop keep it clear of the rows | R-E, R-H |
+| E3 | Editor (Creation) | 375 | The breadcrumb "Creative Gallery / Mystery box · Stack / Round 1 · Nov 20 / Product detail" wraps to 3 lines beside the Creation tag, with a slash ending two of them | On phones use one back link to the round ("‹ Round 1 · Nov 20"), as the round page does (`.phone-back`) | R-L, R-R |
+| E4 | Creative Gallery | 375, 1440 | The floating teaching card covers the list: on phones it hides the second row and everything under it; on desktop it sits on the third row's status ("Generating 8", grade) | On phones show it inline above the list (or as a sheet); on desktop keep it clear of the rows | R-E, R-H |
 
 ### Good to have
 | # | Page | Width | What | Fix | Rule |
 |---|---|---|---|---|---|
 | G6 | Editor | 375 | The docked "Uses 4 of 1,298 credits" bar with a disabled "Apply change" is always on screen and covers the image before anything is typed | Show the docked bar only once there is a change to apply | R-R |
 | G7 | Create panel | 1440 | "Pre-fill from suggestions", "Rewrite from a product page" and "Change" are small orange text links on the dark panel; orange on dark at 12 px is hard to read and they do not look like actions | Use the dark theme's link color or small default buttons | R-C |
-| G8 | Creative gallery | both | "5 ads with variations" counts a cloned creative and a from-scratch project, which are not ads | "5 sets of variations", or count ads and projects apart | R-T |
+| G8 | Creative Gallery | both | "5 ads with variations" counts a cloned creative and a from-scratch project, which are not ads | "5 sets of variations", or count ads and projects apart | R-T |
 | G9 | Editor banner | 1440 | For a ROAS suggestion the banner shows "ROAS 1.31" with no grade tag and no word on why | Show the grey "No grade" tag used on the ad page, same tooltip | R-I |
 
 ### For Mancini

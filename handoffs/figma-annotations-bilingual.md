@@ -36,7 +36,7 @@ flowchart LR
   V --> E[Editor: refine, new version or new variation]
   V --> M[Test in Meta as paused ads]
   M --> R
-  CG[Creative gallery] --> V
+  CG[Creative Gallery] --> V
   AD --> L[History: A > B > C > D]
   V --> L
 ```
@@ -76,7 +76,7 @@ Card format for Figma: pin number, then Problem and Decision in both languages, 
 
 | # | Screen | [EN] Problem | [EN] Decision | [简体中文] 问题 | [简体中文] 设计决策 | Ref |
 |---|---|---|---|---|---|---|
-| 01 | Creative gallery | Clicking a tile in Creation opened the ad page in Analytics, so people lost their place | Tiles open the round inside Creation. "View in Radar" is a separate, explicit link | 在「创作」中点击素材会跳转到「分析」的广告页，用户丢失上下文 | 素材在「创作」内打开对应轮次；「在 Radar 中查看」作为单独入口 | DL-06, R-P |
+| 01 | Creative Gallery | Clicking a tile in Creation opened the ad page in Analytics, so people lost their place | Tiles open the round inside Creation. "View in Radar" is a separate, explicit link | 在「创作」中点击素材会跳转到「分析」的广告页，用户丢失上下文 | 素材在「创作」内打开对应轮次；「在 Radar 中查看」作为单独入口 | DL-06, R-P |
 | 02 | Ad page | The original split Performance and AI Recommendation into two tabs | One page: grades and numbers at the top, suggestions right below, each tied to the grade it fixes. Seeing the cause beside the fix beats switching tabs | 原版把「表现」和「AI 建议」拆成两个标签页 | 合并为一页：上方是评级与数据，下方是建议，每条建议对应它要改善的评级，原因与方案一眼可见 | R-H, R-I |
 | 03 | Round page, Create panel | The original showed reference images with a write-up; ours dropped them | A short reference strip: thumbnail plus a two-line note on why it works. Phase 2 for curated content; the prototype shows each angle's reason | 原版有带说明的参考素材，新版缺失 | 增加参考素材条：缩略图加两行「为什么有效」。精选内容放在第二阶段，原型先展示每个角度的理由 | R-E |
 | 04 | Ad page, suggestion card | Suggestions lost their structure | Four parts in a fixed order: what's happening, the number behind it, what to change, add to brief | 建议卡片失去了清晰的结构 | 固定四段：现象、数据依据、修改方向、加入简报 | R-H, R-I |

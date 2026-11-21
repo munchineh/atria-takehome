@@ -5,8 +5,8 @@ Take-home prototype for Atria. React 19 + Ant Design 6 (antd 6.7.1) + motion/rea
 ## Architecture
 | Area | Where | Notes |
 |---|---|---|
-| Routes | `src/App.tsx` | HashRouter: `/` Radar, `/overview`, `/ad/:id`, `/ad/:id/variations`, `/ad/:id/variations/:vid` (editor), `/creation` (Creative gallery) |
-| Screens | `src/screens/` | `Radar`, `Overview`, `AdDetail`, `Results` (Variations / round page), `Editor`, `ImageAds` (Creative gallery) |
+| Routes | `src/App.tsx` | HashRouter: `/` Radar, `/overview`, `/ad/:id`, `/ad/:id/variations`, `/ad/:id/variations/:vid` (editor), `/creation` (Creative Gallery) |
+| Screens | `src/screens/` | `Radar`, `Overview`, `AdDetail`, `Results` (Variations / round page), `Editor`, `ImageAds` (Creative Gallery) |
 | Components | `src/components/` | Shell, TasksPanel, CreateDialog, GradeTag, PopSheet (popover on desktop, bottom sheet on phones), Thumb, Goal, Placements, TeachingCard, StatusCell, Rolling |
 | Mock data | `src/data/mock.ts`, `accounts.ts`, `variations.ts` | 8 demo ad accounts, grades A to D per metric, goals (Meta objectives), suggestions per ad |
 | State | `src/data/store.tsx` | Jobs (rounds), credits, shortlist, versions, current account, grading window |

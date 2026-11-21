@@ -6,7 +6,7 @@ Test for every row: is there a strong reason to differ from the brief's Figma (F
 
 | # | Where | Figma | Ours | Fix |
 |---|---|---|---|---|
-| R1 | Sidebar in Creation | FG6: Creation nav ("Image Ads", "AI Playground") | The same ad account list as Analytics | Show Creation's own nav: Creative gallery |
+| R1 | Sidebar in Creation | FG6: Creation nav ("Image Ads", "AI Playground") | The same ad account list as Analytics | Show Creation's own nav: Creative Gallery |
 | R2 | Top bar on Radar | FG1: quiet meta "7-day click, 1-day view" beside Synced | Synced only | Add the attribution window as meta (S-30 already lists it) |
 | R3 | Radar filter position | FG1: "Dimension filter" on the left, column tools on the right | Filter on the right | Filter moves left, next to the period |
 | R4 | Create form, brief | FG3: URL field with Generate, "Or import a brief", textarea always visible | A chooser of three start cards before the textarea | FG3 layout; "Fill in from the suggestions" becomes the import link |
