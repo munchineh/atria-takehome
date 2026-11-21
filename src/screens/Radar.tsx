@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS, accountOf } from '../data/store';
@@ -14,6 +14,8 @@ import { Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
+import { IterationHistory } from '../components/IterationHistory';
+import { iterationHistory } from '../data/insights';
 import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../motion/tokens';
 
 type TabKey = (typeof TABS)[number]['key'];
@@ -343,7 +345,7 @@ export function Radar() {
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
   const cards = !bp.md; // below tablet width
-  const { statusOf, accountId, windowDays, setWindowDays } = useStore();
+  const { statusOf, accountId, windowDays, setWindowDays, jobs } = useStore();
   const { message } = App.useApp();
   const account = DEMO_ACCOUNTS.find((a) => a.id === accountId) ?? DEMO_ACCOUNTS[0];
   // Grades follow the window: changing it re-grades every ad (mock: a few move).
@@ -431,12 +433,20 @@ export function Radar() {
           <Typography.Title level={1} className="page-title">
             Radar
           </Typography.Title>
+          <span className="page-title-actions">
+          <PopSheet content={<div className="ih-pop"><IterationHistory items={iterationHistory(account, windowDays, jobs)} limit={4} empty="No rounds yet. Open an ad and pick suggestions to create variations." /></div>} title="Iteration history" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+            <Button type="text" size="small" className="hgw" aria-label="Iteration history">
+              <HistoryOutlined className="hgw-icon" />
+              <span className="hgw-text">History</span>
+            </Button>
+          </PopSheet>
           <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
             <Button type="text" size="small" className="hgw" aria-label="How Radar grades your ads">
               <QuestionCircleOutlined className="hgw-icon" />
               <span className="hgw-text">How grading works</span>
             </Button>
           </PopSheet>
+          </span>
         </div>
         <p className="muted desc">Find out how each ad is performing and what to do next.</p>
       </div>

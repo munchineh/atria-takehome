@@ -22,7 +22,7 @@ import {
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
 import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
-import { suggestionParts, type SuggestionParts } from '../data/insights';
+import { iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -30,6 +30,7 @@ import { Body, CreateDialog } from '../components/CreateDialog';
 import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
+import { IterationHistory } from '../components/IterationHistory';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
 /** Persona icons per account (accounts.ts Persona['icon']). */
@@ -246,10 +247,11 @@ export function AdDetail() {
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
   const nav = useNavigate();
-  const { statusOf, jobsFor, startJob, credits: balance, versionsOf, windowDays } = useStore();
+  const { statusOf, jobsFor, startJob, credits: balance, versionsOf, windowDays, jobs: allJobs } = useStore();
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
   const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
+  const adHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id);
   const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
@@ -549,7 +551,8 @@ export function AdDetail() {
               </div>
             )}
           </motion.div>
-                  {made.length > 0 && (
+                  {/* The history below lists these with their results, so this list shows only when it doesn't. */}
+          {made.length > 0 && !adHistory.some((h) => h.kind === 'result') && (
             <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
               <b className="panel-title">Made from this ad · {made.length}</b>
               <div className="made-list">
@@ -575,6 +578,13 @@ export function AdDetail() {
                   ),
                 )}
               </div>
+            </motion.div>
+          )}
+          {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
+          {adHistory.length > 0 && (
+            <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
+              <b className="panel-title">Iteration history</b>
+              <IterationHistory items={adHistory} limit={4} empty="" />
             </motion.div>
           )}
         </aside>

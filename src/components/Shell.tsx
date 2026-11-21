@@ -102,12 +102,36 @@ function useCompletionToasts(mobile: boolean) {
   }, [finished, clearFinished, notification, nav, markSeen, mobile, accountId]);
 }
 
+/** 20 × 20 panel glyph, like Atria's collapse and expand buttons. */
+const PanelIcon = () => (
+  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
+    <rect x="3" y="4" width="14" height="12" rx="2.5" />
+    <path d="M8 4v12" />
+  </svg>
+);
+
 export function Shell({ children, header }: { children: ReactNode; header?: ReactNode }) {
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
   const wide = bp.xl;
   const { message } = App.useApp();
   const [drawer, setDrawer] = useState(false);
+  // Mancini 09:43, item 22: Atria's panel collapses from a button at its top right; the expand button then sits at the top of the rail.
+  const [sideOpen, setSideOpen] = useState(() => {
+    try {
+      return localStorage.getItem('atria-side') !== 'closed';
+    } catch {
+      return true;
+    }
+  });
+  const toggleSide = (open: boolean) => {
+    setSideOpen(open);
+    try {
+      localStorage.setItem('atria-side', open ? 'open' : 'closed');
+    } catch {
+      /* storage can be unavailable */
+    }
+  };
   const { jobs, credits, accountId, tasksOpen, setTasksOpen, bump } = useStore();
   const loc = useLocation();
   const nav = useNavigate();
@@ -119,10 +143,17 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
   useCompletionToasts(mobile);
 
   return (
-    <div className="shell">
+    <div className={`shell ${wide && !sideOpen ? 'side-collapsed' : ''}`}>
       {!mobile && (
         <nav className="rail" aria-label="Main">
           <div className="rail-logo">A</div>
+          {wide && !sideOpen && (
+            <Tooltip title="Expand panel" placement="right">
+              <button type="button" className="panel-toggle-btn rail-expand" aria-label="Expand panel" onClick={() => toggleSide(true)}>
+                <PanelIcon />
+              </button>
+            </Tooltip>
+          )}
           {RAIL.map((r) => {
             const active = r.to === '/creation' ? inCreation : r.to === '/' && !inCreation;
             return (
@@ -141,9 +172,16 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           })}
         </nav>
       )}
-      {wide && (
+      {wide && sideOpen && (
         <aside className="sidebar">
-          <div className="sidebar-title">{inCreation ? 'Creation' : 'Analytics'}</div>
+          <div className="sidebar-title sidebar-title-row">
+            <span>{inCreation ? 'Creation' : 'Analytics'}</span>
+            <Tooltip title="Collapse panel" placement="right">
+              <button type="button" className="panel-toggle-btn" aria-label="Collapse panel" onClick={() => toggleSide(false)}>
+                <PanelIcon />
+              </button>
+            </Tooltip>
+          </div>
           <AccountList />
         </aside>
       )}
