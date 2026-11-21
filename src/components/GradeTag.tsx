@@ -113,7 +113,7 @@ export function OverallTag({ creative }: { creative: Creative }) {
           <span className="grade-pop-name">Overall</span>
           {band && <span className="grade-pop-band">{band}</span>}
         </div>
-        <p className="grade-pop-lead">Combines this ad's grades into one.</p>
+        <p className="grade-pop-lead">The average of this ad's grades below.</p>
       </div>
 
       <div className="grade-pop-kv overall-kv">
@@ -127,8 +127,9 @@ export function OverallTag({ creative }: { creative: Creative }) {
           <span className="t-key">Spend</span>
           <span className="grade-pop-val">{money(creative.spend)}</span>
         </span>
-        {creative.media !== 'Video' && <span className="grade-pop-kv-note">Hook and retention apply to video ads{'\u00a0'}only.</span>}
       </div>
+      {/* Mancini 10:45: the note sat in the grid's value column and right-aligned. It's a line of help, so it sits under the box. */}
+      {creative.media !== 'Video' && <p className="t-help grade-pop-note">Hook and retention apply to video ads{'\u00a0'}only.</p>}
 
       <div className="grade-pop-footer">
         <p className="grade-pop-window">{windowLong}</p>
