@@ -105,40 +105,15 @@ export function Body({
           For <b className="ink">{creative.name}</b> · {plural(recCount, 'suggestion')}
         </p>
 
-        {/* Brand row (I5, I7): prefilled, inline, no modal. */}
-        <section className="dlg-row brand-row">
-          <span className="dlg-label">Brand</span>
-          {brand ? (
-            <span className="brand-value">
-              <span className="swatches">
-                {brand.colors.map((c) => (
-                  <i key={c} style={{ background: c }} />
-                ))}
-              </span>
-              <span>
-                {brand.name} · {brand.colors.length} colors · {brand.font}
-              </span>
-              {/* G7 (R-C): use crisp default buttons on the dark panel so actions are legible and unmistakably clickable. */}
-              <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
-                Change
-              </Button>
-            </span>
-          ) : (
-            <span className="brand-value">
-              <span className="muted">No brand linked to this ad account</span>
-              <Button size="small" onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
-                Link a brand
-              </Button>
-              <span className="muted small block-sm">Colors and fonts come from the brand</span>
-            </span>
-          )}
-        </section>
-
+        {/* S-70 (FG3 "Ad context"): group labels on the left, fields on the right; stacked on phones. */}
+        <section className="dlg-group">
+          <h5 className="dlg-group-label">Context</h5>
+          <div className="dlg-group-fields">
         {/* Ad brief (I1). */}
-        <section className="dlg-block">
+        <div className="dlg-field">
           {/* 5d C5d-08: one help line only; the rewrite link sits on the label row. */}
           <div className="dlg-label-row">
-            <span className="dlg-label">Ad brief</span>
+            <span className="dlg-field-label"><span className="req" aria-hidden>*</span>Ad brief</span>
             <span className="row-gap wrap">
               {(mode === 'filled' || mode === 'write') && (
                 <Button type="link" size="small" className="inline-link" icon={<LinkOutlined />} onClick={() => setMode('url')}>
@@ -236,12 +211,11 @@ export function Body({
               </motion.div>
             )}
           </AnimatePresence>
-        </section>
+        </div>
 
         {/* Product images (I2). */}
-        <section className="dlg-block">
-          <div className="dlg-label">Product images</div>
-          <span className="t-help">Up to 4. PNG or JPG, under 5{'\u00a0'}MB each.</span>
+        <div className="dlg-field">
+          <span className="dlg-field-label">Product images</span>
           <div className="img-tiles">
             <AnimatePresence initial={false}>
               {images.map((s) => (
@@ -267,13 +241,51 @@ export function Body({
             )}
             <input ref={file} type="file" accept="image/png,image/jpeg" hidden onChange={(e) => addFile(e.target.files?.[0])} />
           </div>
-          {uploadError && <span className="field-error">{uploadError}</span>}
+          {/* S-71: help sits under the field. */}
+          {uploadError ? <span className="field-error">{uploadError}</span> : <span className="t-help">Up to 4. PNG or JPG, under 5{'\u00a0'}MB each.</span>}
+        </div>
+          </div>
         </section>
 
+        <section className="dlg-group">
+          <h5 className="dlg-group-label">Style</h5>
+          <div className="dlg-group-fields">
+        {/* Brand row (I5, I7): prefilled, inline, no modal. */}
+        <div className="dlg-field">
+          <span className="dlg-field-label">Brand</span>
+          {/* S-72: a read-only value is a fill box, not a disabled field. */}
+          <div className="dlg-readonly brand-row">
+          {brand ? (
+            <span className="brand-value">
+              <span className="swatches">
+                {brand.colors.map((c) => (
+                  <i key={c} style={{ background: c }} />
+                ))}
+              </span>
+              <span>
+                {brand.name} · {brand.colors.length} colors · {brand.font}
+              </span>
+              {/* G7 (R-C): use crisp default buttons on the dark panel so actions are legible and unmistakably clickable. */}
+              <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
+                Change
+              </Button>
+            </span>
+          ) : (
+            <span className="brand-value">
+              <span className="muted">No brand linked to this ad account</span>
+              <Button size="small" onClick={() => message.info({ content: "In the live product, this opens Brands. It's not part of this prototype.", key: 'brand' })}>
+                Link a brand
+              </Button>
+              <span className="muted small block-sm">Colors and fonts come from the brand</span>
+            </span>
+          )}
+          </div>
+        </div>
+
         {/* Output (I3, I4). */}
-        <section className="dlg-grid">
-          <label className="dlg-block">
-            <span className="dlg-label">Size</span>
+        <div className="dlg-grid">
+          <label className="dlg-field">
+            <span className="dlg-field-label">Size</span>
             <Select value={size} onChange={setSize} options={SIZES.map((s) => ({ value: s.value, label: s.label }))} />
             {size === defaultSize && (
               <span className="t-help">
@@ -281,10 +293,12 @@ export function Body({
               </span>
             )}
           </label>
-          <label className="dlg-block">
-            <span className="dlg-label">Variations per suggestion</span>
+          <label className="dlg-field">
+            <span className="dlg-field-label">Variations per suggestion</span>
             <Select value={perRec} onChange={setPerRec} options={[2, 4, 6, 8].map((n) => ({ value: n, label: n }))} />
           </label>
+        </div>
+          </div>
         </section>
       </div>
 

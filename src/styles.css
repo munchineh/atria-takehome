@@ -1965,3 +1965,21 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .ph-meta-sub { color: var(--c-text-3); }
 .ph-meta-sub::before { content: '·'; margin-right: 6px; }
 .sec-head .ad-media { margin: 0; align-self: center; }
+
+/* Create form rebuild (S-70 to S-73, FG3). */
+.dlg-group { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: 16px; padding-top: 16px; border-top: 1px solid var(--c-border-2); }
+.dlg-sub + .dlg-group { border-top: 0; padding-top: 4px; }
+.dlg-group-label { margin: 0; font-size: var(--fs-body); line-height: var(--lh-body, 22px); font-weight: 600; color: var(--c-text); }
+.dlg-group-fields { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.dlg-field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.dlg-field-label { font-size: var(--fs-body); font-weight: 400; color: var(--c-text); }
+.dlg-field-label .req { color: #ed383b; margin-right: 4px; }
+.dlg-readonly { display: flex; align-items: center; min-height: 32px; padding: 4px 11px; border-radius: var(--r-control); background: rgba(0, 0, 0, 0.04); }
+.dlg-readonly .brand-value { font-size: var(--fs-body); }
+.dlg .dlg-label-row { margin-bottom: 0; }
+@media (max-width: 767px) {
+  .dlg-group { grid-template-columns: 1fr; gap: 8px; }
+}
+.bar-panel .dlg-group { border-top-color: #333037; }
+.bar-panel .dlg-group-label, .bar-panel .dlg-field-label { color: #fff; }
+.bar-panel .dlg-readonly { background: #26232a; }

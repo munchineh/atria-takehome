@@ -93,3 +93,12 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 63 | Next steps shows "· D" only when that metric's column is hidden | S-46 | At 834 the grade appeared twice and pushed the table 13 px past the page |
 | 64 | Spend column 124 wide at every size | S-52 | $38,816.90 plus the sort icon didn't fit in 104 |
 | V-15 | "Made from" stays as a second line under the name | Deviates from S-51 | Mancini asked for the parent named on the row (09:43, item 20). Annotate in Figma |
+
+## Create form rebuild (Opus, Nov 21)
+| # | Change | Rule | Why |
+|---|---|---|---|
+| 65 | Two groups, Context and Style, with labels on the left (stacked on phones) | S-70, FG3 | FG3 groups the brief and images under "Context" and brand styling under "Style" |
+| 66 | Field labels at Body weight, red required mark on Ad brief | S-71 | Every label was bold, so nothing marked what's required |
+| 67 | Brand moved to Style, shown as a grey read-only box | S-72 | It was a bordered box at the top, which read as a field you could type in |
+| 68 | Product image help moved under the tiles; an upload error replaces it | S-71 | Help sat between the label and the field |
+| V-11 | The dark bar that morphs into this form stays | Approved deviation | Annotate in Figma |
