@@ -382,7 +382,7 @@ export function Results() {
       <PageHeader
         crumbs={crumbs}
         title={`Variations of ${c.name}`}
-        desc={`Save the options worth keeping. They're saved to the gallery, and you can test them in ${platform}.`}
+        desc="Compare creative variations from this ad. You can also find them in Creative Gallery."
         actions={
           !c.project ? (
             <>

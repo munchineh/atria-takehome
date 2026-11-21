@@ -345,6 +345,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 295 | Edit Creative top-right button follows the options: "Save version" or "Create variation" (were "Save new version" / "Save as new variation"). Renaming alone still says "Save"; the leave dialog uses the same label | Mancini 19:40 | One set of words for the choice and the action |
 | 296 | Suggested prompts under "What should change?" on Edit Creative, and the same chips in the Edit creative dialog, have a dashed border | Mancini 19:42 | They're starting points to fill the prompt, not actions |
 | 297 | Edit Creative: "Show prompt" is a text button with an eye icon at the right end of the suggested prompts row (was a full-width grey bar further down). The prompt opens just under that row. The suggested prompts are three: "Simplify the layout", "Make the product bigger", "Change the background" ("Fix the text" is covered by Text only) | Mancini 19:44 | The bar was easy to miss below the Generate button; next to the prompts it's where people look when writing one |
+| 298 | Round page line under the title: "Compare creative variations from this ad. You can also find them in Creative Gallery." (was "Save the options worth keeping. They're saved to the gallery, and you can test them in Meta.") | Mancini 19:46 | Every generated creative is already in the gallery; the page is for comparing |
 
 ## With more time
 
