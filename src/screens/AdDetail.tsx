@@ -555,7 +555,7 @@ export function AdDetail() {
               ) : (
                 <>
                   {/* Mancini 15:34: one fact, not two. The ad was made outside Atria and came in with the account sync. */}
-                  <div><dt>Source</dt><dd>Synced from {c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}</dd></div>
+                  <div><dt>Source</dt><dd>{c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}</dd></div>
                 </>
               )}
             </dl>

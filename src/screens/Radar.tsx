@@ -11,7 +11,6 @@ import { FilterOutlined, PlusOutlined, MinusOutlined, CloseOutlined, ExportOutli
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
-import { GOAL_ICON } from '../components/Goal';
 import { useStore } from '../data/store';
 import { Creative as CreativeArt, Thumb } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -296,7 +295,7 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
   { label: 'Media', options: ['Image', 'Video', 'Carousel'] },
   { label: 'Platform', options: ['Meta', 'TikTok'] },
   { label: 'Ad status', options: ['Active', 'Paused'] },
-  { label: 'Source', options: ['Synced from Meta', 'Created in Atria'] },
+  { label: 'Source', options: ['Meta', 'Created in Atria'] },
 ];
 
 type Picked = Record<string, string[]>;
@@ -493,7 +492,6 @@ export function Radar() {
     any('Source', (v) => v === sourceOf(c));
   const inTab = (c: Creative, k: TabKey) => k === 'all' || c.tab === k;
   const rows = CREATIVES.filter((c) => inTab(c, tab) && matches(c)).sort((a, b) => b.spend - a.spend);
-  const mixedGoals = new Set(CREATIVES.map((c) => goalOf(c))).size > 1;
   const count = (k: TabKey) => CREATIVES.filter((c) => inTab(c, k) && matches(c)).length;
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
@@ -677,16 +675,7 @@ export function Radar() {
                     c={c}
                     morph={false}
                     mobile
-                    meta={
-                      // Mancini 15:40: a goal tag only helps when ads in this list have different goals. If they all share one, it's left out.
-                      mixedGoals ? (
-                        <div className="card-tags">
-                          <span className="card-goal-chip">
-                            {GOAL_ICON[goal]} {goal}
-                          </span>
-                        </div>
-                      ) : undefined
-                    }
+                    // Mancini 15:51: no goal tag on phone cards. The goal is on the ad page and in the Filter.
                     aside={
                       <span className="card-corner" onClick={(e) => e.stopPropagation()}>
                         <OverallTag creative={c} />
