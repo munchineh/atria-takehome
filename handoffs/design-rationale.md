@@ -125,3 +125,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 77 | Goal tooltip opens to the top right | S-60 | It touched the viewport edge (Mancini 12:53) |
 | 78 | Summary line at Body 14/22, no balanced wrapping | S-04 | Read oversized with loose leading, and balancing broke it into two short lines |
 | 79 | "Problems only" switch on Suggestions: each card shows just the issue and its evidence | FG2 "Top issues identified" (Q3) | Mancini: offer the problems view as a toggle instead of a second list |
+| 80 | Attribution ("7-day click, 1-day view") lives in the Synced tooltip, not as its own label | FG1, R2 | Mancini 13:03: useful when asked for, clutter as a label |
+| 81 | "Problems only" renamed "Hide suggestions" | Copy | Mancini 13:04 |
+| 82 | Star becomes Save with a bookmark icon; bar says "2 saved"; copy says "Save the ones to keep" | Glossary | Mancini 13:04: the social media save pattern; one word for keeping a creative |
+| K12 | Creation sidebar keeps our structure; Creative gallery stays (R1 declined) | Mancini 13:03 | Scales to video, and lets people browse creatives apart from ads |
+| K13 | Filter stays at the right (R3 declined); persona cards stay (R5 declined) | Mancini 13:03 | |

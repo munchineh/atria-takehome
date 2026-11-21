@@ -47,6 +47,14 @@ export function Body({
   panel?: boolean;
 }) {
   const { briefs, setBrief, credits, lastSettings } = useStore();
+  // R4 mock switch (Mancini 13:03 wants to compare before deciding). Off by default.
+  const fg3 = (() => {
+    try {
+      return localStorage.getItem('atria.briefStyle') === 'fg3';
+    } catch {
+      return false;
+    }
+  })();
   const quota = useQuota();
   const { message } = App.useApp();
   const account = accountOf(creative);
@@ -115,13 +123,61 @@ export function Body({
           <div className="dlg-label-row">
             <span className="dlg-field-label"><span className="req" aria-hidden>*</span>Ad brief</span>
             <span className="row-gap wrap">
-              {(mode === 'filled' || mode === 'write') && (
+              {!fg3 && (mode === 'filled' || mode === 'write') && (
                 <Button type="link" size="small" className="inline-link" icon={<LinkOutlined />} onClick={() => setMode('url')}>
                   Rewrite from a product page
                 </Button>
               )}
             </span>
           </div>
+          {fg3 ? (
+            /* R4 mock (FG3 "Ad context"): link field and brief box always visible; picked suggestions are one link away. */
+            <div className="brief-fg3">
+              <div className="brief-url-row">
+                <Input
+                  prefix={<span className="t-help">Brief from a product page</span>}
+                  placeholder="https://"
+                  value={url}
+                  onChange={(e) => {
+                    setUrl(e.target.value);
+                    if (mode === 'error') setMode('write');
+                  }}
+                  onPressEnter={() => url && readPage()}
+                  status={mode === 'error' ? 'error' : undefined}
+                  inputMode="url"
+                  aria-label="Product page link"
+                />
+                <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                  {mode === 'reading' ? 'Reading' : 'Write brief'}
+                </Button>
+              </div>
+              {mode === 'error' ? (
+                <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>
+              ) : (
+                <span className="t-help">
+                  Or{' '}
+                  {fromSuggestions ? (
+                    <button type="button" className="ed-inline-link" onClick={prefill}>
+                      fill it in from the suggestions you picked
+                    </button>
+                  ) : (
+                    'write it'
+                  )}{' '}
+                  below.
+                </span>
+              )}
+              <Input.TextArea
+                placeholder={'Product: what it is and what makes it different\nWho it\'s for: the people you want to reach\nGoal: what the ad should get people to do\nTone: how it should sound'}
+                value={brief}
+                onChange={(e) => {
+                  setDraft(e.target.value);
+                  if (mode !== 'filled' && mode !== 'write') setMode('write');
+                }}
+                autoSize={{ minRows: 5, maxRows: 8 }}
+                aria-label="Ad brief"
+              />
+            </div>
+          ) : (
           <AnimatePresence mode="wait" initial={false}>
             {(mode === 'empty' || mode === 'url' || mode === 'reading' || mode === 'error') && !saved && !brief ? (
               <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className={`brief-starts-wrap ${picked && picked.length > 0 ? 'has-prefill' : ''}`}>
@@ -211,6 +267,7 @@ export function Body({
               </motion.div>
             )}
           </AnimatePresence>
+          )}
         </div>
 
         {/* Product images (I2). */}

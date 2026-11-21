@@ -18,7 +18,7 @@ import { SectionHead } from '../components/SectionHead';
 
 const HOW = (
   <div className="grade-pop">
-    <p>A round gives you several options. Star the ones you want to keep and they're saved here. Anything you add to an ad is saved too.</p>
+    <p>A round gives you several options. Save the ones you want to keep and they appear here. Anything you add to an ad is saved too.</p>
     <p>Each creative keeps all its versions. Once it's in an ad it can't change, so you iterate on it instead, which makes a new&nbsp;creative.</p>
     <p>Archive creatives you're done with. Turn on Show archived in Filter to see them&nbsp;again.</p>
   </div>
@@ -220,7 +220,7 @@ export function ImageAds() {
                 <Thumb c={src} size={40} />
                 <span className="gal-live-body">
                   <strong className="gal-live-name">{src.name}</strong>
-                  <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Star the ones to keep.</span>
+                  <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Save the ones to keep.</span>
                 </span>
                 <span className="gal-review-cta">Review</span>
               </button>

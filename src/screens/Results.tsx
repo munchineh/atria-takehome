@@ -13,8 +13,8 @@ import {
   FontSizeOutlined,
   LockOutlined,
   SendOutlined,
-  StarFilled,
-  StarOutlined,
+  BookmarkFilled,
+  BookmarkOutlined,
   SwapOutlined,
 } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -262,7 +262,7 @@ function VariationCard({
             <Button
               size={mobile ? 'large' : 'middle'}
               className={`var-icon pick-btn ${picked ? 'on' : ''}`}
-              icon={picked ? <StarFilled /> : <StarOutlined />}
+              icon={picked ? <BookmarkFilled /> : <BookmarkOutlined />}
               onClick={onPick}
               aria-pressed={picked}
               aria-label={picked ? 'Remove from gallery' : 'Save to gallery'}
@@ -282,7 +282,7 @@ function VariationCard({
 /**
  * Variations page (S-01 to S-92):
  * Focal point: the variation cards grouped by suggestion.
- * Single primary action: Test in Meta (in the floating shortlist bar once options are starred).
+ * Single primary action: Test in Meta (in the floating bar once options are saved).
  */
 export function Results() {
   const { id } = useParams();
@@ -367,7 +367,7 @@ export function Results() {
       <PageHeader
         crumbs={crumbs}
         title={`Variations of ${c.name}`}
-        desc={`Star the options worth keeping. They're saved to the gallery, and you can test them in ${platform}.`}
+        desc={`Save the options worth keeping. They're saved to the gallery, and you can test them in ${platform}.`}
         actions={
           !c.project ? (
             <>
@@ -445,7 +445,7 @@ export function Results() {
                 <Alert
                   type="info"
                   showIcon
-                  title={`All ${picks.length} shortlisted variations fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
+                  title={`All ${picks.length} saved variations fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
                   action={
                     <span className="res-alert-actions">
                       <Button onClick={() => go({ rec: otherRec.id })}>Show {otherRec.target}</Button>
@@ -550,7 +550,7 @@ export function Results() {
           >
             <div className="sticky-summary">
               <strong>
-                <Rolling value={shortlist.length} /> shortlisted
+                <Rolling value={shortlist.length} /> saved
               </strong>
             </div>
             {mobile ? (
@@ -570,12 +570,12 @@ export function Results() {
                         onClick: () => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`),
                       },
                       { type: 'divider' },
-                      { key: 'clear', label: 'Clear shortlist', onClick: () => setShortlist([]) },
+                      { key: 'clear', label: 'Unsave all', onClick: () => setShortlist([]) },
                     ],
                   }}
                 >
-                  <Tooltip title="More shortlist actions.">
-                    <Button icon={<EllipsisOutlined />} aria-label="More shortlist actions" />
+                  <Tooltip title="More actions for saved options.">
+                    <Button icon={<EllipsisOutlined />} aria-label="More actions for saved options" />
                   </Tooltip>
                 </Dropdown>
               </div>

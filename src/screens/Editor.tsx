@@ -455,7 +455,7 @@ export function Editor() {
           />
           <p className="t-help ed-mode-help">
             {makeNew
-              ? 'Makes a new variation next to this one. You can shortlist and test it on its own.'
+              ? 'Makes a new variation next to this one. You can save it and test it on its own.'
               : `Adds v${latest.n + 1} to this variation. Earlier versions stay in the history below the image.`}
           </p>
         </div>

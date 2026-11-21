@@ -11,6 +11,8 @@ export type TabKey = 'winners' | 'potential' | 'candidates';
 /** Today in the prototype. Grades cover the 60 days up to the last sync. */
 export const TODAY = 'Nov 20';
 export const WINDOW = { days: 60, long: 'Last 60 days · Sep 21 to Nov 19', short: 'Last 60 days', synced: 'Nov 19, 13:43' };
+/** Meta's attribution setting for the synced results (FG1 top bar). Shown in the Synced tooltip, not as its own label (Mancini 13:03). */
+export const ATTRIBUTION = '7-day click, 1-day view';
 
 export const ACCOUNT = {
   id: 'moody-mochi',

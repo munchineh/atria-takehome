@@ -160,7 +160,7 @@ function RecCard({
         </span>
       </div>
 
-      {/* Mancini 12:53: "Problems only" shows each issue and its evidence, like FG2's "Top issues identified". */}
+      {/* Mancini 12:53, 13:04: "Hide suggestions" leaves each issue and its evidence, like FG2's "Top issues identified". */}
       {!issuesOnly && (<>
       {/* Part 3: Recommended action (What to change + why + examples) */}
       <div className="rec-part rec-part-action">
@@ -583,7 +583,7 @@ export function AdDetail() {
               action={
                 <label className="issues-only">
                   <Switch size="small" checked={issuesOnly} onChange={setIssuesOnly} />
-                  <span>Problems only</span>
+                  <span>Hide suggestions</span>
                 </label>
               }
               help={<>Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}

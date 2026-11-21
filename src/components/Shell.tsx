@@ -13,7 +13,7 @@ import {
 } from './AppIcons';
 import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ACCOUNT, SIDEBAR_ACCOUNTS, plural } from '../data/mock';
+import { ACCOUNT, ATTRIBUTION, SIDEBAR_ACCOUNTS, WINDOW, plural } from '../data/mock';
 import { DEMO_ACCOUNTS, accountOf, findCreative, useStore } from '../data/store';
 import { TasksPanel } from './TasksPanel';
 import { Thumb } from './Thumb';
@@ -195,9 +195,11 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           {!inCreation && header}
           <div className="topbar-right">
             {!mobile && (
-              <span className="sync muted">
-                <SyncOutlined /> Synced 1 day ago
-              </span>
+              <Tooltip title={`Last synced from Meta on ${WINDOW.synced}. Results use ${ATTRIBUTION} attribution.`}>
+                <span className="sync muted" tabIndex={0}>
+                  <SyncOutlined /> Synced 1 day ago
+                </span>
+              </Tooltip>
             )}
             <Tooltip title={`Credits left in this workspace. Each image Atria makes uses ${ACCOUNT.creditsPerImage}\u00a0credits.`}>
               <span className="credits">{credits.toLocaleString('en-US')}{'\u00a0'}credits</span>
@@ -229,7 +231,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
         <AccountList onPick={() => setDrawer(false)} />
         {mobile && (
           <div className="drawer-sync">
-            <SyncOutlined /> Synced 1 day ago
+            <SyncOutlined /> Synced 1 day ago · {ATTRIBUTION} attribution
           </div>
         )}
       </Drawer>
