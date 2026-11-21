@@ -3,7 +3,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CopyOutlined } from '../components/AppIcons';
+import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CopyOutlined, LineChartOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -542,7 +542,14 @@ export function AdDetail() {
       {/* Mancini 14:56 (mock B): the image leads on the left; chips, the ad's name and the reading sit beside it.
           The top row keeps only the breadcrumb and the read-only period. */}
       <header className="ph ad-top">
-        <Breadcrumb className="ph-crumbs" items={[{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: c.name }]} />
+        <Breadcrumb
+          className="ph-crumbs"
+          items={
+            hub.hub === 'library'
+              ? [{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: <Link to={`/creation/ads/${c.id}`}>{c.name}</Link> }, { title: 'Ad Analytics' }]
+              : [{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: c.name }]
+          }
+        />
         <div className="ph-actions">
           <>
             <Tooltip title="Set on Radar. Grades on this page use the same period.">
@@ -698,6 +705,10 @@ export function AdDetail() {
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
           <motion.div variants={fadeUp} className="ad-title">
+            {/* Row 304 (Mancini 20:45): names the page, so it isn't mistaken for Ad Details in Ad Library. */}
+            <span className="page-kind">
+              <LineChartOutlined /> Ad Analytics
+            </span>
             <div className="ph-eyebrow">
           <>
             {/* Mancini 14:47: the ad's group and goal as pill chips above its name, as in mock B. */}

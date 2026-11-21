@@ -2,12 +2,13 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { App, Breadcrumb, Button, Empty, Grid, Input, Select, Tooltip } from 'antd';
 import { motion } from 'motion/react';
-import { CheckCircleFilled, EditOutlined, ExportOutlined, PictureOutlined } from '../components/AppIcons';
+import { CheckCircleFilled, EditOutlined, ExportOutlined, LineChartOutlined, PictureOutlined, ProfileOutlined } from '../components/AppIcons';
 import { AdArt, CarouselArt, Creative } from '../components/Thumb';
 import { EditCreativeDialog, type CreativeDraft } from '../components/EditCreativeDialog';
 import { SectionHead } from '../components/SectionHead';
 import { CTA_OPTIONS, FIELD_LABEL, adSetupOf, applyAdRecs, type AdSetup, type CtaButton } from '../data/adsetup';
 import { useLibrary, type LibAd } from '../data/library';
+import { setHub } from '../data/nav';
 import { goalOf, recommendationsFor } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
 import { fadeUp, pageTransition } from '../motion/tokens';
@@ -106,6 +107,18 @@ export function LibraryAd() {
             </>
           ) : (
           <>
+          {/* Row 304 (Mancini 20:45): an ad with results opens its Ad Analytics page (the Radar ad page). */}
+          {a.ad && (
+            <Button
+              icon={<LineChartOutlined />}
+              onClick={() => {
+                setHub('library');
+                nav(`/ad/${a.id}`);
+              }}
+            >
+              See performance
+            </Button>
+          )}
           <Tooltip title="Opening the ad in Meta Ads Manager isn't part of this prototype.">
             <Button icon={<ExportOutlined />} onClick={() => message.info("In the live product, this opens the ad in Meta Ads Manager to run it. It's not part of this prototype.")}>
               {bp.md ? 'Open in Ads Manager' : 'Ads Manager'}
@@ -140,6 +153,10 @@ export function LibraryAd() {
 
         <div className="detail-right">
           <div className="lib-ad-title">
+            {/* Row 304: names the page, so it isn't mistaken for Ad Analytics. */}
+            <span className="page-kind">
+              <ProfileOutlined /> Ad Details
+            </span>
             {pending ? <span className="lib-status s-not-running">Not saved</span> : <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>}
             <h1 className="ph-title">{a.name}</h1>
             <p className="ph-desc">

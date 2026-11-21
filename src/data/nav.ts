@@ -33,7 +33,7 @@ export function useWorkspace() {
  * from Radar says "Radar". The last hub page visited in this tab decides, so rounds and the editor follow too.
  */
 const HUB_KEY = 'atria.hub.v1';
-export type Hub = 'radar' | 'overview';
+export type Hub = 'radar' | 'overview' | 'library';
 export function setHub(hub: Hub) {
   try {
     sessionStorage.setItem(HUB_KEY, hub);
@@ -41,12 +41,15 @@ export function setHub(hub: Hub) {
     /* storage can be unavailable; crumbs then fall back to Radar */
   }
 }
-export function hubCrumb(): { label: string; to: string } {
+/** Row 304 (Mancini 20:45): an ad opened from Ad Details ("See performance") says "Ad Library". */
+export function hubCrumb(): { label: string; to: string; hub: Hub } {
   let hub: string | null = null;
   try {
     hub = sessionStorage.getItem(HUB_KEY);
   } catch {
     hub = null;
   }
-  return hub === 'overview' ? { label: 'Overview', to: '/overview' } : { label: 'Radar', to: '/' };
+  if (hub === 'overview') return { label: 'Overview', to: '/overview', hub: 'overview' };
+  if (hub === 'library') return { label: 'Ad Library', to: '/creation/ads', hub: 'library' };
+  return { label: 'Radar', to: '/', hub: 'radar' };
 }

@@ -3251,3 +3251,9 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .rel-grid-row .rel-grid { flex: 1; min-width: 0; }
 .rel-compare.ant-btn { flex: none; margin-bottom: 16px; }
 .gen-banner-body.is-openable { cursor: pointer; }
+
+/* 304 (Mancini 20:45) Page label above the ad's name: "Ad Analytics" on the Radar ad page, "Ad Details" in Ad Library.
+   Same place and style on both, so the two pages about one ad can't be mistaken for each other. */
+.page-kind { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: var(--fs-body, 14px); line-height: 22px; font-weight: 600; color: var(--c-primary); }
+.page-kind .anticon { font-size: 14px; }
+.lib-ad-title .page-kind { margin-bottom: 4px; }
