@@ -26,6 +26,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 20 | Nov 21, 12:10 | Overview, Ad health | Three count cards and a count bar misled when groups were uneven | Bar list by share of spend: one row per group with its own bar, ad count, share and spend. Rows open the Radar tab | Each row reads on its own, so a group of one stays legible; spend shows where the money is at risk. Pie ruled out: angles compare badly and small slices lose labels | Counts move to secondary text | Batch C |
 | 21 | Nov 21, 12:10 | Overview, Radar, ad page | Rounds and results lived in two Overview lists and nowhere else | One IterationHistory component, two groups (Rounds, Results in Meta). Overview panel; Radar "History" popover beside "How grading works"; ad page panel scoped to the ad, its parent and the ads made from it (replaces "Made from this ad" when results exist) | One component, one vocabulary on every surface (Mancini item 20) | The ad page list is longer than "Made from this ad" was | Batch C |
 | 22 | Nov 21, 12:10 | Sidebar | No way to hide the account panel | Collapse button at the top right of the panel; when closed, the expand button sits at the top of the rail. Remembered per browser | Same placement and glyph as Atria's "Collapse panel" | None | Batch C |
+| 23 | Nov 21, 10:30 | Overview | Atria's Overview has Ask Raya, Creative diversity and Top creative tags; ours didn't | Ask Raya at the top with three prompt chips; Creative diversity score with Good, Fair or Low and one line of advice; Top creative tags with CPA against the account | Matches Atria's section order and gives Overview account-level insight Radar doesn't have | Answers are canned from the page data | Batch D |
 
 ## Deviations from Atria (need a yes before the Figma annotations)
 
@@ -33,9 +34,9 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 |---|---|---|---|---|
 | D1 (approved: closer to the Figma) | Top bar | Overview and Radar are sidebar items under "Analytics & Launch" | Segmented switch in the top bar (chat 5c) | Makes the two zoom levels a pair; the switch is the strongest cue that they show one account two ways |
 | D2 (approved: closer to the Figma) | Theme | Dark UI, magenta primary | Light UI, orange #F66C30 | Follows the brief's asset library |
-| D3 | Ad page ideas | No idea pills | Lavender copy-on-click pills | A colour that isn't a status or a button |
-| D4 | Ad page copies | Full-width table | Scrolling list with expandable rows | Fits the side column |
-| D5 | Gallery tabs | All, Clone, Iterate, Raya | All, From ads, Cloned, From scratch | Names say where a creative came from, not which tool made it |
-| D6 | Radar accuracy | Sentence in the subtitle: "Best results are achieved with ad spend over $10,000/month." | Card with a progress bar above $3,000 a month | Shows how far off the account is |
+| D3 (approved 10:17) | Ad page ideas | No idea pills | Lavender copy-on-click pills | A colour that isn't a status or a button |
+| D4 (approved 10:17) | Ad page copies | Full-width table | Scrolling list with expandable rows | Fits the side column |
+| D5 (approved 10:17) | Gallery tabs | All, Clone, Iterate, Raya | All, From ads, Cloned, From scratch | Names say where a creative came from, not which tool made it |
+| D6 (approved 10:17) | Radar accuracy | Sentence in the subtitle: "Best results are achieved with ad spend over $10,000/month." | Card with a progress bar above $3,000 a month | Shows how far off the account is |
 | D7 | Overview, Ad health | None | Bar list of spend share by Radar group | Ties Overview to Radar without repeating Radar's table |
-| D8 | Overview sections | Ask Raya, Creative diversity, Top creative tags, tag breakdowns | Not built | Out of scope for the take-home; the slots are where Atria has them |
+| D8 (approved 10:17) | Overview sections | Ask Raya, Creative diversity, Top creative tags | Built: Ask Raya answers three prompts from the page's data; diversity is 100 × (1 − HHI of spend by concept); tags are rule-based from the ad's text and format | Mock logic stands in for Atria's AI |

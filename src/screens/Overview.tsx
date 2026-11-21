@@ -4,7 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { WINDOWS, goalOf, graded, money, plural, type TabKey } from '../data/mock';
 import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
-import { formatBreakdown, healthBreakdown, iterationHistory, overviewBriefing, type Delta } from '../data/insights';
+import { creativeDiversity, formatBreakdown, healthBreakdown, iterationHistory, overviewBriefing, topTags, type Delta } from '../data/insights';
+import { AskRaya } from '../components/AskRaya';
 import { BarList } from '../components/BarList';
 import { IterationHistory } from '../components/IterationHistory';
 import { GradeChip, OverallTag } from '../components/GradeTag';
@@ -67,6 +68,8 @@ export function Overview() {
   const formats = formatBreakdown(account, windowDays);
   const topSpend = [...ads].sort((a, b) => b.spend - a.spend).slice(0, 4);
   const history = iterationHistory(account, windowDays, jobs);
+  const diversity = creativeDiversity(account, windowDays);
+  const tags = topTags(account, windowDays);
 
 
   const { titles } = briefing;
@@ -108,6 +111,8 @@ export function Overview() {
         {period.sheet}
       </div>
 
+      <AskRaya key={account.id} account={account} windowDays={windowDays} jobs={jobs} />
+
       {/* Key metrics, as in Atria's Overview (Mancini 09:43, item 21). Overview is the account; Radar is each ad. */}
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-now" aria-labelledby="ov-sec-now">
         <div className="ov-sec-head">
@@ -141,6 +146,41 @@ export function Overview() {
           <h2 id="ov-sec-format" className="panel-title">Spend by format</h2>
           <p className="t-help ov-sec-help">Where this account's budget goes, by type of ad.</p>
           <BarList rows={formats} tone={() => 'neutral'} />
+        </motion.section>
+      </div>
+
+      <div className="ov-grid ov-grid-even">
+        <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-div">
+          <h2 id="ov-sec-div" className="panel-title">Creative diversity</h2>
+          <p className="t-help ov-sec-help">How evenly spend spreads across different ad concepts. An ad and its variations count as one concept.</p>
+          <div className="div-score">
+            <span className="div-num">{diversity.score}</span>
+            <span className={`div-label tone-${diversity.label.toLowerCase()}`}>{diversity.label}</span>
+          </div>
+          <span className="bar-list-track div-track" aria-hidden>
+            <motion.i className={`div-${diversity.label.toLowerCase()}`} initial={{ scaleX: 0 }} animate={{ scaleX: diversity.score / 100 }} />
+          </span>
+          <p className="div-line">{diversity.line}</p>
+          <dl className="div-facts">
+            <div><dt className="t-help">Concepts</dt><dd>{diversity.concepts}</dd></div>
+            <div><dt className="t-help">Formats</dt><dd>{diversity.formats}</dd></div>
+            <div><dt className="t-help">Biggest concept</dt><dd>{Math.round(diversity.topShare * 100)}% of spend</dd></div>
+          </dl>
+        </motion.section>
+        <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-tags">
+          <h2 id="ov-sec-tags" className="panel-title">Top creative tags</h2>
+          <p className="t-help ov-sec-help">What your ads show and say, ranked by spend, with CPA against the account average.</p>
+          <ul className="tag-list">
+            {tags.map((t) => (
+              <li key={t.tag} className="tag-row">
+                <span className="tag-name">{t.tag}<span className="bar-list-count">{plural(t.count, 'ad')} · {Math.round(t.share * 100)}% of spend</span></span>
+                <span className={`tag-cpa tone-${t.vsAccount <= 0 ? 'good' : 'bad'}`}>
+                  {money(t.cpa)}
+                  <span>{t.vsAccount === 0 ? 'average' : `${Math.abs(t.vsAccount)}% ${t.vsAccount < 0 ? 'below' : 'above'}`}</span>
+                </span>
+              </li>
+            ))}
+          </ul>
         </motion.section>
       </div>
 

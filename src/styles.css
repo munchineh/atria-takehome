@@ -1764,3 +1764,40 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .panel-toggle-btn:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
 .panel-toggle-btn:focus-visible { outline: 2px solid #f66c30; outline-offset: 1px; }
 .rail-expand { width: 40px; height: 32px; margin: -4px 0 6px; }
+/* D8 (approved 10:17): Ask Raya, Creative diversity, Top creative tags */
+.raya { background: linear-gradient(180deg, #fff7f2 0%, #fff 70%); }
+.raya-title { display: flex; align-items: center; gap: 8px; }
+.raya-mark { color: #f66c30; font-size: 14px; }
+.raya-form { display: flex; gap: 8px; align-items: center; margin-top: 10px; }
+.raya-form .ant-input { height: 40px; border-radius: 999px; padding-inline: 16px; }
+.raya-form .ant-btn { flex: none; width: 40px; height: 40px; }
+.raya-prompts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.raya-chip { all: unset; box-sizing: border-box; padding: 5px 12px; border-radius: 999px; border: 1px solid #f0e2d9; background: #fff; font-size: 13px; color: #45414a; cursor: pointer; transition: border-color 0.16s ease, color 0.16s ease; }
+.raya-chip:hover { border-color: #f66c30; color: #a83411; }
+.raya-chip:focus-visible { outline: 2px solid #f66c30; outline-offset: 1px; }
+.raya-answer { margin-top: 12px; padding: 12px 14px; border-radius: 10px; background: #fff; border: 1px solid var(--line); }
+.raya-answer p { margin: 4px 0 0; font-size: 14px; line-height: 1.55; color: #1f1f1f; }
+
+.div-score { display: flex; align-items: baseline; gap: 10px; margin-top: 10px; }
+.div-num { font-size: 32px; font-weight: 600; line-height: 1; font-variant-numeric: tabular-nums; color: #1f1f1f; }
+.div-label { font-size: 13px; font-weight: 600; padding: 1px 8px; border-radius: 999px; }
+.div-label.tone-good { background: #f6ffed; color: #137333; }
+.div-label.tone-fair { background: #fffbe6; color: #ad6800; }
+.div-label.tone-low { background: #fff2f0; color: #cf1322; }
+.div-track { display: block; margin-top: 10px; }
+.div-track i.div-good { background: #52c41a; }
+.div-track i.div-fair { background: #faad14; }
+.div-track i.div-low { background: #ff4d4f; }
+.div-line { margin: 10px 0 0; font-size: 14px; color: #45414a; line-height: 1.5; }
+.div-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--line); }
+.div-facts dt { font-size: 12px; }
+.div-facts dd { margin: 2px 0 0; font-size: 14px; font-weight: 600; color: #1f1f1f; }
+
+.tag-list { list-style: none; margin: 8px 0 0; padding: 0; }
+.tag-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 8px 0; }
+.tag-row + .tag-row { border-top: 1px solid var(--line); }
+.tag-name { display: flex; flex-direction: column; font-size: 14px; font-weight: 500; color: #1f1f1f; min-width: 0; }
+.tag-cpa { display: flex; flex-direction: column; align-items: flex-end; font-size: 14px; font-weight: 600; font-variant-numeric: tabular-nums; color: #1f1f1f; flex: none; }
+.tag-cpa span { font-size: 12px; font-weight: 400; }
+.tag-cpa.tone-good span { color: var(--ant-color-success-text, #137333); }
+.tag-cpa.tone-bad span { color: var(--ant-color-error-text, #cf1322); }

@@ -1,7 +1,7 @@
 /**
  * Derived content for the UI branch (plan items 4, 9 and 15). Data and logic only.
  */
-import { GOALS, METRIC_META, goalOf, graded, type Creative, type MetricKey, type Recommendation } from './mock';
+import { GOALS, METRIC_META, goalOf, graded, money, type Creative, type MetricKey, type Recommendation } from './mock';
 import type { MockAccount } from './accounts';
 import type { Job } from './store';
 import { lineageOf } from './lineage';
@@ -298,4 +298,110 @@ export function iterationHistory(account: MockAccount, windowDays: number, jobs:
     });
   }
   return [...rounds, ...results];
+}
+
+/* ---------- D8 (approved 10:17): Atria Overview sections we hadn't built ---------- */
+
+/** Creative tags read from what the ad says and shows. Mock rules; Atria tags with AI. */
+export function tagsOf(c: Creative): string[] {
+  const t: string[] = [c.media];
+  const text = [c.copy?.head, c.copy?.price, c.copy?.band].filter(Boolean).join(' ');
+  if (/\$\d/.test(text)) t.push('Price shown');
+  if (/save|%|free|\d+ for/i.test(text)) t.push('Offer or bundle');
+  if (/\?\s*$/.test(c.copy?.head ?? '')) t.push('Question hook');
+  if (/\d+ (seconds|hours)|fits|grows|self-watering|hand-/i.test(text)) t.push('Product benefit');
+  if (/unboxing/i.test(c.name)) t.push('Unboxing');
+  if (/asmr/i.test(c.name)) t.push('ASMR');
+  if (c.copy?.cta) t.push(c.copy.cta === 'SHOP NOW' ? 'Generic CTA' : 'Specific CTA');
+  if (!c.copy) t.push('No text on image');
+  return t;
+}
+
+export interface TagRow {
+  tag: string;
+  count: number;
+  spend: number;
+  share: number;
+  /** Spend-weighted CPA of ads with this tag, against the account's. */
+  cpa: number;
+  vsAccount: number;
+}
+
+/** Tags ranked by spend, with CPA against the account (Atria's "Top creative tags"). */
+export function topTags(account: MockAccount, windowDays: number, n = 6): TagRow[] {
+  const ads = account.creatives.map((c) => graded(c, windowDays));
+  const total = ads.reduce((s, c) => s + c.spend, 0) || 1;
+  const buys = (c: Creative) => (c.values.cpa ? c.spend / c.values.cpa : 0);
+  const accCpa = total / (ads.reduce((s, c) => s + buys(c), 0) || 1);
+  const map = new Map<string, Creative[]>();
+  for (const c of ads) for (const tag of tagsOf(c)) map.set(tag, [...(map.get(tag) ?? []), c]);
+  return [...map.entries()]
+    .map(([tag, group]) => {
+      const spend = group.reduce((s, c) => s + c.spend, 0);
+      const cpa = spend / (group.reduce((s, c) => s + buys(c), 0) || 1);
+      return { tag, count: group.length, spend, share: spend / total, cpa, vsAccount: Math.round(((cpa - accCpa) / accCpa) * 100) };
+    })
+    .filter((r) => !['Image', 'Video', 'Carousel'].includes(r.tag))
+    .sort((a, b) => b.spend - a.spend)
+    .slice(0, n);
+}
+
+export interface Diversity {
+  /** 0 to 100. */
+  score: number;
+  label: 'Low' | 'Fair' | 'Good';
+  concepts: number;
+  topShare: number;
+  topName: string;
+  formats: number;
+  line: string;
+}
+
+/**
+ * Creative diversity: how evenly spend spreads across distinct concepts.
+ * A concept is an ad and every variation made from it. Score = 100 × (1 − Herfindahl index of spend by concept):
+ * one concept scores 0, ten equal concepts score 90, so 100 is out of reach on purpose.
+ */
+export function creativeDiversity(account: MockAccount, windowDays: number): Diversity {
+  const ads = account.creatives.map((c) => graded(c, windowDays));
+  const root = (c: Creative): string => {
+    let cur = c;
+    for (let i = 0; i < 6 && cur.variationOf; i++) cur = ads.find((x) => x.id === cur.variationOf) ?? cur;
+    return cur.id;
+  };
+  const total = ads.reduce((s, c) => s + c.spend, 0) || 1;
+  const byConcept = new Map<string, number>();
+  for (const c of ads) byConcept.set(root(c), (byConcept.get(root(c)) ?? 0) + c.spend);
+  const shares = [...byConcept.values()].map((v) => v / total);
+  const hhi = shares.reduce((s, x) => s + x * x, 0);
+  const score = Math.round((1 - hhi) * 100);
+  const [topId, topSpend] = [...byConcept.entries()].sort((a, b) => b[1] - a[1])[0];
+  const topShare = topSpend / total;
+  const topName = ads.find((c) => c.id === topId)?.name ?? '';
+  const formats = new Set(ads.map((c) => c.media)).size;
+  const label = score >= 75 ? 'Good' : score >= 50 ? 'Fair' : 'Low';
+  const line =
+    label === 'Good'
+      ? `Spend is spread across ${byConcept.size} concepts, so one tired ad won't drag the account down.`
+      : `${Math.round(topShare * 100)}% of spend goes to one concept. Try a new angle so results don't hang on a single ad.`;
+  return { score, label, concepts: byConcept.size, topShare, topName, formats, line };
+}
+
+/** Ask Raya, mock: answers a few common questions from the same data the page shows. */
+export const RAYA_PROMPTS = ['Which ad should I improve first?', 'What changed this period?', 'Which creative tags work best?'] as const;
+export function askRaya(q: string, account: MockAccount, windowDays: number, jobs: Job[]): string {
+  const b = overviewBriefing(account, windowDays, jobs);
+  const tags = topTags(account, windowDays, 8);
+  if (/improve|fix|first|next/i.test(q)) {
+    const n = b.next[0];
+    return n ? `Start with ${n.name}. ${n.why} It spent ${money(n.spend).replace(/\.\d\d$/, '')} this period, more than any other ad with a low grade on its goal.` : 'Every ad is B or above on the metric its goal needs, so nothing needs fixing first. Build more of your Best ads.';
+  }
+  if (/tag|work|best|creative/i.test(q)) {
+    const best = [...tags].filter((t) => t.count > 1).sort((a, b) => a.vsAccount - b.vsAccount)[0];
+    const worst = [...tags].filter((t) => t.count > 1).sort((a, b) => b.vsAccount - a.vsAccount)[0];
+    if (!best || !worst || best.tag === worst.tag) return "There aren't enough tagged ads yet to compare.";
+    const rel = (t: TagRow) => `${Math.abs(t.vsAccount)}% ${t.vsAccount <= 0 ? 'below' : 'above'}`;
+    return `Ads tagged "${best.tag}" have a CPA ${rel(best)} the account average, the best of your tags. Ads tagged "${worst.tag}" are ${rel(worst)} it, so test fewer of those.`;
+  }
+  return `${b.now.headline} ${b.changed.length ? `${b.changed.length} variation ads have results against the ad they came from; see Iteration history.` : ''}`.trim();
 }
