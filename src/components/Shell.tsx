@@ -168,11 +168,14 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
       <div className="main">
         <header className="topbar">
           {!wide && <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawer(true)} aria-label="Ad accounts" />}
-          <div className="topbar-title">
-            <span className="meta-glyph blue">∞</span>
-            <span className="ellipsis">{accountName}</span>
-          </div>
-          {header}
+          {!mobile && (
+            <div className="topbar-title">
+              <span className="meta-glyph blue">∞</span>
+              <span className="ellipsis">{accountName}</span>
+            </div>
+          )}
+          {/* 269 (Mancini 18:59): on phones the switch sits in the middle of the top bar, like OKX's Simple and Exchange. */}
+          {mobile ? <div className="topbar-center">{header}</div> : header}
           <div className="topbar-right">
             {!mobile && (
               <Tooltip title={`Last synced from Meta on ${WINDOW.synced}. Results use ${ATTRIBUTION} attribution.`}>
@@ -196,7 +199,8 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             >
               <span className="credits" tabIndex={0}>
                 <Progress type="circle" size={16} strokeWidth={14} showInfo={false} percent={Math.round((credits / ACCOUNT.creditsPlan) * 100)} strokeColor="var(--c-primary)" aria-hidden />
-                {credits.toLocaleString('en-US')}{'\u00a0'}credits
+                {credits.toLocaleString('en-US')}
+                {!mobile && '\u00a0credits'}
               </span>
             </Popover>
             <Tooltip title={tasksOpen ? '' : 'Notifications'}>
@@ -217,7 +221,16 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
       </div>
       <TasksPanel mobile={mobile} />
       <GenBanners />
-      <Drawer open={drawer} onClose={() => setDrawer(false)} placement="left" size={300} title={inCreation ? 'Creation' : 'Analytics'} className="dark-drawer">
+      {/* 269 (Mancini 18:59): on phones the menu is the whole screen: the product areas as a list, then the ad accounts. */}
+      <Drawer
+        open={drawer}
+        onClose={() => setDrawer(false)}
+        placement="left"
+        size={mobile ? '100%' : 300}
+        title={mobile ? 'Menu' : inCreation ? 'Creation' : 'Analytics'}
+        className="dark-drawer"
+        rootClassName={mobile ? 'phone-menu' : undefined}
+      >
         {/* Mancini 15:36: phones have no rail, so the product areas sit at the top of the drawer. Without them there was no way to reach Creation. */}
         {mobile && (
           <nav className="drawer-rail" aria-label="Main">
@@ -241,12 +254,6 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
               );
             })}
           </nav>
-        )}
-        {/* 5d Gm-01: phones hide the top bar switch, so Overview and Radar sit at the top of the drawer. */}
-        {mobile && header && (
-          <div className="drawer-nav" onClick={() => setDrawer(false)}>
-            {header}
-          </div>
         )}
         <AccountList onPick={() => setDrawer(false)} />
         {mobile && (

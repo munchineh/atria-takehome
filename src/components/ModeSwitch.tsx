@@ -148,14 +148,14 @@ function GalleryIcon({ play }: { play: number }) {
   );
 }
 
-type Opt = { value: string; label: string; to: string; Icon: (p: { play: number }) => React.JSX.Element };
+type Opt = { value: string; label: string; short?: string; to: string; Icon: (p: { play: number }) => React.JSX.Element };
 const ANALYTICS: Opt[] = [
   { value: 'overview', label: 'Overview', to: '/overview', Icon: BarsIcon },
   { value: 'radar', label: 'Radar', to: '/', Icon: RadarIcon },
 ];
 const CREATION: Opt[] = [
   { value: 'library', label: 'Ad Library', to: '/creation/ads', Icon: LibraryIcon },
-  { value: 'gallery', label: 'Creative Gallery', to: '/creation', Icon: GalleryIcon },
+  { value: 'gallery', label: 'Creative Gallery', short: 'Gallery', to: '/creation', Icon: GalleryIcon },
 ];
 type Mode = string;
 
@@ -239,7 +239,9 @@ export function ModeSwitch() {
           >
             <span className="mode-pill-content">
               <opt.Icon play={plays[opt.value]} />
-              <span>{opt.label}</span>
+              {/* 269 (Mancini 18:59): phones show the switch in the top bar, so the long label has a short form. */}
+              <span className={opt.short ? 'mode-label-long' : undefined}>{opt.label}</span>
+              {opt.short && <span className="mode-label-short">{opt.short}</span>}
             </span>
           </button>
         );
