@@ -154,7 +154,7 @@ export function GalleryCard({
             {hasTags && (
               <div className="gal-tags">
                 {item.inMeta && (
-                  <Tooltip title="In an ad, so it can't be edited. Open it to iterate.">
+                  <Tooltip title="It runs in an ad, so it can't get a new version. You can still make a new variation.">
                     <Tag color="blue" className="gal-tag" icon={<LockOutlined />}>
                       In an ad
                     </Tag>

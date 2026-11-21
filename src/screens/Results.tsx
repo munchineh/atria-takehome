@@ -234,7 +234,7 @@ function VariationCard({
         {state === 'ready' && (v.from || v.launched || typo) && (
           <div className="var-flags">
             {v.launched && (
-              <Tooltip title="In an ad, so it can't be edited. Open it to iterate.">
+              <Tooltip title="It runs in an ad, so it can't get a new version. You can still make a new variation.">
                 <Tag color="blue" icon={<LockOutlined />}>
                   In an ad
                 </Tag>

@@ -38,7 +38,7 @@ const HOW = (
       </span>
       <span className="how-text">
         <strong>Each creative keeps its versions</strong>
-        <span>Once it's in an ad it can't change. Iterate on it to make a new&nbsp;one.</span>
+        <span>Once it runs in an ad it can't get a new version, but you can make a new&nbsp;variation.</span>
       </span>
     </div>
     <div className="how-card">

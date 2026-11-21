@@ -169,7 +169,7 @@ export function CreativePage() {
               <div className="cp-versions-head">
                 <span className="cp-versions-title">{plural(versions.length, 'version')}</span>
                 {shownN !== chosenN ? (
-                  <Tooltip title={locked ? "Locked while in an ad. Iterate to switch versions." : undefined}>
+                  <Tooltip title={locked ? "It runs in an ad, so it stays on this version. Make a new variation to use another." : undefined}>
                     <Button
                       onClick={() => {
                         choose(v.id, shownN === versions.at(-1)!.n ? null : shownN);
