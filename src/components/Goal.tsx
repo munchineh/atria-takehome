@@ -26,7 +26,7 @@ export function GoalPill({ c }: { c: Creative }) {
   const tip = `From the campaign objective in ${platform}. Suggestions are ordered by what this goal needs.${mixed ? ` Copies run under different objectives; most spend is in ${goal} campaigns.` : ''}`;
   return (
     <span className="goal-group">
-      <Tooltip title={tip}>
+      <Tooltip title={tip} placement="topRight">
         {/* Mancini 10:31: one pill in two parts, label on a deeper tint and value on a lighter one of the same hue. */}
         <span className="goal-split" tabIndex={0}>
           <span className="goal-split-k">Goal</span>

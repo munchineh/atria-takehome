@@ -120,3 +120,6 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 74 | Radar's History renamed Activity log (list icon); the ad page button is History | Glossary | History belongs to one ad; the account-wide list is a log |
 | 75 | Customize columns (FG1): pick Overall, each grade, Spend, CPA and ROAS (ROAS off by default). Saved per browser. Next steps shows the weak grade whenever that grade's column is off | FG1, S-46 | Mancini asked for it; ROAS is in FG1 but wasn't on our table |
 | 76 | Radar tabs back to FG1: card tabs, icons, ⓘ with the tab's meaning, All tab. Refined like Chrome: the selected tab is white, joins the line below with curved feet; the others have no fill or border so they sit back. Phones drop icons and ⓘ and keep the meaning as a line | FG1, V-09 reversed | Mancini: deviate only with a strong reason; line tabs had none |
+| 77 | Goal tooltip opens to the top right | S-60 | It touched the viewport edge (Mancini 12:53) |
+| 78 | Summary line at Body 14/22, no balanced wrapping | S-04 | Read oversized with loose leading, and balancing broke it into two short lines |
+| 79 | "Problems only" switch on Suggestions: each card shows just the issue and its evidence | FG2 "Top issues identified" (Q3) | Mancini: offer the problems view as a toggle instead of a second list |

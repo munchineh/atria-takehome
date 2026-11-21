@@ -1,7 +1,7 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
+import { App, Grid, Button, Checkbox, ConfigProvider, Switch, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
 import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -105,7 +105,9 @@ function RecCard({
   disabled,
   onToggle,
   footer,
+  issuesOnly,
 }: {
+  issuesOnly?: boolean;
   parts: SuggestionParts;
   selected: boolean;
   suggested: boolean;
@@ -158,6 +160,8 @@ function RecCard({
         </span>
       </div>
 
+      {/* Mancini 12:53: "Problems only" shows each issue and its evidence, like FG2's "Top issues identified". */}
+      {!issuesOnly && (<>
       {/* Part 3: Recommended action (What to change + why + examples) */}
       <div className="rec-part rec-part-action">
         <b className="rec-how">{action.title}</b>
@@ -206,6 +210,7 @@ function RecCard({
         )}
         <RateRow />
       </div>
+      </>)}
 
       <AnimatePresence initial={false}>
         {footer && (
@@ -233,6 +238,7 @@ export function AdDetail() {
   const { id } = useParams();
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
+  const [issuesOnly, setIssuesOnly] = useState(false);
   const nav = useNavigate();
   const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs } = useStore();
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
@@ -574,6 +580,12 @@ export function AdDetail() {
             <SectionHead
               bar
               title="Suggestions"
+              action={
+                <label className="issues-only">
+                  <Switch size="small" checked={issuesOnly} onChange={setIssuesOnly} />
+                  <span>Problems only</span>
+                </label>
+              }
               help={<>Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}
               meta={
                 <span className="rec-date">
@@ -597,6 +609,7 @@ export function AdDetail() {
           {recs.map((r) => (
             <RecCard
               key={r.id}
+              issuesOnly={issuesOnly}
               parts={suggestionParts(c, r, accountOf(c).avg)}
               selected={selected.includes(r.id)}
               suggested={suggestedIds.includes(r.id)}

@@ -2009,3 +2009,6 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
   .radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child { padding: 8px 10px !important; }
   .radar .radar-card-tabs > .ant-tabs-nav { margin-bottom: 12px !important; }
 }
+/* Mancini 12:53: the summary read oversized with loose leading; it's a paragraph, so Body 14/22 like FG2's Performance text. */
+.verdict-reading .verdict-line, .verdict-line { font-size: var(--fs-body); line-height: var(--lh-body); text-wrap: pretty; }
+.issues-only { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-body); color: var(--c-text-2); cursor: pointer; white-space: nowrap; }
