@@ -518,7 +518,7 @@ export function Radar() {
       // 5d C5d-21 (Mancini's wording). The cell carries the grade only when that metric's column isn't shown (Gm-07, S-46).
       title: <Head label="Next steps" tip="Suggested based on your ad performance" />,
       key: 'rec',
-      ...(few ? {} : { width: wide ? 170 : 144 }),
+      ...(few ? {} : { width: wide ? 210 : 176 }), // 259: wider so "Improve conversion rate" and "See suggestions" fit
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!weakShown(c)} />,
     },
     ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one" />, key: 'overall', width: wide ? 84 : 64, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),
@@ -560,6 +560,14 @@ export function Radar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* 259 (Mancini 17:36): persistent, so nobody looks for a create button on a video or carousel ad. */}
+      <p className="media-note" role="note">
+        <PictureOutlined aria-hidden />
+        <span>
+          <b>Only image ads can make new creatives for now.</b> Video and carousel ads get suggestions to apply in Meta.
+        </span>
+      </p>
 
       <div className="filter-bar">
         {/* Grade window as a date-range control (Mancini, 18:58): presets only, since grades need enough data;

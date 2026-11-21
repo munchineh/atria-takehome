@@ -32,6 +32,10 @@ export function diagnosis(c: Creative) {
 export function StatusCell({ creative, status, withGrade }: { creative: Creative; status: RowStatus; withGrade?: boolean }) {
   const weak = weakest(creative);
   const healthy = status.kind === 'idle' && diagnosis(creative) === 'Build similar';
+  // 259 (Mancini 17:36): only image ads can make new creatives. Image ads get a button (outline to build on a healthy ad,
+  // filled to fix one); video and carousel ads get plain text with no button state.
+  const isImage = creative.media === 'Image';
+  const look = status.kind !== 'idle' ? '' : isImage ? (healthy ? 'next-outline' : 'next-fill') : 'next-text';
   const key = status.kind === 'generating' ? 'gen' : status.kind;
   const nav = useNavigate();
   const open =
@@ -43,7 +47,7 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
       : undefined;
   return (
     <span
-      className={`status-cell ${status.kind} ${healthy ? 'healthy' : ''}`}
+      className={`status-cell ${status.kind} ${healthy ? 'healthy' : ''} ${look}`}
       onClick={open}
       role={open ? 'link' : undefined}
       tabIndex={open ? 0 : undefined}
@@ -53,8 +57,10 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
         <motion.span key={key} variants={swap} initial="hidden" animate="show" exit="exit" className="status-inner">
           {status.kind === 'idle' && (
             <>
-              {healthy ? (
-                <Tooltip title="All grades are B or above. Make new variations from what already works.">
+              {!isImage ? (
+                <span>{healthy ? 'N/A' : 'See suggestions'}</span>
+              ) : healthy ? (
+                <Tooltip title="All grades are B or above. Make new creatives from what already works.">
                   <span>{diagnosis(creative)}</span>
                 </Tooltip>
               ) : (
@@ -70,20 +76,20 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
             <>
               <ClockCircleOutlined />
               {/* K20a (R-M11): shared plural() helper. */}
-              <span>Queued{'\u00a0'}· {plural(status.count, 'variation')}</span>
+              <span>Queued{'\u00a0'}· {plural(status.count, 'creative')}</span>
             </>
           )}
           {status.kind === 'generating' && (
             <>
               <Progress type="circle" percent={Math.round(status.progress * 100)} size={14} showInfo={false} strokeWidth={14} />
-              <span>Generating {status.count}</span>
+              <span>Creating {status.count}</span>
             </>
           )}
           {status.kind === 'ready' && (
             <>
               <CheckCircleFilled className="status-icon ok" />
               {/* K32 (R-I7): says what opens instead of repeating the button label. */}
-              <Tooltip title={`${status.count} new variations are ready to review.`}>
+              <Tooltip title={`${status.count} new creatives are ready to review.`}>
                 <span>See results</span>
               </Tooltip>
               <AnimatePresence>
@@ -104,7 +110,7 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
             <>
               <ExclamationCircleFilled className="status-icon bad" />
               {/* K16 (R-AI8): state what happened and credits returned. */}
-              <Tooltip title={`The variations couldn't be created. ${status.count * ACCOUNT.creditsPerImage}\u00a0credits were returned.`}>
+              <Tooltip title={`The creatives couldn't be created. ${status.count * ACCOUNT.creditsPerImage}\u00a0credits were returned.`}>
                 <span>Failed to create</span>
               </Tooltip>
             </>

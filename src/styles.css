@@ -2918,3 +2918,23 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 
 /* 258 Notifications panel: the prototype switch sits above the footer, quiet. */
 .tasks-proto { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-top: 1px solid var(--c-border-2); margin: 0 16px; padding-inline: 0; }
+
+/* 259 Radar "Next steps" (Mancini 17:36). Image ads: "Build similar" is an outline button (white, grey stroke, orange
+   on hover); "Improve …" and "Rework ad" are filled (light orange, dark text, deeper on hover). Video and carousel
+   ads: plain text ("See suggestions", "N/A") with no button and no hover of its own; the row hover is enough. */
+.status-cell.idle.next-outline, .status-cell.healthy.next-outline { padding: 4px 12px; background: #fff; border: 1px solid var(--c-border); color: var(--c-text); }
+.clickable-row:hover .status-cell.next-outline, .radar-card:hover .status-cell.next-outline, .status-cell.next-outline:hover { background: #fff; border-color: var(--c-primary); color: var(--c-primary); }
+.status-cell.idle.next-fill { background: color-mix(in srgb, var(--c-primary) 14%, #fff); border: 1px solid transparent; color: var(--c-text); font-weight: 600; }
+.clickable-row:hover .status-cell.next-fill, .radar-card:hover .status-cell.next-fill, .status-cell.next-fill:hover { background: color-mix(in srgb, var(--c-primary) 22%, #fff); border-color: transparent; color: var(--c-text); }
+.status-cell.idle.next-text, .status-cell.healthy.next-text { padding-inline: 0; background: transparent; border-color: transparent; color: var(--c-text-2); font-weight: 400; }
+.clickable-row:hover .status-cell.next-text, .radar-card:hover .status-cell.next-text, .status-cell.next-text:hover { background: transparent; border-color: transparent; color: var(--c-text-2); }
+.radar-card .card-foot .status-cell.next-text { padding-inline: 0; }
+
+/* 259 Image-only note: a persistent neutral strip (grey fill, image icon, Body text with a Semi Bold lead), no close. */
+.media-note { display: flex; align-items: flex-start; gap: 8px; margin: 0 0 16px; padding: 8px 12px; border-radius: var(--r-control); background: var(--c-fill); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
+.media-note > .anticon { margin-top: 3px; color: var(--c-text-3); }
+.media-note b { font-weight: 600; color: var(--c-text); }
+.detail .media-note { margin: 0; }
+.radar-card .card-foot .status-cell.idle.next-fill { background: color-mix(in srgb, var(--c-primary) 14%, #fff); border-color: transparent; }
+.radar-card .card-foot .status-cell.idle.next-text, .radar-card .card-foot .status-cell.healthy.next-text { background: transparent; border-color: transparent; padding-inline: 0; color: var(--c-text-2); }
+.radar-card .card-foot .status-cell.next-outline { background: #fff; border-color: var(--c-border); }

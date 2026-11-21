@@ -725,6 +725,15 @@ export function AdDetail() {
           </motion.div>
 
           {/* 242 (Mancini 16:14): the "Already applied" note is gone. What this ad changed is in "Where it came from" and "Iteration history". */}
+          {/* 259 (Mancini 17:36): video and carousel ads can't make new creatives yet; say so where the suggestions are. */}
+          {!iterable && (
+            <p className="media-note" role="note">
+              <PictureOutlined aria-hidden />
+              <span>
+                <b>Only image ads can make new creatives for now.</b> Apply these suggestions to this {c.media.toLowerCase()} ad in Meta.
+              </span>
+            </p>
+          )}
 
 
           {recs.map((r, i) => (
