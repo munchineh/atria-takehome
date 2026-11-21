@@ -22,9 +22,16 @@ export const theme: ThemeConfig = {
     colorPrimaryBg: '#fff7f0', // R-C9
     colorPrimaryBorder: '#ffcead', // R-C9
     colorInfo: '#1677ff', // R-C4: info semantic only; links use colorLink
-    colorTextTertiary: 'rgba(0, 0, 0, 0.55)', // R-C10
+    colorTextSecondary: 'rgba(0, 0, 0, 0.65)',
+    colorTextTertiary: 'rgba(0, 0, 0, 0.45)', // library colorTextDescription (S-01)
+    colorBgLayout: '#f5f5f5',
+    colorSuccess: '#18b723',
+    colorWarning: '#f38d05',
+    colorError: '#ed383b',
+    fontWeightStrong: 600,
+    lineHeight: 22 / 14,
     borderRadius: 6,
-    borderRadiusLG: 10,
+    borderRadiusLG: 8,
     borderRadiusSM: 6,
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontSize: 14,
@@ -39,12 +46,14 @@ export const theme: ThemeConfig = {
   },
   components: {
     Table: { headerBg: '#fafafa', headerSplitColor: 'transparent', rowHoverBg: '#fff7f0', cellPaddingBlockMD: 14 },
-    Tabs: { itemSelectedColor: 'rgba(0, 0, 0, 0.88)', inkBarColor: '#f66c30', itemColor: 'rgba(0, 0, 0, 0.65)' },
-    Modal: { borderRadiusLG: 14 },
-    Popover: { borderRadiusLG: 14 },
-    Notification: { borderRadiusLG: 14 },
-    Drawer: { borderRadiusLG: 14 },
-    Dropdown: { borderRadiusLG: 14 },
+    // LP-05: selected tab label orange as in the library and FG2.
+    Tabs: { itemSelectedColor: '#f66c30', inkBarColor: '#f66c30', itemColor: 'rgba(0, 0, 0, 0.65)', titleFontSize: 14 },
+    // V-05: one radius (8) for every floating surface.
+    Modal: { borderRadiusLG: 8 },
+    Popover: { borderRadiusLG: 8 },
+    Notification: { borderRadiusLG: 8 },
+    Drawer: { borderRadiusLG: 8 },
+    Dropdown: { borderRadiusLG: 8 },
     // Controls follow the asset library as drawn (S-11, S-22, V-02): white, 1 px outline, radius 6.
     Input: { borderRadius: 6, borderRadiusLG: 6 },
     Select: { borderRadius: 6, borderRadiusLG: 6, optionSelectedBg: '#fff7f0' },
