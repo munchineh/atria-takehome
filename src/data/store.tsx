@@ -231,6 +231,8 @@ interface Store {
   choose: (vid: string, n: number | null) => void;
   /** A creative in an ad can't change. Iterate copies its chosen version into a new saved creative, free, and returns its id. */
   iterate: (jobId: string, v: Variation) => string;
+  /** 265 (Mancini 17:36): makes vN the latest version again. Later versions are removed; variations made from them are kept. */
+  restoreVersion: (v: Variation, n: number) => void;
   /** Grade window in days (30, 60, 90). The account default is 60. */
   windowDays: number;
   setWindowDays: (d: number) => void;
@@ -589,6 +591,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       return out;
     });
   }, []);
+  const restoreVersion = useCallback(
+    (v: Variation, n: number) => setVersions((p) => ({ ...p, [v.id]: versionsOf(v).filter((x) => x.n <= n) })),
+    [versionsOf],
+  );
   const iterate = useCallback(
     (jobId: string, v: Variation) => {
       const list = versionsOf(v);
@@ -662,8 +668,9 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       chosen,
       choose,
       iterate,
+      restoreVersion,
     }),
-    [saved, setSaved, archived, setArchived, chosen, choose, iterate, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
+    [saved, setSaved, archived, setArchived, chosen, choose, iterate, restoreVersion, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

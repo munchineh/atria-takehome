@@ -3053,3 +3053,23 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 264 (fix): title and its line sit together; on phones the creative is capped so the setup isn't pushed far below. */
 .link-title .ph-title { margin: 0; }
 @media (max-width: 767px) { .link-ad .lib-creative { max-width: 240px; margin: 0 auto; width: 100%; } }
+
+/* 265 Edit creative page: History card under the image (origin, versions, restore), Related in the right panel. */
+.ed-left { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.ed-history { display: flex; flex-direction: column; gap: 12px; padding: 16px; }
+.ed-history .ed-hist-steps { display: flex; flex-direction: column; gap: 8px; margin: 0; background: none; border-radius: 0; }
+.ed-history .ed-hist-step { display: grid; grid-template-columns: 120px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; align-items: start; padding: 0; margin: 0; border: 0; }
+.ed-history .ed-hist-step + .ed-hist-step::before { content: none; }
+.ed-history .ed-hist-step > :not(.ed-hist-label) { grid-column: 2; }
+.ed-history .ed-hist-label { grid-row: 1 / span 4; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
+.ed-hist-versions { display: flex; flex-direction: column; gap: 8px; padding-top: 12px; border-top: 1px solid var(--c-border-2); }
+.ed-hist-versions > .ed-hist-label { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
+.ed-hist-versions .t-help { margin: 0; }
+.ed-restore { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 8px 12px; border-radius: var(--r-control); background: var(--c-fill); font-size: var(--fs-body); line-height: var(--lh-body); }
+.ed-restore-actions { display: inline-flex; gap: 8px; }
+.ed-panel .ed-related .rel-sub .t-help { margin: 0; }
+.ed-panel.locked > .ed-related { opacity: 1; pointer-events: auto; }
+@media (max-width: 767px) {
+  .ed-history .ed-hist-step { grid-template-columns: 104px minmax(0, 1fr); }
+  .ed-restore .ant-btn { min-height: 44px; }
+}

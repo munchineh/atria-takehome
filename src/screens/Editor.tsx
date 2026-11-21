@@ -59,7 +59,7 @@ export function Editor() {
   const mobile = !bp.md;
   const { message, modal } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, versionsOf, applyChange, saveText, branch, deleteVariation, credits, iterate } = useStore();
+  const { jobsFor, versionsOf, applyChange, saveText, branch, deleteVariation, credits, iterate, restoreVersion } = useStore();
   const job = jobsFor(c.id).find((j) => j.variations.some((v) => v.id === vid));
   const v = job?.variations.find((x) => x.id === vid);
 
@@ -84,6 +84,8 @@ export function Editor() {
   const [promptOpen, setPromptOpen] = useState(false);
   const [prompt, setPrompt] = useState('');
   const [confirmDelete, setConfirmDelete] = useState(false);
+  /** 265: a version picked to restore. It becomes current only once the designer saves. */
+  const [restoring, setRestoring] = useState<number | null>(null);
   const strip = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
 
@@ -93,6 +95,7 @@ export function Editor() {
   }, [vid]);
   useEffect(() => {
     if (latest) setSel(null);
+    setRestoring(null);
   }, [latest?.n]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     strip.current?.scrollTo({ left: strip.current.scrollWidth, behavior: 'smooth' });
@@ -146,6 +149,7 @@ export function Editor() {
     textMode === 'stylized' && stylizedSlot ? { img: stylizedSlot, copy: undefined } : editing && draft ? { img: shown.img, copy: draft } : shown;
   const canvasVersion = applying && !onOlder ? versions.at(-2) ?? shown : shown;
 
+  const editPath = (nid: string) => (ws.inCreation ? `/creation/${c.id}/${nid}/edit?round=${job.id}` : ws.editorPath(c.id, nid, job.id));
   const go = (nid: string) => nav(ws.editorPath(c.id, nid, job.id));
   const apply = (instruction: string) => {
     const text = instruction.trim();
@@ -237,30 +241,6 @@ export function Editor() {
       </div>
 
       <div className="ed-under">
-        {versions.length > 1 && (
-          <div className="filmstrip" ref={strip} role="listbox" aria-label="Versions">
-            {versions.map((x) => (
-              <motion.button
-                key={x.n}
-                type="button"
-                role="option"
-                aria-selected={x.n === shown.n}
-                className={`film ${x.n === shown.n ? 'on' : ''} ${x.state}`}
-                onClick={() => x.state === 'ready' && setSel(x.n === latest.n ? null : x.n)}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1, transition: { duration: duration.base } }}
-              >
-                <span className="film-img">
-                  {x.state === 'applying' ? <i className="film-skeleton" /> : <AdArt slot={x.img} copy={x.copy} ratio={ratioFor(x.img)} alt={`v${x.n}`} />}
-                </span>
-                <span className="film-cap" title={x.caption}>
-                  <strong>v{x.n}</strong> <span className="t-help">{x.state === 'applying' ? 'Applying your change' : x.caption}</span>
-                </span>
-              </motion.button>
-            ))}
-          </div>
-        )}
-
         <div className="ed-meta-row">
           {/* 257 (Mancini 16:28): just the label and the predicted grade. The original's score is in Iteration history. */}
           <span className="ed-predict">
@@ -575,17 +555,46 @@ export function Editor() {
     </section>
   );
 
-  const histBlock = rec && (
-        <section className="ed-block ed-related" aria-label="Iteration history">
-          {/* 256 (Mancini 16:26): inside the right panel as compact rows, not a full-width card. */}
-          {/* 237 (Mancini 16:10): one row of three steps (the ad, the problem, the suggestion used) instead of four loose lines. */}
-          <SectionHead title="Iteration history" />
-          <ol className="ed-hist-steps">
+  // 265 (Mancini 17:36): History card under the image. Where the creative came from, then its versions; an older
+  // version can be restored, which takes a Save and warns that later versions are lost.
+  const laterThan = (n: number) => versions.filter((x) => x.n > n);
+  const confirmRestore = (n: number) => {
+    const lost = laterThan(n);
+    modal.confirm({
+      title: `Restore v${n}?`,
+      icon: <ExclamationCircleFilled />,
+      content: `${lost.length === 1 ? `v${lost[0].n} is` : `v${lost[0].n} ${lost.length === 2 ? 'and' : 'to'} v${lost.at(-1)!.n} are`} deleted and v${n} becomes the current version. Variations made from this creative are kept.`,
+      okText: 'Save',
+      cancelText: 'Cancel',
+      onOk: () => {
+        restoreVersion(v, n);
+        message.success({ content: `Restored v${n}`, duration: 2 });
+      },
+    });
+  };
+  const origin = c.project ? (
+    <ol className="ed-hist-steps">
+      <li className="ed-hist-step">
+        <span className="ed-hist-label">Origin</span>
+        <b className="ed-hist-text">AI playground</b>
+      </li>
+    </ol>
+  ) : v.from && parent ? (
+    <ol className="ed-hist-steps">
+      <li className="ed-hist-step">
+        <span className="ed-hist-label">Origin</span>
+        <Link to={editPath(parent.id)} className="ed-hist-ad">
+          <b>Variation of {parent.angle} v{v.from.v}</b>
+        </Link>
+      </li>
+    </ol>
+  ) : rec ? (
+    <ol className="ed-hist-steps">
             <li className="ed-hist-step">
-              <span className="ed-hist-label">Made from</span>
+              <span className="ed-hist-label">Origin</span>
               <Link to={ws.radarPath(c.id)} className="ed-hist-ad">
                 <Thumb c={c} size={24} />
-                <b>{c.name}</b>
+                <b>Generated from {c.name}</b>
               </Link>
             </li>
             <li className="ed-hist-step">
@@ -611,7 +620,103 @@ export function Editor() {
               {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.fix}</b>)}
             </li>
           </ol>
-        </section>
+  ) : null;
+  const histBlock = (
+    <section className="panel ed-history" aria-label="History">
+      <SectionHead title="History" />
+      {origin}
+      <div className="ed-hist-versions">
+        <span className="ed-hist-label">Versions</span>
+        {versions.length > 1 ? (
+          <div className="filmstrip" ref={strip} role="listbox" aria-label="Versions">
+            {versions.map((x) => (
+              <motion.button
+                key={x.n}
+                type="button"
+                role="option"
+                aria-selected={x.n === shown.n}
+                className={`film ${x.n === shown.n ? 'on' : ''} ${x.state}`}
+                onClick={() => {
+                  if (x.state !== 'ready') return;
+                  setSel(x.n === latest.n ? null : x.n);
+                  setRestoring(null);
+                }}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: duration.base } }}
+              >
+                <span className="film-img">
+                  {x.state === 'applying' ? <i className="film-skeleton" /> : <AdArt slot={x.img} copy={x.copy} ratio={ratioFor(x.img)} alt={`v${x.n}`} />}
+                </span>
+                <span className="film-cap" title={x.caption}>
+                  <strong>v{x.n}</strong> <span className="t-help">{x.state === 'applying' ? 'Applying your change' : x.caption}</span>
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        ) : (
+          <span className="t-help">Only v1 so far. Edits saved as a new version show here.</span>
+        )}
+        {onOlder && (
+          <div className="ed-restore">
+            {restoring === shown.n ? (
+              <>
+                <span>v{shown.n} becomes the current version when you save.</span>
+                <span className="ed-restore-actions">
+                  <Button onClick={() => setRestoring(null)}>Cancel</Button>
+                  <Button type="primary" onClick={() => confirmRestore(shown.n)}>
+                    Save
+                  </Button>
+                </span>
+              </>
+            ) : (
+              <>
+                <span>Viewing v{shown.n}. The current version is v{latest.n}.</span>
+                <Tooltip title={locked ? "This creative runs in an ad, so it can't go back to an earlier version." : undefined}>
+                  <Button disabled={locked} onClick={() => setRestoring(shown.n)}>
+                    Restore v{shown.n}
+                  </Button>
+                </Tooltip>
+              </>
+            )}
+          </div>
+        )}
+      </div>
+    </section>
+  );
+
+  // 265 (Mancini 17:36): Related, in the right panel. Creatives from the same round, and creatives made from an ad that
+  // uses this one.
+  const variants = job.variations.filter((x) => x.id !== v.id && !x.deleted);
+  const relatedFromAds = v.becameCreative ? jobsFor(v.becameCreative).flatMap((j) => j.variations.filter((x) => !x.deleted).map((x) => ({ x, j }))) : [];
+  const relThumbs = (items: { x: typeof v; j: typeof job }[]) => (
+    <ul className="rel-grid">
+      {items.slice(0, 11).map(({ x, j }) => (
+        <li key={x.id}>
+          <Tooltip title={x.angle}>
+            <Link to={j.id === job.id ? editPath(x.id) : `/creation/${j.creativeId}/${x.id}/edit?round=${j.id}`} className="rel-thumb" aria-label={`Open creative ${x.angle}`}>
+              <Thumb c={{ img: x.img, media: 'Image', name: x.angle }} size={64} />
+            </Link>
+          </Tooltip>
+        </li>
+      ))}
+    </ul>
+  );
+  const relatedBlock = (
+    <section className="ed-block ed-related" aria-label="Related">
+      <SectionHead title="Related" />
+      <div className="rel-sub">
+        <span className="rel-sub-title">
+          Variant creatives <span className="tab-count">{variants.length}</span>
+        </span>
+        {variants.length ? relThumbs(variants.map((x) => ({ x, j: job }))) : <p className="t-help">No other creatives were made in this round.</p>}
+      </div>
+      <div className="rel-sub">
+        <span className="rel-sub-title">
+          Related creatives <span className="tab-count">{relatedFromAds.length}</span>
+        </span>
+        {relatedFromAds.length ? relThumbs(relatedFromAds) : <p className="t-help">None yet. Creatives made from an ad that uses this one show here.</p>}
+      </div>
+    </section>
   );
 
   const tagBlock = (
@@ -704,12 +809,15 @@ export function Editor() {
       )}
 
       <div className="ed-grid">
-        {canvas}
+        <div className="ed-left">
+          {canvas}
+          {histBlock}
+        </div>
         <aside className={`ed-panel panel ${locked ? 'locked' : ''}`}>
           {locked && (
             <div className="ed-lock">
               <span>
-                <strong>Locked while in an ad.</strong> Iterate to edit a new copy.
+                <strong>This creative runs in {v.launched!.audience}.</strong> A new version would change a running ad, so edits go into a new variation.
               </span>
               <Button
                 type="primary"
@@ -719,13 +827,13 @@ export function Editor() {
                   nav(ws.inCreation ? `/creation/${c.id}/${nid}/edit?round=${job.id}` : ws.editorPath(c.id, nid, job.id));
                 }}
               >
-                Iterate
+                Make a new variation
               </Button>
             </div>
           )}
           {changeBlock}
+          {relatedBlock}
           {tagBlock}
-          {histBlock}
         </aside>
       </div>
 
