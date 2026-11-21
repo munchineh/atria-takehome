@@ -428,7 +428,7 @@ export function AdDetail() {
             exit={{ opacity: 0, transition: { duration: duration.instant } }}
           >
             <ConfigProvider theme={darkBarTheme}>
-              <Body creative={c} recCount={creativeSel.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} onRemove={toggle} />
+              <Body creative={c} recCount={creativeSel.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} onRemove={toggle} onRestore={setSelected} />
             </ConfigProvider>
           </motion.div>
         ) : (
@@ -897,6 +897,7 @@ export function AdDetail() {
         recCount={selected.length}
         picked={recs.filter((r) => selected.includes(r.id))}
         onRemove={toggle}
+        onRestore={setSelected}
         onClose={() => setDialog(false)}
         onCreate={create}
       />

@@ -36,8 +36,11 @@ export function Body({
   onCancel,
   onCreate,
   onRemove,
+  onRestore,
   panel = false,
 }: {
+  /** 306: "Reset changes" puts back the suggestions the round opened with. */
+  onRestore?: (ids: string[]) => void;
   /** 227: removes a suggestion from the round (deselects it on the ad page). The brief is not rewritten. */
   onRemove?: (id: string) => void;
   /** Item 9: the suggestions picked on the ad page. When given, the brief can be filled in from them. */
@@ -57,6 +60,8 @@ export function Body({
   const saved = briefs[creative.product];
   // Mancini 09:43: the brief starts filled in from the picked suggestions; a product page is the alternative.
   const fromSuggestions = !!picked && picked.length > 0;
+  // 306 (Mancini 22:17): the suggestions the form opened with, so "Reset changes" can bring removed ones back.
+  const opened = useRef<Recommendation[]>(picked ?? []);
   const [mode, setMode] = useState<BriefMode>(fromSuggestions ? 'write' : saved ? 'filled' : 'empty');
   const [brief, setDraft] = useState(() => (fromSuggestions ? briefFromSuggestions(creative, picked!, account, saved) : saved ?? ''));
   const [prefilled, setPrefilled] = useState(fromSuggestions);
@@ -73,21 +78,28 @@ export function Body({
   const ready = brief.trim().length > 0 && (mode === 'filled' || mode === 'write');
 
   // Item 9: fill the brief from the diagnosis. Everything stays editable; nothing is saved until Create.
-  const prefill = () => {
-    setDraft(briefFromSuggestions(creative, picked ?? [], account, saved));
+  const prefill = (from: Recommendation[] = picked ?? []) => {
+    setDraft(briefFromSuggestions(creative, from, account, saved));
     setPrefilled(true);
     setMode('write');
   };
-  // 286 (Mancini 19:29): "Reset changes" asks first when the brief has edits, since they're lost.
+  // 286 (Mancini 19:29): "Reset changes" asks first when there are edits, since they're lost.
+  // 306 (Mancini 22:17): it also puts back any suggestion removed from the round, then rewrites the brief from them.
   const resetBrief = () => {
-    const fresh = briefFromSuggestions(creative, picked ?? [], account, saved);
-    if (brief.trim() === fresh.trim()) return prefill();
+    const start = opened.current;
+    const restored = !picked || start.length !== picked.length || start.some((r) => !picked.some((p) => p.id === r.id));
+    const fresh = briefFromSuggestions(creative, start, account, saved);
+    const apply = () => {
+      if (restored && onRestore) onRestore(start.map((r) => r.id));
+      prefill(start);
+    };
+    if (!restored && brief.trim() === fresh.trim()) return apply();
     modal.confirm({
       title: 'Reset your changes?',
-      content: 'The brief goes back to what Atria wrote from the suggestions in this round. Your edits are lost.',
+      content: 'The suggestions and the brief go back to how they were when you opened this. Your edits are lost.',
       okText: 'Reset',
       cancelText: 'Keep my edits',
-      onOk: prefill,
+      onOk: apply,
     });
   };
 
@@ -158,11 +170,6 @@ export function Body({
           <div className="dlg-label-row">
             <span className="dlg-field-label"><span className="req" aria-hidden>*</span>Ad brief</span>
             <span className="row-gap wrap">
-              {(mode === 'filled' || mode === 'write') && brief.trim().length > 0 && (
-                <Button type="link" size="small" className="inline-link" icon={<CloseOutlined />} onClick={() => { setDraft(''); setPrefilled(false); setMode('write'); }}>
-                  Clear
-                </Button>
-              )}
               {(mode === 'filled' || mode === 'write') && (
                 <Button type="link" size="small" className="inline-link" icon={<LinkOutlined />} onClick={() => setMode('url')}>
                   Create from product page
@@ -183,7 +190,7 @@ export function Body({
                         </b>
                         <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
                       </div>
-                      <Button onClick={prefill}>Fill in the brief</Button>
+                      <Button onClick={() => prefill()}>Fill in the brief</Button>
                     </div>
                     <div className="brief-divider muted small">
                       <span>or start another way</span>
@@ -254,8 +261,16 @@ export function Body({
                   autoFocus={mode === 'write'}
                   aria-label="Ad brief"
                 />
-                {mode === 'write' && prefilled && <span className="brief-foot">Filled in from the suggestions you picked. Change anything you like.</span>}
-                {mode === 'filled' && saved && <span className="brief-foot">Saved for {creative.product}. Used for every variation of this product.</span>}
+                {/* 306 (Mancini 22:17): "Clear" sits at the bottom right of the field, on the helper line. */}
+                <div className="brief-foot-row">
+                  {mode === 'write' && prefilled && <span className="brief-foot">Filled in from the suggestions you picked. Change anything you like.</span>}
+                  {mode === 'filled' && saved && <span className="brief-foot">Saved for {creative.product}. Used for every variation of this product.</span>}
+                  {brief.trim().length > 0 && (
+                    <Button type="link" size="small" className="inline-link brief-clear" icon={<CloseOutlined />} onClick={() => { setDraft(''); setPrefilled(false); setMode('write'); }}>
+                      Clear
+                    </Button>
+                  )}
+                </div>
               </motion.div>
             )}
           </AnimatePresence>
@@ -396,8 +411,10 @@ export function CreateDialog({
   onClose,
   onCreate,
   onRemove,
+  onRestore,
 }: {
   onRemove?: (id: string) => void;
+  onRestore?: (ids: string[]) => void;
   picked?: Recommendation[];
   open: boolean;
   mobile: boolean;
@@ -411,7 +428,7 @@ export function CreateDialog({
   useEffect(() => {
     if (open) setN((x) => x + 1);
   }, [open]);
-  const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} onRemove={onRemove} />;
+  const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} onRemove={onRemove} onRestore={onRestore} />;
   if (mobile)
     return (
       <Drawer

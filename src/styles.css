@@ -3257,3 +3257,16 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .page-kind { display: inline-flex; align-items: center; gap: 6px; margin-bottom: 8px; font-size: var(--fs-body, 14px); line-height: 22px; font-weight: 600; color: var(--c-primary); }
 .page-kind .anticon { font-size: 14px; }
 .lib-ad-title .page-kind { margin-bottom: 4px; }
+/* 306 (Mancini 22:17) Brief links ("Clear", "Create from product page"): hover changes colour only. No underline, and the
+   icon stays still. "Clear" moves to the bottom right of the field, on the helper line. */
+.dlg .dlg-label-row .inline-link.ant-btn-link:not(:disabled):hover > span,
+.dlg .brief-clear.ant-btn-link:not(:disabled):hover > span { text-decoration: none; }
+.dlg .dlg-label-row .inline-link.ant-btn:not(:disabled):hover .ant-btn-icon .anticon,
+.dlg .brief-clear.ant-btn:not(:disabled):hover .ant-btn-icon .anticon { transform: none; }
+.dlg .dlg-label-row .inline-link.ant-btn-link:not(:disabled):hover,
+.dlg .brief-clear.ant-btn-link:not(:disabled):hover { color: var(--c-primary-hover, #ff8a52); }
+.bar-panel .dlg-label-row .inline-link.ant-btn-link:not(:disabled):hover,
+.bar-panel .brief-clear.ant-btn-link:not(:disabled):hover { color: #ffc2a3; }
+.brief-foot-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.brief-foot-row .brief-clear { margin-left: auto; flex: none; line-height: 20px; font-size: 12px; }
+.bar-panel .brief-clear.ant-btn-link { color: #ff9a6b; }
