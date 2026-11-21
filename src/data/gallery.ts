@@ -15,7 +15,7 @@ import type { Job } from './store';
 import type { Variation, Version } from './variations';
 
 export type Origin = 'variation' | 'cloned' | 'scratch';
-export type GroupBy = 'date' | 'ad' | 'campaign' | 'product';
+export type GroupBy = 'none' | 'date' | 'ad' | 'campaign' | 'product';
 
 export const ORIGIN_LABEL: Record<Origin, string> = { variation: 'Made from an ad', cloned: 'Cloned', scratch: 'From scratch' };
 /** Atria's own Image Ads page groups by date by default and offers Product among others; Ad and Campaign are ours (DL-15). */
@@ -24,6 +24,7 @@ export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
   { value: 'ad', label: 'Ad' },
   { value: 'campaign', label: 'Campaign' },
   { value: 'product', label: 'Product' },
+  { value: 'none', label: 'None' },
 ];
 /** Origin is a tab row, as on Atria's page (All, Clone, Iterate, Raya). */
 export const ORIGIN_TABS: { value: 'all' | Origin; label: string }[] = [
@@ -33,7 +34,7 @@ export const ORIGIN_TABS: { value: 'all' | Origin; label: string }[] = [
   { value: 'scratch', label: 'From scratch' },
 ];
 /** Title of the last group, for creatives the grouping has no value for. */
-export const UNGROUPED_LABEL: Record<GroupBy, string> = { date: 'Earlier', ad: 'Not made from an ad', campaign: 'Not in a campaign yet', product: 'No product' };
+export const UNGROUPED_LABEL: Record<GroupBy, string> = { none: '', date: 'Earlier', ad: 'Not made from an ad', campaign: 'Not in a campaign yet', product: 'No product' };
 
 export interface GalleryItem {
   /** Variation id. */
@@ -114,6 +115,7 @@ export function galleryItems(jobs: Job[], find: (id: string) => Creative | undef
 
 /** Group creatives. Groups keep the order of their newest creative; the catch-all group is always last. */
 export function groupGallery(items: GalleryItem[], by: GroupBy): GalleryGroup[] {
+  if (by === 'none') return [{ key: 'all', title: 'All creatives', meta: count(items.length), ungrouped: false, items }];
   const groups = new Map<string, GalleryGroup>();
   const rest: GalleryItem[] = [];
   const add = (key: string, title: string, item: GalleryItem, adId?: string) => {

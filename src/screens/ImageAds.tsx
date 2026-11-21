@@ -1,231 +1,286 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Empty, Grid, Select, Tag, Tooltip, Typography } from 'antd';
-import { CopyOutlined, FormOutlined, RightOutlined } from '@ant-design/icons';
-import { MadeFromIcon } from '../components/Icons';
+import { Button, Empty, Progress, Typography } from 'antd';
+import { BarChartOutlined, PlusOutlined } from '@ant-design/icons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
-import { ALL_CREATIVES, DEMO_ACCOUNTS, useStore, type Job } from '../data/store';
-import { Thumb } from '../components/Thumb';
-import { GradeChip } from '../components/GradeTag';
+import { findCreative, useStore } from '../data/store';
+import { galleryItems, gallerySummary, groupGallery, type GroupBy } from '../data/gallery';
 import { PopSheet } from '../components/PopSheet';
 import { TeachingCard } from '../components/TeachingCard';
-import { duration, ease, listDelay, pageTransition } from '../motion/tokens';
+import { Thumb } from '../components/Thumb';
+import { timeLeft } from '../components/TasksPanel';
+import { GalleryCard } from '../components/gallery/GalleryCard';
+import { GalleryToolbar, type GalleryFilters } from '../components/gallery/GalleryToolbar';
+import { NewCreativeModal } from '../components/gallery/NewCreativeModal';
+import { pageTransition } from '../motion/tokens';
 
-type Source = 'radar' | 'clone' | 'scratch';
-const SOURCE_LABEL: Record<Source, string> = { radar: 'From Radar', clone: 'Cloned', scratch: 'From scratch' };
+const PICKS_KEY = 'atria.gallery.picks.v1';
 
-interface Row {
-  key: string;
-  source: Source;
-  brand: string;
-  name: string;
-  img: string;
-  campaigns: string[];
-  rounds: number;
-  variations: number;
-  last: string;
-  grade?: ReturnType<typeof GradeChip> | null;
-  overall?: string | null;
-  status?: { kind: 'generating'; count: number } | { kind: 'new'; count: number };
-  to?: string;
-  variationOf?: string;
+function loadPicks(fallback: string[]): string[] {
+  try {
+    const raw = localStorage.getItem(PICKS_KEY);
+    if (!raw) return fallback;
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : fallback;
+  } catch {
+    return fallback;
+  }
 }
 
-
-// K3 (R-T3), K38 (R-T7): one round definition per screen; never "a creative".
 const HOW = (
   <div className="grade-pop">
-    <p>Every variation you create is kept here, grouped by the ad it came from. Each time you create variations is one round.</p>
-    <p>Cloned ads and ads made from scratch have their own&nbsp;entries.</p>
+    <p>Every creative you make in Atria is kept here, whether it came from an ad, a clone, or a brief from scratch.</p>
+    <p>Select any creative to refine it in the editor, or group the grid by ad, campaign, or&nbsp;origin.</p>
   </div>
 );
 
-function Campaigns({ list }: { list: string[] }) {
-  if (!list.length) return <span className="muted small">No campaign yet</span>;
-  return (
-    <div className="pl-campaigns">
-      {list.slice(0, 2).map((c) => (
-        <Tooltip key={c} title={c} mouseEnterDelay={0.6}>
-          <span className="pl-campaign">{c}</span>
-        </Tooltip>
-      ))}
-      {list.length > 2 && <span className="muted small">+{plural(list.length - 2, 'more campaign', 'more campaigns')}</span>}
-    </div>
-  );
-}
-
+/**
+ * Creative gallery (DL-14, DL-15, DL-16):
+ * The unit is a single creative image, newest first, with optional grouping and "New creative" creation flow.
+ */
 export function ImageAds() {
   const nav = useNavigate();
-  const bp = Grid.useBreakpoint();
-  const { jobs, accountId } = useStore();
-  // The gallery opens on the account picked in the sidebar (it showed every account's rows under one account's name).
-  // "All brands" is still one click away.
-  const accountName = DEMO_ACCOUNTS.find((a) => a.id === accountId)?.name ?? 'all';
-  const [brand, setBrand] = useState<string>(accountName);
-  useEffect(() => setBrand(accountName), [accountName]);
-  const [source, setSource] = useState<string>('all');
-  const [campaign, setCampaign] = useState<string>('all');
+  const { jobs, accountId, versionsOf } = useStore();
 
-  const rows = useMemo<Row[]>(() => {
-    const byCreative = new Map<string, Job[]>();
-    for (const j of jobs) byCreative.set(j.creativeId, [...(byCreative.get(j.creativeId) ?? []), j]);
-    const fromRadar: Row[] = [...byCreative.entries()].map(([cid, js]) => {
-      const c = ALL_CREATIVES.find((x) => x.id === cid)!;
-      const last = js.at(-1)!;
-      const running = js.find((j) => j.state === 'generating' || j.state === 'queued');
-      const unseen = js.find((j) => j.unseen);
-      return {
-        key: cid,
-        source: (c.project ?? 'radar') as Source,
-        brand: DEMO_ACCOUNTS.find((a) => a.id === c.accountId)!.name,
-        name: c.name,
-        img: c.img,
-        campaigns: [...new Set(c.ads.map((a) => a.campaign))],
-        rounds: js.length,
-        // Hide empty projects (P1): a failed round with nothing kept doesn't count.
-        variations: js.reduce((n, j) => n + (j.state === 'failed' ? 0 : j.count - j.failed.length), 0),
-        last: last.date,
-        overall: c.overall,
-        status: running ? { kind: 'generating', count: running.count } : unseen ? { kind: 'new', count: unseen.count - unseen.failed.length } : undefined,
-        // DL-06: tiles open the round inside Creation, never the ad page in Analytics.
-        to: `/creation/${cid}?round=${last.id}`,
-        variationOf: c.variationOf,
-      };
+  const [filters, setFilters] = useState<GalleryFilters>({
+    accountId,
+    origin: 'all',
+    campaign: 'all',
+    shortlistedOnly: false,
+  });
+  useEffect(() => {
+    setFilters((f) => ({ ...f, accountId, campaign: 'all' }));
+  }, [accountId]);
+
+  const [groupBy, setGroupBy] = useState<GroupBy>('date');
+  const [newOpen, setNewOpen] = useState(false);
+
+  // Seed 2 realistic shortlisted creatives on first visit so the Shortlisted filter works immediately.
+  const baseItems = useMemo(() => galleryItems(jobs, findCreative, [], versionsOf), [jobs, versionsOf]);
+  const [picks, setPicks] = useState<string[]>(() =>
+    loadPicks(baseItems.filter((x) => x.accountId === accountId).slice(0, 2).map((x) => x.id)),
+  );
+  const togglePick = (id: string) => {
+    setPicks((prev) => {
+      const next = prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id];
+      try {
+        localStorage.setItem(PICKS_KEY, JSON.stringify(next));
+      } catch {
+        /* ignore storage failures */
+      }
+      return next;
     });
-    return [...fromRadar].filter((r) => r.variations > 0 || r.status);
-  }, [jobs]);
+  };
 
-  const campaigns = [...new Set(rows.flatMap((r) => r.campaigns))];
-  const shown = rows.filter(
-    (r) => (brand === 'all' || r.brand === brand) && (source === 'all' || r.source === source) && (campaign === 'all' || r.campaigns.includes(campaign)),
+  const allItems = useMemo(() => galleryItems(jobs, findCreative, picks, versionsOf), [jobs, picks, versionsOf]);
+
+  const accountScoped = useMemo(
+    () => (filters.accountId === 'all' ? allItems : allItems.filter((i) => i.accountId === filters.accountId)),
+    [allItems, filters.accountId],
   );
 
-  const adCount = shown.filter((r) => r.source === 'radar').length;
-  const projectCount = shown.length - adCount;
-  // G8 (R-T): distinguish ads with performance data from cloned / from-scratch projects.
-  const countLine =
-    adCount > 0 && projectCount > 0
-      ? `${plural(adCount, 'ad')} and ${plural(projectCount, 'project')} with variations`
-      : projectCount > 0
-        ? `${plural(projectCount, 'project')} with variations`
-        : `${plural(adCount, 'ad')} with variations`;
+  const campaigns = useMemo(
+    () => [...new Set(accountScoped.flatMap((i) => i.campaigns))],
+    [accountScoped],
+  );
+
+  const filtered = useMemo(
+    () =>
+      accountScoped.filter(
+        (i) =>
+          (filters.origin === 'all' || i.origin === filters.origin) &&
+          (filters.campaign === 'all' || i.campaigns.includes(filters.campaign)) &&
+          (!filters.shortlistedOnly || i.shortlisted),
+      ),
+    [accountScoped, filters],
+  );
+
+  const groups = useMemo(() => groupGallery(filtered, groupBy), [filtered, groupBy]);
+  const summary = useMemo(() => gallerySummary(filtered), [filtered]);
+  const accountShortlisted = useMemo(() => gallerySummary(accountScoped).shortlisted, [accountScoped]);
+
+  const activeJobs = useMemo(
+    () =>
+      jobs.filter((j) => {
+        if (j.state !== 'generating' && j.state !== 'queued') return false;
+        const c = findCreative(j.creativeId);
+        return c && (filters.accountId === 'all' || c.accountId === filters.accountId);
+      }),
+    [jobs, filters.accountId],
+  );
+
+  const clearFilters = () =>
+    setFilters({
+      accountId,
+      origin: 'all',
+      campaign: 'all',
+      shortlistedOnly: false,
+    });
+
+  const hasFilters =
+    filters.accountId !== accountId ||
+    filters.origin !== 'all' ||
+    filters.campaign !== 'all' ||
+    filters.shortlistedOnly;
+
+  const metaParts = [plural(summary.total, 'creative')];
+  if (summary.fromAds > 0 && summary.standalone > 0) {
+    metaParts.push(`${summary.fromAds} from ads`, `${summary.standalone} standalone`);
+  }
 
   return (
     <motion.div {...pageTransition} className="page image-ads">
-      <div className="page-head pl-head">
-        <div>
+      <div className="page-head gal-head">
+        <div className="gal-head-text">
           <Typography.Title level={1} className="page-title">
             Creative gallery
           </Typography.Title>
           <p className="muted desc">Every creative you've made in Atria, ready to refine or use in an ad.</p>
-          <p className="t-help pl-meta">{countLine}</p>
+          <p className="t-help pl-meta">{metaParts.join('\u00a0· ')}</p>
         </div>
-        {/* K41 (R-R6): PopSheet so it opens as a bottom sheet on phones. */}
-        <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
-          <Button type="link" className="inline-link">
-            How the gallery works
+        <div className="gal-head-actions">
+          <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
+            <Button type="link" className="inline-link">
+              How the gallery works
+            </Button>
+          </PopSheet>
+          {/* DL-15 & DL-16: gallery's primary action, "New creative". */}
+          <Button type="primary" icon={<PlusOutlined />} onClick={() => setNewOpen(true)}>
+            New creative
           </Button>
-        </PopSheet>
+        </div>
       </div>
 
-      <div className="filter-bar pl-filters">
-        <Select
-          value={brand}
-          onChange={setBrand}
-          aria-label="Brand"
-          options={[{ value: 'all', label: 'All brands' }, ...DEMO_ACCOUNTS.map((a) => ({ value: a.name, label: a.name }))]}
-          popupMatchSelectWidth={false}
-        />
-        {/* K11 (R-T1): gallery filter named Origin. */}
-        <Select
-          value={source}
-          onChange={setSource}
-          aria-label="Origin"
-          options={[{ value: 'all', label: 'All origins' }, ...(['radar', 'clone', 'scratch'] as Source[]).map((s) => ({ value: s, label: SOURCE_LABEL[s] }))]}
-          popupMatchSelectWidth={false}
-        />
-        <Select
-          showSearch
-          value={campaign}
-          onChange={setCampaign}
-          placeholder="Search campaigns"
-          aria-label="Campaign"
-          className="pl-campaign-select"
-          classNames={{ popup: { root: 'wrap-options' } }}
-          popupMatchSelectWidth={bp.md ? 420 : true}
-          optionFilterProp="label"
-          options={[{ value: 'all', label: 'All campaigns' }, ...campaigns.map((c) => ({ value: c, label: c }))]}
-        />
-      </div>
+      <GalleryToolbar
+        filters={filters}
+        onChangeFilters={setFilters}
+        onClearFilters={clearFilters}
+        groupBy={groupBy}
+        onChangeGroupBy={setGroupBy}
+        campaigns={campaigns}
+        shortlistedCount={accountShortlisted}
+        defaultAccountId={accountId}
+      />
 
-      {/* E4 (R-E, R-H): inline teaching card above the list so it never covers gallery rows on desktop or phones. */}
+      {/* DL-13 & E4: inline teaching card above the grid so nothing is covered on desktop or phones. */}
       <TeachingCard />
 
-      {shown.length === 0 ? (
-        <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<b>No ads match these filters</b>}>
-          <Button
-            onClick={() => {
-              setBrand('all');
-              setSource('all');
-              setCampaign('all');
-            }}
-          >
-            Clear filters
-          </Button>
-        </Empty>
-      ) : (
-        <ul className="pl-list">
-          {shown.map((r, i) => (
-            <motion.li
-              key={r.key}
-              className={`pl-row ${r.to ? 'link' : ''}`}
-              onClick={() => r.to && nav(r.to)}
-              role={r.to ? 'link' : undefined}
-              tabIndex={r.to ? 0 : undefined}
-              onKeyDown={(e) => r.to && e.key === 'Enter' && nav(r.to)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(i) } }}
-            >
-              <Thumb c={{ img: r.img, media: 'Image', name: r.name }} size={bp.md ? 64 : 52} />
-              <div className="pl-main">
-                <div className="pl-name">
-                  <span>{r.name}</span>
-                  {r.status?.kind === 'new' && <i className="unseen-dot" aria-label="New" />}
-                </div>
-                <div className="pl-tags">
-                  <Tag className="media-tag" icon={r.source === 'radar' ? undefined : r.source === 'clone' ? <CopyOutlined /> : <FormOutlined />}>
-                    {SOURCE_LABEL[r.source]}
-                  </Tag>
-                  {r.variationOf && (
-                    <Tag icon={<MadeFromIcon />} className="variation-tag">
-                      Variation
-                    </Tag>
-                  )}
-                  <span className="muted small">{r.brand}</span>
-                </div>
-                <Campaigns list={r.campaigns} />
-              </div>
-              <div className="pl-side">
-                <div className="small">
-                  {plural(r.rounds, 'round')}{'\u00a0'}· {plural(r.variations, 'variation')}
-                </div>
-                <div className="muted small">Last round {r.last}</div>
-                <div className="pl-status">
-                  {r.status?.kind === 'generating' && <span className="small">Generating {r.status.count}</span>}
-                  {r.status?.kind === 'new' && <span className="small new">{r.status.count} new</span>}
-                  {r.overall && (
+      {/* Live generating strip for rounds currently in flight (including newly created standalone creatives). */}
+      {activeJobs.length > 0 && (
+        <div className="gal-live-list" aria-live="polite">
+          {activeJobs.map((j) => {
+            const src = findCreative(j.creativeId);
+            if (!src) return null;
+            return (
+              <div key={j.id} className="panel gal-live-row">
+                <Thumb c={src} size={40} />
+                <div className="gal-live-body">
+                  <div className="gal-live-head">
+                    <b>{src.name}</b>
                     <span className="small muted">
-                      Overall <GradeChip g={r.overall as never} />
+                      {j.state === 'queued'
+                        ? `Queued\u00a0· ${plural(j.count, 'creative')}`
+                        : `Generating ${plural(j.count, 'creative')}\u00a0· ${timeLeft(j.progress)}`}
                     </span>
-                  )}
+                  </div>
+                  <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
                 </div>
               </div>
-              {r.to && <RightOutlined className="pl-chev muted" />}
-            </motion.li>
-          ))}
-        </ul>
+            );
+          })}
+        </div>
       )}
+
+      {filtered.length === 0 ? (
+        <div className="gal-empty">
+          {hasFilters ? (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <>
+                  <b>No creatives match these filters</b>
+                  <br />
+                  Clear a filter to see every creative in this account.
+                </>
+              }
+            >
+              <Button onClick={clearFilters}>Clear filters</Button>
+            </Empty>
+          ) : (
+            <Empty
+              image={Empty.PRESENTED_IMAGE_SIMPLE}
+              description={
+                <>
+                  <b>No creatives yet</b>
+                  <br />
+                  Create from a brief, a reference, or an existing ad.
+                </>
+              }
+            >
+              <Button type="primary" icon={<PlusOutlined />} onClick={() => setNewOpen(true)}>
+                New creative
+              </Button>
+            </Empty>
+          )}
+        </div>
+      ) : groupBy === 'none' ? (
+        <div className="gal-grid">
+          {filtered.map((item, i) => (
+            <GalleryCard
+              key={item.id}
+              item={item}
+              index={i}
+              onOpen={(to) => nav(to)}
+              onToggleShortlist={togglePick}
+            />
+          ))}
+        </div>
+      ) : (
+        <div className="gal-groups">
+          {groups.map((group) => (
+            <section key={group.key} className={`gal-group ${group.ungrouped ? 'is-ungrouped' : ''}`}>
+              <div className="gal-group-head">
+                <div className="gal-group-title-wrap">
+                  <h2 className="gal-group-title">{group.title}</h2>
+                  <span className="t-help gal-group-meta">{group.meta}</span>
+                </div>
+                {group.adId && (
+                  <Button
+                    type="link"
+                    size="small"
+                    className="inline-link"
+                    icon={<BarChartOutlined />}
+                    onClick={() => nav(`/ad/${group.adId}`)}
+                  >
+                    View in Radar
+                  </Button>
+                )}
+              </div>
+              <div className="gal-grid">
+                {group.items.map((item, i) => (
+                  <GalleryCard
+                    key={item.id}
+                    item={item}
+                    index={i}
+                    onOpen={(to) => nav(to)}
+                    onToggleShortlist={togglePick}
+                  />
+                ))}
+              </div>
+            </section>
+          ))}
+        </div>
+      )}
+
+      <NewCreativeModal
+        open={newOpen}
+        onClose={() => setNewOpen(false)}
+        onCreated={() => {
+          // Stay in the gallery so the user watches the new creatives arrive into the grid.
+          setFilters((f) => ({ ...f, origin: 'all', campaign: 'all', shortlistedOnly: false }));
+        }}
+      />
     </motion.div>
   );
 }

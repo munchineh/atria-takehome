@@ -83,8 +83,8 @@ export function TeachingCard() {
             <span>Each round is saved with the ad it came from. Find them all here, grouped by&nbsp;ad.</span>
           </div>
           <div className="teach-actions">
-            {/* DL-13: one button. "Open Radar" pulled people out of Creation (DL-06). */}
-            <Button type="primary" size="small" onClick={dismiss}>
+            {/* DL-13: one button. Default style so "New creative" stays the sole primary action (R-H6). */}
+            <Button size="small" onClick={dismiss}>
               Got it
             </Button>
           </div>
