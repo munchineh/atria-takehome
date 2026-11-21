@@ -208,7 +208,7 @@ export function overviewBriefing(account: MockAccount, windowDays: number, jobs:
     done,
     changed,
     titles: {
-      now: { title: 'What to know now', help: `How ${account.name.replace(/\.$/, '')} is doing against the period before.` },
+      now: { title: 'What to know now', help: `How ${account.name.replace(/\.$/, '')} is doing in this period.` },
       next: { title: 'What to do next', help: 'The ads spending most with a C or D on the metric their goal needs.' },
       done: { title: 'What you did', help: 'Variation rounds from the last 7 days.' },
       changed: { title: 'What changed', help: 'Variation ads against the ad they were made from.' },

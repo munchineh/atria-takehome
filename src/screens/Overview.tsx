@@ -74,7 +74,8 @@ function Headline({ lead, fallback }: { lead: { best?: Delta; worst?: Delta }; f
       ) : (
         fallback
       )}
-      {/* S-46: "against the period before" is the section's help line, so the headline ends at the numbers. */}
+      {/* Mancini 13:36: the full sentence reads better. */}
+      {(best || worst) && <span className="ov-hl-tail"> against the period before.</span>}
     </p>
   );
 }
@@ -112,9 +113,12 @@ export function Overview() {
 
   return (
     <motion.div {...pageTransition} className="page overview">
-      <PageHeader title="Overview" desc="See how this account is doing and where to look first." />
-      {/* S-33: the period is a control, so it sits in the controls row like Radar's, not with the title. */}
-      <div className="filter-bar">
+      {/* Mancini 13:36: the period goes back on the title row, as before the overhaul. A row of its own left an empty band. */}
+      <PageHeader
+        title="Overview"
+        desc="See how this account is doing and where to look first."
+        actions={
+          <>
         <Select
           value={windowDays}
           onChange={(d) => setWindowDays(d)}
@@ -139,8 +143,13 @@ export function Overview() {
             ),
           }))}
         />
-        {period.sheet}
-      </div>
+            {period.sheet}
+          </>
+        }
+      />
+
+      {/* Mancini 13:36: Ask Raya first again. */}
+      <AskRaya key={account.id} account={account} windowDays={windowDays} jobs={jobs} />
 
       {/* Key metrics, as in Atria's Overview (Mancini 09:43, item 21). Overview is the account; Radar is each ad. */}
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-now" aria-labelledby="ov-sec-now">
@@ -157,9 +166,6 @@ export function Overview() {
           <Kpi label="CPM" value={money(dCpm.now)} help="Cost per 1,000 impressions" delta={dCpm} />
         </div>
       </motion.section>
-
-      {/* S-34: the headline is the focal point, so Ask Raya follows the metrics instead of sitting above them. */}
-      <AskRaya key={account.id} account={account} windowDays={windowDays} jobs={jobs} />
 
       <div className="ov-grid ov-grid-even">
         <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-health">

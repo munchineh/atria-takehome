@@ -1498,9 +1498,10 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .idea-pill, .raya-chip, .chip, .filter-pill { border-radius: var(--r-control); border: 1px solid var(--c-border); background: #fff; color: var(--c-text); font-size: var(--fs-small); line-height: var(--lh-small); }
 .idea-pill:hover, .raya-chip:hover, .chip:hover { border-color: var(--c-primary); color: var(--c-primary); background: #fff; }
 .filter-pill { background: var(--c-primary-tint); border-color: var(--c-primary-border); }
-/* S-18, V-10: Overview / Radar switch drawn as in FG1: rectangular, radius 6 */
-.mode-switch { border-radius: var(--r-control); background: var(--c-fill); border-color: transparent; padding: 3px; }
-.mode-pill-thumb { border-radius: 4px; box-shadow: none; }
+/* V-10 reverted (Mancini 13:36): the Overview / Radar switch is a pill again. It's our own control (D1), so the pill stays. */
+.mode-switch { border-radius: 999px; background: var(--c-fill); border-color: transparent; padding: 3px; }
+.mode-pill-thumb { border-radius: 999px; box-shadow: none; }
+.mode-pill-btn { border-radius: 999px; }
 /* S-19: tab counts as small neutral tags */
 .tab-count { font-size: var(--fs-small); color: var(--c-text-3); }
 /* S-24, S-53: the row action in tables is a default button (white, outlined, dark text, 32 high, 14 px) so it can't read as a grade.
@@ -1949,3 +1950,15 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .radar .radar-card-tabs .ant-tabs-tab-focus, .radar .radar-card-tabs .ant-tabs-tab:focus-within { outline: none !important; box-shadow: none !important; }
 .radar .radar-card-tabs .ant-tabs-tab .ant-tabs-tab-btn:focus { outline: none !important; }
 .radar .radar-card-tabs .ant-tabs-tab:has(.ant-tabs-tab-btn:focus-visible) { outline: 2px solid var(--c-primary) !important; outline-offset: -2px; }
+/* Mancini 13:36: "Where it runs" popover on one 16 px rhythm. Even padding, every copy listed, footer facts grouped tight. */
+.runs-pop2 .ant-popover-inner { width: auto !important; padding: 16px !important; }
+.runs-pop2 .ant-popover-title { font-size: var(--fs-body) !important; line-height: var(--lh-body); font-weight: 600; margin: 0 0 12px !important; padding: 0 !important; }
+.runs2 { gap: 12px; }
+.runs2-list { gap: 12px; }
+.runs2-row { row-gap: 2px; }
+.runs2-name, .runs2-share { font-size: var(--fs-body); line-height: var(--lh-body); }
+.runs2-meta { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.runs2-bar { margin-top: 4px; background: var(--c-border-2); }
+.runs2-foot { display: flex; flex-direction: column; gap: 4px; padding-top: 12px; border-top: 1px solid var(--c-border-2); }
+.runs2-foot .runs2-places { padding: 0; border: 0; }
+.runs2-actions { margin: 0; }

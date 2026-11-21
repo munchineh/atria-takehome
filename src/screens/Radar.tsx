@@ -31,7 +31,6 @@ const RADAR_TABS: { key: TabKey; label: string; desc: string; icon?: React.React
  * The popover answers "where is this ad running and how is each copy doing". Per-copy details (audience, frequency, ID,
  * Ads Manager link) live in the ad page's copies panel, one click away. Desktop: popover. Phones: bottom sheet, same content.
  */
-const RUNS_MAX = 4;
 function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const [open, setOpen] = useState(false);
   const go = useNavigate();
@@ -41,11 +40,11 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   // Name the platform on each row only when this ad runs on more than one (Meta and TikTok).
   const mixed = new Set(c.ads.map(platformOf)).size > 1;
   const sorted = [...c.ads].sort((x, y) => y.spend - x.spend);
-  const shown = sorted.slice(0, RUNS_MAX);
-  const more = sorted.length - shown.length;
+  // Mancini 13:36: show every copy. "4 and 2 more" made people leave the popover to see the rest.
+  const shown = sorted;
   const places = [...c.placements].sort((x, y) => y.share - x.share);
-  const top = places.slice(0, 3).map((p) => `${p.label} ${Math.round(p.share * 100)}%`);
-  const placeLine = places.length > 3 ? `${top.join(' · ')} · ${places.length - 3} more` : top.join(' · ');
+  // Every placement, for the same reason as every copy.
+  const placeLine = places.map((p) => `${p.label}\u00a0${Math.round(p.share * 100)}%`).join(' · ');
   const openAd = () => {
     setOpen(false);
     go(`/ad/${c.id}`);
@@ -75,11 +74,12 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
           );
         })}
       </ul>
-      {more > 0 && <p className="t-help runs2-more">And {plural(more, 'more copy', 'more copies')} on the ad page.</p>}
-      <p className="t-help runs2-places">
-        <span className="t-label">Placements</span> {placeLine}
-      </p>
-      {paused > 0 && <p className="t-help runs2-note">Paused copies still count toward this ad's grades.</p>}
+      <div className="runs2-foot">
+        <p className="t-help runs2-places">
+          <span className="t-label">Placements</span> {placeLine}
+        </p>
+        {paused > 0 && <p className="t-help runs2-note">Paused copies still count toward this ad's grades.</p>}
+      </div>
       <div className="runs2-actions">
       <Button type={mobile ? 'primary' : 'default'} block={mobile} size={mobile ? 'large' : 'middle'} className="runs2-cta" onClick={openAd}>
         See copy details
