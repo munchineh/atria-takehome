@@ -3245,3 +3245,9 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ed-chip-row { align-items: flex-start; }
 .ed-prompt-toggle.ant-btn { padding-inline: 4px; height: 28px; margin-top: 0; }
 .ed-chip-row .ed-chips { gap: 6px; }
+/* 299 (Mancini 19:47) Related creatives: thumbnails wrap on the left; "Compare all" at the right, centred on the last
+   row (64 px thumbnails, 32 px button, so 16 px up from the bottom). */
+.rel-grid-row { display: flex; align-items: flex-end; gap: 16px; }
+.rel-grid-row .rel-grid { flex: 1; min-width: 0; }
+.rel-compare.ant-btn { flex: none; margin-bottom: 16px; }
+.gen-banner-body.is-openable { cursor: pointer; }

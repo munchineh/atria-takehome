@@ -57,7 +57,12 @@ function Banner({ j, onView, onRetry }: { j: Job; onView: () => void; onRetry: (
   return (
     <>
       {c && <Thumb c={c} size={40} />}
-      <div className="gen-banner-body">
+      {/* 300 (Mancini 19:48): a ready banner opens its round when tapped anywhere, not only on View creatives. */}
+      <div
+        className={`gen-banner-body ${j.state === 'ready' ? 'is-openable' : ''}`}
+        onClick={j.state === 'ready' ? onView : undefined}
+        role={j.state === 'ready' ? 'link' : undefined}
+      >
         <b className="gen-banner-title">
           {j.state === 'queued'
             ? `Waiting to create ${plural(j.count, 'creative')}`
@@ -94,11 +99,18 @@ function Banner({ j, onView, onRetry }: { j: Job; onView: () => void; onRetry: (
               </Button>
             ) : (
               <>
-                <Button size="small" type="primary" onClick={onView}>
+                <Button
+                  size="small"
+                  type="primary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onView();
+                  }}
+                >
                   View creatives
                 </Button>
                 {j.failed.length > 0 && (
-                  <Button size="small" onClick={onRetry}>
+                  <Button size="small" onClick={(e) => { e.stopPropagation(); onRetry(); }}>
                     Try generating again
                   </Button>
                 )}

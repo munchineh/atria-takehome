@@ -808,11 +808,13 @@ export function AdDetail() {
             <div className="rel-sub">
               <span className="rel-sub-title">Related creatives <span className="tab-count">{relatedCreatives.length}</span></span>
               {relatedCreatives.length ? (
+                // 299 (Mancini 19:47): "Compare all" sits at the right, centred on the last row of thumbnails.
+                <div className="rel-grid-row">
                 <ul className="rel-grid">
-                  {relatedCreatives.slice(0, 11).map(({ v, j }) => (
+                  {relatedCreatives.slice(0, 11).map(({ v }) => (
                     <li key={v.id}>
                       <Tooltip title={nameOf(v)}>
-                        <Link to={`/creation/${c.id}/${v.id}/edit?round=${j.id}`} className="rel-thumb" aria-label={`Open creative ${v.angle}`}>
+                        <Link to={`/creation/${c.id}/${v.id}`} className="rel-thumb" aria-label={`Open creative ${nameOf(v)}`}>
                           <Thumb c={{ img: v.img, media: 'Image', name: v.angle }} size={64} />
                         </Link>
                       </Tooltip>
@@ -824,6 +826,10 @@ export function AdDetail() {
                     </li>
                   )}
                 </ul>
+                <Button className="rel-compare" onClick={() => nav(`/ad/${c.id}/variations?round=${relatedCreatives[0].j.id}`)}>
+                  Compare all
+                </Button>
+                </div>
               ) : (
                 <p className="t-help">{iterable ? 'None yet. Select suggestions above to create some.' : 'New creatives can only be generated for image ads.'}</p>
               )}
