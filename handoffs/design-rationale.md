@@ -183,6 +183,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 131 | Radar totals row shows its count as the same count tag the tabs use, centered on the label | Mancini 14:43 | Two ways to show a count, and the grey "1 ad" sat off the baseline |
 | 132 | Section heads: help line at Body 14 / 0.65, meta ("Updated Nov 19") at Small 12 / 0.45 | Mancini 14:44 | Two near-identical greys looked like an error, and the help line matters more than the timestamp |
 | 133 | Switches are true capsules with a round handle (excluded from the continuous-corner rule) | Mancini 14:44 | A squircle track with a round thumb mixed two shapes |
+| 134 | Toasts are a dark bar at the bottom center (the action bar's surface), white text, status icon, action as a bold underlined link | Mancini 14:45 | A white toast at the top of a white page was easy to miss and read as stock antd |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

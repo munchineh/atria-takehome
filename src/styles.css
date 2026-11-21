@@ -2296,3 +2296,13 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .sec-head-sub { align-items: baseline; }
 /* 133 Switches are true capsules with a round handle: track and thumb share one shape. */
 @supports (corner-shape: round) { .ant-switch, .ant-switch-inner, .ant-switch-handle, .ant-switch-handle::before { corner-shape: round; } }
+/* 134 Toasts (Mancini 14:45): one dark bar at the bottom center, the same surface as the action bar, so a confirmation
+   can't be missed against a white page. White text, status icon in its hue, the action ("Undo") as a light underlined link. */
+.ant-message.ant-message-list { justify-content: flex-end; padding-bottom: 24px; box-sizing: border-box; }
+.ant-message .ant-message-notice-wrapper { display: inline-flex; align-items: center; gap: 8px; padding: 12px 16px; border-radius: var(--r-surface); background: #1f1d22; color: #fff; font-size: var(--fs-body); line-height: var(--lh-body); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16), 0 3px 6px -4px rgba(0, 0, 0, 0.24); }
+.ant-message .ant-message-notice-title { color: #fff; }
+.ant-message .ant-message-notice-icon { display: inline-flex; margin: 0; font-size: 16px; }
+.ant-message .ant-message-notice-title a { color: #fff; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; margin-left: 8px; cursor: pointer; }
+.ant-message .ant-message-notice-title a:hover { color: var(--c-primary-border); }
+@media (max-width: 767px) { .ant-message.ant-message-list { padding-bottom: 84px; } .ant-message .ant-message-notice-wrapper { max-width: calc(100vw - 32px); text-align: left; } }
+.ant-message .ant-message-notice { padding: 0; background: transparent; box-shadow: none; border-radius: var(--r-surface); }
