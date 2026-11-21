@@ -3270,3 +3270,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .brief-foot-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
 .brief-foot-row .brief-clear { margin-left: auto; flex: none; line-height: 20px; font-size: 12px; }
 .bar-panel .brief-clear.ant-btn-link { color: #ff9a6b; }
+
+/* 309 Likely audience in the ad page's left column: "Not right?" moves under the description so the text keeps the
+   full column width (it was squeezed to ~150 px and broke as "gift and / collectible messages."). */
+.personas-side .persona-card { display: grid; grid-template-columns: 36px minmax(0, 1fr); column-gap: 12px; }
+.personas-side .persona-card > .persona-flag.ant-btn,
+.personas-side .persona-card > .persona-reported { grid-column: 2; justify-self: start; margin: 4px 0 0 -7px; }
+.personas-side .persona-card > .persona-reported { margin: 6px 0 0; }
