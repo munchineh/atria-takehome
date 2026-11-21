@@ -1836,3 +1836,21 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .copy-row-main { grid-template-areas: 'dot name chev' '. nums chev'; }
 .copy-row-main .chev { align-self: center; }
 .copy-row-main .live-dot { align-self: center; }
+/* Section heading, one pattern for every page (Mancini 10:31) */
+.section-title { display: block; margin-top: 8px; }
+.sec-head { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.sec-head-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+.sec-head-sub { display: flex; align-items: center; justify-content: space-between; gap: 4px 16px; flex-wrap: wrap; }
+.sec-head-help { flex: 1 1 260px; min-width: 0; }
+.sec-head-meta { flex: none; margin-left: auto; display: inline-flex; align-items: center; }
+.sec-head-meta .rec-date { margin: 0; }
+@media (max-width: 767px) { .sec-head-meta { margin-left: 0; } }
+/* Summary: same head as other cards (title row inside the card, no divider strip under it) */
+.verdict .verdict-head { padding-bottom: 0; }
+.verdict .verdict-head + .verdict-zone { border-top: 0; padding-top: 8px; }
+/* Goal: split pill, one hue in two tints */
+.goal-split { display: inline-flex; align-items: stretch; height: 26px; border-radius: 999px; overflow: hidden; font-size: 12px; line-height: 1; white-space: nowrap; outline: none; }
+.goal-split:focus-visible { box-shadow: 0 0 0 2px #f66c30; }
+.goal-split-k { display: inline-flex; align-items: center; padding: 0 9px 0 11px; background: #ffe4d5; color: #a83411; font-weight: 500; }
+.goal-split-v { display: inline-flex; align-items: center; gap: 5px; padding: 0 11px 0 9px; background: #fff3ec; color: #1f1f1f; font-weight: 600; }
+.goal-split-v .anticon { color: #f66c30; font-size: 12px; }

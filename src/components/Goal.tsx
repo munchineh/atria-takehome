@@ -1,4 +1,4 @@
-import { Tag, Tooltip } from 'antd';
+import { Tooltip } from 'antd';
 import { EyeOutlined, LinkOutlined, MessageOutlined, MobileOutlined, ShoppingCartOutlined, UserAddOutlined } from '@ant-design/icons';
 import type { ReactNode } from 'react';
 import { goalOf, type Creative, type MetaAd, type Objective } from '../data/mock';
@@ -27,10 +27,14 @@ export function GoalPill({ c }: { c: Creative }) {
   return (
     <span className="goal-group">
       <Tooltip title={tip}>
-        <Tag className="goal-pill" icon={GOAL_ICON[goal]}>
-          {/* Mancini 09:43: "Sales · get purchases" said the same thing twice. One label, same KV style as the copies list. */}
-          <span className="kv-k">Goal</span> <span className="goal-pill-name">{goal}</span>
-        </Tag>
+        {/* Mancini 10:31: one pill in two parts, label on a deeper tint and value on a lighter one of the same hue. */}
+        <span className="goal-split" tabIndex={0}>
+          <span className="goal-split-k">Goal</span>
+          <span className="goal-split-v">
+            {GOAL_ICON[goal]}
+            {goal}
+          </span>
+        </span>
       </Tooltip>
     </span>
   );

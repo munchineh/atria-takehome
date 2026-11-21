@@ -31,6 +31,7 @@ import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { IterationHistory } from '../components/IterationHistory';
+import { SectionHead } from '../components/SectionHead';
 import { ReportAudience } from '../components/ReportAudience';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
@@ -646,18 +647,18 @@ export function AdDetail() {
           </motion.div>
 
           <motion.div variants={fadeUp} className="section-title">
-            <h2 className="panel-title">Suggestions</h2>
-            {/* Mancini 09:43: one line that says what to do here; the image-only note is gone (if variations aren't
-                offered, the button simply isn't there). */}
-            <span className="t-help section-sub">
-              Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}
-            </span>
-            <span className="t-help rec-date">
-              Updated {WINDOW.synced}
-              <Tooltip title="Refresh suggestions.">
-                <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" onClick={() => message.success('Suggestions are up to date')} />
-              </Tooltip>
-            </span>
+            <SectionHead
+              title="Suggestions"
+              help={<>Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}
+              meta={
+                <span className="rec-date">
+                  Updated {WINDOW.synced}
+                  <Tooltip title="Refresh suggestions.">
+                    <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" onClick={() => message.success('Suggestions are up to date')} />
+                  </Tooltip>
+                </span>
+              }
+            />
           </motion.div>
 
           {parent && (
