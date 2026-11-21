@@ -67,6 +67,11 @@ export interface GalleryItem {
   stylized: boolean;
   /** Opens the editor inside Creation. */
   to: string;
+  /** 263 (Mancini 17:36): the card's two actions. */
+  editTo: string;
+  linkTo: string;
+  /** Made with "Save as new variation" from another creative. */
+  variantOf?: { id: string; name: string };
 }
 
 export interface GalleryGroup {
@@ -126,7 +131,11 @@ export function galleryItems(
         archived: Boolean(opts.archived?.includes(v.id)),
         shownN: latest?.n ?? 1,
         stylized: Boolean(v.stylized),
-        to: `/creation/${source.id}/${v.id}?round=${j.id}`,
+        // 263: the card opens the Edit Creative page; Link to Ad sets the creative up as an ad.
+        to: `/creation/${source.id}/${v.id}/edit?round=${j.id}`,
+        editTo: `/creation/${source.id}/${v.id}/edit?round=${j.id}`,
+        linkTo: `/creation/link/${v.id}?round=${j.id}`,
+        variantOf: v.from ? { id: v.from.id, name: v.from.angle } : undefined,
       });
     });
   }
@@ -157,7 +166,10 @@ export function uploadedItems(ads: Creative[], archived: string[] = []): Gallery
       archived: archived.includes(`up-${c.id}`),
       shownN: 1,
       stylized: false,
-      to: `/ad/${c.id}`,
+      // 263: an uploaded creative is edited from its ad in Ad Library, and can be linked to another ad.
+      to: `/creation/ads/${c.id}`,
+      editTo: `/creation/ads/${c.id}`,
+      linkTo: `/creation/link/up-${c.id}`,
     }));
 }
 

@@ -166,7 +166,7 @@ export function ModeSwitch() {
   const OPTIONS = creation ? CREATION : ANALYTICS;
   // Below the hubs (an ad, its rounds), the switch shows where you came from, like the breadcrumb.
   const routeMode: Mode = creation
-    ? loc.pathname.startsWith('/creation/ads') || loc.pathname.startsWith('/creation/link')
+    ? loc.pathname.startsWith('/creation/ads')
       ? 'library'
       : 'gallery'
     : loc.pathname.startsWith('/overview') || (loc.pathname.startsWith('/ad/') && hubCrumb().to === '/overview')

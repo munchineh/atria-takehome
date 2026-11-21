@@ -95,7 +95,7 @@ export function ImageAds() {
   const [newOpen, setNewOpen] = useState(false);
 
   const allItems = useMemo(
-    () => [...galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen }), ...uploadedItems(ALL_CREATIVES, archived)],
+    () => [...galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen, all: true }), ...uploadedItems(ALL_CREATIVES, archived)],
     [jobs, saved, versionsOf, archived, chosen],
   );
 

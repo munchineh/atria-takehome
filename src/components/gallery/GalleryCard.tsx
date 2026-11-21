@@ -40,12 +40,20 @@ export function GalleryCard({
         <span>Uploaded</span>
       </span>
     )
+  ) : item.variantOf ? (
+    // 263: a creative saved as a new variation of another names that one.
+    <Tooltip title={`Saved as a new variation of ${item.variantOf.name}`} mouseEnterDelay={0.5}>
+      <span className="gal-source">
+        <CopyOutlined />
+        <span className="ellipsis">Variation of {item.variantOf.name}</span>
+      </span>
+    </Tooltip>
   ) : item.ad ? (
     hideAd ? null : (
-      <Tooltip title={`Made from ${item.ad.name}`} mouseEnterDelay={0.5}>
+      <Tooltip title={`Generated from the ad ${item.ad.name}`} mouseEnterDelay={0.5}>
         <span className="gal-source">
           <MadeFromIcon />
-          <span className="ellipsis">{item.ad.name}</span>
+          <span className="ellipsis">From {item.ad.name}</span>
         </span>
       </Tooltip>
     )
@@ -149,6 +157,15 @@ export function GalleryCard({
             )}
           </div>
         )}
+      </div>
+      {/* 263 (Mancini 17:36): two actions on every card. */}
+      <div className="gal-actions">
+        <Button onClick={() => onOpen(item.editTo)}>
+          Edit
+        </Button>
+        <Button onClick={() => onOpen(item.linkTo)}>
+          Link to Ad
+        </Button>
       </div>
     </motion.article>
   );
