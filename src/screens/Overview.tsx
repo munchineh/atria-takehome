@@ -1,5 +1,5 @@
 import { Empty, Grid, Select, Typography } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, MinusOutlined, RightOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { WINDOWS, goalOf, graded, money, plural, type TabKey } from '../data/mock';

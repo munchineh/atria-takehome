@@ -1,5 +1,5 @@
 import { Tag, Tooltip } from 'antd';
-import { CopyOutlined, FormOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import { CopyOutlined, FormOutlined, StarFilled, StarOutlined } from '../AppIcons';
 import { motion } from 'motion/react';
 import type { GalleryItem } from '../../data/gallery';
 import { AdArt } from '../Thumb';

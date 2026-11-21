@@ -1,4 +1,4 @@
-import { RightOutlined } from '@ant-design/icons';
+import { RightOutlined } from './AppIcons';
 import { motion } from 'motion/react';
 import { money, plural } from '../data/mock';
 import type { BarRow } from '../data/insights';

@@ -1,5 +1,5 @@
 import { Progress } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined, RightOutlined, WarningOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined, RightOutlined, WarningOutlined } from './AppIcons';
 import { useNavigate } from 'react-router-dom';
 import type { HistoryItem } from '../data/insights';
 import { findCreative, timeAgo } from '../data/store';

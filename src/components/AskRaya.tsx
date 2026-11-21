@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button, Input } from 'antd';
-import { ArrowUpOutlined } from '@ant-design/icons';
+import { ArrowUpOutlined } from './AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { RAYA_PROMPTS, askRaya } from '../data/insights';
 import type { MockAccount } from '../data/accounts';

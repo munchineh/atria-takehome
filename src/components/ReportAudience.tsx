@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { App, Button, Input, Radio } from 'antd';
-import { FlagOutlined, CheckOutlined } from '@ant-design/icons';
+import { FlagOutlined, CheckOutlined } from './AppIcons';
 import { PopSheet } from './PopSheet';
 
 /** Mancini 10:27: report one audience, say why, and add detail if you like. */

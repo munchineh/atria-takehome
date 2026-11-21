@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Empty, Progress, Tabs, Typography } from 'antd';
-import { BarChartOutlined, PlusOutlined } from '@ant-design/icons';
+import { BarChartOutlined, PlusOutlined } from '../components/AppIcons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { findCreative, useStore } from '../data/store';

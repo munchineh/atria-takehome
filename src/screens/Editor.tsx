@@ -16,7 +16,7 @@ import {
   LeftOutlined,
   LikeFilled,
   LikeOutlined,
-} from '@ant-design/icons';
+} from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';

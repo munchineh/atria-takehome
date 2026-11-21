@@ -3,7 +3,7 @@ import type { Recommendation } from '../data/mock';
 import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
 import { App, Button, Drawer, Input, Modal, Select } from 'antd';
-import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ThunderboltOutlined } from './AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
 import { accountOf, useStore } from '../data/store';

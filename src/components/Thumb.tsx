@@ -1,5 +1,5 @@
 import { motion } from 'motion/react';
-import { CaretRightFilled, AppstoreFilled, LeftOutlined, RightOutlined } from '@ant-design/icons';
+import { CaretRightFilled, AppstoreFilled, LeftOutlined, RightOutlined } from './AppIcons';
 import { useRef, useState } from 'react';
 import type { AdCopy, Creative as CreativeT } from '../data/mock';
 

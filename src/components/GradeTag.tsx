@@ -1,5 +1,5 @@
 import { Grid, Tag, Tooltip } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined } from '@ant-design/icons';
+import { ArrowDownOutlined, ArrowUpOutlined } from './AppIcons';
 import { PopSheet } from './PopSheet';
 import { accountOf, useStore } from '../data/store';
 import { METRIC_META, WINDOWS, money, type Creative, type Grade, type MetricKey } from '../data/mock';

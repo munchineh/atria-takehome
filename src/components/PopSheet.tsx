@@ -1,6 +1,6 @@
 import { cloneElement, useState, type ReactElement, type ReactNode } from 'react';
 import { Button, Drawer, Grid, Popover, type PopoverProps } from 'antd';
-import { CheckOutlined, CloseOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined } from './AppIcons';
 
 /** 5e Gm-19: a floating panel on desktop and tablet, a bottom sheet on phones (below 768 px, the phone layer's line).
  *  The copies panel already worked this way; Filters, How Radar grades, the period list and grade popovers follow it. */

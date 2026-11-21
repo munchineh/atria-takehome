@@ -1,5 +1,5 @@
 import { Tooltip } from 'antd';
-import { EyeOutlined, LinkOutlined, MessageOutlined, MobileOutlined, ShoppingCartOutlined, UserAddOutlined } from '@ant-design/icons';
+import { EyeOutlined, LinkOutlined, MessageOutlined, MobileOutlined, ShoppingCartOutlined, UserAddOutlined } from './AppIcons';
 import type { ReactNode } from 'react';
 import { goalOf, type Creative, type MetaAd, type Objective } from '../data/mock';
 

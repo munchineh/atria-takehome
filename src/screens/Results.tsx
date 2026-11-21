@@ -2,7 +2,7 @@ import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Breadcrumb, Button, Checkbox, Dropdown, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
-import { BarChartOutlined, BulbOutlined, CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '@ant-design/icons';
+import { BarChartOutlined, BulbOutlined, CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';

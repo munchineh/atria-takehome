@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Badge, Button, Checkbox, Drawer, Grid, Segmented, Select, Tooltip } from 'antd';
-import { AppstoreOutlined, UnorderedListOutlined, CheckOutlined, CloseOutlined, FilterOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import { AppstoreOutlined, UnorderedListOutlined, CheckOutlined, CloseOutlined, FilterOutlined, StarFilled, StarOutlined } from '../AppIcons';
 import { GROUP_OPTIONS, type GroupBy, type Origin } from '../../data/gallery';
 import { DEMO_ACCOUNTS } from '../../data/store';
 import { PopSheet } from '../PopSheet';

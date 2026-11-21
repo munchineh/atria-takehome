@@ -1885,3 +1885,19 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .runs-sheet .runs2-actions { flex-direction: column; align-items: stretch; }
 .runs-sheet .runs2-out.ant-btn { height: 44px; justify-content: center; }
 .grade-pop-note { margin: 0 0 8px; text-align: left; }
+/* App icons (Lucide, Mancini 10:48) */
+.lucide-wrap { display: inline-flex; align-items: center; justify-content: center; line-height: 0; vertical-align: -0.125em; color: inherit; font-style: normal; }
+.lucide-wrap > svg { display: block; flex: none; }
+.lucide-badge circle { fill: currentColor; stroke: currentColor; }
+.lucide-badge path, .lucide-badge line { stroke: #fff; fill: none; }
+.lucide-wrap.anticon-spin > svg { animation: lucide-spin 0.9s linear infinite; }
+@keyframes lucide-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .lucide-wrap.anticon-spin > svg { animation-duration: 2.4s; } }
+/* Text links and link buttons: ink, medium weight, orange underline on hover (Mancini 10:48) */
+.ant-btn-link, .link-btn, .inline-link, .ov-sec-head a, .sec-head a, .content a:not(.ov-grade):not([class*="ant-"]) { font-weight: 500; }
+.link-btn { color: #1f1f1f; }
+.ant-btn-link:not(:disabled):hover, .link-btn:hover, .ov-sec-head a:hover, .content a:not(.ov-grade):not([class*="ant-"]):hover { color: #e0561c; text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.lin-name-btn, .made-from .anticon { color: #1f1f1f; }
+.made-from:hover b, .ih-row:hover .ih-name, .raya-chip:hover { color: #e0561c; }
+/* Mancini 10:49: no side-stroke banners. A plain card; the grade tag carries the colour. */
+.ed-diag-banner, .ed-diag-banner.tone-A, .ed-diag-banner.tone-B, .ed-diag-banner.tone-C, .ed-diag-banner.tone-D { border: 1px solid var(--line); background: #fafafa; }

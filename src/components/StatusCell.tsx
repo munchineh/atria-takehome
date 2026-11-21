@@ -1,5 +1,5 @@
 import { Progress, Tooltip } from 'antd';
-import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined } from '@ant-design/icons';
+import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined } from './AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ACCOUNT, METRIC_META, plural, type Creative, type MetricKey } from '../data/mock';

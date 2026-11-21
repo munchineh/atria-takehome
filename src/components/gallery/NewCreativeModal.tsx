@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { App, Button, Drawer, Grid, Input, Modal, Select } from 'antd';
-import { CheckOutlined, CloseOutlined, CopyOutlined, EditOutlined, LeftOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, CopyOutlined, EditOutlined, LeftOutlined } from '../AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural } from '../../data/mock';
 import { DEMO_ACCOUNTS, NEW_CREATIVE_STARTS, newProject, useStore, type NewCreativeStart } from '../../data/store';

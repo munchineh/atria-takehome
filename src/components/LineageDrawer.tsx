@@ -9,7 +9,7 @@ import {
   MinusOutlined,
   RightOutlined,
   WarningOutlined,
-} from '@ant-design/icons';
+} from './AppIcons';
 import { useNavigate } from 'react-router-dom';
 import { hasLineage, lineageOf, type Lineage, type LineageStep } from '../data/lineage';
 import { graded, money, plural, type Creative } from '../data/mock';

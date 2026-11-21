@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Button, Empty, Progress } from 'antd';
-import { CloseOutlined, RightOutlined } from '@ant-design/icons';
+import { CloseOutlined, RightOutlined } from './AppIcons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useWorkspace } from '../data/nav';
 import { useNavigate } from 'react-router-dom';

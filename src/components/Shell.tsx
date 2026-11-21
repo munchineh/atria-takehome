@@ -10,7 +10,7 @@ import {
   MenuOutlined,
   SyncOutlined,
   VideoCameraOutlined,
-} from '@ant-design/icons';
+} from './AppIcons';
 import { motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ACCOUNT, SIDEBAR_ACCOUNTS, plural } from '../data/mock';

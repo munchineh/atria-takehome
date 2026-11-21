@@ -12,9 +12,10 @@ import { duration } from './motion/tokens';
 export const theme: ThemeConfig = {
   token: {
     colorPrimary: '#f66c30',
-    colorLink: '#a83411', // R-C2
-    colorLinkHover: '#cf4e1f',
-    colorLinkActive: '#821f07',
+    // Mancini 10:48: brown text links read as muddy. Links are ink, weight 500, and turn brand orange with an underline on hover.
+    colorLink: '#1f1f1f',
+    colorLinkHover: '#e0561c',
+    colorLinkActive: '#1f1f1f',
     colorPrimaryText: '#a83411', // R-C2
     colorPrimaryTextHover: '#cf4e1f',
     colorPrimaryTextActive: '#821f07',
