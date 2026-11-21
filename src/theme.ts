@@ -4,7 +4,7 @@ import { duration } from './motion/tokens';
 /**
  * Atria look (antd 6.7.1, primary #F66C30, Inter 14/22).
  * Library tints: colorPrimaryBg #FFF7F0, colorPrimaryBorder #FFCEAD.
- * Radius scale (L-030): 6 px controls and tags, 10 px cards, 14 px floating surfaces.
+ * Radius scale (Figma frames, 21 Nov): 4 px tags, 6 px controls, 8 px cards, overlays and 40 px buttons.
  * R-C2: orange text uses step 8 (#a83411) for AA contrast on white.
  * R-C10: tertiary text at 0.55 alpha (4.74:1) so actionable meta lines pass AA.
  * R-MO1/R-MO2: antd motion durations mirrored from src/motion/tokens.ts.
@@ -35,7 +35,7 @@ export const theme: ThemeConfig = {
     borderRadiusSM: 6,
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     fontSize: 14,
-    colorBorderSecondary: '#efefef',
+    colorBorderSecondary: '#f0f0f0', // FG1: dividers are black 0.06 on white
     motionDurationFast: `${duration.instant}s`,
     motionDurationMid: `${duration.fast}s`,
     motionDurationSlow: `${duration.base}s`,
@@ -45,7 +45,8 @@ export const theme: ThemeConfig = {
     motionEaseInBack: 'cubic-bezier(0.3, 0, 0.8, 0.15)',
   },
   components: {
-    Table: { headerBg: '#fafafa', headerSplitColor: 'transparent', rowHoverBg: '#fff7f0', cellPaddingBlockMD: 14 },
+    // F-05, F-06: FG1's table. Header fill 0.02 with split lines, 12/8 cell padding, neutral hover (orange tint means selected, S-80).
+    Table: { headerBg: '#fafafa', headerSplitColor: '#f0f0f0', rowHoverBg: '#fafafa', headerSortActiveBg: '#fafafa', headerSortHoverBg: '#fafafa', bodySortBg: 'transparent', cellPaddingBlock: 12, cellPaddingInline: 8, headerBorderRadius: 0, footerBg: '#ffffff' },
     // LP-05: selected tab label orange as in the library and FG2.
     Tabs: { itemSelectedColor: '#f66c30', inkBarColor: '#f66c30', itemColor: 'rgba(0, 0, 0, 0.65)', titleFontSize: 14 },
     // V-05: one radius (8) for every floating surface.
@@ -59,7 +60,8 @@ export const theme: ThemeConfig = {
     Select: { borderRadius: 6, borderRadiusLG: 6, optionSelectedBg: '#fff7f0' },
     InputNumber: { borderRadius: 6, borderRadiusLG: 6 },
     Checkbox: { borderRadiusSM: 4 },
-    Button: { borderRadius: 6, borderRadiusLG: 6, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: 'none' },
+    // F-14: 40 px buttons take radius 8 as in FG3 "Generate image ad"; 32 and 24 px stay at 6.
+    Button: { borderRadius: 6, borderRadiusLG: 8, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: '0 2px 0 rgba(0, 0, 0, 0.02)' },
     Segmented: { borderRadius: 6, borderRadiusSM: 4 },
   },
 };
