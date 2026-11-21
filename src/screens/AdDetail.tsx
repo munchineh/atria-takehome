@@ -29,7 +29,7 @@ import { Body, CreateDialog } from '../components/CreateDialog';
 import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
-import { STEP_NOTES } from '../data/lineage';
+import { STEP_NOTES, parentIdOf } from '../data/lineage';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
 import { hubCrumb } from '../data/nav';
@@ -65,7 +65,7 @@ function summary(c: CreativeT, parent?: CreativeT) {
   if (parent) {
     const spent = money(Math.round(c.spend)).replace(/\.\d\d$/, '');
     const a = parent.values.cpa, b = c.values.cpa;
-    const verdict = a == null || b == null || a === b ? 'Converts about the same as the original.' : b < a ? 'Converts better than the original.' : 'Costs more per purchase than the original.';
+    const verdict = a == null || b == null || a === b ? 'Converts about the same as the ad it was made from.' : b < a ? 'Converts better than the ad it was made from.' : 'Costs more per purchase than the ad it was made from.';
     return `${verdict} Let it run before you judge it: about ${spent} spent so far.`;
   }
   // C5d-41: the reading follows the ad's goal, like the suggestions (L-146). Goal metric first, then the ones that
@@ -271,7 +271,9 @@ export function AdDetail() {
   // 224 (Mancini 15:59, 16:00): the left column says what this ad was made from; ads made from it get their own section on the right.
   const madeFromHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id, 'from');
   const madeHereHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id, 'made');
-  const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
+  // 231: the parent is the step this ad was actually made from (its history note), not always the original.
+  const parentId = parentIdOf(c);
+  const parent = parentId ? findCreative(parentId) : undefined;
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
   const iterable = c.media === 'Image';
@@ -387,7 +389,7 @@ export function AdDetail() {
               ) : failedJob ? (
                 <>
                   <b className="bar-fail-title">
-                    <ExclamationCircleFilled aria-hidden /> The last round failed
+                    <ExclamationCircleFilled aria-hidden /> Failed to create variations
                   </b>
                   <span className="muted small left">{failedJob.cost}{'\u00a0'}credits were returned to you.</span>
                 </>
@@ -408,9 +410,16 @@ export function AdDetail() {
                 <>
                   {c.media === 'Image' ? (
                     // 229 (Mancini 16:03): image ads read as one sentence, "Create 8 variations that ...", using the picked actions.
-                    <b className="bar-sentence">
-                      Create <Rolling value={total} /> {total === 1 ? 'variation' : 'variations'} that {roundPhrase(recs.filter((r) => selected.includes(r.id)))}
-                    </b>
+                    bp.md ? (
+                      <b className="bar-sentence">
+                        Create <Rolling value={total} /> {total === 1 ? 'variation' : 'variations'} that {roundPhrase(recs.filter((r) => selected.includes(r.id)))}
+                      </b>
+                    ) : (
+                      // 232 (Mancini 16:07): phones use the short form so the bar stays one line.
+                      <b className="bar-sentence">
+                        <Rolling value={total} /> {total === 1 ? 'variation' : 'variations'} from {plural(selected.length, 'suggestion')}
+                      </b>
+                    )
                   ) : (
                     <b>
                       <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
@@ -569,8 +578,7 @@ export function AdDetail() {
                   {/* Mancini 14:27: "Made in" read oddly. "Source" uses the same values as Radar's Source filter. */}
                   <div><dt>Source</dt><dd>Created in Atria</dd></div>
                   <div><dt>Made from</dt><dd><Link to={`/ad/${parent.id}`}>{parent.name}</Link></dd></div>
-                  <div><dt>To fix</dt><dd>{recName(parent.id, 'cta')}</dd></div>
-                  <div><dt>Round</dt><dd><Link to={`/ad/${parent.id}/variations?round=job-hero-1`}>Round 1 · Nov 12</Link></dd></div>
+                  {STEP_NOTES[c.id]?.reason && <div><dt>To fix</dt><dd>{STEP_NOTES[c.id].reason}</dd></div>}
                 </>
               ) : (
                 <>
@@ -748,8 +756,8 @@ export function AdDetail() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: duration.base } }}
             exit={{ opacity: 0, transition: { duration: duration.fast } }}
-            // 228 (Mancini 16:02): the page stays usable while the form is open, so picking a suggestion updates the round.
-            aria-hidden
+            // 230 (Mancini 16:07): the page behind stays blocked while the form is open (reverts 228); a click outside closes it.
+            onClick={() => setDialog(false)}
           />
         )}
       </AnimatePresence>

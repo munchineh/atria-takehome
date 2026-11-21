@@ -380,6 +380,8 @@ export const CREATIVES: Creative[] = [
     spend: 6120.8,
     roas: 1.44,
     tab: 'potential',
+    // 231 (Mancini 16:07): more ads with history. Made from "Fits in your palm".
+    variationOf: 'mm-1086424',
     placements: reelsOnly,
     status: 'Paused',
   },
@@ -416,6 +418,8 @@ export const CREATIVES: Creative[] = [
     spend: 8890.0,
     roas: 1.58,
     tab: 'winners',
+    // 231: made from "Squish review", opening on the squish instead of a talking head.
+    variationOf: 'vid-ugc',
     placements: reelsOnly,
   },
 ];
@@ -587,7 +591,13 @@ function recsFor(c: Creative): Recommendation[] {
     return weakHook ? VIDEO_RECS : VIDEO_RECS.filter((r) => r.id !== 'hook').map((r, i) => ({ ...r, priority: i + 1 }));
   }
   if (c.grades.ctr?.[0] === 'D') return CTR_RECS;
-  return HERO_RECS.slice(0, 2);
+  // 223: the hero's offer card names its two offers, so other image ads get the plain "no price" version.
+  // 223: other image ads get the reason-to-buy card, plus the call-to-action card only when the button says "Shop now".
+  // ("Clicking but not buying" was wrong for ads like "Squish me", whose CPA is B and CTR is C.)
+  const cta = HERO_RECS[2];
+  return c.copy?.cta === 'SHOP NOW'
+    ? [HERO_RECS[0], { ...cta, priority: 2, tried: undefined, issueDetail: '"Shop now" could be any brand.', why: '"Shop now" could be any brand. Tell customers what they get when they tap.' }]
+    : [HERO_RECS[0]];
 }
 
 export const PERSONAS = [

@@ -502,13 +502,16 @@ export function Radar() {
   // and Hook, Retention, CPA and ROAS still step out below 1200 px.
   const shown = (key: string) => cols.includes(key) && (wide || !WIDE_ONLY.includes(key));
   const weakShown = (c: Creative) => shown(({ conversion: 'conv', hook: 'hook', retention: 'ret', ctr: 'ctr' } as Record<string, string>)[weakest(c)?.metric ?? ''] ?? '');
+  // 239 (Mancini 16:12): with one or no metric columns, the Ad column would take all the spare width and push
+  // Next steps to the far right. Then the Ad column hugs its content and Next steps takes the rest.
+  const few = ['overall', 'conv', 'hook', 'ret', 'ctr', 'spend', 'cpa', 'roas'].filter(shown).length <= 1;
   const columns: ColumnsType<Creative> = [
-    { title: 'Ad', key: 'name', render: (_, c) => <NameCell c={c} /> },
+    { title: 'Ad', key: 'name', ...(few ? { width: wide ? 440 : 320 } : {}), render: (_, c) => <NameCell c={c} /> },
     {
       // 5d C5d-21 (Mancini's wording). The cell carries the grade only when that metric's column isn't shown (Gm-07, S-46).
       title: <Head label="Next steps" tip="Suggested based on your ad performance" />,
       key: 'rec',
-      width: wide ? 170 : 144,
+      ...(few ? {} : { width: wide ? 170 : 144 }),
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!weakShown(c)} />,
     },
     ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one" />, key: 'overall', width: wide ? 84 : 64, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),

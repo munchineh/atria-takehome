@@ -2773,3 +2773,55 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
   .rec-four .rec-diag-left .rec-action-text::before { content: none; }
 }
 @media (max-width: 1199px) { .rec-diag-left .rec-suggested.ant-tag, .rec-card.is-recommended .rec-diag-left .rec-suggested.ant-tag { margin-left: 0 !important; } }
+
+/* 232 Phone create sheet: "For [ad] · 2 suggestions" sits close under the sheet title, as on desktop (row 225). */
+.create-sheet .dlg-scroll { padding-top: 0; }
+.create-sheet .ant-drawer-header { padding-bottom: 4px; }
+
+/* 233 Variation cards: "Predicted CTR" and its grade sit on their own line under the angle, not squeezed into the top right. */
+.var-head-row { flex-direction: column; align-items: flex-start; justify-content: flex-start; gap: 4px; }
+
+/* 234 Editor typo hint: secondary text with an amber icon, and the fix as a tonal chip, like a keyboard suggestion. */
+.ed-typo { gap: 8px; margin-top: 8px; color: var(--c-text-2); }
+.ed-typo-icon { color: var(--c-warning); font-size: 14px; }
+.ed-typo-fix { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; height: 24px; padding: 0 8px; border-radius: var(--r-control); background: var(--c-fill); color: var(--c-text); font-weight: 600; cursor: pointer; }
+.ed-typo-fix:hover { background: var(--c-border-2); }
+.ed-typo-fix:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+@media (max-width: 767px) { .ed-typo-fix { height: 44px; padding: 0 12px; } }
+.create-sheet .dlg-sub + .dlg-refs { margin-top: -6px; }
+
+/* 235 Stylized text confirm: amber warning icon (a caution, not an error), two short paragraphs 8 px apart. */
+.stylize-confirm .stylize-confirm-icon { color: var(--c-warning) !important; }
+.stylize-confirm .ant-modal-confirm-content p { margin: 0; }
+.stylize-confirm .ant-modal-confirm-content p + p { margin-top: 8px; }
+
+/* 236 Editor, under the image: "Predicted CTR" as a small label above the grades, then original → predicted and a word of direction. */
+.ed-predict-stack { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.ed-predict-label { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.ed-predict-val { display: inline-flex; align-items: center; gap: 8px; }
+.ed-predict-val .ant-tag { margin: 0; }
+.ed-predict-orig.ant-tag { opacity: 0.65; }
+.ed-predict-arrow { font-size: 12px; color: var(--c-text-3); }
+
+/* 237 Editor "Iteration history": three steps in one fill box, each with a small label, joined by chevrons.
+   Phones stack the steps with dividers. */
+.ed-steps { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--c-fill-2); border-radius: var(--r-surface); }
+.ed-step { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 16px; min-width: 0; }
+.ed-step + .ed-step::before { content: '›'; position: absolute; left: -6px; top: 50%; translate: 0 -50%; font-size: var(--fs-section, 16px); line-height: 1; color: var(--c-text-4); }
+.ed-step-label { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
+.ed-step-text { font-weight: 600; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
+.ed-step-ad { display: inline-flex; align-items: center; gap: 8px; color: var(--c-text); min-width: 0; }
+.ed-step-ad b { font-weight: 600; }
+.ed-step-ad:hover b { color: var(--c-primary); }
+.ed-step-metric { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.ed-step-metric .ant-tag { margin: 0; }
+@media (max-width: 767px) {
+  .ed-steps { grid-template-columns: minmax(0, 1fr); }
+  .ed-step + .ed-step { border-top: 1px solid var(--c-border-2); margin: 0 16px; padding-inline: 0; }
+  .ed-step + .ed-step::before { content: none; }
+}
+
+/* 238 Variations page: each suggestion heading is a plain section divider: no box, no border, no tint. The tag and
+   meta line stay; a rule above every group after the first separates them. */
+.var-group-head { padding: 0; border: 0; background: none; border-radius: 0; margin-bottom: 12px; }
+.var-group + .var-group .var-group-head, .var-group + .var-group > .var-group-head { padding-top: 24px; border-top: 1px solid var(--c-border-2); }

@@ -11,7 +11,7 @@ import {
   EllipsisOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
-  LockOutlined, SmileOutlined, BulbOutlined, TagOutlined, DownOutlined } from '../components/AppIcons';
+  LockOutlined, SmileOutlined, BulbOutlined, TagOutlined, DownOutlined, WarningFilled, ExclamationCircleFilled } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
@@ -58,7 +58,7 @@ export function Editor() {
   const ws = useWorkspace();
   const bp = Grid.useBreakpoint();
   const mobile = !bp.md;
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
   const { jobsFor, versionsOf, applyChange, saveText, branch, deleteVariation, credits, iterate } = useStore();
   const job = jobsFor(c.id).find((j) => j.variations.some((v) => v.id === vid));
@@ -261,10 +261,25 @@ export function Editor() {
         )}
 
         <div className="ed-meta-row">
-          <span className="ed-predict">
-            <PredictedTag id={v.id} />
-            {/* Mancini 14:32: "C vs C" said nothing. Same grade reads as a sentence; a different one names both. */}
-            {c.grades.ctr && <span className="t-help">{predictedCtr(v.id) === c.grades.ctr[0] ? 'Same as the original' : `The original is ${c.grades.ctr}`}</span>}
+          {/* 236 (Mancini 16:10): label on its own line, then original grade → predicted grade and one word of direction. */}
+          <span className="ed-predict ed-predict-stack">
+            <span className="ed-predict-label">Predicted CTR</span>
+            <span className="ed-predict-val">
+              {c.grades.ctr && predictedCtr(v.id) !== c.grades.ctr[0] && (
+                <>
+                  <Tooltip title="The original's CTR grade">
+                    <Tag className={`grade-tag g-${c.grades.ctr[0]} ed-predict-orig`}>{c.grades.ctr}</Tag>
+                  </Tooltip>
+                  <ArrowRightOutlined className="ed-predict-arrow" aria-label="to" />
+                </>
+              )}
+              <PredictedTag id={v.id} bare />
+              {c.grades.ctr && (
+                <span className="t-help">
+                  {predictedCtr(v.id) === c.grades.ctr[0] ? 'Same as the original' : 'ABCD'.indexOf(predictedCtr(v.id)) < 'ABCD'.indexOf(c.grades.ctr[0]) ? 'Better than the original' : 'Worse than the original'}
+                </span>
+              )}
+            </span>
           </span>
           <Rating
             question="Is this result good?"
@@ -327,9 +342,25 @@ export function Editor() {
                 disabled={applying}
                 onClick={() => {
                   if (v.stylized) return apply('Create a new version with updated text');
-                  const nid = branch(job.id, v, 'stylized', styleNote.trim());
-                  message.success({ content: 'Generating a stylized-text variation', duration: 3 });
-                  go(nid);
+                  // 235 (Mancini 16:09): confirm first. Once the text is drawn into the image it can't be typed over again.
+                  modal.confirm({
+                    title: 'Create a stylized variation?',
+                    content: (
+                      <>
+                        <p>Atria draws the text into a new image. You won't be able to change it with Type to edit afterwards.</p>
+                        <p>To change the text later, you'll need to create another variation. It uses {cost}{'\u00a0'}credits.</p>
+                      </>
+                    ),
+                    okText: 'Create variation',
+                    cancelText: 'Cancel',
+                    icon: <ExclamationCircleFilled className="stylize-confirm-icon" />,
+                    className: 'stylize-confirm',
+                    onOk: () => {
+                      const nid = branch(job.id, v, 'stylized', styleNote.trim());
+                      message.success({ content: 'Generating a stylized-text variation', duration: 3 });
+                      go(nid);
+                    },
+                  });
                 }}
               >
                 {v.stylized ? 'Create new version' : 'Create stylized variation'}
@@ -351,10 +382,12 @@ export function Editor() {
                     onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value || (f.key === 'band' ? undefined : '') })}
                   />
                   {bad && (
-                    <span className="ed-warn">
-                      May contain a typo: {typoNow}.{' '}
-                      <button type="button" className="ed-inline-link" onClick={() => setDraft({ ...draft, head: val.replace(typoNow!, fixedTypo) })}>
-                        Change to {fixedTypo}
+                    // 234 (Mancini 16:08): reads like a keyboard's suggestion bar: an amber icon, "Did you mean", and the fix as one tap.
+                    <span className="ed-warn ed-typo">
+                      <WarningFilled className="ed-typo-icon" aria-hidden />
+                      <span>Did you mean</span>
+                      <button type="button" className="ed-typo-fix" aria-label={`Change ${typoNow} to ${fixedTypo}`} onClick={() => setDraft({ ...draft, head: val.replace(typoNow!, fixedTypo) })}>
+                        {fixedTypo}
                       </button>
                     </span>
                   )}
@@ -671,33 +704,38 @@ export function Editor() {
       </div>
 
       {rec && (
-        <section className="panel ed-related" aria-label="Related ads">
-          {/* Mancini 15:15: a creative isn't an ad, so the ad it was made from is a section of its own. It's a list because a creative can relate to more than one ad. */}
-          <SectionHead title="Related ads" help="The ad this creative was made from and the problem it was made to fix." />
-          <Link to={ws.radarPath(c.id)} className="ed-related-ad">
-            <Thumb c={c} size={36} />
-            <span className="ed-related-id">
-              <b>{c.name}</b>
-              <span className="t-help">Made from this ad</span>
-            </span>
-          </Link>
-          <div className="ed-diag-head">
-            <span className="ed-diag-metric">{recMetricLabel}</span>
-            {recGrade ? (
-              <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
-            ) : (
-              <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
-                <Tag className="rec-grade no-grade">No grade</Tag>
-              </Tooltip>
-            )}
-            {recVal && <span className="ed-diag-val">{recVal}</span>}
-            {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
-          </div>
-          <p className="ed-diag-issue">{rec.issue}</p>
-          <p className="ed-diag-fix">
-            <ArrowRightOutlined aria-hidden />
-            <span>{rec.fix}</span>
-          </p>
+        <section className="panel ed-related" aria-label="Iteration history">
+          {/* 237 (Mancini 16:10): one row of three steps (the ad, the problem, the suggestion used) instead of four loose lines. */}
+          <SectionHead title="Iteration history" help="The ad this creative was made from, the problem it was meant to fix and the suggestion used." />
+          <ol className="ed-steps">
+            <li className="ed-step">
+              <span className="ed-step-label">Made from</span>
+              <Link to={ws.radarPath(c.id)} className="ed-step-ad">
+                <Thumb c={c} size={36} />
+                <b>{c.name}</b>
+              </Link>
+            </li>
+            <li className="ed-step">
+              <span className="ed-step-label">Problem</span>
+              <b className="ed-step-text">{rec.issue}</b>
+              <span className="ed-step-metric">
+                <span>{recMetricLabel}</span>
+                {recGrade ? (
+                  <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
+                ) : (
+                  <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                    <Tag className="rec-grade no-grade">No grade</Tag>
+                  </Tooltip>
+                )}
+                {recVal && <span>{recVal}</span>}
+                {recAvg && <span className="t-help">Average{'\u00a0'}{recAvg}</span>}
+              </span>
+            </li>
+            <li className="ed-step">
+              <span className="ed-step-label">Suggestion used</span>
+              <b className="ed-step-text">{rec.fix}</b>
+            </li>
+          </ol>
         </section>
       )}
 

@@ -73,6 +73,23 @@ export const STEP_NOTES: Record<string, StepNote> = {
     reason: 'Tested whether showing the slow-rise squish would beat the offer.',
     traits: { price: 'no price', headline: 'demonstration', product: 'hand squeezing one mochi' },
   },
+  // 231: two more Moody Mochi steps so history shows on more than one chain.
+  'mm-1086424': { date: 'Sep 15', summary: 'Original ad', reason: '', traits: { headline: 'size', product: 'one mochi in a hand' } },
+  'mm-1088102': {
+    parentId: 'mm-1086424',
+    date: 'Oct 14',
+    summary: 'Swapped the size headline for "Squish me" and cropped in on the mochi.',
+    reason: 'Customers scrolled past. The mochi sat small in the frame.',
+    traits: { headline: 'invitation', product: 'one mochi, close up' },
+  },
+  'vid-ugc': { date: 'Sep 20', summary: 'Original ad', reason: '', traits: { product: 'talking head first' } },
+  'vid-asmr': {
+    parentId: 'vid-ugc',
+    date: 'Oct 28',
+    summary: 'Opened on a slow squeeze instead of a talking head.',
+    reason: 'Customers left in the first 3 seconds, before the mochi appeared.',
+    traits: { product: 'squeeze first' },
+  },
   // Other accounts: one step each.
   'pp-duo-v2': { date: 'Oct 30', summary: 'Put the gift price in the headline.', reason: "The ad didn't say what the set costs.", traits: { price: 'price as headline' } },
   'sg-teal-v2': { date: 'Nov 3', summary: 'Changed the background to one bold color.', reason: 'The product blended into a busy scene.', traits: { background: 'one bold color' } },
