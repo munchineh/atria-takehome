@@ -30,7 +30,7 @@ export const theme: ThemeConfig = {
     colorWarning: '#f38d05',
     colorError: '#ed383b',
     fontWeightStrong: 600,
-    lineHeight: 22 / 14,
+    lineHeight: 20 / 14, // 241 (Mancini 16:13): body 14/20, was 14/22
     borderRadius: 8, // Mancini 14:36: controls take the table's curve (8)
     borderRadiusLG: 8,
     borderRadiusSM: 6,

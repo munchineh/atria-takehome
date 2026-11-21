@@ -31,7 +31,7 @@
   --r-surface: 8px;
   --fs-title: 24px;  --lh-title: 32px;
   --fs-section: 16px; --lh-section: 24px;
-  --fs-body: 14px;   --lh-body: 22px;
+  --fs-body: 14px;   --lh-body: 20px; /* 241 (Mancini 16:13): was 22, more compact body text site-wide */
   --fs-small: 12px;  --lh-small: 20px;
   --fs-figure: 20px; --lh-figure: 28px;
 }
@@ -936,7 +936,7 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .period-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: 'name check' 'dates check'; align-items: center; column-gap: 12px; min-height: 56px; padding: 8px 16px; border: 0; background: none; text-align: left; font: inherit; cursor: pointer; }
 .period-row + .period-row { border-top: 1px solid rgba(0, 0, 0, 0.06); }
 .period-name { grid-area: name; font-size: 16px; line-height: 24px; color: rgba(0, 0, 0, 0.88); }
-.period-dates { grid-area: dates; font-size: 14px; line-height: 22px; color: rgba(0, 0, 0, 0.45); }
+.period-dates { grid-area: dates; font-size: 14px; line-height: var(--lh-body); color: rgba(0, 0, 0, 0.45); }
 .period-check { grid-area: check; color: var(--c-primary); font-size: 16px; visibility: hidden; }
 .period-row.on .period-name { font-weight: 600; }
 .period-row.on .period-check { visibility: visible; }
@@ -2825,3 +2825,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
    meta line stay; a rule above every group after the first separates them. */
 .var-group-head { padding: 0; border: 0; background: none; border-radius: 0; margin-bottom: 12px; }
 .var-group + .var-group .var-group-head, .var-group + .var-group > .var-group-head { padding-top: 24px; border-top: 1px solid var(--c-border-2); }
+
+/* 240 "Where it runs" popover: placements as a two-column list, name left and share right, Small text. */
+.runs2-places { display: flex; flex-direction: column; gap: 4px; }
+.runs2-place-grid { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 24px; }
+.runs2-place-grid > div { display: flex; justify-content: space-between; gap: 8px; font-size: var(--fs-small); line-height: var(--lh-small); }
+.runs2-place-grid dt { color: var(--c-text-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runs2-place-grid dd { margin: 0; color: var(--c-text); font-variant-numeric: tabular-nums; }

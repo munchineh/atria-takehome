@@ -289,6 +289,9 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 237 | Editor: "Related ads" becomes "Iteration history": one fill box with three steps (Made from, Problem with its metric, Suggestion used), joined by chevrons; stacked with dividers on phones. | Mancini 16:10 | Four loose lines (ad row, metric line, problem, arrow line) had no structure. |
 | 238 | Variations page: each "Suggestion used" heading is a plain section divider with no box, border or tint; groups after the first get a rule above. | Mancini 16:11 | It divides the page, so a container made it look like content. Supersedes row 117's tinted box. |
 | 239 | Radar: with one or no metric columns, the Ad column is fixed (440 px desktop, 320 px tablet) and Next steps takes the rest. | Mancini 16:12 | With metrics turned off, the Ad column took all the spare width and left a large gap before the button. |
+| 240 | "Where it runs" popover: placements are a two-column list of name and share (shares under 1% read "<1%"), not one wrapped line. | Mancini 16:12 | Twelve placements in one dotted line were hard to scan, and tiny shares read "0%". |
+| 241 | Body text is 14/20 site-wide (was 14/22): the `--lh-body` token and antd's `lineHeight`. Small stays 12/20 because tags are sized from it. | Mancini 16:13 | Body copy read loose, especially in cards and help lines. |
+| 242 | Ad page: the "Already applied" note above the suggestions is removed. | Mancini 16:14 | It repeated "Where it came from" and the left "Iteration history". |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

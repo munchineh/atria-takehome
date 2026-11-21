@@ -45,8 +45,6 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   // Mancini 13:36: show every copy. "4 and 2 more" made people leave the popover to see the rest.
   const shown = sorted;
   const places = [...c.placements].sort((x, y) => y.share - x.share);
-  // Every placement, for the same reason as every copy.
-  const placeLine = places.map((p) => `${p.label}\u00a0${Math.round(p.share * 100)}%`).join(' · ');
   const openAd = () => {
     setOpen(false);
     go(`/ad/${c.id}`);
@@ -78,9 +76,18 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
         })}
       </ul>
       <div className="runs2-foot">
-        <p className="t-help runs2-places">
-          <span className="t-label">Placements</span> {placeLine}
-        </p>
+        {/* 240 (Mancini 16:12): placements as a two-column list of name and share instead of one wrapped line. */}
+        <div className="runs2-places">
+          <span className="t-label">Placements</span>
+          <dl className="runs2-place-grid">
+            {places.map((p) => (
+              <div key={p.label}>
+                <dt>{p.label}</dt>
+                <dd>{p.share < 0.01 ? '<1%' : `${Math.round(p.share * 100)}%`}</dd>
+              </div>
+            ))}
+          </dl>
+        </div>
         {paused > 0 && <p className="t-help runs2-note">Paused copies still count toward this ad's grades.</p>}
       </div>
       <div className="runs2-actions">

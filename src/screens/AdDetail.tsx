@@ -20,7 +20,7 @@ import {
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, copyStatus, copiesTitle, platformOf, TABS } from '../data/mock';
-import { accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
+import { accountOf, findCreative, useStore, type RowStatus } from '../data/store';
 import { ideaText, iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative } from '../components/Thumb';
 import { Placements } from '../components/Placements';
@@ -702,21 +702,7 @@ export function AdDetail() {
             />
           </motion.div>
 
-          {parent && (
-            <motion.div variants={fadeUp} className="panel gal-status already-tried">
-              {/* Mancini 13:43: same row pattern as the gallery's status card. */}
-              <div className="gal-status-row">
-                <span className="gal-status-icon" aria-hidden>
-                  <HistoryOutlined />
-                </span>
-                <span className="gal-status-body">
-                  {/* 223: say what this ad actually changed (its history note), not the parent's CTA suggestion for every variation. */}
-                  <strong className="gal-status-name">Already applied: {STEP_NOTES[c.id]?.summary.replace(/\.$/, '') ?? recName(parent.id, 'cta')}</strong>
-                  <span className="t-help">This ad was made to try that. The suggestions below are what's left to try.</span>
-                </span>
-              </div>
-            </motion.div>
-          )}
+          {/* 242 (Mancini 16:14): the "Already applied" note is gone. What this ad changed is in "Where it came from" and "Iteration history". */}
 
 
           {recs.map((r, i) => (
