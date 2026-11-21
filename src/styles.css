@@ -471,7 +471,8 @@ body { font-family: 'Inter', -apple-system, sans-serif; color: var(--ink); backg
 }
 
 /* Radar filters: icon-only button, active filters as light orange pills (chat 4, L-059 / 20 Nov 10:50) */
-.filters-btn { width: 36px; }
+.filters-btn:not(:has(> span + span)) { width: 36px; }
+.filters-btn { height: 36px; }
 .active-filters { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 0 0 10px; }
 .filter-pill { display: inline-flex; align-items: center; gap: 4px; height: 28px; padding: 0 4px 0 10px; border-radius: 999px; background: #fff3eb; border: 1px solid #ffd3bd; color: #b4410f; font-size: 12px; }
 .filter-pill button { all: unset; cursor: pointer; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; color: #b4410f; }

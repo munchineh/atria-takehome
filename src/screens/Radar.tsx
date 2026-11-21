@@ -12,7 +12,7 @@ import { GOAL_ICON } from '../components/Goal';
 import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
-import { StatusCell } from '../components/StatusCell';
+import { StatusCell, weakest } from '../components/StatusCell';
 import { PageHeader } from '../components/PageHeader';
 import { IterationHistory } from '../components/IterationHistory';
 import { iterationHistory } from '../data/insights';
@@ -234,7 +234,7 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
 type Picked = Record<string, string[]>;
 
 /** Icon-only Filters button (L-059). Compact rows; campaigns are searched, not listed (Mancini, 20 Nov 17:01). */
-function FiltersButton({ campaigns, placements, goals, picked, setPicked, popOpen, setPopOpen }: { campaigns: string[]; placements: string[]; goals: string[]; picked: Picked; setPicked: (p: Picked) => void; popOpen: boolean; setPopOpen: (v: boolean) => void }) {
+function FiltersButton({ campaigns, placements, goals, picked, setPicked, popOpen, setPopOpen, labelled }: { labelled?: boolean; campaigns: string[]; placements: string[]; goals: string[]; picked: Picked; setPicked: (p: Picked) => void; popOpen: boolean; setPopOpen: (v: boolean) => void }) {
   const total = Object.values(picked).flat().length;
   const row = (g: { label: string; options: string[] }) => (
     <div key={g.label} className="filters-row">
@@ -295,8 +295,9 @@ function FiltersButton({ campaigns, placements, goals, picked, setPicked, popOpe
       <span className="filters-trigger">
       <Badge count={total} size="small" color="#f66c30">
         {/* 5c A-25: the name tooltip hides while the panel it names is open. */}
-        <Tooltip title="Filters" open={popOpen ? false : undefined}>
-          <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn" />
+        {/* S-12 and FG1 "Dimension filter": the button says what it does where there's room. */}
+        <Tooltip title={labelled ? undefined : 'Filters'} open={popOpen || labelled ? false : undefined}>
+          <Button icon={<FilterOutlined />} aria-label="Filters" className="filters-btn">{labelled && 'Filter'}</Button>
         </Tooltip>
       </Badge>
       </span>
@@ -421,17 +422,17 @@ export function Radar() {
   const columns: ColumnsType<Creative> = [
     { title: 'Ad', key: 'name', render: (_, c) => <NameCell c={c} /> },
     {
-      // 5d C5d-21 (Mancini's wording). Below 1200 px the cell carries the grade, since its column is hidden (Gm-07).
+      // 5d C5d-21 (Mancini's wording). Below 1200 px the cell carries the grade only when that metric's column is hidden (Gm-07, S-46).
       title: <Head label="Next steps" tip="Suggested based on your ad performance." />,
       key: 'rec',
       width: wide ? 170 : 144,
-      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!wide} />,
+      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!wide && !['conversion', 'ctr'].includes(weakest(c)?.metric ?? '')} />,
     },
     { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 72, render: (_, c) => <OverallTag creative={c} /> },
     metricCol('conversion', 'conv', wide ? 104 : 92),
     ...(wide ? [metricCol('hook', 'hook', 70), metricCol('retention', 'ret', 92)] : []),
     metricCol('ctr', 'ctr', wide ? 64 : 56),
-    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: wide ? 116 : 104, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
+    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 124, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
     ...(wide ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
   ];
 
@@ -504,7 +505,7 @@ export function Radar() {
           />
           {period.sheet}
         </div>
-        <FiltersButton key={account.id} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
+        <FiltersButton key={account.id} labelled={bp.md} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>
       <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} mobile={cards} onOpenFilters={() => setFiltersOpen(true)} />
 
@@ -649,17 +650,26 @@ export function Radar() {
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
           pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false, hideOnSinglePage: true }}
           // 5d OG-05: Atria's table ends with a totals row; ours had none.
-          summary={() =>
-            rows.length ? (
+          summary={() => {
+            const totSpend = rows.reduce((a, c) => a + c.spend, 0);
+            const totBuys = rows.reduce((a, c) => a + (c.values.cpa ? c.spend / c.values.cpa : 0), 0) || 1;
+            return rows.length ? (
               <Table.Summary.Row className="radar-total">
                 {columns.map((col, i) => (
-                  <Table.Summary.Cell key={String(col.key)} index={i} align={col.key === 'spend' ? 'right' : undefined}>
-                    {col.key === 'name' ? <span className="t-label">Total · {plural(rows.length, 'ad')}</span> : col.key === 'spend' ? <b>{money(rows.reduce((a, c) => a + c.spend, 0))}</b> : null}
+                  <Table.Summary.Cell key={String(col.key)} index={i} align={col.key === 'spend' || col.key === 'cpa' ? 'right' : undefined}>
+                    {/* S-55: "Total" in Strong. CPA is the account's overall CPA (total spend over total purchases), not an average of rows. */}
+                    {col.key === 'name' ? (
+                      <span><b>Total</b> <span className="t-help">{plural(rows.length, 'ad')}</span></span>
+                    ) : col.key === 'spend' ? (
+                      <b>{money(totSpend)}</b>
+                    ) : col.key === 'cpa' ? (
+                      <Tooltip title="Total spend divided by total purchases."><b className="cpa">{money(totSpend / totBuys)}</b></Tooltip>
+                    ) : null}
                   </Table.Summary.Cell>
                 ))}
               </Table.Summary.Row>
-            ) : null
-          }
+            ) : null;
+          }}
         />
       )}
     </motion.div>

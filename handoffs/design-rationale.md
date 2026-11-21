@@ -84,3 +84,12 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 58 | Source, "Made from this ad" and the lineage line merged into "Where it came from" key-value rows | S-46 | Lineage was said four times on one page |
 | 59 | 3 px orange bar on Summary, Suggestions and Likely audience | S-40, V-14 | FG2 marks top-level sections this way; small left cards stay plain |
 | 60 | Media tag drops "· 5 cards" | S-21 | The carousel counter already shows the count |
+
+## Radar rebuild (Opus, Nov 21)
+| # | Change | Rule | Why |
+|---|---|---|---|
+| 61 | Filter button labelled "Filter" from tablet up; icon only on phones, with a tooltip | S-12, FG1 "Dimension filter" | An icon-only filter next to a labelled period picker read as a lesser control |
+| 62 | Totals row: "Total" in Strong, ad count as help text, overall CPA (total spend over total purchases) | S-55, FG1 "Net results" | FG1 totals more than spend; an average of row CPAs would be wrong, so it's spend-weighted |
+| 63 | Next steps shows "· D" only when that metric's column is hidden | S-46 | At 834 the grade appeared twice and pushed the table 13 px past the page |
+| 64 | Spend column 124 wide at every size | S-52 | $38,816.90 plus the sort icon didn't fit in 104 |
+| V-15 | "Made from" stays as a second line under the name | Deviates from S-51 | Mancini asked for the parent named on the row (09:43, item 20). Annotate in Figma |
