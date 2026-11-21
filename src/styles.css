@@ -1803,3 +1803,11 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .tag-cpa.tone-bad span { color: var(--ant-color-error-text, #cf1322); }
 /* Grades in the Radar table: one fixed size, so "C" and "C-" sit the same and line up down a column. */
 .radar .ant-table .grade-tag.ant-tag { width: 30px; min-width: 30px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }
+/* Radar rhythm (Mancini 10:23): filters, 16, tabs, 16, line, 16, table. */
+.radar .filter-bar { margin-bottom: 16px; }
+.radar .radar-tabs .ant-tabs-nav { margin-bottom: 16px; }
+.radar .tab-desc { min-height: 21px; margin: 0 0 16px; }
+.radar .tab-desc p { font-size: 14px; line-height: 1.5; }
+.radar .tab-label { display: inline-flex; align-items: center; gap: 6px; }
+@media (max-width: 767px) { .radar .filter-bar, .radar .radar-tabs .ant-tabs-nav, .radar .tab-desc { margin-bottom: 12px; } }
+.radar .radar-tabs > .ant-tabs-nav { margin-left: 0 !important; margin-right: 0 !important; }

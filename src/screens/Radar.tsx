@@ -644,7 +644,7 @@ export function Radar() {
           showSorterTooltip={false}
           components={{ body: { row: MotionRow } }}
           onRow={(c, i) => ({ onClick: () => open(c), className: 'clickable-row', 'data-index': i } as never)}
-          pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false }}
+          pagination={{ total: rows.length, pageSize: 20, showTotal: (t) => plural(t, 'ad'), showSizeChanger: false, hideOnSinglePage: true }}
           // 5d OG-05: Atria's table ends with a totals row; ours had none.
           summary={() =>
             rows.length ? (
