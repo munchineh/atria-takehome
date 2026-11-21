@@ -121,6 +121,7 @@ function recs(o: {
       fix: 'Say what makes it different',
       target: 'CPA',
       examples: o.usp,
+      visuals: [`The ${o.noun} in use, close up`],
     },
     {
       id: 'offer',
@@ -131,6 +132,7 @@ function recs(o: {
       fix: 'Make one clear offer',
       target: 'CPA',
       examples: o.offer,
+      visuals: ['The price on a sticker on the image'],
     },
     {
       id: 'stop',
@@ -140,7 +142,8 @@ function recs(o: {
       why: `Your ${o.noun} sits small in a busy scene. Let it fill the frame so customers stop scrolling.`,
       fix: 'Make the product the first thing you see',
       target: 'CTR',
-      examples: o.stop,
+      examples: [],
+      visuals: o.stop,
     },
     {
       id: 'cta',
@@ -151,6 +154,7 @@ function recs(o: {
       fix: 'Use a more specific call to action',
       target: 'CTR',
       examples: o.cta,
+      visuals: ['A button in the brand color so it stands out'],
     },
     {
       id: 'hook',
@@ -160,7 +164,8 @@ function recs(o: {
       why: `Your video opens slowly. Show the ${o.noun} in the first second so customers keep watching.`,
       fix: 'Show the product in the first second',
       target: 'Hook',
-      examples: o.hook,
+      examples: [],
+      visuals: o.hook,
     },
   ];
   return (c) => {

@@ -11,7 +11,7 @@ import { Peek } from './Peek';
  * One iteration history for Overview, Radar and the ad page (Mancini 09:43, item 20).
  * Two groups: rounds made in Atria, then how the variation ads did once they ran.
  */
-export function IterationHistory({ items, limit = 5, empty, onNavigate }: { items: HistoryItem[]; limit?: number; empty: string; onNavigate?: () => void }) {
+export function IterationHistory({ items, limit = 5, empty, onNavigate, resultsLabel = 'Results in Meta', currentId }: { items: HistoryItem[]; limit?: number; empty: string; onNavigate?: () => void; resultsLabel?: string | null; currentId?: string }) {
   const nav = useNavigate();
   const go = (to: string) => {
     onNavigate?.();
@@ -60,19 +60,21 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate }: { item
       )}
       {results.length > 0 && (
         <div className="ih-group">
-          <span className="t-label ih-group-title">Results in Meta</span>
+          {resultsLabel && <span className="t-label ih-group-title">{resultsLabel}</span>}
           <ul className="ih-list">
             {results.map((r) => {
               const ad = findCreative(r.adId);
               const parent = findCreative(r.parentId);
               if (!ad) return null;
+              const isCurrent = r.adId === currentId;
               return (
                 <li key={r.id}>
-                  <button type="button" className="ih-row" onClick={() => go(`/ad/${r.adId}`)}>
+                  <button type="button" className={`ih-row ${isCurrent ? 'is-current' : ''}`} aria-current={isCurrent ? 'page' : undefined} onClick={isCurrent ? undefined : () => go(`/ad/${r.adId}`)}>
                     <Peek preview={<Creative c={ad} />} title={ad.name}><Thumb c={ad} size={36} /></Peek>
                     <span className="ih-text">
                       <span className="ih-head">
                         <b className="ih-name">{r.name}</b>
+                        {isCurrent && <span className="ih-this">This ad</span>}
                         <span className="ih-grades" onClick={(e) => e.stopPropagation()}>
                           <OverallTag creative={ad} />
                           {parent?.overall && <span className="t-help">vs {parent.overall}</span>}
@@ -88,7 +90,7 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate }: { item
                         </span>
                       )}
                     </span>
-                    <RightOutlined className="ih-chev" aria-hidden />
+                    {!isCurrent && <RightOutlined className="ih-chev" aria-hidden />}
                   </button>
                 </li>
               );

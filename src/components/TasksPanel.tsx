@@ -39,9 +39,9 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
         ? `Generating ${j.count}\u00a0· ${timeLeft(j.progress)}`
         : j.state === 'ready'
           ? failedN
-            ? `${j.count - failedN} ready\u00a0· ${failedN} failed`
+            ? `${j.count - failedN} ready\u00a0· ${failedN} failed to create`
             : `${plural(j.count, 'variation')} ready\u00a0· ${ago}`
-          : `Failed\u00a0· ${j.cost}\u00a0credits returned`;
+          : `Failed to create\u00a0· ${j.cost}\u00a0credits returned`;
   const creditNote = j.state === 'ready' && failedN ? `${failedN * 4}\u00a0credits returned\u00a0· ${ago}` : null;
   const openable = j.state === 'ready';
   return (
@@ -65,7 +65,7 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
           <span className="task-line-text">{status}</span>
           {j.state === 'failed' && (
             <Button type="link" size="small" className="inline-link" onClick={(e) => { e.stopPropagation(); retryJob(j.id); }}>
-              Retry
+              Try again
             </Button>
           )}
         </div>
@@ -126,7 +126,7 @@ function PanelBody({ onClose }: { onClose: () => void }) {
                         </>
                       ) : (
                         <>
-                          Couldn't create variations for <b>{c.name}</b>. {j.cost} credits returned.
+                          Failed to create variations for <b>{c.name}</b>. {j.cost} credits returned.
                         </>
                       )}
                       <span className="muted small block">{timeAgo(j.minutesAgo)}</span>

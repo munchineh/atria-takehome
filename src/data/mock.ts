@@ -99,6 +99,8 @@ export interface Recommendation {
   fix: string;
   target: 'ROAS' | 'CPA' | 'CTR' | 'Hook';
   examples: string[];
+  /** 226 (Mancini 16:00): ideas for the image itself, shown beside the copy ideas. */
+  visuals?: string[];
   tried?: { date: string; count: number; jobId: string };
 }
 
@@ -429,6 +431,7 @@ const HERO_RECS: Recommendation[] = [
     fix: 'Say what makes it different',
     target: 'CPA',
     examples: ['"Slow-rise squish. Back in shape in 8 seconds."', '"Every face is hand-painted, so no two match."'],
+    visuals: ['A hand squeezing one mochi mid-squish', 'Close-up on the hand-painted face'],
   },
   {
     id: 'offer',
@@ -439,6 +442,7 @@ const HERO_RECS: Recommendation[] = [
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['Show the price: "$14 each, 3 for $36"', 'Keep one offer: drop "Free stickers" or "Buy 3, save 15%"'],
+    visuals: ['Three mochi side by side with the price on a sticker'],
   },
   {
     id: 'cta',
@@ -449,6 +453,7 @@ const HERO_RECS: Recommendation[] = [
     fix: 'Use a more specific call to action',
     target: 'CTR',
     examples: ['"Pick your mood"', '"Get the Sad Pink one"'],
+    visuals: ['A button in the same pink as the mochi'],
     tried: { date: 'Nov 12', count: 8, jobId: 'job-hero-1' },
   },
 ];
@@ -462,7 +467,8 @@ const CTR_RECS: Recommendation[] = [
     why: `Your product sits small in a busy scene. Let it fill the frame so customers stop scrolling.`,
     fix: 'Make the product the first thing you see',
     target: 'CTR',
-    examples: ['Crop in so the mochi fills half the frame', 'Use one bold background color'],
+    examples: ['"Meet Sad Pink"'],
+    visuals: ['Crop in so the mochi fills half the frame', 'Use one bold background color'],
   },
   {
     id: 'offer',
@@ -473,6 +479,7 @@ const CTR_RECS: Recommendation[] = [
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['"$14 each, 3 for $36"'],
+    visuals: ['A price sticker on the mochi'],
   },
 ];
 
@@ -485,7 +492,8 @@ const VIDEO_RECS: Recommendation[] = [
     why: `Your video opens on a talking head. Lead with the squish so customers see the product before they scroll away.`,
     fix: 'Show the squish in the first second',
     target: 'Hook',
-    examples: ['Open on a close-up squeeze', 'Put the price on screen by second 3'],
+    examples: ['On-screen text: "Watch it bounce back"'],
+    visuals: ['Open on a close-up squeeze', 'Put the price on screen by second 3'],
   },
   {
     id: 'offer',
@@ -496,6 +504,7 @@ const VIDEO_RECS: Recommendation[] = [
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['End card: "3 for $36"'],
+    visuals: ['End on all three mochi with the price beside them'],
   },
 ];
 
@@ -536,15 +545,41 @@ function recsFor(c: Creative): Recommendation[] {
             why: 'The headline gives a reason to buy, but there is no price. The ad before this one led with "3 for $36" and cost less per purchase. Put the price back next to the benefit.',
             fix: 'Bring the price back',
             examples: ['"Back in shape in 8 seconds. 3 for $36."', '"$14 each"'],
+            visuals: ['A price sticker beside the squeezing hand'],
           }
         : {}),
     }));
+  // 222: "Sad Pink · 3 for $36" already leads with one price, so "two offers" and "no price" don't apply. Its gap is a
+  // reason to buy next to the price (the next step swapped the price out for a benefit, and CPA got worse).
+  if (c.id === 'mm-1090245-v3')
+    return HERO_RECS.filter((r) => r.id === 'different').map((r) => ({
+      ...r,
+      priority: 1,
+      tried: undefined,
+      issue: 'Customers only see a price',
+      issueDetail: 'The headline is the price. Nothing says why this mochi is worth it over a cheaper squishy.',
+      why: 'The price brings in buyers, but the ad gives no reason to pick this mochi. Add one benefit next to the price, and keep the price. The ad made from this one dropped the price for a benefit and cost more per purchase.',
+      fix: 'Add a reason to buy next to the price',
+      examples: ['"3 for $36. Back in shape in 8 seconds."', '"3 for $36. Every face is hand-painted."'],
+      visuals: ['Show the slow rise next to the price', 'Close-up on the hand-painted face'],
+    }));
+  // 222: "Sad Pink · Pick your mood" has one offer and a price ("3 for $36" in a band), so the two-offer suggestion was wrong.
+  // Its real gap is that the price sits small under the headline.
   if (c.variationOf === 'mm-1090245')
     return HERO_RECS.filter((r) => r.id !== 'cta').map((r, i) => ({
       ...r,
       priority: i + 1,
       tried: undefined,
-      ...(r.id === 'offer' ? { issueDetail: 'CPA improved to B, but the ad still carries two offers. One clear offer should close the gap.' } : {}),
+      ...(r.id === 'offer'
+        ? {
+            issue: 'Customers can miss the price',
+            issueDetail: 'CPA improved to B with one offer, but "3 for $36" sits in a small band under the headline.',
+            why: 'The ad has one clear offer now, but the price is the smallest text on it. Make it big enough to read at a glance so people who click are ready to buy.',
+            fix: 'Make the price easier to see',
+            examples: ['"3 for $36" as the headline'],
+            visuals: ['The price on its own line, larger than the band', 'Crop the mood grid to make room for the price'],
+          }
+        : {}),
     }));
   if (c.media === 'Video') {
     // Only suggest a hook fix when the hook is actually weak (C or D).

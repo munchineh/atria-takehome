@@ -200,8 +200,8 @@ function VariationCard({
           ) : (
             <motion.div key="fail" className="var-failed" initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
               <ExclamationCircleOutlined />
-              <span>This one failed. 4 credits returned.</span>
-              <Button onClick={onRetry}>Retry</Button>
+              <span>{'Failed to create\u00a0· 4\u00a0credits returned'}</span>
+              <Button onClick={onRetry}>Try again</Button>
             </motion.div>
           )}
         </AnimatePresence>

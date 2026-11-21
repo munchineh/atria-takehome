@@ -193,6 +193,8 @@ export function LineageDrawer({
         </div>
       }
       className={`lineage-drawer ${mobile ? 'pop-sheet lineage-sheet' : ''}`}
+      // 218: className lands on the inner section in antd 6, so the floating inset needs the root class.
+      rootClassName="lineage-drawer-root"
       destroyOnHidden
     >
       <div className="lin-intro">

@@ -1,9 +1,9 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Switch, Tag, Tooltip } from 'antd';
+import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled } from '../components/AppIcons';
+import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CheckCircleFilled, FontSizeOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -29,6 +29,7 @@ import { Body, CreateDialog } from '../components/CreateDialog';
 import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
+import { STEP_NOTES } from '../data/lineage';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
 import { hubCrumb } from '../data/nav';
@@ -60,7 +61,13 @@ const val = (c: CreativeT, k: MetricKey) => {
 
 /** AD-13 to AD-15: the reading, then what to do. Numbers live in the stat strip below (P3, L-035, R-M9). */
 function summary(c: CreativeT, parent?: CreativeT) {
-  if (parent) return `Converts better than the original. Let it run before you judge it: about ${money(Math.round(c.spend)).replace(/\.\d\d$/, '')} spent so far.`;
+  // 223: compare CPA with the original instead of always saying "better" ("Back in shape" costs more per purchase).
+  if (parent) {
+    const spent = money(Math.round(c.spend)).replace(/\.\d\d$/, '');
+    const a = parent.values.cpa, b = c.values.cpa;
+    const verdict = a == null || b == null || a === b ? 'Converts about the same as the original.' : b < a ? 'Converts better than the original.' : 'Costs more per purchase than the original.';
+    return `${verdict} Let it run before you judge it: about ${spent} spent so far.`;
+  }
   // C5d-41: the reading follows the ad's goal, like the suggestions (L-146). Goal metric first, then the ones that
   // support it; metrics the goal doesn't care about never drive the sentence (an Awareness ad gets no CPA reading).
   const goal = GOALS[goalOf(c)];
@@ -99,6 +106,14 @@ const KV = ({ k, v }: { k: string; v: string }) => (
 
 const BAND: Record<string, string> = { A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' };
 
+/** 229: "say what makes it different and make one clear offer". Three or more picks are counted instead of listed. */
+function roundPhrase(picked: { fix: string }[]) {
+  const verb = (f: string) => f.replace(/\u00a0/g, ' ').replace(/^./, (ch) => ch.toLowerCase());
+  if (picked.length === 1) return verb(picked[0].fix);
+  if (picked.length === 2) return `${verb(picked[0].fix)} and ${verb(picked[1].fix)}`;
+  return `apply your ${picked.length} suggestions`;
+}
+
 /** Item 4 (R-H, R-I): Suggestion card in four structured parts from suggestionParts(). */
 function RecCard({
   parts,
@@ -107,11 +122,9 @@ function RecCard({
   disabled,
   onToggle,
   footer,
-  issuesOnly,
   index,
 }: {
   index: number;
-  issuesOnly?: boolean;
   parts: SuggestionParts;
   selected: boolean;
   suggested: boolean;
@@ -150,7 +163,8 @@ function RecCard({
           <span className="rec-num" aria-hidden>{index}</span>
           {gradeTag}
           <span className="rec-metric">{evidence.metric}</span>
-          <span className="rec-issue-text">{diagnosis}</span>
+          {/* 220 (Mancini 15:58): the suggested action leads the card; the problem it answers sits in the body. */}
+          <span className="rec-issue-text rec-action-text">{action.title}</span>
           {/* Mancini 15:33: the tag belongs to the suggestion, so it sits after its text, away from the button. */}
           {recTag}
         </div>
@@ -158,50 +172,49 @@ function RecCard({
           {/* Mancini 14:47: a Pick button instead of a checkbox. The whole card still toggles, so this is its visible state. */}
           {!disabled && (
             <span className={`pick-chip ${selected ? 'on' : ''}`} aria-hidden>
+              {selected && <CheckCircleFilled className="pick-tick" />}
               {selected ? 'Selected' : 'Select'}
             </span>
           )}
         </span>
       </div>
 
-      {/* Part 2: Evidence (Metric value vs account average) */}
-      <div className="rec-part rec-part-evidence">
-        <span className="rec-ev-label">Evidence</span>
-        <span className="rec-ev-val">
+      {/* Part 2: the problem, the evidence for it, why it matters and ideas to try. */}
+      <div className="rec-part rec-part-action">
+        <b className="rec-how">{diagnosis}</b>
+        <p className="rec-ev-line">
+          <span className="rec-ev-label">Evidence</span>{' '}
           {evidence.row.label} <b>{evidence.row.value}</b>
           {evidence.row.note && <span className="muted">{'\u00a0'}· {evidence.row.note}</span>}
-        </span>
-      </div>
-
-      {/* Mancini 12:53, 13:04: "Hide suggestions" leaves each issue and its evidence, like FG2's "Top issues identified". */}
-      {!issuesOnly && (<>
-      {/* Part 3: Recommended action (What to change + why + examples) */}
-      <div className="rec-part rec-part-action">
-        <b className="rec-how">{action.title}</b>
+        </p>
         <p className="rec-why">{action.why}</p>
-        {action.examples.length > 0 && (
+        {action.examples.length + action.visuals.length > 0 && (
           <div className="rec-try">
             <span className="t-label">Ideas to try</span>
             <div className="rec-ideas">
-              {/* Mancini 10:27: no copy icon; hover says what will be copied. A pill with two or more quoted options is advice, so it doesn't copy. */}
-              {action.examples.map((e) => {
-                const idea = ideaText(e);
+              {/* Mancini 10:27: no copy icon; hover says what will be copied. A pill with two or more quoted options is advice, so it doesn't copy.
+                  226 (Mancini 16:00): copy ideas carry a text icon and creative ideas an image icon; a creative idea copies its whole line for the brief. */}
+              {[...action.examples.map((e) => ({ e, kind: 'copy' as const })), ...action.visuals.map((e) => ({ e, kind: 'visual' as const }))].map(({ e, kind }) => {
+                const idea = kind === 'visual' ? { label: e, copy: e } : ideaText(e);
+                const icon = kind === 'visual' ? <PictureOutlined className="idea-kind" aria-label="Image idea" /> : <FontSizeOutlined className="idea-kind" aria-label="Copy idea" />;
                 return idea.copy ? (
                   <Tooltip key={e} title="Copy to clipboard">
                     <button
                       type="button"
-                      className="idea-pill"
+                      className={`idea-pill idea-${kind}`}
                       onClick={(ev) => {
                         ev.stopPropagation();
                         void navigator.clipboard?.writeText(idea.copy!);
                         message.success("Copied to clipboard");
                       }}
                     >
+                      {icon}
                       {idea.label}
                     </button>
                   </Tooltip>
                 ) : (
-                  <span key={e} className="idea-pill idea-note">
+                  <span key={e} className={`idea-pill idea-note idea-${kind}`}>
+                    {icon}
                     {idea.label}
                   </span>
                 );
@@ -221,7 +234,6 @@ function RecCard({
         )}
         <RateRow />
       </div>
-      </>)}
 
       <AnimatePresence initial={false}>
         {footer && (
@@ -250,14 +262,15 @@ export function AdDetail() {
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
   const hub = hubCrumb();
-  const [issuesOnly, setIssuesOnly] = useState(false);
   const nav = useNavigate();
   const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs } = useStore();
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
   const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const [reportedAud, setReportedAud] = useState<string[]>([]);
-  const adHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id);
+  // 224 (Mancini 15:59, 16:00): the left column says what this ad was made from; ads made from it get their own section on the right.
+  const madeFromHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id, 'from');
+  const madeHereHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id, 'made');
   const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
@@ -298,7 +311,7 @@ export function AdDetail() {
     const j = jobs.filter((x) => x.recIds.includes(r.id)).at(-1);
     if (!j) return undefined;
     if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}`, running: true };
-    if (j.state === 'failed') return { text: `Couldn't create variations\u00a0· ${j.cost}\u00a0credits returned.` };
+    if (j.state === 'failed') return { text: `Failed to create\u00a0· ${j.cost}\u00a0credits returned` };
     const n = j.variations.filter((v, i) => v.recId === r.id && !j.failed.includes(i)).length;
     if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'variation')} ready`, action: () => viewRound(j.id, r.id) };
     return { text: `${plural(n, 'variation')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
@@ -344,7 +357,7 @@ export function AdDetail() {
             exit={{ opacity: 0, transition: { duration: duration.instant } }}
           >
             <ConfigProvider theme={darkBarTheme}>
-              <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} />
+              <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} onRemove={toggle} />
             </ConfigProvider>
           </motion.div>
         ) : (
@@ -393,11 +406,18 @@ export function AdDetail() {
                 </span>
               ) : (
                 <>
-                  <b>
-                    <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
-                  </b>
+                  {c.media === 'Image' ? (
+                    // 229 (Mancini 16:03): image ads read as one sentence, "Create 8 variations that ...", using the picked actions.
+                    <b className="bar-sentence">
+                      Create <Rolling value={total} /> {total === 1 ? 'variation' : 'variations'} that {roundPhrase(recs.filter((r) => selected.includes(r.id)))}
+                    </b>
+                  ) : (
+                    <b>
+                      <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
+                    </b>
+                  )}
                   {/* Mancini 14:47: the bar says what the round will be, as in mock B. Phones keep one compact row. */}
-                  {bp.md && <span className="muted small left">{plural(total, 'variation')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>}
+                  {bp.md && (c.media === 'Image' ? <span className="muted small left">{cost} of {balance.toLocaleString('en-US')} credits</span> : <span className="muted small left">{plural(total, 'variation')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>)}
                 </>
               )}
             </div>
@@ -591,10 +611,10 @@ export function AdDetail() {
             </div>
           </motion.div>
           {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
-          {adHistory.length > 0 && (
+          {madeFromHistory.length > 0 && (
             <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-              <SectionHead title="Iteration history" help="Rounds made from this ad and how their variations did." />
-              <IterationHistory items={adHistory} limit={4} empty="" />
+              <SectionHead title="Iteration history" help="The ads this one was made from and how each step did against the one before." />
+              <IterationHistory items={madeFromHistory} limit={6} empty="" resultsLabel={null} currentId={c.id} />
             </motion.div>
           )}
         </aside>
@@ -662,13 +682,7 @@ export function AdDetail() {
             <SectionHead
               bar
               title="Suggestions"
-              action={
-                <label className="issues-only">
-                  <Switch size="small" checked={issuesOnly} onChange={setIssuesOnly} />
-                  <span>Hide suggestions</span>
-                </label>
-              }
-              help={<>Ways to improve this ad in order of priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}
+              help="Ways to improve this ad in order of priority."
               meta={
                 <span className="rec-date">
                   Updated {WINDOW.synced}
@@ -688,8 +702,9 @@ export function AdDetail() {
                   <HistoryOutlined />
                 </span>
                 <span className="gal-status-body">
-                  <strong className="gal-status-name">Already applied: {recName(parent.id, 'cta')}</strong>
-                  <span className="t-help">This variation was made to fix that. The suggestions below are what's left to try.</span>
+                  {/* 223: say what this ad actually changed (its history note), not the parent's CTA suggestion for every variation. */}
+                  <strong className="gal-status-name">Already applied: {STEP_NOTES[c.id]?.summary.replace(/\.$/, '') ?? recName(parent.id, 'cta')}</strong>
+                  <span className="t-help">This ad was made to try that. The suggestions below are what's left to try.</span>
                 </span>
               </div>
             </motion.div>
@@ -700,7 +715,6 @@ export function AdDetail() {
             <RecCard
               key={r.id}
               index={i + 1}
-              issuesOnly={issuesOnly}
               parts={suggestionParts(c, r, accountOf(c).avg)}
               selected={selected.includes(r.id)}
               suggested={suggestedIds.includes(r.id)}
@@ -709,6 +723,17 @@ export function AdDetail() {
               footer={footerFor(r)}
             />
           ))}
+
+          {madeHereHistory.length > 0 && (
+            <>
+              <motion.div variants={fadeUp} className="section-title made-here-head">
+                <SectionHead bar title="Made from this ad" help="Rounds made from this ad, and how the ads made from it did in Meta." />
+              </motion.div>
+              <motion.div variants={fadeUp} className="panel made-here">
+                <IterationHistory items={madeHereHistory} limit={6} empty="" />
+              </motion.div>
+            </>
+          )}
 
         </motion.section>
       </div>
@@ -723,7 +748,8 @@ export function AdDetail() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: duration.base } }}
             exit={{ opacity: 0, transition: { duration: duration.fast } }}
-            onClick={() => setDialog(false)}
+            // 228 (Mancini 16:02): the page stays usable while the form is open, so picking a suggestion updates the round.
+            aria-hidden
           />
         )}
       </AnimatePresence>
@@ -737,6 +763,7 @@ export function AdDetail() {
         creative={c}
         recCount={selected.length}
         picked={recs.filter((r) => selected.includes(r.id))}
+        onRemove={toggle}
         onClose={() => setDialog(false)}
         onCreate={create}
       />

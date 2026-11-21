@@ -2687,3 +2687,89 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 216 Share-of-spend bars are dark blue, mixed from the info blue so it doesn't read as the B grade. */
 :root { --c-share: color-mix(in srgb, var(--c-info) 62%, #000); }
 .bar-list-track i.neutral, .tag-share i { background: var(--c-share); opacity: 1; }
+
+/* 217 Ad page: the left column scrolls on its own on tablet and desktop; the right column scrolls with the page. */
+@media (min-width: 768px) {
+  .detail-left { top: 80px; max-height: calc(100dvh - 80px); overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding: 1px 4px 112px; margin: -1px -4px 0; }
+}
+
+/* 218 Ad history panel floats on tablet and desktop: 8 px from the edges, rounded. antd 6 puts className on the inner
+   section, so this targets the root class set in LineageDrawer. */
+@media (min-width: 768px) {
+  .lineage-drawer-root.ant-drawer-right > .ant-drawer-content-wrapper { top: 8px; bottom: 8px; right: 8px; height: auto; border-radius: var(--r-surface); overflow: hidden; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+  .lineage-drawer-root .ant-drawer-section { border-radius: var(--r-surface); }
+}
+
+/* 219 Phones: "Not right?", "Show brief" and the flag on "How Atria reads this image" chips are 44 px targets. */
+@media (max-width: 767px) {
+  html body .persona-card .persona-flag.ant-btn, html body .persona-row .persona-flag.ant-btn { min-height: 44px; height: 44px; }
+  .cp-brief summary.acc-toggle, .acc-toggle { min-height: 44px; }
+  .ed-chip { min-height: 44px; padding-right: 0; }
+  .ed-chip .persona-flag.ant-btn { width: 44px; height: 44px; }
+}
+
+/* 220 Suggestion cards (Mancini 15:58): the action leads the header, the problem heads the body with its evidence,
+   a quiet number, an orange "Recommended" tag, a green tick on "Selected" and a lighter rating fill. */
+.rec-four .rec-diag-left .rec-action-text { color: var(--c-text); font-weight: 600; }
+.rec-card .rec-num, .rec-card.selected .rec-num, .rec-card.is-recommended .rec-num, .rec-card.is-recommended.selected .rec-num { width: auto; min-width: 12px; height: auto; background: none; color: var(--c-text-3); margin-right: 4px; }
+.rec-card.is-recommended .rec-diag-left .rec-suggested.ant-tag, .rec-diag-left .rec-suggested.ant-tag { background: var(--c-primary); color: #fff; border: 0; }
+.pick-chip { gap: 6px; }
+.pick-chip .pick-tick { color: var(--c-success); background: #fff; border-radius: 50%; font-size: 14px; }
+.rec-ev-line { margin: 0; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
+.rec-ev-line .rec-ev-label { color: var(--c-text-3); margin-right: 4px; }
+.rec-four .rec-part-action .rec-ev-line + .rec-why { margin-top: 4px; }
+.rec-card .rating-pill { background: color-mix(in srgb, #fff 72%, transparent); }
+
+/* 221 Phones: suggestion header keeps the number, grade and metric on one row with "Select" on the right; the action
+   text runs full width below and "Recommended" sits under it, flush left. */
+@media (max-width: 767px) {
+  .rec-four .rec-part-diag { flex-direction: row; align-items: flex-start; gap: 8px; }
+  .rec-four .rec-diag-left { row-gap: 8px; }
+  .rec-diag-left .rec-suggested.ant-tag, .rec-card.is-recommended .rec-diag-left .rec-suggested.ant-tag { margin-left: 0 !important; }
+}
+
+/* 224 Ad page: "Iteration history" (left) lists the ads this one was made from, ending with this ad, which is marked and
+   doesn't link. "Made from this ad" (right, under the suggestions) holds its rounds and the ads made from it. */
+.ih-row.is-current { cursor: default; }
+.ih-row.is-current:hover { background: none; }
+.ih-this { flex: none; padding: 0 8px; border-radius: var(--r-tag); background: color-mix(in srgb, var(--c-primary) 16%, transparent); font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; color: var(--c-text); }
+.made-here-head { margin-top: 12px; }
+
+/* 225 Create panel: the "For ..." line sits 4 px under the title, and the Context group 12 px under that line. */
+.dlg-panel-title + .dlg-sub { margin-top: -14px; line-height: var(--lh-small); }
+.dlg-sub + .dlg-group { padding-top: 0; margin-top: -6px; }
+
+/* 226 Ideas to try: copy ideas and creative (image) ideas sit in one row, each led by a 14 px icon for its kind. */
+.idea-pill .idea-kind { font-size: 14px; color: var(--c-text-3); margin-right: 8px; }
+.idea-pill { display: inline-flex; align-items: center; }
+
+/* 227 Create form: the round's suggestions as chips above Context. Each chip: the action in Semi Bold, the problem
+   under it in secondary text, and a remove button when more than one is left. "Regenerate brief" sits on the label row. */
+.dlg-refs { display: flex; flex-direction: column; gap: 8px; }
+.dlg-refs-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.dlg-ref-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.dlg-ref-chip { display: inline-flex; align-items: center; gap: 4px; padding: 4px 4px 4px 12px; border-radius: var(--r-control); background: rgba(255, 255, 255, 0.08); max-width: 100%; }
+.dlg-ref-text { display: flex; flex-direction: column; min-width: 0; padding-right: 8px; font-size: var(--fs-small); line-height: var(--lh-small); }
+.dlg-ref-text b { font-weight: 600; color: #fff; }
+.dlg-ref-problem { color: rgba(255, 255, 255, 0.65); }
+.dlg-ref-x { all: unset; box-sizing: border-box; flex: none; display: grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-control); color: rgba(255, 255, 255, 0.65); cursor: pointer; }
+.dlg-ref-x:hover { background: rgba(255, 255, 255, 0.08); color: #fff; }
+.dlg-ref-x:focus-visible { box-shadow: 0 0 0 2px var(--c-primary); }
+.dlg-refs + .dlg-group { border-top: 0; }
+/* Light surfaces (phone sheet) use the light fills. */
+.sheet-drawer .dlg-ref-chip, .create-sheet .dlg-ref-chip { background: var(--c-fill); }
+.sheet-drawer .dlg-ref-text b, .create-sheet .dlg-ref-text b { color: var(--c-text); }
+.sheet-drawer .dlg-ref-problem, .create-sheet .dlg-ref-problem, .sheet-drawer .dlg-ref-x, .create-sheet .dlg-ref-x { color: var(--c-text-2); }
+@media (max-width: 767px) { .dlg-ref-x { width: 44px; height: 44px; } .dlg-ref-chip { width: 100%; } .dlg-ref-text { flex: 1; } }
+
+/* 228 Create form on desktop: the dim layer no longer blocks the page, so suggestions can be picked while it's open. */
+.bar-scrim { pointer-events: none; background: rgba(20, 18, 22, 0.12); }
+
+/* 229 Action bar on image ads: the round as one sentence. It may wrap to two lines; the credits line stays under it. */
+.sticky-summary .bar-sentence { font-weight: 600; white-space: normal; text-wrap: pretty; }
+/* 221 (continued): below 1200 px the action text takes its own line, so the "·" before it never starts a line. */
+@media (max-width: 1199px) {
+  .rec-four .rec-diag-left .rec-action-text { flex-basis: 100%; }
+  .rec-four .rec-diag-left .rec-action-text::before { content: none; }
+}
+@media (max-width: 1199px) { .rec-diag-left .rec-suggested.ant-tag, .rec-card.is-recommended .rec-diag-left .rec-suggested.ant-tag { margin-left: 0 !important; } }

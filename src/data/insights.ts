@@ -4,7 +4,7 @@
 import { GOALS, METRIC_META, goalOf, graded, money, type Creative, type MetricKey, type Recommendation } from './mock';
 import type { MockAccount } from './accounts';
 import type { Job } from './store';
-import { lineageOf } from './lineage';
+import { lineageOf, parentIdOf } from './lineage';
 
 type Avg = { cpa: number; ctr: number; hookRate: number; retention: number };
 const TARGET_METRIC: Record<Recommendation['target'], MetricKey | null> = { CPA: 'conversion', ROAS: null, CTR: 'ctr', Hook: 'hook' };
@@ -18,7 +18,7 @@ export interface SuggestionParts {
   /** 2. The number behind it, with the account average beside it. */
   evidence: { metric: string; grade: Creative['overall']; value: string; average: string | null; text: string; row: { label: string; value: string; note: string | null } };
   /** 3. What to change, and why that fixes it. */
-  action: { title: string; why: string; examples: string[] };
+  action: { title: string; why: string; examples: string[]; visuals: string[] };
   /** 4. What "use this" does: the suggestion is selected and its fix goes into the brief. */
   apply: { label: string; briefLine: string };
 }
@@ -42,7 +42,7 @@ export function suggestionParts(c: Creative, r: Recommendation, avg: Avg): Sugge
       text: average ? `${label} ${shown}. Account average ${average}.` : `${label} ${shown}.`,
       row: evidenceRow(c, r, label, shown, average),
     },
-    action: { title: r.fix, why: r.why, examples: r.examples },
+    action: { title: r.fix, why: r.why, examples: r.examples, visuals: r.visuals ?? [] },
     apply: { label: 'Add to brief', briefLine: briefLineFor(r) },
   };
 }
@@ -59,6 +59,13 @@ function evidenceRow(c: Creative, r: Recommendation, label: string, shown: strin
   if (/don't\s+see\s+the\s+price/i.test(r.issue) && text) {
     return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'no price' };
   }
+  // 222: evidence for the two price suggestions on the variations of "Sad Pink · Feeling squishy?".
+  if (/only\s+see\s+a\s+price/i.test(r.issue) && text) {
+    return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'a price, but no reason to choose it' };
+  }
+  if (/miss\s+the\s+price/i.test(r.issue) && text) {
+    return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'the price is in a small band' };
+  }
   if (/clicking[\s\S]*aren't\s+buying|watch\s+but\s+aren't\s+buying/i.test(r.issue) && c.grades.ctr) {
     return { label: 'CTR', value: `${c.values.ctr.toFixed(2)}% (${c.grades.ctr})`, note: `but ${label} ${shown}${c.grades.conversion ? ` (${c.grades.conversion})` : ''}` };
   }
@@ -67,7 +74,10 @@ function evidenceRow(c: Creative, r: Recommendation, label: string, shown: strin
 
 /* ---------- Item 9: a brief filled in from the diagnosis ---------- */
 
-const briefLineFor = (r: Recommendation) => `${r.fix}${r.examples[0] ? ` (for example ${r.examples[0].replace(/\.$/, '')})` : ''}.`;
+const briefLineFor = (r: Recommendation) => {
+  const ex = r.examples[0] ?? r.visuals?.[0];
+  return `${r.fix}${ex ? ` (for example ${ex.replace(/\.$/, '')})` : ''}.`;
+};
 
 /**
  * A ready-to-edit brief in Atria's four-part shape (product, who it's for, goal, tone), plus the changes the picked
@@ -271,18 +281,38 @@ export type HistoryItem =
  * Rounds made in Atria and how the variation ads did against the ad they came from.
  * Pass `scope` to limit it to one ad and the ads around it (its parent and the ads made from it).
  */
-export function iterationHistory(account: MockAccount, windowDays: number, jobs: Job[], scope?: string): HistoryItem[] {
+export function iterationHistory(account: MockAccount, windowDays: number, jobs: Job[], scope?: string, side?: 'from' | 'made'): HistoryItem[] {
   const ads = account.creatives.map((c) => graded(c, windowDays));
   let ids: Set<string> | null = null;
-  if (scope) {
+  // 224 (Mancini 15:59, 16:00): on the ad page, "from" is the chain this ad was made from (itself included, so its own
+  // result shows) and "made" is every ad made from it, at any depth, plus its own rounds.
+  let roundIds: Set<string> | null = null;
+  if (scope && side === 'from') {
+    ids = new Set<string>();
+    for (let c = ads.find((x) => x.id === scope), guard = 0; c && guard < 12; guard++) {
+      ids.add(c.id);
+      const pid = parentIdOf(c);
+      c = pid ? ads.find((x) => x.id === pid) : undefined;
+    }
+    roundIds = new Set();
+  } else if (scope && side === 'made') {
+    ids = new Set<string>();
+    const queue = [scope];
+    while (queue.length) {
+      const id = queue.shift()!;
+      for (const k of ads.filter((x) => parentIdOf(x) === id)) if (!ids.has(k.id)) (ids.add(k.id), queue.push(k.id));
+    }
+    roundIds = new Set([scope]);
+  } else if (scope) {
     const self = ads.find((c) => c.id === scope);
     ids = new Set([scope, ...(self?.variationOf ? [self.variationOf] : []), ...ads.filter((c) => c.variationOf === scope).map((c) => c.id)]);
   }
   const inScope = (id: string) => !ids || ids.has(id);
+  const roundInScope = (id: string) => (roundIds ? roundIds.has(id) : inScope(id));
   const mine = new Set(ads.map((c) => c.id));
 
   const rounds: HistoryItem[] = jobs
-    .filter((j) => mine.has(j.creativeId) && inScope(j.creativeId))
+    .filter((j) => mine.has(j.creativeId) && roundInScope(j.creativeId))
     .sort((a, b) => a.minutesAgo - b.minutesAgo)
     .map((j) => {
       const c = ads.find((x) => x.id === j.creativeId)!;

@@ -3,7 +3,7 @@ import type { Recommendation } from '../data/mock';
 import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
 import { App, Button, Drawer, Input, Modal, Select } from 'antd';
-import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ThunderboltOutlined } from './AppIcons';
+import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ReloadOutlined, ThunderboltOutlined } from './AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
 import { accountOf, useStore } from '../data/store';
@@ -35,8 +35,11 @@ export function Body({
   picked,
   onCancel,
   onCreate,
+  onRemove,
   panel = false,
 }: {
+  /** 227: removes a suggestion from the round (deselects it on the ad page). The brief is not rewritten. */
+  onRemove?: (id: string) => void;
   /** Item 9: the suggestions picked on the ad page. When given, the brief can be filled in from them. */
   picked?: Recommendation[];
   creative: Creative;
@@ -105,6 +108,34 @@ export function Body({
           For <b className="ink">{creative.name}</b> · {plural(recCount, 'suggestion')}
         </p>
 
+        {/* 227 (Mancini 16:02): the suggestions in this round, each with the problem it solves, as removable chips.
+            Removing one doesn't touch the brief; "Regenerate brief" rewrites it from what's left. */}
+        {picked && picked.length > 0 && (
+          <div className="dlg-refs">
+            <div className="dlg-refs-head">
+              <span className="dlg-field-label">Suggestions in this round</span>
+              <Button type="text" size="small" icon={<ReloadOutlined />} onClick={prefill}>
+                Regenerate brief
+              </Button>
+            </div>
+            <ul className="dlg-ref-chips">
+              {picked.map((r) => (
+                <li key={r.id} className="dlg-ref-chip">
+                  <span className="dlg-ref-text">
+                    <b>{r.fix}</b>
+                    <span className="dlg-ref-problem">{r.issue}</span>
+                  </span>
+                  {onRemove && picked.length > 1 && (
+                    <button type="button" className="dlg-ref-x" aria-label={`Remove "${r.fix}" from this round`} onClick={() => onRemove(r.id)}>
+                      <CloseOutlined />
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {/* S-70 (FG3 "Ad context"): group labels on the left, fields on the right; stacked on phones. */}
         <section className="dlg-group">
           <h5 className="dlg-group-label">Context</h5>
@@ -115,6 +146,11 @@ export function Body({
           <div className="dlg-label-row">
             <span className="dlg-field-label"><span className="req" aria-hidden>*</span>Ad brief</span>
             <span className="row-gap wrap">
+              {(mode === 'filled' || mode === 'write') && brief.trim().length > 0 && (
+                <Button type="link" size="small" className="inline-link" icon={<CloseOutlined />} onClick={() => { setDraft(''); setPrefilled(false); setMode('write'); }}>
+                  Clear
+                </Button>
+              )}
               {(mode === 'filled' || mode === 'write') && (
                 <Button type="link" size="small" className="inline-link" icon={<LinkOutlined />} onClick={() => setMode('url')}>
                   Create from product page
@@ -347,7 +383,9 @@ export function CreateDialog({
   picked,
   onClose,
   onCreate,
+  onRemove,
 }: {
+  onRemove?: (id: string) => void;
   picked?: Recommendation[];
   open: boolean;
   mobile: boolean;
@@ -361,7 +399,7 @@ export function CreateDialog({
   useEffect(() => {
     if (open) setN((x) => x + 1);
   }, [open]);
-  const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} />;
+  const body = <Body key={n} creative={creative} recCount={recCount} picked={picked} onCancel={onClose} onCreate={onCreate} onRemove={onRemove} />;
   if (mobile)
     return (
       <Drawer
