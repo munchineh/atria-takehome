@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '../components/AppIcons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, ProfileOutlined, InsertRowRightOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -217,6 +217,54 @@ const Head = ({ label, tip }: { label: string; tip: string }) => (
     <span className="col-head">{label}</span>
   </Tooltip>
 );
+const COLS = [
+  { key: 'overall', label: 'Overall' },
+  { key: 'conv', label: 'Conversion' },
+  { key: 'hook', label: 'Hook' },
+  { key: 'ret', label: 'Retention' },
+  { key: 'ctr', label: 'CTR' },
+  { key: 'spend', label: 'Spend' },
+  { key: 'cpa', label: 'CPA' },
+  { key: 'roas', label: 'ROAS' },
+];
+const WIDE_ONLY = ['hook', 'ret', 'cpa', 'roas'];
+const DEFAULT_COLS = ['overall', 'conv', 'hook', 'ret', 'ctr', 'spend', 'cpa'];
+const COLS_KEY = 'atria.radar.cols.v1';
+function loadCols(): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(COLS_KEY) ?? 'null');
+    return Array.isArray(v) ? v : DEFAULT_COLS;
+  } catch {
+    return DEFAULT_COLS;
+  }
+}
+
+/** FG1 "Customize columns": pick which grade and money columns Radar shows. Ad and Next steps always show. */
+function ColumnsButton({ cols, setCols, labelled, wide }: { cols: string[]; setCols: (v: string[]) => void; labelled?: boolean; wide?: boolean }) {
+  const [open, setOpen] = useState(false);
+  const content = (
+    <div className="cols-pop">
+      <Checkbox.Group
+        className="cols-list"
+        value={cols}
+        onChange={(v) => setCols(COLS.map((c) => c.key).filter((k) => (v as string[]).includes(k)))}
+        options={COLS.map((c) => ({ value: c.key, label: c.label }))}
+      />
+      {!wide && <p className="t-help cols-note">On this screen size, Hook, Retention, CPA and ROAS stay hidden so the table fits.</p>}
+      <Button type="link" size="small" className="inline-link" disabled={cols.join() === DEFAULT_COLS.join()} onClick={() => setCols(DEFAULT_COLS)}>
+        Reset to default
+      </Button>
+    </div>
+  );
+  return (
+    <PopSheet content={content} title="Customize columns" sheetTitle="Customize columns" trigger="click" placement="bottomRight" open={open} onOpenChange={setOpen}>
+      <Tooltip title={labelled ? undefined : 'Customize columns'} open={open || labelled ? false : undefined}>
+        <Button icon={<InsertRowRightOutlined />} aria-label="Customize columns" className="filters-btn">{labelled && 'Customize columns'}</Button>
+      </Tooltip>
+    </PopSheet>
+  );
+}
+
 const metricCol = (k: MetricKey, key: string, width: number) => ({
   title: <Head label={METRIC_META[k].label} tip={METRIC_META[k].tip} />,
   key,
@@ -354,6 +402,15 @@ function ActiveFilters({
 export function Radar() {
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
+  const [cols, setColsState] = useState<string[]>(loadCols);
+  const setCols = (v: string[]) => {
+    setColsState(v);
+    try {
+      localStorage.setItem(COLS_KEY, JSON.stringify(v));
+    } catch {
+      /* storage can be unavailable; the choice still applies for this visit */
+    }
+  };
   const cards = !bp.md; // below tablet width
   const { statusOf, accountId, windowDays, setWindowDays, jobs } = useStore();
   const { message } = App.useApp();
@@ -419,21 +476,27 @@ export function Radar() {
   // 5c audit A-01 to A-03: the Ad column takes the spare width so names wrap before they truncate, and
   // below 1200 px Hook, Retention (video only) and CPA step out (Overall's popover still lists them), so nothing scrolls off.
   const wide = !!bp.xl;
+  // Customize columns (FG1, Mancini 12:32). Ad and Next steps always show; the rest follow the viewer's choice,
+  // and Hook, Retention, CPA and ROAS still step out below 1200 px.
+  const shown = (key: string) => cols.includes(key) && (wide || !WIDE_ONLY.includes(key));
+  const weakShown = (c: Creative) => shown(({ conversion: 'conv', hook: 'hook', retention: 'ret', ctr: 'ctr' } as Record<string, string>)[weakest(c)?.metric ?? ''] ?? '');
   const columns: ColumnsType<Creative> = [
     { title: 'Ad', key: 'name', render: (_, c) => <NameCell c={c} /> },
     {
-      // 5d C5d-21 (Mancini's wording). Below 1200 px the cell carries the grade only when that metric's column is hidden (Gm-07, S-46).
+      // 5d C5d-21 (Mancini's wording). The cell carries the grade only when that metric's column isn't shown (Gm-07, S-46).
       title: <Head label="Next steps" tip="Suggested based on your ad performance." />,
       key: 'rec',
       width: wide ? 170 : 144,
-      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!wide && !['conversion', 'ctr'].includes(weakest(c)?.metric ?? '')} />,
+      render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!weakShown(c)} />,
     },
-    { title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 72, render: (_, c) => <OverallTag creative={c} /> },
-    metricCol('conversion', 'conv', wide ? 104 : 92),
-    ...(wide ? [metricCol('hook', 'hook', 70), metricCol('retention', 'ret', 92)] : []),
-    metricCol('ctr', 'ctr', wide ? 64 : 56),
-    { title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 124, align: 'right', sorter: (a, b) => a.spend - b.spend, defaultSortOrder: 'descend', render: (_, c) => money(c.spend) },
-    ...(wide ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
+    ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 72, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),
+    ...(shown('conv') ? [metricCol('conversion', 'conv', wide ? 104 : 92)] : []),
+    ...(shown('hook') ? [metricCol('hook', 'hook', 70)] : []),
+    ...(shown('ret') ? [metricCol('retention', 'ret', 92)] : []),
+    ...(shown('ctr') ? [metricCol('ctr', 'ctr', wide ? 64 : 56)] : []),
+    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period, across all its copies." />, key: 'spend', width: 124, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
+    ...(shown('cpa') ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
+    ...(shown('roas') ? [{ title: <Head label="ROAS" tip="Purchase value divided by spend." />, key: 'roas', width: 76, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{c.roas.toFixed(2)}</span> }] : []),
   ];
 
   return (
@@ -443,9 +506,10 @@ export function Radar() {
         desc="Find out how each ad is performing and what to do next."
         actions={
           <>
-          <PopSheet content={<div className="ih-pop"><IterationHistory items={iterationHistory(account, windowDays, jobs)} limit={4} empty="No rounds yet. Open an ad and pick suggestions to create variations." /></div>} title="Iteration history" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
-            <Button type="text" icon={<HistoryOutlined />} aria-label="Iteration history">
-              {bp.md && 'History'}
+          <PopSheet content={<div className="ih-pop"><IterationHistory items={iterationHistory(account, windowDays, jobs)} limit={4} empty="No rounds yet. Open an ad and pick suggestions to create variations." /></div>} title="Activity log" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+            {/* Mancini 12:32: "History" belongs to the ad page; the account-wide list is the activity log. */}
+            <Button type="text" icon={<ProfileOutlined />} aria-label="Activity log">
+              {bp.md && 'Activity log'}
             </Button>
           </PopSheet>
           <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
@@ -505,7 +569,10 @@ export function Radar() {
           />
           {period.sheet}
         </div>
+        <span className="radar-tools">
+        {!cards && <ColumnsButton cols={cols} setCols={setCols} labelled={bp.lg} wide={wide} />}
         <FiltersButton key={account.id} labelled={bp.md} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
+        </span>
       </div>
       <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} mobile={cards} onOpenFilters={() => setFiltersOpen(true)} />
 

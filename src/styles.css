@@ -1983,3 +1983,9 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .bar-panel .dlg-group { border-top-color: #333037; }
 .bar-panel .dlg-group-label, .bar-panel .dlg-field-label { color: #fff; }
 .bar-panel .dlg-readonly { background: #26232a; }
+/* Radar: Customize columns (FG1). */
+.radar-tools { display: inline-flex; align-items: center; gap: 8px; margin-left: auto; }
+.cols-pop { display: flex; flex-direction: column; gap: 8px; min-width: 220px; }
+.cols-list.ant-checkbox-group { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 16px; }
+.cols-note { margin: 0; }
+.cols-pop .inline-link { align-self: flex-start; padding: 0; height: auto; }

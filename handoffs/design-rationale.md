@@ -111,3 +111,9 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 71 | Headline ends at the numbers; "against the period before" stays only in the help line | S-46 | The same phrase appeared twice, 30 px apart |
 | 72 | "Purchase value is" and "CPA is" never break before "is" | Copy rules | On phones "is" sat alone at the start of a line |
 | 73 | Tag counts ("5 ads · 41% of spend") back to Small | S-51 | The foundation sweep put them at Body, louder than the tag name's role |
+
+## Radar follow-ups (Mancini 12:32)
+| # | Change | Rule | Why |
+|---|---|---|---|
+| 74 | Radar's History renamed Activity log (list icon); the ad page button is History | Glossary | History belongs to one ad; the account-wide list is a log |
+| 75 | Customize columns (FG1): pick Overall, each grade, Spend, CPA and ROAS (ROAS off by default). Saved per browser. Next steps shows the weak grade whenever that grade's column is off | FG1, S-46 | Mancini asked for it; ROAS is in FG1 but wasn't on our table |
