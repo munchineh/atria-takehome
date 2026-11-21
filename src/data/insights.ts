@@ -78,7 +78,7 @@ export interface Delta {
 
 export interface OverviewBriefing {
   /** 1. What do I need to know now? */
-  now: { headline: string; deltas: Delta[]; counts: { best: number; improve: number; rework: number } };
+  now: { headline: string; lead: { best?: Delta; worst?: Delta }; deltas: Delta[]; counts: { best: number; improve: number; rework: number } };
   /** 2. What should I do next? */
   next: { adId: string; name: string; metric: string; grade: string; spend: number; why: string }[];
   /** 3. What did I do previously? */
@@ -187,7 +187,7 @@ export function overviewBriefing(account: MockAccount, windowDays: number, jobs:
   const headline = worst && best ? `${move(best)}, but ${move(worst).replace(' is ', ' is ')} against the period before.` : worst ? `${move(worst)} against the period before.` : best ? `${move(best)} against the period before.` : 'Results are level with the period before.';
 
   return {
-    now: { headline, deltas, counts },
+    now: { headline, lead: { best, worst }, deltas, counts },
     next,
     done,
     changed,

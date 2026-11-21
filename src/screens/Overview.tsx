@@ -45,6 +45,35 @@ function Kpi({ label, value, help, delta, hero }: { label: string; value: string
   );
 }
 
+function Headline({ lead, fallback }: { lead: { best?: Delta; worst?: Delta }; fallback: string }) {
+  const part = (d: Delta) => (
+    <>
+      {d.label} is{' '}
+      <span className={`ov-hl-pill tone-${d.tone}`}>
+        {d.pct > 0 ? <ArrowUpOutlined aria-hidden /> : <ArrowDownOutlined aria-hidden />}
+        {d.pct > 0 ? 'up' : 'down'} {Math.abs(d.pct)}%
+      </span>
+    </>
+  );
+  const { best, worst } = lead;
+  return (
+    <p className="ov-headline ov-headline-xl">
+      {best && worst ? (
+        <>
+          {part(best)}, but {part(worst)}
+        </>
+      ) : best ? (
+        part(best)
+      ) : worst ? (
+        part(worst)
+      ) : (
+        fallback
+      )}
+      {(best || worst) && <span className="ov-hl-tail"> against the period before.</span>}
+    </p>
+  );
+}
+
 export function Overview() {
   const { accountId, windowDays, setWindowDays, jobs } = useStore();
   const bp = Grid.useBreakpoint();
@@ -121,7 +150,8 @@ export function Overview() {
             <p className="t-help ov-sec-help">{titles.now.help}</p>
           </div>
         </div>
-        <p className="ov-headline">{briefing.now.headline}</p>
+        {/* Mancini 10:55: the headline is the page's focal point. Large type, the two numbers that matter as coloured pills, no grey box. */}
+        <Headline lead={briefing.now.lead} fallback={briefing.now.headline} />
         <div className="ov-kpis ov-kpis-7" aria-label="Key metrics">
           <Kpi hero label="Spend" value={money(dSpend.now).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} delta={dSpend} />
           <Kpi label="ROAS" value={dRoas.now.toFixed(2)} help={'Revenue per $1 of\u00a0spend'} delta={dRoas} />

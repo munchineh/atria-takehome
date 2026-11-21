@@ -1,5 +1,5 @@
 import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { animate, motion, useAnimationControls } from 'motion/react';
+import { animate, motion, useAnimationControls, useReducedMotion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -18,7 +18,7 @@ const SLIDE = { type: 'spring', bounce: 0, visualDuration: 0.32 } as const;
 function BarsIcon({ play }: { play: number }) {
   const controls = useAnimationControls();
   useEffect(() => {
-    if (play) void controls.start((i: number) => ({ scaleY: [1, 0.35, 1], transition: { duration: 0.42, delay: i * 0.06, ease: [0.2, 0, 0, 1] } }));
+    if (play) void controls.start((i: number) => ({ scaleY: [1, 0.2, 1.15, 1], transition: { duration: 0.6, delay: i * 0.08, ease: [0.2, 0, 0, 1] } }));
   }, [play, controls]);
   const bars = [
     { x: 2.5, h: 6 },
@@ -51,24 +51,26 @@ const AXES = [0, 72, 144, 216, 288].map((deg) => {
   const r = (deg - 90) * (Math.PI / 180);
   return { x: Math.cos(r), y: Math.sin(r) };
 });
-const REST = [0.8, 0.55, 0.7, 0.45, 0.62];
-const PEAK = [0.95, 0.85, 0.5, 0.8, 0.9];
+const REST = [0.78, 0.5, 0.68, 0.42, 0.6];
+const PEAK = [1, 0.95, 0.35, 1, 0.92];
 const pts = (vals: number[], radius = 6.2) => AXES.map((a, i) => `${(8 + a.x * radius * vals[i]).toFixed(2)},${(8 + a.y * radius * vals[i]).toFixed(2)}`).join(' ');
 
 function RadarIcon({ play }: { play: number }) {
   const [shape, setShape] = useState(pts(REST));
+  const reduce = useReducedMotion();
   useEffect(() => {
-    if (!play) return;
+    if (!play || reduce) return;
+    // Mancini 10:48: the first pass was too subtle. Bigger reach, a ripple that travels round the spokes, about 0.7 s.
     const c = animate(0, 1, {
-      duration: 0.46,
-      ease: [0.2, 0, 0, 1],
+      duration: 0.7,
+      ease: 'linear',
       onUpdate: (t) => {
-        const k = Math.sin(t * Math.PI); // out and back
-        setShape(pts(REST.map((v, i) => v + (PEAK[i] - v) * k)));
+        const k = Math.sin(t * Math.PI);
+        setShape(pts(REST.map((v, i) => Math.min(1, Math.max(0.2, v + (PEAK[i] - v) * k + 0.18 * k * Math.sin(t * 2 * Math.PI * 1.5 + i * 1.3))))));
       },
     });
     return () => c.stop();
-  }, [play]);
+  }, [play, reduce]);
   return (
     <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeLinejoin="round" strokeLinecap="round">
       <polygon points={pts([1, 1, 1, 1, 1])} strokeWidth="1.1" opacity="0.55" />
@@ -142,6 +144,7 @@ export function ModeSwitch() {
             aria-selected={selected}
             className={`mode-pill-btn ${selected ? 'active' : ''}`}
             onClick={() => choose(opt.value)}
+            onMouseEnter={() => setPlays((p) => ({ ...p, [opt.value]: p[opt.value] + 1 }))}
             onKeyDown={(e) => {
               if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
                 e.preventDefault();

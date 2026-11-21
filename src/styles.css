@@ -1950,3 +1950,11 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .ed-diag-fix .anticon { color: #f66c30; }
 .ed-diag-from { display: block; margin-bottom: 4px; }
 .ed-predict { display: inline-flex; align-items: center; gap: 8px; align-self: center; }
+/* Overview headline as the focal point (Mancini 10:55) */
+.ov-headline.ov-headline-xl { background: none; border: 0; padding: 0; margin: 14px 0 20px; font-size: 20px; line-height: 1.5; font-weight: 600; color: #1f1f1f; letter-spacing: -0.01em; }
+.ov-hl-pill { display: inline-flex; align-items: center; gap: 4px; padding: 1px 10px; border-radius: 999px; font-size: 18px; font-weight: 600; vertical-align: 1px; }
+.ov-hl-pill .anticon { font-size: 15px; }
+.ov-hl-pill.tone-good { background: #e8f7e6; color: #137333; }
+.ov-hl-pill.tone-bad { background: #fff1ef; color: #cf1322; }
+.ov-hl-tail { color: #6b6b6b; font-weight: 500; }
+@media (max-width: 767px) { .ov-headline.ov-headline-xl { font-size: 17px; } .ov-hl-pill { font-size: 15px; } }
