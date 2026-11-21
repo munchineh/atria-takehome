@@ -3209,3 +3209,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ih-change.tone-good { color: var(--c-success); }
 .ih-change.tone-bad { color: var(--c-error); }
 .ih-change .anticon { font-size: 10px; }
+/* 280 (Mancini 19:22) Suggestion header: action, then what it changes, then Recommended. No leading dot. The grade
+   moves into the Evidence line. */
+.rec-four .rec-diag-left .rec-action-text::before { content: none; }
+.rec-four .rec-diag-left { gap: 8px; }
+.rec-four .rec-diag-left .rec-suggested.ant-tag { margin-left: 0 !important; }
+.rec-ev-line .rec-grade.ant-tag { margin: 0 0 0 4px; vertical-align: 1px; }
+.rec-grade-wrap { display: inline-flex; margin-left: 4px; vertical-align: 1px; } .rec-grade-wrap .grade-tag.ant-tag { margin: 0; cursor: help; }

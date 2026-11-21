@@ -120,9 +120,11 @@ function RecCard({
   disabled,
   onToggle,
   footer,
-  index,
   scopeLabel,
+  creative,
 }: {
+  /** 280: the ad, so the grade on the Evidence line opens the same explainer as Radar's. */
+  creative?: CreativeT;
   /** 260: what the suggestion changes: "Creative", or an ad field such as "Landing page". */
   scopeLabel?: string;
   index: number;
@@ -135,7 +137,13 @@ function RecCard({
 }) {
   const { diagnosis, evidence, action } = parts;
   const { message } = App.useApp();
-  const gradeTag = evidence.grade ? (
+  const metricKey = ({ CPA: 'conversion', CTR: 'ctr', 'Hook rate': 'hook', Hook: 'hook', Retention: 'retention' } as Record<string, MetricKey>)[evidence.metric];
+  const gradeTag = creative && metricKey && creative.grades[metricKey] ? (
+    // 280 (Mancini 19:23): hovering the grade explains it, as in the Radar table. Clicks don't toggle the card.
+    <span className="rec-grade-wrap" onClick={(e) => e.stopPropagation()}>
+      <GradeTag creative={creative} metric={metricKey} />
+    </span>
+  ) : evidence.grade ? (
     <Tag className={`rec-grade grade-tag g-${evidence.grade[0]}`}>{evidence.grade}</Tag>
   ) : (
     <Tooltip title={`${evidence.metric} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
@@ -161,12 +169,10 @@ function RecCard({
       {/* Part 1: Diagnosis (What's happening) */}
       <div className="rec-part rec-part-diag">
         <div className="rec-diag-left">
-          <span className="rec-num" aria-hidden>{index}</span>
-          {gradeTag}
-          <span className="rec-metric">{evidence.metric}</span>
-          {scopeLabel && <span className="rec-scope">{scopeLabel}</span>}
-          {/* 220 (Mancini 15:58): the suggested action leads the card; the problem it answers sits in the body. */}
+          {/* 280 (Mancini 19:22): the header is the action, then what it changes, then Recommended. The number, grade and
+              metric are gone from here; the grade sits in the Evidence line next to the figure it grades. */}
           <span className="rec-issue-text rec-action-text">{action.title}</span>
+          {scopeLabel && <span className="rec-scope">{scopeLabel}</span>}
           {/* Mancini 15:33: the tag belongs to the suggestion, so it sits after its text, away from the button. */}
           {recTag}
         </div>
@@ -190,8 +196,9 @@ function RecCard({
         <b className="rec-how">{diagnosis}</b>
         <p className="rec-ev-line">
           <span className="rec-ev-label">Evidence</span>{' '}
-          {evidence.row.label} <b>{evidence.row.value}</b>
-          {evidence.row.note && <span className="muted">{'\u00a0'}· {evidence.row.note}</span>}
+          {evidence.row.label} <b>{evidence.row.value}</b>{evidence.row.label === evidence.metric && <> {gradeTag}</>}
+          {/* 280 (Mancini 19:23): the grade already says how it compares, so the account average is dropped here. */}
+          {evidence.row.note && !evidence.row.note.startsWith('account average') && <span className="muted">{'\u00a0'}· {evidence.row.note}</span>}
         </p>
         <p className="rec-why">{action.why}</p>
         {action.examples.length + action.visuals.length > 0 && (
@@ -786,6 +793,7 @@ export function AdDetail() {
               // 260: video and carousel ads can still take ad-level fixes (they duplicate the ad); only creative ones are locked.
               disabled={!iterable && r.scope !== 'ad'}
               scopeLabel={r.scope === 'ad' && r.field ? FIELD_LABEL[r.field] : 'Creative'}
+              creative={c}
               onToggle={() => toggle(r.id)}
               footer={footerFor(r)}
             />
