@@ -3284,3 +3284,8 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .page-kind .anticon { font-size: 14px; color: var(--c-text-3); }
 .lib-ad-title .page-kind { margin-bottom: 0; }
 .lib-eyebrow { margin-bottom: 0; }
+
+/* 311 Ad status tags ("Running", "Paused", "Not running", "Not saved") match the ad-group chip on Ad Analytics
+   ("Needs rework", "To improve"): 24 px pill, 12 px Semi Bold, 10 px sides. Colours unchanged (Mancini 22 Nov 00:25).
+   Same in Ad Library (list and cards), Ad Details, the creative page and the ad page's "Related" list. */
+.lib-status, .rel-state { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; white-space: nowrap; }
