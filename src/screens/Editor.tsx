@@ -6,6 +6,7 @@ import { Alert, App, Breadcrumb, Button, Empty, Grid, Input, Modal, Segmented, T
 import {
   BarChartOutlined,
   BulbOutlined,
+  ArrowRightOutlined,
   DeleteOutlined,
   DownloadOutlined,
   ExclamationCircleOutlined,
@@ -34,7 +35,7 @@ export function PredictedTag({ id, bare }: { id: string; bare?: boolean }) {
   const g = predictedCtr(id);
   // 5d C5d-13: "Predicted CTR" is a label beside a dashed grade tag, not "Predicted CTR: C" in one box.
   const tag = (
-    <Tooltip title="An estimate from how similar ads performed in this account. Not a guarantee.">
+    <Tooltip title="Atria's estimate of this image's CTR, from how similar ads did in this account. It can be lower than the original's, which is a sign to refine before you launch.">
       <Tag className={`predicted grade-tag g-${g}`}>{g}</Tag>
     </Tooltip>
   );
@@ -203,7 +204,7 @@ export function Editor() {
             </motion.div>
           )}
         </AnimatePresence>
-        {textMode === 'stylized' && <span className="ed-preview-label">{stylizedSlot ? 'Preview' : 'No preview yet'}</span>}
+        {textMode === 'stylized' && stylizedSlot && <span className="ed-preview-label">Sample</span>}
       </div>
 
       {/* Mancini 10:51: one compact row under the image. Versions show only once there is more than one; the rating sits at the end. */}
@@ -229,9 +230,12 @@ export function Editor() {
           </motion.button>
         ))}
       </div>
-        ) : (
-          <span className="t-help ed-under-note">v1 · Original</span>
-        )}
+        ) : null}
+        {/* Mancini 10:54: the prediction belongs to this image, so it sits under it, against the original's grade on the same metric. */}
+        <span className="ed-predict">
+          <PredictedTag id={v.id} />
+          {c.grades.ctr && <span className="t-help">vs {c.grades.ctr} on the original</span>}
+        </span>
         <Rating
           question="Is this result good?"
           onRate={(r) => {
@@ -262,48 +266,34 @@ export function Editor() {
           />
         )}
       </div>
+      {/* Mancini 10:53: one help line, the text itself, one action. No info box, no fake preview. */}
+      <p className="t-help ed-text-help">
+        {v.stylized
+          ? 'Atria drew this text into the image. Changing it makes a new version.'
+          : textMode === 'stylized'
+            ? 'Atria draws the text into the image. It looks richer, but words can come out misspelled.'
+            : 'Text sits on top of the image, so you can change it any time for free.'}
+      </p>
       <AnimatePresence mode="wait" initial={false}>
-        {v.stylized ? (
-          <motion.div key="baked" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            {/* K5 (R-T8, R-T13, R-AI6): "Atria drew this text...", "Create new version", cost line beside button. */}
-            <Alert type="info" showIcon title="Atria drew this text into the image." description="Changing it creates a new version." />
-            <Button block onClick={() => apply('Create a new version with updated text')} disabled={applying}>
-              Create new version
-            </Button>
-            <span className="muted small">{costLine}</span>
-          </motion.div>
-        ) : textMode === 'stylized' ? (
+        {v.stylized || textMode === 'stylized' ? (
           <motion.div key="styl" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            <Alert type="info" showIcon title="Atria draws the text into the image." description="Richer type, but it can misspell words. Any change to the text creates a new version." />
-            {/* Item 11 (R-AI): explicit "No preview yet" note when there is no ready-made render. */}
-            {!stylizedSlot && (
-              <div className="ed-stylized-note">
-                <b>No preview yet</b>
-                <span className="t-help">The image shows rough display lettering. Atria renders the final stylized text when you create the variation.</span>
-              </div>
-            )}
-            {shown.copy && (
-              <div className="ed-stylized-copy">
-                <span className="t-label">Stylized text preview</span>
-                <div className="ed-stylized-sample">
-                  <span className="ed-stylized-head">{shown.copy.head}</span>
-                  {shown.copy.price && <span className="ed-stylized-price">{shown.copy.price}</span>}
-                  {shown.copy.band && <span className="ed-stylized-band">{shown.copy.band}</span>}
-                  {shown.copy.cta && <span className="ed-stylized-cta">{shown.copy.cta}</span>}
-                </div>
-              </div>
-            )}
-            <Button
-              block
-              onClick={() => {
-                const nid = branch(job.id, v, 'stylized', '');
-                message.success({ content: 'Generating a stylized-text variation', duration: 3 });
-                go(nid);
-              }}
-            >
-              Create stylized variation
-            </Button>
-            <span className="muted small">{costLine}</span>
+            <div className="ed-text-sum small">
+              {shown.copy ? [shown.copy.head, shown.copy.price, shown.copy.band, shown.copy.cta].filter(Boolean).join(' · ') : 'No text'}
+            </div>
+            <div className="ed-text-action">
+              <Button
+                disabled={applying}
+                onClick={() => {
+                  if (v.stylized) return apply('Create a new version with updated text');
+                  const nid = branch(job.id, v, 'stylized', '');
+                  message.success({ content: 'Generating a stylized-text variation', duration: 3 });
+                  go(nid);
+                }}
+              >
+                {v.stylized ? 'Create new version' : 'Create stylized variation'}
+              </Button>
+              <span className="t-help">{costLine}</span>
+            </div>
           </motion.div>
         ) : editing && draft ? (
           <motion.div key="edit" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
@@ -353,9 +343,12 @@ export function Editor() {
                 <ExclamationCircleOutlined /> The headline may contain a typo: {typoNow}
               </span>
             )}
-            <Button icon={<FontSizeOutlined />} onClick={() => setEditing(true)} disabled={onOlder} className="self-start">
-              Edit text
-            </Button>
+            <div className="ed-text-action">
+              <Button icon={<FontSizeOutlined />} onClick={() => setEditing(true)} disabled={onOlder}>
+                Edit text
+              </Button>
+              <span className="t-help">Free</span>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
@@ -601,6 +594,7 @@ export function Editor() {
       {rec && (
         <section className={`ed-diag-banner ${recGrade ? `tone-${recGrade[0]}` : ''}`} aria-label="Diagnostic summary">
           <div className="ed-diag-main">
+            <span className="t-label ed-diag-from">Original ad</span>
             <div className="ed-diag-head">
               <span className="ed-diag-metric">{recMetricLabel}</span>
               {/* G9 (R-I): show the grey "No grade" tag + tooltip when a metric (like ROAS) is ungraded on this account. */}
@@ -615,12 +609,10 @@ export function Editor() {
               {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
             </div>
             <p className="ed-diag-issue">{rec.issue}</p>
-            <p className="t-help ed-diag-fix">
-              <span className="kv-k">Fix</span> {rec.fix}
+            {/* Mancini 10:54: "Fix Say what…" read as one broken sentence. The change follows the issue on its own line. */}
+            <p className="ed-diag-fix">
+              <ArrowRightOutlined aria-hidden /> {rec.fix}
             </p>
-          </div>
-          <div className="ed-diag-aside">
-            <PredictedTag id={v.id} />
           </div>
         </section>
       )}

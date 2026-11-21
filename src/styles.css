@@ -1941,3 +1941,12 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .ed-under .filmstrip { margin: 0; flex: 1 1 auto; min-width: 0; }
 .ed-under-note { align-self: center; }
 .ed-under .rating { align-self: center; }
+/* Editor side panel: one heading style, one help line, one action row (Mancini 10:53) */
+.ed-panel .ed-block-head b, .ed-panel .ed-block > b, .ed-panel h3, .ed-panel .ed-block-title { font-size: 15px; font-weight: 600; color: #1f1f1f; }
+.ed-text-help { margin: 6px 0 10px; }
+.ed-text-sum { padding: 10px 12px; border-radius: 8px; background: #f3f1f5; font-weight: 600; letter-spacing: 0.01em; color: #1f1f1f; }
+.ed-text-action { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ed-diag-fix { display: flex; align-items: center; gap: 6px; margin: 2px 0 0; font-size: 14px; color: #45414a; }
+.ed-diag-fix .anticon { color: #f66c30; }
+.ed-diag-from { display: block; margin-bottom: 4px; }
+.ed-predict { display: inline-flex; align-items: center; gap: 8px; align-self: center; }
