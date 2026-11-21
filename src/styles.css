@@ -2379,3 +2379,22 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .gal-status-stack .thumb:nth-child(3) { left: 10px; top: 10px; z-index: 1; }
 .gal-status-ring { flex: none; width: 36px; height: 36px; display: inline-flex; } /* 147 */
 .radar .ant-table .status-cell .status-chev { display: none; } /* 148 */
+/* 149 Tooltips (Mancini 15:00): 64 px minimum, 240 px maximum, always wrap. The box hugs its text,
+   padding is 8 / 12 on every side, and 12 px of clear space on each side keeps it off the viewport edge (150). */
+.ant-tooltip { width: max-content; max-width: 264px; padding-inline: 12px; box-sizing: border-box; }
+.ant-tooltip .ant-tooltip-inner, .ant-tooltip .ant-tooltip-container { width: fit-content; min-width: 64px; max-width: 240px; margin-inline: auto; box-sizing: border-box; padding: 8px 12px; white-space: normal; overflow-wrap: break-word; text-wrap: pretty; text-align: left; font-size: var(--fs-small); line-height: var(--lh-small); border-radius: var(--r-control); }
+
+/* 151 Radar tabs (Mancini 15:00): hover is a rounded shape that stops 6 px above the table, drawn behind the label,
+   so the tab box itself never changes size. It uses the selected tab's 10 px curve on all four corners. */
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active):hover { background: transparent !important; }
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active)::before { content: ''; position: absolute; inset: 0 0 6px 0; border-radius: 10px; background: var(--c-fill); opacity: 0; transition: opacity var(--dur-instant) var(--ease-standard); pointer-events: none; }
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active):hover::before { opacity: 1; }
+.radar .radar-card-tabs .ant-tabs-tab .ant-tabs-tab-btn { position: relative; z-index: 1; }
+
+/* 153 Radar grade accuracy note carries the accent: primary tint with the primary border, so it reads as a notice, not a card. */
+.grading-note.gal-status { background: var(--c-primary-tint); border-color: var(--c-primary-border); }
+.grading-note .t-help { color: var(--c-text-2); }
+.grading-note .ant-progress-circle-rail, .grading-note .ant-progress-circle-trail { stroke: var(--c-primary-border) !important; }
+/* 154 Links styled as text show the product's focus ring, not the browser's blue one. */
+.copies-link:focus { outline: none; }
+.copies-link:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; border-radius: var(--r-tag); }

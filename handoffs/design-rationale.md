@@ -198,6 +198,12 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 146 | Gallery archive nudge shows a small fanned stack of the creatives it is about, in place of the inbox icon | Mancini 14:58 | The icon was generic; the thumbnails show what will be archived |
 | 147 | Radar grade accuracy note: a 36 px ring showing the account's spend toward $10,000 replaces the chart icon and the long bar | Mancini 14:59 | The icon said nothing and the bar repeated the sentence at full width |
 | 148 | Next steps buttons on Radar have no chevron (desktop table); phone cards keep it | Mancini 14:59 | The whole row already opens the ad, and the chevron made each button a third longer |
+| 149 | Tooltips: 64 px minimum and 240 px maximum width, always wrap, box hugs the text, 8 / 12 padding, Small 12/20 | Mancini 15:00 | A wrapped tooltip kept its full width, which left a wide empty band on the right |
+| 150 | Tooltips keep 12 px clear of the viewport edge, site-wide | Mancini 14:57, confirmed 15:00 | A tooltip flush against the edge looked clipped |
+| 151 | Radar tab hover is a rounded shape that stops 6 px above the table, with the selected tab's 10 px curve; the tab box doesn't change size | Mancini 15:00 | Row 107 made hover reach the table; the earlier floating shape was better, and it now shares the tab's curve |
+| 152 | Confirmed: on the ad page the reading replaces the generic one-liner under the title | Mancini 15:00 | It says what the page is about for this ad |
+| 153 | Radar grade accuracy note sits on the primary tint with the primary border | Mancini 15:01 | A white notice among white surfaces was easy to skip |
+| 154 | "Where it runs" popover button reads "See ad details"; the copies link shows the product focus ring | Mancini 15:01 | It opens the ad page, not a copy; the blue browser outline was off-palette |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

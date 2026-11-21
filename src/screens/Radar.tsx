@@ -85,7 +85,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
       </div>
       <div className="runs2-actions">
       <Button type={mobile ? 'primary' : 'default'} block={mobile} size={mobile ? 'large' : 'middle'} className="runs2-cta" onClick={openAd}>
-        See copy details
+        See ad details
       </Button>
       {/* One copy: its Ads Manager link, named after the platform it runs on (Meta or TikTok). */}
       {single && (
