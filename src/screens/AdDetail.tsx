@@ -470,7 +470,7 @@ export function AdDetail() {
                   {bp.md && <span className="muted small left">Changes the {listJoin(recs.filter((r) => adSel.includes(r.id)).map((r) => (r.field ? FIELD_LABEL[r.field].toLowerCase() : '')))}. The creative stays the same, so no credits are used.</span>}
                 </>
               ) : selected.length === 0 ? (
-                <span>{iterable ? 'Select a suggestion to create creatives' : 'Select a fix to duplicate this ad'}</span>
+                <span>{iterable ? 'Select one or more suggestions to get started.' : 'Select one or more fixes to get started.'}</span>
               ) : short_ ? (
                 <span>
                   {/* K18 (R-M8) */}
@@ -527,7 +527,8 @@ export function AdDetail() {
                 </Button>
               ) : (
                 <Button type="primary" size="large" disabled={creativeSel.length === 0} onClick={() => setDialog(true)}>
-                  Generate new creatives
+                  {/* 281 (Mancini 19:25): with nothing picked the button reads as an invitation, not an action. */}
+                  {creativeSel.length === 0 ? 'Make something new' : 'Generate new creatives'}
                 </Button>
               ))}
           </motion.div>
