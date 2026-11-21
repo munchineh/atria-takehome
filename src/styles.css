@@ -1928,7 +1928,7 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .status-cell.healthy { background: transparent; border-color: transparent; color: var(--c-text-3); padding-inline: 0; }
 .status-cell.healthy .status-icon { color: var(--c-success); }
 /* S-04: prose is Body (14/22) everywhere, phones included; Small (12/20) is for meta and help only */
-.rec-why, .var-reason, .div-line, .raya-answer p, .ov-row-why, .persona-text .t-help, .cp-brief p, .tag-name .bar-list-count { font-size: var(--fs-body); line-height: var(--lh-body); }
+.rec-why, .var-reason, .div-line, .raya-answer p, .ov-row-why, .persona-text .t-help, .cp-brief p { font-size: var(--fs-body); line-height: var(--lh-body); }
 .rec-why, .var-reason { color: var(--c-text-2); }
 /* S-61: popover titles are Strong (14/22 semibold) */
 .ant-popover .ant-popover-title, .runs-pop2 .ant-popover-title { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; margin-bottom: 8px; }

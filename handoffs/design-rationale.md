@@ -102,3 +102,12 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 67 | Brand moved to Style, shown as a grey read-only box | S-72 | It was a bordered box at the top, which read as a field you could type in |
 | 68 | Product image help moved under the tiles; an upload error replaces it | S-71 | Help sat between the label and the field |
 | V-11 | The dark bar that morphs into this form stays | Approved deviation | Annotate in Figma |
+
+## Overview rebuild (Opus, Nov 21)
+| # | Change | Rule | Why |
+|---|---|---|---|
+| 69 | Ask Raya moved below Key metrics | S-34 | The headline is the page's focal point; a big input above it pulled the eye first |
+| 70 | Every card head uses SectionHead; links (Open Radar, Creative gallery) at Body size on the title row | S-42, S-46 | Three different head patterns and two link sizes on one page |
+| 71 | Headline ends at the numbers; "against the period before" stays only in the help line | S-46 | The same phrase appeared twice, 30 px apart |
+| 72 | "Purchase value is" and "CPA is" never break before "is" | Copy rules | On phones "is" sat alone at the start of a line |
+| 73 | Tag counts ("5 ads · 41% of spend") back to Small | S-51 | The foundation sweep put them at Body, louder than the tag name's role |
