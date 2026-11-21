@@ -350,6 +350,10 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 300 | A finished round opens its focused round page (the comparison page for just that round) from everywhere: a "ready" row in Notifications, the "N creatives ready" banner (now anywhere on it, not only "View creatives"), and "Compare all" on the ad page, which opens the latest round | Mancini 19:48 | One place to compare a round, reached the same way from each entry point |
 | 301 | Round page in the current model. The bookmark on each card is now a "Select" toggle (checkbox icon); selecting stays on this page and no longer adds to or removes from the gallery, which already holds every creative. The bar reads "N selected" with "Compare with original", "Download N", "Link to Ad" (one creative at a time, opens Link to Ad for it) and "Clear". "Test in Meta" and its "add paused ads" dialog are gone | Mancini 19:47 | Creatives become ads through Link to Ad; "saved" no longer means anything |
 
+## Code lock (Sat 21 Nov, 19:51 KST)
+
+Code is frozen at tag `code-lock-2026-11-21` (rows up to 301). Figma frames and annotations are made from this build. Any change after this needs a new row and a note in the Figma file.
+
 ## With more time
 
 | Item | Why it's not done |
