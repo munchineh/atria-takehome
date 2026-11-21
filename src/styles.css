@@ -3222,3 +3222,6 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ant-btn-link:not(:disabled):hover:not(:has(> span)) { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
 /* 285 (Mancini 19:28) Add image tile: a plus only, same 64 px dashed tile. */
 .img-tile.add .anticon { font-size: 18px; }
+/* 289 (Mancini 19:34) Suggestion header: content centred, so the space above and below the action is equal. */
+.rec-four .rec-part-diag { align-items: center; }
+.rec-four .rec-diag-left { align-items: center; }

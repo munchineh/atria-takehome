@@ -246,8 +246,8 @@ function RecCard({
       {/* Part 4: Apply to brief + per-suggestion rating */}
       <div className="rec-part rec-part-apply">
         {!disabled ? (
-          // Mancini 14:38: the checkbox in the card's header already says picked or not. One control, one place.
-          <span className="t-help">{selected ? 'Included in the next round.' : 'Not in the next round.'}</span>
+          // 289 (Mancini 19:35): the Select chip already says whether it's in the next round, so no line repeats it.
+          <span />
         ) : (
           <span className="t-help">Apply these ideas when creating your next ad.</span>
         )}
