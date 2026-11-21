@@ -2409,3 +2409,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .task-row:last-child { background-image: none; }
 .tasks-foot { border-top: 0; background-color: transparent; background-image: linear-gradient(var(--c-border-2), var(--c-border-2)); background-size: calc(100% - 28px) 1px; background-position: 14px 0; background-repeat: no-repeat; }
 .task-row.openable:hover, .note-row:hover { background-color: var(--c-fill-2); }
+/* 160 Count tags are one style everywhere: a grey fill and no stroke (the gallery's). Radar tabs and the totals row follow it. */
+.tab-count, .radar .radar-card-tabs .ant-tabs-tab .tab-count, .radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .tab-count { border: 0; padding: 0 8px; background: var(--c-fill); color: var(--c-text); }
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .tab-count { background: rgba(0, 0, 0, 0.06); }
+/* 161 "Ready" notification: the same shadow as the toast, and its container no longer clips it on the left. */
+.ant-notification .done-toast.ant-notification-notice { box-shadow: 0 6px 16px rgba(0, 0, 0, 0.16), 0 3px 6px -4px rgba(0, 0, 0, 0.24); }
+.ant-notification, .ant-notification-list, .ant-notification-list-content, .ant-notification-stack, .ant-notification-notice-wrapper { overflow: visible !important; }
+.ant-notification-list-content { padding-inline: 16px; margin-inline: -16px; }

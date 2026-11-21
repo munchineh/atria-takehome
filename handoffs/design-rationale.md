@@ -209,6 +209,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 157 | Gallery origin names say where the idea came from. Tabs: All, From your ads, From ads you like, AI playground. New creative starts: "AI playground" ("Create creatives first and turn them into an ad later.") and "Start from ads you like". Card tags, the creative page, the variations page and the empty state use the same words. Replaces D5's "Variations, Clones, From a brief" | Mancini 13:47 options (B), 15:03; Atria's Figma sidebar "AI Playground" | "Clone" and "brief" named the tool, not the creative. Internal ids (`cloned`, `scratch`) are unchanged |
 | 158 | New creative modal: the intro sits close under the title, with one even gap to the options | Mancini 15:04 | Uneven empty bands between title, intro and options |
 | 159 | Tasks panel dividers are inset to the padding; the footer has no grey band | Mancini 15:04 | Edge-to-edge rules look dated. Same rule as the editor panel (row 122): dividers stop at the content edge |
+| 160 | Count tags use one style everywhere: grey fill, no stroke. Radar tabs and the totals row now match the gallery tabs | Mancini 15:05 | Radar counts had a stroke and no fill; the gallery had the reverse. Supersedes F-11 |
+| 161 | "Variations ready" notification uses the toast's shadow and is no longer clipped on the left | Mancini 15:05 | The wide shadow was cut off by its container |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
