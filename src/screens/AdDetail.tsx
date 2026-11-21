@@ -108,8 +108,6 @@ const KV = ({ k, v }: { k: string; v: string }) => (
 
 const BAND: Record<string, string> = { A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' };
 
-/** 260: "landing page and ad copy", "a, b and c". */
-const listJoin = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
 
 /** Item 4 (R-H, R-I): Suggestion card in four structured parts from suggestionParts(). */
@@ -466,8 +464,9 @@ export function AdDetail() {
                 </>
               ) : dupOnly ? (
                 <>
-                  <b className="bar-sentence">Duplicate this ad with {plural(adSel.length, 'fix', 'fixes')}</b>
-                  {bp.md && <span className="muted small left">Changes the {listJoin(recs.filter((r) => adSel.includes(r.id)).map((r) => (r.field ? FIELD_LABEL[r.field].toLowerCase() : '')))}. The creative stays the same, so no credits are used.</span>}
+                  {/* 282 (Mancini 19:27): short title, one line on what it does. */}
+                  <b className="bar-sentence">Duplicate ad</b>
+                  {bp.md && <span className="muted small left">Changes the ad details only. Creative stays the same, so no credits are used.</span>}
                 </>
               ) : selected.length === 0 ? (
                 <span>{iterable ? 'Select one or more suggestions to get started.' : 'Select one or more fixes to get started.'}</span>
@@ -480,21 +479,15 @@ export function AdDetail() {
                 <>
                   {c.media === 'Image' ? (
                     // 266 (Mancini 18:24): back to the short sentence at every width. The cards already say what each fix is.
-                    <b className="bar-sentence">
-                      Create <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} from {plural(creativeSel.length, 'suggestion')}
-                    </b>
+                    // 282 (Mancini 19:27): how many creatives and the credits are picked in the form, not promised here.
+                    <b className="bar-sentence">Generate new creatives</b>
                   ) : (
                     <b>
                       <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
                     </b>
                   )}
                   {/* Mancini 14:47: the bar says what the round will be, as in mock B. Phones keep one compact row. */}
-                  {bp.md && (
-                    <span className="muted small left">
-                      {cost} of {balance.toLocaleString('en-US')} credits
-                      {adSel.length > 0 && `\u00a0· ${plural(adSel.length, 'ad fix', 'ad fixes')} saved for Link to Ad`}
-                    </span>
-                  )}
+                  {bp.md && c.media === 'Image' && <span className="muted small left">You can change both the ad details and the creatives after.</span>}
                 </>
               )}
             </div>

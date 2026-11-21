@@ -109,13 +109,13 @@ export function Body({
         </p>
 
         {/* 227 (Mancini 16:02): the suggestions in this round, each with the problem it solves, as removable chips.
-            Removing one doesn't touch the brief; "Regenerate brief" rewrites it from what's left. */}
+            Removing one doesn't touch the brief; "Reset changes" rewrites it from what's left, dropping your edits (284). */}
         {picked && picked.length > 0 && (
           <div className="dlg-refs">
             <div className="dlg-refs-head">
               <span className="dlg-field-label">Suggestions in this round</span>
               <Button type="text" size="small" icon={<ReloadOutlined />} onClick={prefill}>
-                Regenerate brief
+                Reset changes
               </Button>
             </div>
             <ul className="dlg-ref-chips">

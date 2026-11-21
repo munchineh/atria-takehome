@@ -3216,3 +3216,7 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .rec-four .rec-diag-left .rec-suggested.ant-tag { margin-left: 0 !important; }
 .rec-ev-line .rec-grade.ant-tag { margin: 0 0 0 4px; vertical-align: 1px; }
 .rec-grade-wrap { display: inline-flex; margin-left: 4px; vertical-align: 1px; } .rec-grade-wrap .grade-tag.ant-tag { margin: 0; cursor: help; }
+/* 283 (Mancini 19:27) Link buttons with an icon: the hover underline sits under the words only, not the icon or the gap. */
+.ant-btn-link:not(:disabled):hover { text-decoration: none; }
+.ant-btn-link:not(:disabled):hover > span:not(.ant-btn-icon) { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
+.ant-btn-link:not(:disabled):hover:not(:has(> span)) { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 1px; }
