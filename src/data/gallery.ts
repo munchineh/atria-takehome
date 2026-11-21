@@ -27,16 +27,15 @@ export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
   { value: 'none', label: 'None' },
 ];
 /** Origin is a tab row, as on Atria's page (All, Clone, Iterate, Raya). */
-export const ORIGIN_TABS: { value: 'all' | Origin; label: string }[] = [
+/** Mancini 15:27: tabs say how a creative got here. Where it is used (ad, campaign) is a grouping under Display. */
+export type Source = 'uploaded' | 'ai';
+export const ORIGIN_TABS: { value: 'all' | Source; label: string }[] = [
   { value: 'all', label: 'All' },
-  // Mancini 10:31: one name per way in. Variations come from "Create variations" on an ad; the other two match New creative's starts.
-  // Mancini 15:03: tabs say where the idea came from, in plain words. "Generate with AI" is Atria's AI Playground in the Figma sidebar.
-  { value: 'variation', label: 'From your ads' },
-  { value: 'cloned', label: 'From ads you like' },
-  { value: 'scratch', label: 'AI playground' },
+  { value: 'uploaded', label: 'Uploaded' },
+  { value: 'ai', label: 'AI playground' },
 ];
 /** Title of the last group, for creatives the grouping has no value for. */
-export const UNGROUPED_LABEL: Record<GroupBy, string> = { none: '', date: 'Earlier', ad: 'Not made from an ad', campaign: 'Not in a campaign yet', product: 'No product' };
+export const UNGROUPED_LABEL: Record<GroupBy, string> = { none: '', date: 'Earlier', ad: 'Not attached to an ad', campaign: 'Not in a campaign yet', product: 'No product' };
 
 export interface GalleryItem {
   /** Variation id. */
@@ -46,6 +45,8 @@ export interface GalleryItem {
   /** The angle, used as the creative's name. */
   name: string;
   origin: Origin;
+  /** Uploaded with an ad, or made in Atria. */
+  source: Source;
   accountId: string;
   /** The ad it was made from, when there is one. */
   ad?: { id: string; name: string };
@@ -110,6 +111,7 @@ export function galleryItems(
         copy: latest ? latest.copy : v.copy,
         name: v.angle,
         origin,
+        source: 'ai',
         accountId: source.accountId,
         ad: origin === 'variation' ? { id: source.id, name: source.name } : undefined,
         // A creative joins a campaign when it is added to Meta; it goes into the source ad's main campaign.
@@ -129,6 +131,34 @@ export function galleryItems(
     });
   }
   return out.sort((a, b) => a.minutesAgo - b.minutesAgo);
+}
+
+/** The creatives that came in with the account's own ads (uploaded to Meta, not made in Atria). */
+export function uploadedItems(ads: Creative[], archived: string[] = []): GalleryItem[] {
+  return ads
+    .filter((c) => !c.variationOf && !c.project)
+    .map((c) => ({
+      id: `up-${c.id}`,
+      img: c.img,
+      copy: c.copy,
+      name: c.name,
+      origin: 'variation' as Origin,
+      source: 'uploaded' as Source,
+      accountId: c.accountId,
+      ad: { id: c.id, name: c.name },
+      campaigns: [...new Set(c.ads.map((a) => a.campaign))],
+      product: c.product,
+      jobId: '',
+      date: 'Uploaded',
+      minutesAgo: 90 * 1440,
+      versions: 1,
+      shortlisted: false,
+      inMeta: true,
+      archived: archived.includes(`up-${c.id}`),
+      shownN: 1,
+      stylized: false,
+      to: `/ad/${c.id}`,
+    }));
 }
 
 /** Group creatives. Groups keep the order of their newest creative; the catch-all group is always last. */

@@ -211,16 +211,21 @@ const GradingNote = ({ spend }: { spend: number }) => {
   return (
     <div className="panel gal-status grading-note">
       <div className="gal-status-row">
-        {/* Mancini 14:59: the icon is the measure itself. A ring shows how far this account's spend is toward the $10,000 mark. */}
-        <span className="gal-status-ring" aria-hidden>
-          <Progress type="circle" percent={Math.min(100, Math.round((spend / RELIABLE_SPEND) * 100))} size={36} strokeWidth={12} showInfo={false} strokeColor="var(--c-primary)" railColor="var(--c-fill)" />
-        </span>
         <span className="gal-status-body">
           <strong className="gal-status-name">Grades are most accurate above {amount(RELIABLE_SPEND)}{'\u00a0'}a&nbsp;month</strong>
           <span className="t-help">
             {showBar ? `This account spends ${amount(spend)} a month, so grades may change as more data comes in.` : 'This account spends less, so grades may change as more data comes in.'}
           </span>
         </span>
+        {/* Mancini 15:29: a bar, not a ring. It shows this month's spend against the $10,000 mark. */}
+        {showBar && (
+          <span className="grading-bar">
+            <span className="grading-bar-label">
+              <b>{amount(spend)}</b> of {amount(RELIABLE_SPEND)}
+            </span>
+            <Progress percent={Math.min(100, Math.round((spend / RELIABLE_SPEND) * 100))} size={{ height: 6 }} showInfo={false} strokeColor="var(--c-primary)" railColor="var(--c-primary-border)" />
+          </span>
+        )}
       </div>
     </div>
   );

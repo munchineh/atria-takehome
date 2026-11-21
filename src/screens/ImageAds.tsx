@@ -4,8 +4,8 @@ import { App, Button, Empty, Progress, Tabs, Tooltip } from 'antd';
 import { BarChartOutlined, CloseOutlined, InboxOutlined, PlusOutlined, QuestionCircleOutlined } from '../components/AppIcons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
-import { findCreative, useStore } from '../data/store';
-import { galleryItems, groupGallery, ORIGIN_TABS, type GroupBy } from '../data/gallery';
+import { ALL_CREATIVES, findCreative, useStore } from '../data/store';
+import { galleryItems, groupGallery, uploadedItems, ORIGIN_TABS, type GroupBy } from '../data/gallery';
 import { PopSheet } from '../components/PopSheet';
 import { Thumb } from '../components/Thumb';
 import { timeLeft } from '../components/TasksPanel';
@@ -95,7 +95,7 @@ export function ImageAds() {
   const [newOpen, setNewOpen] = useState(false);
 
   const allItems = useMemo(
-    () => galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen }),
+    () => [...galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen }), ...uploadedItems(ALL_CREATIVES, archived)],
     [jobs, saved, versionsOf, archived, chosen],
   );
 
@@ -112,7 +112,7 @@ export function ImageAds() {
   const filtered = useMemo(() => {
     const out = accountScoped.filter(
       (i) =>
-        (filters.origin === 'all' || i.origin === filters.origin) &&
+        (filters.origin === 'all' || i.source === filters.origin) &&
         (filters.campaign === 'all' || i.campaigns.includes(filters.campaign)) &&
         (filters.use === 'all' || (filters.use === 'used') === i.inMeta) &&
         // Mancini 13:45: archived creatives have their own view (the Archived button by the tabs), not a filter.
@@ -162,7 +162,7 @@ export function ImageAds() {
     message.success(on ? 'Archived. Find it under Archived.' : 'Restored to the gallery');
   };
 
-  const hideOriginOnCards = filters.origin === 'cloned' || filters.origin === 'scratch';
+  const hideOriginOnCards = false;
 
   return (
     <motion.div {...pageTransition} className="page image-ads">
@@ -263,6 +263,7 @@ export function ImageAds() {
         </div>
       )}
 
+      <div className="gal-bar">
       <Tabs
         className="gal-origin-tabs"
         activeKey={filters.origin}
@@ -276,7 +277,7 @@ export function ImageAds() {
         }
         items={ORIGIN_TABS.map((t) => {
           const live = accountScoped.filter((i) => (filters.showArchived ? i.archived : !i.archived));
-          const n = t.value === 'all' ? live.length : live.filter((i) => i.origin === t.value).length;
+          const n = t.value === 'all' ? live.length : live.filter((i) => i.source === t.value).length;
           return {
             key: t.value,
             label: (
@@ -302,6 +303,7 @@ export function ImageAds() {
         order={order}
         onOrder={setOrder}
       />
+      </div>
 
       {filtered.length === 0 ? (
         <div className="gal-empty">

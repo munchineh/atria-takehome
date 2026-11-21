@@ -104,8 +104,8 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
             <>
               <ExclamationCircleFilled className="status-icon bad" />
               {/* K16 (R-AI8): state what happened and credits returned. */}
-              <Tooltip title={`Couldn't create variations. ${status.count * ACCOUNT.creditsPerImage}\u00a0credits returned.`}>
-                <span>Couldn't create{'\u00a0'}· {status.count * ACCOUNT.creditsPerImage}{'\u00a0'}credits returned</span>
+              <Tooltip title={`The variations couldn't be created. ${status.count * ACCOUNT.creditsPerImage}\u00a0credits were returned.`}>
+                <span>Failed to create</span>
               </Tooltip>
             </>
           )}

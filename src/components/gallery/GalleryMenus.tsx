@@ -1,6 +1,6 @@
 import { Button, Segmented, Select } from 'antd';
 import { AppstoreOutlined, CloseOutlined, DownOutlined, FilterOutlined, SlidersOutlined, UnorderedListOutlined } from '../AppIcons';
-import { GROUP_OPTIONS, type GroupBy, type Origin } from '../../data/gallery';
+import { GROUP_OPTIONS, type GroupBy, type Source } from '../../data/gallery';
 import { DEMO_ACCOUNTS } from '../../data/store';
 import { PopSheet } from '../PopSheet';
 
@@ -8,7 +8,7 @@ export type UseFilter = 'all' | 'used' | 'unused';
 export type Order = 'newest' | 'oldest' | 'name';
 export interface GalleryFilters {
   accountId: string;
-  origin: Origin | 'all';
+  origin: Source | 'all';
   campaign: string;
   use: UseFilter;
   showArchived: boolean;
@@ -132,12 +132,12 @@ export function GalleryMenus({
   return (
     <div className="gal-menus">
       <div className="gal-menus-row">
-        <PopSheet content={filterBody} title="Filter" trigger="click" placement="bottomLeft" classNames={{ root: 'menu-pop' }}>
+        <PopSheet content={filterBody} title="Filter" trigger="click" placement="bottomRight" classNames={{ root: 'menu-pop' }}>
           <Button icon={<FilterOutlined />} className={pills.length ? 'is-selected' : ''}>
             Filter{pills.length ? ` · ${pills.length}` : ''} <DownOutlined className="menu-chev" />
           </Button>
         </PopSheet>
-        <PopSheet content={displayBody} title="Display" trigger="click" placement="bottomLeft" classNames={{ root: 'menu-pop' }}>
+        <PopSheet content={displayBody} title="Display" trigger="click" placement="bottomRight" classNames={{ root: 'menu-pop' }}>
           <Button icon={<SlidersOutlined />}>
             Display <DownOutlined className="menu-chev" />
           </Button>

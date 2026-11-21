@@ -1,5 +1,5 @@
 import { Button, Dropdown, Tag, Tooltip } from 'antd';
-import { ArchiveOutlined, ArchiveRestoreOutlined, CopyOutlined, EllipsisOutlined, FormOutlined, LockOutlined } from '../AppIcons';
+import { ArchiveOutlined, ArchiveRestoreOutlined, CopyOutlined, EllipsisOutlined, FormOutlined, LockOutlined, UploadOutlined } from '../AppIcons';
 import { motion } from 'motion/react';
 import type { GalleryItem } from '../../data/gallery';
 import { AdArt } from '../Thumb';
@@ -33,7 +33,14 @@ export function GalleryCard({
   if (item.versions > 1) metaParts.push(`${item.versions}\u00a0versions`);
   const metaText = metaParts.join('\u00a0· ');
 
-  const sourceLine = item.ad ? (
+  const sourceLine = item.source === 'uploaded' ? (
+    hideOrigin ? null : (
+      <span className="gal-source">
+        <UploadOutlined />
+        <span>Uploaded</span>
+      </span>
+    )
+  ) : item.ad ? (
     hideAd ? null : (
       <Tooltip title={`Made from ${item.ad.name}.`} mouseEnterDelay={0.5}>
         <span className="gal-source">

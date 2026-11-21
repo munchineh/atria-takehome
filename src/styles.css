@@ -2570,3 +2570,22 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 186 Creative page: a variation shows the ad it is attached to as a linked row. */
 .cp-linked { margin-top: 8px; }
 .cp-linked .ed-related-ad .cp-status { margin-left: auto; flex: none; }
+/* 187 Gallery: Filter and Display sit on the right of the tab row on desktop, as on Radar. Active filter pills stay under the row. */
+@media (min-width: 768px) {
+  .gal-bar { position: relative; }
+  .gal-bar .gal-menus-row { position: absolute; top: 0; right: 0; height: 46px; align-items: center; flex-wrap: nowrap; }
+  .gal-bar .gal-origin-tabs .ant-tabs-nav { padding-right: 236px; }
+  .gal-bar .gal-menus:not(:has(.gal-pills)) { margin-bottom: 0; }
+}
+/* 188 Sidebar open and close: the clip wrapper is the sticky, full-height element and hides the panel's overflow while its width animates. */
+.sidebar-clip { position: sticky; top: 0; height: 100vh; flex: none; overflow: hidden; }
+.sidebar-clip > .sidebar { position: static; }
+/* 189 Text buttons keep the same padding and height as outlined and filled buttons; only the container is invisible. */
+.runs2-out.ant-btn, .runs2-actions .runs2-out.ant-btn { padding: 4px 15px; height: 32px; margin: 0; }
+.runs-sheet .runs2-out.ant-btn { height: 44px; }
+/* 190 Grade accuracy note: spend against $10,000 as a bar on the right of the row. */
+.grading-bar { flex: none; width: 240px; display: flex; flex-direction: column; gap: 4px; }
+.grading-bar-label { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); font-variant-numeric: tabular-nums; }
+.grading-bar-label b { font-weight: 600; color: var(--c-text); }
+.grading-bar .ant-progress { margin: 0; line-height: 1; }
+@media (max-width: 767px) { .grading-note .gal-status-row { flex-wrap: wrap; } .grading-bar { width: 100%; } }

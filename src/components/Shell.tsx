@@ -182,10 +182,12 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           })}
         </nav>
       )}
-      {/* Mancini 14:37: the panel slides and fades instead of popping. Open eases out, close is shorter. */}
+      {/* Mancini 15:28: one movement only. A clip wrapper animates its width and the panel inside keeps its full width,
+          so the panel is revealed as one piece and the page moves with the same edge. No fade, no offset. */}
       <AnimatePresence initial={false}>
       {wide && sideOpen && (
-        <motion.aside className="sidebar" initial={{ x: -24, opacity: 0, marginRight: -248 }} animate={{ x: 0, opacity: 1, marginRight: 0, transition: { duration: 0.24, ease: [0.2, 0, 0, 1] } }} exit={{ x: -24, opacity: 0, marginRight: -248, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}>
+        <motion.div className="sidebar-clip" initial={{ width: 0 }} animate={{ width: 'auto', transition: { duration: 0.22, ease: [0.2, 0, 0, 1] } }} exit={{ width: 0, transition: { duration: 0.18, ease: [0.4, 0, 0.2, 1] } }}>
+        <aside className="sidebar">
           <div className="sidebar-title sidebar-title-row">
             <span>{inCreation ? 'Creation' : 'Analytics'}</span>
             <Tooltip title="Collapse panel" placement="right">
@@ -195,7 +197,8 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             </Tooltip>
           </div>
           <AccountList />
-        </motion.aside>
+        </aside>
+        </motion.div>
       )}
       </AnimatePresence>
       <div className="main">
