@@ -321,11 +321,11 @@ export function AdDetail() {
   const footerFor = (r: Recommendation) => {
     const j = jobs.filter((x) => x.recIds.includes(r.id)).at(-1);
     if (!j) return undefined;
-    if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}`, running: true };
+    if (j.state === 'generating' || j.state === 'queued') return { text: `Creating ${plural(j.perRec, 'creative')}`, running: true };
     if (j.state === 'failed') return { text: `Failed to create\u00a0· ${j.cost}\u00a0credits returned` };
     const n = j.variations.filter((v, i) => answers(v, r.id) && !j.failed.includes(i)).length; // 250: combined variations count for each suggestion they answer
-    if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'variation')} ready`, action: () => viewRound(j.id, r.id) };
-    return { text: `${plural(n, 'variation')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
+    if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'creative')} ready`, action: () => viewRound(j.id, r.id) };
+    return { text: `${plural(n, 'creative')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
   };
 
   const morph = dialog && !!bp.md;
@@ -366,7 +366,7 @@ export function AdDetail() {
       animate={{ y: 0, opacity: 1, transition: spring.gentle }}
       transition={{ layout: spring.layout }}
       role={morph ? 'dialog' : undefined}
-      aria-label={morph ? 'Create variations' : undefined}
+      aria-label={morph ? 'Create creatives' : undefined}
     >
       <AnimatePresence mode="popLayout" initial={false}>
         {morph ? (
@@ -396,13 +396,13 @@ export function AdDetail() {
                     <motion.i animate={{ scaleX: s.kind === 'generating' ? Math.max(0.04, s.progress) : 0.02 }} transition={{ duration: duration.slow, ease: ease.standard }} />
                   </span>
                   {/* K1 (R-T9), K24 (R-M6), K51 (R-L4, R-AI7): "Generating", lowercase after dot, authored phone line. */}
-                  <b>{s.kind === 'queued' ? `Queued\u00a0· ${plural(s.count, 'variation')}` : `Generating ${plural(s.count, 'variation')}`}</b>
+                  <b>{s.kind === 'queued' ? `Queued\u00a0· ${plural(s.count, 'creative')}` : `Creating ${plural(s.count, 'creative')}`}</b>
                   <span className="muted small left">
                     {!bp.md
                       ? s.kind === 'generating'
-                        ? `${plural(s.count, 'variation')}\u00a0· ${timeLeft(s.progress)}`
+                        ? `${plural(s.count, 'creative')}\u00a0· ${timeLeft(s.progress)}`
                         : 'Starts when the current round finishes.'
-                      : `${s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())}\u00a0· ` : 'Starts when the current round finishes\u00a0· '}you can leave this page. Tasks will tell you when they're ready.`}
+                      : `${s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())}\u00a0· ` : 'Starts when the current round finishes\u00a0· '}you can leave this page. Notifications will tell you when they're ready.`}
                   </span>
                 </>
               ) : failedJob ? (
@@ -431,12 +431,12 @@ export function AdDetail() {
                     // 229 (Mancini 16:03): image ads read as one sentence, "Create 8 variations that ...", using the picked actions.
                     bp.md ? (
                       <b className="bar-sentence">
-                        Create <Rolling value={total} /> {total === 1 ? 'variation' : 'variations'} that {roundPhrase(recs.filter((r) => selected.includes(r.id)))}
+                        Create <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} that {roundPhrase(recs.filter((r) => selected.includes(r.id)))}
                       </b>
                     ) : (
                       // 232 (Mancini 16:07): phones use the short form so the bar stays one line.
                       <b className="bar-sentence">
-                        <Rolling value={total} /> {total === 1 ? 'variation' : 'variations'} from {plural(selected.length, 'suggestion')}
+                        <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} from {plural(selected.length, 'suggestion')}
                       </b>
                     )
                   ) : (
@@ -445,7 +445,7 @@ export function AdDetail() {
                     </b>
                   )}
                   {/* Mancini 14:47: the bar says what the round will be, as in mock B. Phones keep one compact row. */}
-                  {bp.md && (c.media === 'Image' ? <span className="muted small left">{cost} of {balance.toLocaleString('en-US')} credits</span> : <span className="muted small left">{plural(total, 'variation')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>)}
+                  {bp.md && (c.media === 'Image' ? <span className="muted small left">{cost} of {balance.toLocaleString('en-US')} credits</span> : <span className="muted small left">{plural(total, 'creative')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>)}
                 </>
               )}
             </div>
@@ -472,7 +472,7 @@ export function AdDetail() {
                 </Button>
               ) : (
                 <Button type="primary" size="large" disabled={selected.length === 0} onClick={() => setDialog(true)}>
-                  Create variations
+                  Create creatives
                 </Button>
               ))}
           </motion.div>

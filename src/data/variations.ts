@@ -5,6 +5,8 @@ export interface Variation {
   id: string;
   jobId: string;
   recId: string;
+  /** 258: the sample image a live image replaced, kept so a refresh can fall back to it (live images live in memory). */
+  baseImg?: string;
   /** 250 (Mancini 16:20): other suggestions this one variation also answers. It shows under each of them. */
   alsoRecIds?: string[];
   angle: string;

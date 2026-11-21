@@ -103,7 +103,7 @@ export function Body({
   return (
     <div className={`dlg ${panel ? 'dlg-panel' : ''}`}>
       <div className="dlg-scroll">
-        {panel && <h4 className="dlg-panel-title">Create variations</h4>}
+        {panel && <h4 className="dlg-panel-title">Create creatives</h4>}
         <p className="dlg-sub muted">
           For <b className="ink">{creative.name}</b> · {plural(recCount, 'suggestion')}
         </p>
@@ -408,7 +408,7 @@ export function CreateDialog({
         placement="bottom"
         size="large"
         styles={{ wrapper: { height: 'auto', maxHeight: '92svh' } }}
-        title="Create variations"
+        title="Create creatives"
         className="sheet-drawer create-sheet"
         destroyOnHidden
       >
@@ -416,7 +416,7 @@ export function CreateDialog({
       </Drawer>
     );
   return (
-    <Modal open={open} onCancel={onClose} title="Create variations" footer={null} width={600} className="create-modal" destroyOnHidden
+    <Modal open={open} onCancel={onClose} title="Create creatives" footer={null} width={600} className="create-modal" destroyOnHidden
       styles={{ body: { padding: 0 } }}
     >
       <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }}>

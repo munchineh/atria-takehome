@@ -2896,3 +2896,25 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ed-predict { display: inline-flex; align-items: center; gap: 8px; }
 .ed-predict-label-inline { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
 .ed-predict .ant-tag { margin: 0; }
+
+/* 258 Generation banners (Mancini 17:36): a stack at the top right under the top bar, like macOS notifications.
+   White card, hairline border, the drawer shadow, 40 px thumbnail, dismiss at the top right. Newest on top, three max.
+   Phones: full width with 12 px margins. */
+.gen-banners { position: fixed; top: 72px; right: 16px; z-index: 1050; display: flex; flex-direction: column; gap: 8px; width: 360px; pointer-events: none; }
+.gen-banner { pointer-events: auto; position: relative; display: grid; grid-template-columns: 40px minmax(0, 1fr); gap: 12px; padding: 12px 40px 12px 12px; background: #fff; border: 1px solid var(--c-border-2); border-radius: var(--r-surface); box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+.gen-banner-body { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.gen-banner-title { font-weight: 600; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
+.gen-banner-sub { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.gen-banner-bar.ant-progress { margin: 6px 0 0; line-height: 1; }
+.gen-banner-meta { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
+.gen-banner-warn { color: var(--c-warning); }
+.gen-banner-actions { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.gen-banner-x.ant-btn { position: absolute; top: 8px; right: 8px; }
+@media (max-width: 767px) {
+  .gen-banners { top: 64px; left: 12px; right: 12px; width: auto; }
+  .gen-banner-x.ant-btn { width: 44px; height: 44px; top: 0; right: 0; }
+  .gen-banner-actions .ant-btn { min-height: 44px; }
+}
+
+/* 258 Notifications panel: the prototype switch sits above the footer, quiet. */
+.tasks-proto { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 8px 16px; border-top: 1px solid var(--c-border-2); margin: 0 16px; padding-inline: 0; }

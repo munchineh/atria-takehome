@@ -3,7 +3,6 @@ import { LIVE_FAIL_EVENT } from '../data/live';
 import { App, Badge, Button, Drawer, Grid, Tooltip, Popover, Progress } from 'antd';
 import {
   AppstoreOutlined,
-  ArrowRightOutlined,
   BarChartOutlined,
   BellOutlined,
   BulbOutlined,
@@ -14,10 +13,10 @@ import {
 } from './AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { ACCOUNT, ATTRIBUTION, SIDEBAR_ACCOUNTS, WINDOW, plural } from '../data/mock';
-import { DEMO_ACCOUNTS, accountOf, findCreative, useStore } from '../data/store';
+import { ACCOUNT, ATTRIBUTION, SIDEBAR_ACCOUNTS, WINDOW } from '../data/mock';
+import { DEMO_ACCOUNTS, useStore } from '../data/store';
 import { TasksPanel } from './TasksPanel';
-import { Thumb } from './Thumb';
+import { GenBanners } from './GenBanners';
 import { duration, ease } from '../motion/tokens';
 
 const RAIL = [
@@ -65,44 +64,6 @@ function AccountList({ onPick }: { onPick?: () => void }) {
   );
 }
 
-/** TR-13: completion toast, one action. */
-function useCompletionToasts(mobile: boolean) {
-  const { finished, clearFinished, markSeen, accountId } = useStore();
-  const { notification } = App.useApp();
-  const nav = useNavigate();
-  useEffect(() => {
-    if (!finished.length) return;
-    for (const j of finished) {
-      const c = findCreative(j.creativeId);
-      const key = `done-${j.id}`;
-      notification.open({
-        key,
-        className: 'done-toast',
-        icon: c ? <Thumb c={c} size={40} /> : undefined,
-        title: `${plural(j.count - j.failed.length, 'variation')} ready`,
-        // 5d Gm-10: name the account when the round belongs to another one.
-        description: c ? (accountOf(c).id !== accountId ? `${accountOf(c).name}\u00a0· ${c.name}` : c.name) : '',
-        placement: mobile ? 'top' : 'topRight',
-        duration: 6,
-        actions: (
-          <Button
-            type="link"
-            className="toast-action"
-            onClick={() => {
-              markSeen(j.id);
-              nav(`/ad/${j.creativeId}/variations?round=${j.id}`);
-              notification.destroy(key);
-            }}
-          >
-            View variations <ArrowRightOutlined />
-          </Button>
-        ),
-      });
-    }
-    clearFinished();
-  }, [finished, clearFinished, notification, nav, markSeen, mobile, accountId]);
-}
-
 /** 20 × 20 panel glyph, like Atria's collapse and expand buttons. */
 const PanelIcon = () => (
   <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.4" aria-hidden>
@@ -148,9 +109,9 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
   const accountName = DEMO_ACCOUNTS.find((d) => d.id === accountId)?.name ?? ACCOUNT.name;
   const running = jobs.filter((j) => j.state === 'generating' || j.state === 'queued').length;
   const unseen = jobs.some((j) => j.unseen);
-  const bellLabel = running ? `Tasks, ${running} generating` : unseen ? 'Tasks, new results' : 'Tasks';
+  // 258 (Mancini 17:36): the bell is Notifications.
+  const bellLabel = running ? `Notifications, ${running} creating` : unseen ? 'Notifications, new' : 'Notifications';
   const inCreation = loc.pathname.startsWith('/creation');
-  useCompletionToasts(mobile);
 
   return (
     <div className={`shell ${wide && !sideOpen ? 'side-collapsed' : ''}`}>
@@ -235,7 +196,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                 {credits.toLocaleString('en-US')}{'\u00a0'}credits
               </span>
             </Popover>
-            <Tooltip title={tasksOpen ? '' : 'Tasks'}>
+            <Tooltip title={tasksOpen ? '' : 'Notifications'}>
               <motion.span
                 key={bump}
                 className="bell-wrap"
@@ -252,6 +213,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
         <main className="content">{children}</main>
       </div>
       <TasksPanel mobile={mobile} />
+      <GenBanners />
       <Drawer open={drawer} onClose={() => setDrawer(false)} placement="left" size={300} title={inCreation ? 'Creation' : 'Analytics'} className="dark-drawer">
         {/* Mancini 15:36: phones have no rail, so the product areas sit at the top of the drawer. Without them there was no way to reach Creation. */}
         {mobile && (

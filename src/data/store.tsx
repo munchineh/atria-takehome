@@ -101,6 +101,8 @@ export interface Job {
   minutesAgo: number;
   label?: string;
   variations: Variation[];
+  /** 258: prototype switch so designers can see a failed or partly failed round. */
+  willFail?: 'all' | 'some';
 }
 
 export type RowStatus =
@@ -121,8 +123,9 @@ const SEED: Job[] = [
   { ...mk({ id: 'job-hero-1', creativeId: 'mm-1090245', recIds: ['cta'], perRec: 8, cost: 32, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: 'Nov 12', minutesAgo: 8 * 1440 }) },
   // Partly failed, ready and unseen: the dot on the bell and on the row.
   mk({ id: 'job-1086424', creativeId: 'mm-1086424', recIds: ['stop', 'offer'], perRec: 4, cost: 32, size: '2:3', state: 'ready', progress: 1, failed: [3, 7], unseen: true, date: TODAY_LABEL(), minutesAgo: 120 }),
-  // Running now.
-  mk({ id: 'job-1090247', creativeId: 'mm-1090247', recIds: ['different', 'offer'], perRec: 4, cost: 32, size: '2:3', state: 'generating', progress: 0.45, failed: [], unseen: false, date: TODAY_LABEL(), minutesAgo: 1 }),
+  // 258 (Mancini 17:36): this seed used to start at 45% on every load and fire "ready" again after each refresh.
+  // It is finished now; designers start their own rounds to see the waiting state.
+  mk({ id: 'job-1090247', creativeId: 'mm-1090247', recIds: ['different', 'offer'], perRec: 4, cost: 32, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: TODAY_LABEL(), minutesAgo: 45 }),
   // Failed on the other account: Tasks spans accounts.
   // Cloned and from-scratch projects (Image ads only).
   mk({ id: 'job-clone-1', creativeId: 'clone-1', recIds: ['different'], perRec: 4, cost: 16, size: '2:3', state: 'ready', progress: 1, failed: [], unseen: false, date: 'Nov 3', minutesAgo: 17 * 1440 }),
@@ -158,6 +161,10 @@ interface Store {
   jobsFor: (creativeId: string) => Job[];
   startJob: (o: StartOpts) => Job;
   retryJob: (jobId: string) => void;
+  failNext: false | 'all' | 'some';
+  setFailNext: (v: false | 'all' | 'some') => void;
+  dismissedBanners: string[];
+  dismissBanner: (jobId: string) => void;
   markSeen: (jobId: string) => void;
   briefs: Record<string, string>;
   setBrief: (product: string, brief: string) => void;
@@ -203,9 +210,64 @@ const Ctx = createContext<Store | null>(null);
 /** Simulated speed: a run of 8 finishes in about 30 s (the copy says ~2 min, A17). */
 const STEP = 0.035;
 
+// 258: rounds started in the prototype survive a refresh (state, progress, results), so nothing replays.
+const JOBS_KEY = 'atria.jobs.v2';
+const BANNERS_KEY = 'atria.banners.dismissed.v1';
+function loadJobs(): Job[] {
+  try {
+    const raw = localStorage.getItem(JOBS_KEY);
+    const mine: Job[] = raw ? JSON.parse(raw) : [];
+    return [...SEED, ...mine.filter((j) => j && j.id && !SEED.some((x) => x.id === j.id))];
+  } catch {
+    return SEED;
+  }
+}
+function loadList(key: string): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(key) ?? '[]');
+  } catch {
+    return [];
+  }
+}
+
 export function StoreProvider({ children }: { children: ReactNode }) {
-  const [jobs, setJobs] = useState<Job[]>(SEED);
-  const [credits, setCredits] = useState(ACCOUNT.credits);
+  const [jobs, setJobs] = useState<Job[]>(loadJobs);
+  const [dismissedBanners, setDismissedBanners] = useState<string[]>(() => loadList(BANNERS_KEY));
+  const [failNext, setFailNext] = useState<false | 'all' | 'some'>(false);
+  useEffect(() => {
+    try {
+      // Live images can be large data URLs; keep the sample image reference instead of the bytes.
+      const mine = jobs
+        .filter((j) => j.id.startsWith('job-new-'))
+        .map((j) => ({ ...j, variations: j.variations.map((v) => (v.img.startsWith('live-') && v.baseImg ? { ...v, img: v.baseImg } : v)) }));
+      localStorage.setItem(JOBS_KEY, JSON.stringify(mine));
+    } catch {
+      /* storage full or unavailable */
+    }
+  }, [jobs]);
+  useEffect(() => {
+    try {
+      localStorage.setItem(BANNERS_KEY, JSON.stringify(dismissedBanners));
+    } catch {
+      /* ignore */
+    }
+  }, [dismissedBanners]);
+  // 258: credits persist with the rounds, so a refresh doesn't hand back spent credits.
+  const [credits, setCredits] = useState<number>(() => {
+    try {
+      const v = Number(localStorage.getItem('atria.credits.v1'));
+      return Number.isFinite(v) && v > 0 ? v : ACCOUNT.credits;
+    } catch {
+      return ACCOUNT.credits;
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('atria.credits.v1', String(credits));
+    } catch {
+      /* ignore */
+    }
+  }, [credits]);
   const [accountId, setAccount] = useState(ACCOUNT.id);
   const [briefs, setBriefs] = useState<Record<string, string>>({
     'Sad Pink mochi':
@@ -217,7 +279,8 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [tasksOpen, setTasksOpen] = useState(false);
   const [bump, setBump] = useState(0);
   const [finished, setFinished] = useState<Job[]>([]);
-  const counter = useRef(0);
+  // 258: continue numbering after rounds saved from an earlier visit.
+  const counter = useRef(loadJobs().reduce((m, j) => Math.max(m, Number(/^job-new-(\d+)$/.exec(j.id)?.[1] ?? 0)), 0));
   const [windowDays, setWindowDays] = useState(60);
   const [versions, setVersions] = useState<Record<string, Version[]>>(SEED_VERSIONS);
 
@@ -226,6 +289,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       setJobs((prev) => {
         let changed = false;
         const done: Job[] = [];
+        const refund: number[] = [];
         const next = prev.map((j) => {
           if (j.state === 'queued') {
             changed = true;
@@ -235,13 +299,23 @@ export function StoreProvider({ children }: { children: ReactNode }) {
           changed = true;
           const p = Math.min(1, j.progress + STEP * (8 / Math.max(4, j.count)));
           if (p >= 1) {
-            const fin = { ...j, state: 'ready' as const, progress: 1, unseen: true };
+            // 258: prototype failure switch. "all" fails the round; "some" fails the last two images. Credits come back.
+            if (j.willFail === 'all') {
+              const fin = { ...j, state: 'failed' as const, progress: 0, unseen: true, willFail: undefined };
+              refund.push(j.cost);
+              done.push(fin);
+              return fin;
+            }
+            const failed = j.willFail === 'some' ? [j.count - 2, j.count - 1].filter((x) => x >= 0) : j.failed;
+            if (failed.length && j.willFail) refund.push(failed.length * ACCOUNT.creditsPerImage);
+            const fin = { ...j, state: 'ready' as const, progress: 1, unseen: true, failed, willFail: undefined };
             done.push(fin);
             return fin;
           }
           return { ...j, progress: p };
         });
         if (done.length) setFinished((f) => [...f, ...done]);
+        if (refund.length) setCredits((c) => c + refund.reduce((a, b) => a + b, 0));
         return changed ? next : prev;
       });
     }, 1000);
@@ -264,7 +338,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   /** L-163: swap a variation's sample image for a live one when it arrives. */
   const setVarImg = useCallback((jobId: string, vid: string, img: string) => {
-    setJobs((p) => p.map((j) => (j.id === jobId ? { ...j, variations: j.variations.map((v) => (v.id === vid ? { ...v, img } : v)) } : j)));
+    setJobs((p) => p.map((j) => (j.id === jobId ? { ...j, variations: j.variations.map((v) => (v.id === vid ? { ...v, img, baseImg: v.baseImg ?? v.img } : v)) } : j)));
   }, []);
   const runLive = useCallback(
     (jobId: string, creativeId: string, list: Variation[], ratio: string) => {
@@ -309,15 +383,17 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         minutesAgo: 0,
         label: o.like ? `More like ${o.like.angle}` : undefined,
         variations,
+        willFail: failNext || undefined,
       };
       setJobs((p) => [...p, job]);
+      setFailNext(false);
       setCredits((c) => c - job.cost);
       runLive(id, o.creativeId, variations, o.size);
       if (!o.like) setLast((l) => ({ ...l, [o.creativeId]: { perRec: o.perRec, size: o.size } }));
       setBump((b) => b + 1);
       return job;
     },
-    [jobs, runLive],
+    [jobs, runLive, failNext],
   );
 
   const versionsOf = useCallback(
@@ -477,9 +553,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       jobsFor: (cid) => jobs.filter((j) => j.creativeId === cid),
       startJob,
       retryJob: (jid) => {
-        setJobs((p) => p.map((j) => (j.id === jid ? { ...j, state: 'generating', progress: 0.02, failed: [], minutesAgo: 0, date: TODAY_LABEL() } : j)));
+        // 258: after a partial failure only the failed images run again, so the round starts most of the way done.
+        // Credits returned for them are charged again.
+        const j0 = jobs.find((j) => j.id === jid);
+        if (j0) setCredits((c) => c - (j0.state === 'ready' && j0.failed.length ? j0.failed.length * ACCOUNT.creditsPerImage : j0.cost));
+        setJobs((p) => p.map((j) => (j.id === jid ? { ...j, state: 'generating', progress: j.state === 'ready' && j.failed.length ? 1 - j.failed.length / j.count : 0.02, failed: [], minutesAgo: 0, date: TODAY_LABEL(), unseen: false, willFail: undefined } : j)));
+        // 258: a dismissed banner comes back for the new attempt.
+        setDismissedBanners((d) => d.filter((x) => x !== jid));
         setBump((b) => b + 1);
       },
+      failNext,
+      setFailNext,
+      dismissedBanners,
+      dismissBanner: (jid) => setDismissedBanners((d) => (d.includes(jid) ? d : [...d, jid])),
       markSeen: (jid) => setJobs((p) => (p.some((j) => j.id === jid && j.unseen) ? p.map((j) => (j.id === jid ? { ...j, unseen: false } : j)) : p)),
       briefs,
       setBrief: (product, brief) => setBriefs((b) => ({ ...b, [product]: brief })),
@@ -506,7 +592,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       choose,
       iterate,
     }),
-    [saved, setSaved, archived, setArchived, chosen, choose, iterate, jobs, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
+    [saved, setSaved, archived, setArchived, chosen, choose, iterate, jobs, failNext, dismissedBanners, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

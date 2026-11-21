@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Empty, Progress } from 'antd';
+import { Button, Empty, Progress, Segmented } from 'antd';
 import { CloseOutlined, RightOutlined } from './AppIcons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useWorkspace } from '../data/nav';
@@ -32,15 +32,16 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
   const other = acct.id !== accountId ? acct.name : '';
   const ago = timeAgo(j.minutesAgo);
   // K1 (R-T9), K45 (R-L2, R-L10): "Generating" for status; concise line with credits on meta line when partial fail.
+  // 258 (Mancini 17:36): generations create creatives, so rows count creatives.
   const status =
     j.state === 'queued'
-      ? `Queued\u00a0· ${plural(j.count, 'variation')}`
+      ? `Waiting\u00a0· ${plural(j.count, 'creative')}`
       : j.state === 'generating'
-        ? `Generating ${j.count}\u00a0· ${timeLeft(j.progress)}`
+        ? `Creating ${j.count}\u00a0· ${timeLeft(j.progress)}`
         : j.state === 'ready'
           ? failedN
-            ? `${j.count - failedN} ready\u00a0· ${failedN} failed to create`
-            : `${plural(j.count, 'variation')} ready\u00a0· ${ago}`
+            ? `${j.count - failedN} of ${j.count} ready\u00a0· ${failedN} failed to create`
+            : `${plural(j.count, 'creative')} ready\u00a0· ${ago}`
           : `Failed to create\u00a0· ${j.cost}\u00a0credits returned`;
   const creditNote = j.state === 'ready' && failedN ? `${failedN * 4}\u00a0credits returned\u00a0· ${ago}` : null;
   const openable = j.state === 'ready';
@@ -63,9 +64,9 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
         </div>
         <div className={`task-line ${j.state === 'failed' ? 'bad' : ''}`}>
           <span className="task-line-text">{status}</span>
-          {j.state === 'failed' && (
+          {(j.state === 'failed' || (j.state === 'ready' && failedN > 0)) && (
             <Button type="link" size="small" className="inline-link" onClick={(e) => { e.stopPropagation(); retryJob(j.id); }}>
-              Try again
+              Try generating again
             </Button>
           )}
         </div>
@@ -78,7 +79,7 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
 }
 
 function PanelBody({ onClose }: { onClose: () => void }) {
-  const { jobs, markSeen } = useStore();
+  const { jobs, markSeen, failNext, setFailNext } = useStore();
   const nav = useNavigate();
   const ws = useWorkspace();
   const [tab, setTab] = useState<'tasks' | 'notes'>('tasks');
@@ -95,8 +96,8 @@ function PanelBody({ onClose }: { onClose: () => void }) {
     <>
       <div className="tasks-head">
         <div>
-          <b className="tasks-title">Tasks</b>
-          <p className="tasks-desc t-help">Track variations while they generate and open them when they're ready.</p>
+          <b className="tasks-title">Notifications</b>
+          <p className="tasks-desc t-help">Creatives you're creating, and the ones ready to look at.</p>
         </div>
         <Button type="text" icon={<CloseOutlined />} onClick={onClose} aria-label="Close" />
       </div>
@@ -109,7 +110,7 @@ function PanelBody({ onClose }: { onClose: () => void }) {
               ))}
             </ul>
           ) : (
-            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>No tasks in the last 7 days</b><br />Variations you create appear here while they generate.</>} />
+            <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={<><b>Nothing in the last 7 days</b><br />Creatives you create appear here while they generate.</>} />
           )
         ) : notes.length ? (
           <ul className="note-list">
@@ -139,6 +140,20 @@ function PanelBody({ onClose }: { onClose: () => void }) {
         ) : (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No notifications" />
         )}
+      </div>
+      {/* 258: prototype only. Lets designers see a failed or partly failed round without waiting for a real error. */}
+      <div className="tasks-proto">
+        <span className="small muted">Prototype: next round</span>
+        <Segmented
+          size="small"
+          value={failNext || 'ok'}
+          onChange={(v) => setFailNext(v === 'ok' ? false : (v as 'all' | 'some'))}
+          options={[
+            { label: 'Works', value: 'ok' },
+            { label: 'Some fail', value: 'some' },
+            { label: 'All fail', value: 'all' },
+          ]}
+        />
       </div>
       <div className="tasks-foot small muted">
         {/* K52 (R-L9): link + closing punctuation kept cleanly together. */}
@@ -204,7 +219,7 @@ export function TasksPanel({ mobile }: { mobile: boolean }) {
             <motion.div
               ref={ref}
               role="dialog"
-              aria-label="Tasks"
+              aria-label="Notifications"
               className="tasks-sheet"
               initial={{ y: '100%' }}
               animate={{ y: 0, transition: spring.gentle }}
@@ -227,7 +242,7 @@ export function TasksPanel({ mobile }: { mobile: boolean }) {
             key="panel"
             ref={ref}
             role="dialog"
-            aria-label="Tasks"
+            aria-label="Notifications"
             className="tasks-panel"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard } }}
