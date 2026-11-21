@@ -83,25 +83,107 @@ function RadarIcon({ play }: { play: number }) {
   );
 }
 
-const OPTIONS = [
+/** 262 (Mancini 17:36): Ad Library. Three ad cards stacked; on activation they fan out and settle, like flicking through ads. */
+function LibraryIcon({ play }: { play: number }) {
+  const controls = useAnimationControls();
+  useEffect(() => {
+    if (play) void controls.start((i: number) => ({ rotate: [0, (i - 1) * 14, 0], x: [0, (i - 1) * 1.6, 0], transition: { duration: 0.6, ease: [0.2, 0, 0, 1] } }));
+  }, [play, controls]);
+  return (
+    <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeLinejoin="round">
+      {[0, 1, 2].map((i) => (
+        <motion.rect
+          key={i}
+          custom={i}
+          animate={controls}
+          x={3.5 + i * 0.5}
+          y={2.5 + i * 1.6}
+          width="9"
+          height="10.5"
+          rx="1.6"
+          strokeWidth="1.2"
+          fill={i === 2 ? 'currentColor' : 'none'}
+          fillOpacity={0.3}
+          opacity={i === 2 ? 1 : 0.55}
+          style={{ originX: 0.5, originY: 1, transformBox: 'fill-box' }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+/** 262: Creative Gallery. Four tiles; on activation they pop in turn, like images landing in a grid. */
+function GalleryIcon({ play }: { play: number }) {
+  const controls = useAnimationControls();
+  useEffect(() => {
+    if (play) void controls.start((i: number) => ({ scale: [1, 0.55, 1.08, 1], transition: { duration: 0.5, delay: i * 0.07, ease: [0.2, 0, 0, 1] } }));
+  }, [play, controls]);
+  const tiles = [
+    { x: 2, y: 2 },
+    { x: 8.6, y: 2 },
+    { x: 2, y: 8.6 },
+    { x: 8.6, y: 8.6 },
+  ];
+  return (
+    <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden>
+      {tiles.map((t, i) => (
+        <motion.rect
+          key={i}
+          custom={i}
+          animate={controls}
+          x={t.x}
+          y={t.y}
+          width="5.4"
+          height="5.4"
+          rx="1.3"
+          fill={i === 1 ? 'currentColor' : 'none'}
+          fillOpacity={0.3}
+          stroke="currentColor"
+          strokeWidth="1.2"
+          style={{ originX: 0.5, originY: 0.5, transformBox: 'fill-box' }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+type Opt = { value: string; label: string; to: string; Icon: (p: { play: number }) => React.JSX.Element };
+const ANALYTICS: Opt[] = [
   { value: 'overview', label: 'Overview', to: '/overview', Icon: BarsIcon },
   { value: 'radar', label: 'Radar', to: '/', Icon: RadarIcon },
-] as const;
-type Mode = (typeof OPTIONS)[number]['value'];
+];
+const CREATION: Opt[] = [
+  { value: 'library', label: 'Ad Library', to: '/creation/ads', Icon: LibraryIcon },
+  { value: 'gallery', label: 'Creative Gallery', to: '/creation', Icon: GalleryIcon },
+];
+type Mode = string;
 
 export function ModeSwitch() {
   const loc = useLocation();
   const nav = useNavigate();
+  // 262: in Creation the same switch reads Ad Library and Creative Gallery.
+  const creation = loc.pathname.startsWith('/creation');
+  const OPTIONS = creation ? CREATION : ANALYTICS;
   // Below the hubs (an ad, its rounds), the switch shows where you came from, like the breadcrumb.
-  const routeMode: Mode = loc.pathname.startsWith('/overview') || (loc.pathname.startsWith('/ad/') && hubCrumb().to === '/overview') ? 'overview' : 'radar';
+  const routeMode: Mode = creation
+    ? loc.pathname.startsWith('/creation/ads') || loc.pathname.startsWith('/creation/link')
+      ? 'library'
+      : 'gallery'
+    : loc.pathname.startsWith('/overview') || (loc.pathname.startsWith('/ad/') && hubCrumb().to === '/overview')
+      ? 'overview'
+      : 'radar';
   const [active, setActive] = useState<Mode>(routeMode);
-  const [plays, setPlays] = useState<Record<Mode, number>>({ overview: 0, radar: 0 });
+  const [plays, setPlays] = useState<Record<Mode, number>>({ overview: 0, radar: 0, library: 0, gallery: 0 });
   const btns = useRef<Record<string, HTMLButtonElement | null>>({});
   const [thumb, setThumb] = useState<{ x: number; w: number } | null>(null);
   const first = useRef(true);
 
   useEffect(() => setActive(routeMode), [routeMode]);
 
+  // Switching between areas jumps the thumb instead of sliding from the other area's position.
+  useEffect(() => {
+    first.current = true;
+  }, [creation]);
   useLayoutEffect(() => {
     const measure = () => {
       const b = btns.current[active];
@@ -110,7 +192,7 @@ export function ModeSwitch() {
     measure();
     window.addEventListener('resize', measure);
     return () => window.removeEventListener('resize', measure);
-  }, [active]);
+  }, [active, creation]);
 
   const choose = (m: Mode) => {
     if (m === active) return;

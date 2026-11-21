@@ -20,8 +20,8 @@ import {
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, copyStatus, copiesTitle, platformOf, TABS } from '../data/mock';
-import { accountOf, findCreative, useStore, type RowStatus } from '../data/store';
-import { ideaText, iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
+import { ALL_CREATIVES, accountOf, findCreative, useStore, type RowStatus } from '../data/store';
+import { ideaText, suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -30,8 +30,9 @@ import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { STEP_NOTES, parentIdOf } from '../data/lineage';
+import { FIELD_LABEL, adSetupOf, applyAdRecs } from '../data/adsetup';
 import { answers } from '../data/variations';
-import { IterationHistory } from '../components/IterationHistory';
+import { Thumb } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
 import { hubCrumb } from '../data/nav';
 import { Rating } from '../components/Rating';
@@ -107,6 +108,9 @@ const KV = ({ k, v }: { k: string; v: string }) => (
 
 const BAND: Record<string, string> = { A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' };
 
+/** 260: "landing page and ad copy", "a, b and c". */
+const listJoin = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
+
 /** 229: "say what makes it different and make one clear offer". Three or more picks are counted instead of listed. */
 function roundPhrase(picked: { fix: string }[]) {
   const verb = (f: string) => f.replace(/\u00a0/g, ' ').replace(/^./, (ch) => ch.toLowerCase());
@@ -124,7 +128,10 @@ function RecCard({
   onToggle,
   footer,
   index,
+  scopeLabel,
 }: {
+  /** 260: what the suggestion changes: "Creative", or an ad field such as "Landing page". */
+  scopeLabel?: string;
   index: number;
   parts: SuggestionParts;
   selected: boolean;
@@ -164,6 +171,7 @@ function RecCard({
           <span className="rec-num" aria-hidden>{index}</span>
           {gradeTag}
           <span className="rec-metric">{evidence.metric}</span>
+          {scopeLabel && <span className="rec-scope">{scopeLabel}</span>}
           {/* 220 (Mancini 15:58): the suggested action leads the card; the problem it answers sits in the body. */}
           <span className="rec-issue-text rec-action-text">{action.title}</span>
           {/* Mancini 15:33: the tag belongs to the suggestion, so it sits after its text, away from the button. */}
@@ -266,23 +274,27 @@ export function AdDetail() {
   const bp = Grid.useBreakpoint();
   const hub = hubCrumb();
   const nav = useNavigate();
-  const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs } = useStore();
+  const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs, createDraft, drafts } = useStore();
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
   const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
   const [reportedAud, setReportedAud] = useState<string[]>([]);
-  // 224 (Mancini 15:59, 16:00): the left column says what this ad was made from; ads made from it get their own section on the right.
-  const madeFromHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id, 'from');
-  const madeHereHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id, 'made');
+  // 261: creatives generated from this ad, newest round first, failed and deleted ones left out.
+  const relatedCreatives = allJobs
+    .filter((j) => j.creativeId === c.id && j.state === 'ready')
+    .slice()
+    .reverse()
+    .flatMap((j) => j.variations.filter((v, i) => !j.failed.includes(i) && !v.deleted).map((v) => ({ v, j })));
+  // 261: ads that came from this ad: drafts made with "Duplicate ad" or linked to its creatives, and ads made from it in Meta.
+  const relatedAds = [
+    ...drafts
+      .filter((d) => d.sourceAdId === c.id)
+      .map((d) => ({ id: d.id, name: d.name, img: d.creative.img, to: `/creation/ads/${d.id}`, meta: d.how === 'duplicate' ? `Duplicated ${d.date}` : `Set up from a creative ${d.date}`, state: 'Not running', live: false })),
+    ...ALL_CREATIVES.filter((x) => x.id !== c.id && parentIdOf(x) === c.id).map((x) => ({ id: x.id, name: x.name, img: x.img, to: `/ad/${x.id}`, meta: `Made from this ad\u00a0· ${STEP_NOTES[x.id]?.date ?? ''}`, state: x.status === 'Paused' ? 'Paused' : 'Running', live: x.status !== 'Paused' })),
+  ];
   // 231: the parent is the step this ad was actually made from (its history note), not always the original.
   const parentId = parentIdOf(c);
   const parent = parentId ? findCreative(parentId) : undefined;
-  // 254: the first ad of this ad's chain.
-  const rootId = (() => {
-    let id = c.id;
-    for (let g = 0, p = parentIdOf(c); p && g < 12; g++) { id = p; const pc = findCreative(p); p = pc ? parentIdOf(pc) : undefined; }
-    return id === c.id ? undefined : id;
-  })();
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
   const iterable = c.media === 'Image';
@@ -304,7 +316,13 @@ export function AdDetail() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [c, iterable]);
 
-  const total = selected.length * ACCOUNT.variationsPerRecommendation;
+  // 260 (Mancini 17:36): creative suggestions make new creatives; ad suggestions change ad fields. Only ad ones picked:
+  // the next step is a duplicate of this ad with the fixes, and the generation bar doesn't show.
+  const isAdRec = (rid: string) => recs.find((r) => r.id === rid)?.scope === 'ad';
+  const creativeSel = selected.filter((rid) => !isAdRec(rid));
+  const adSel = selected.filter(isAdRec);
+  const dupOnly = creativeSel.length === 0 && adSel.length > 0;
+  const total = creativeSel.length * ACCOUNT.variationsPerRecommendation;
   const cost = total * ACCOUNT.creditsPerImage;
   const busy = s.kind === 'generating' || s.kind === 'queued';
   const short_ = cost > balance;
@@ -332,7 +350,7 @@ export function AdDetail() {
   const create = ({ perRec, size }: { perRec: number; size: string }) => {
     setDialog(false);
     // 5d C5d-10: no start toast; the bar below turns into the progress bar, so the news is said once.
-    startJob({ creativeId: c.id, recIds: selected, perRec, size });
+    startJob({ creativeId: c.id, recIds: creativeSel, adRecIds: adSel, perRec, size });
   };
   useEffect(() => {
     if (!morph) return;
@@ -357,7 +375,23 @@ export function AdDetail() {
     .sort((a, b) => (a === goalMetric ? -1 : b === goalMetric ? 1 : 0));
 
   // E1 (375px) & E2 (1440px): desktop docks inline above suggestions so no card is covered; phones dock compactly at bottom.
-  const actionBar = iterable ? (
+  const duplicate = () => {
+    const picked = recs.filter((r) => adSel.includes(r.id));
+    const base = adSetupOf(c, accountOf(c).name, goalOf(c) === 'Sales');
+    const id = createDraft({
+      name: `${c.name} · Copy`,
+      accountId: c.accountId,
+      sourceAdId: c.id,
+      creative: { img: c.img, copy: c.copy },
+      setup: applyAdRecs(base, picked),
+      recIds: adSel,
+      how: 'duplicate',
+    });
+    message.success({ content: 'Draft ad created in Ad Library with the fixes filled in', duration: 3 });
+    nav(`/creation/ads/${id}`);
+  };
+  const hasAdRecs = recs.some((r) => r.scope === 'ad');
+  const actionBar = iterable || hasAdRecs ? (
     <motion.div
       layout
       className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''} ${failedJob && !morph ? 'failed' : ''}`}
@@ -378,7 +412,7 @@ export function AdDetail() {
             exit={{ opacity: 0, transition: { duration: duration.instant } }}
           >
             <ConfigProvider theme={darkBarTheme}>
-              <Body creative={c} recCount={selected.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} onRemove={toggle} />
+              <Body creative={c} recCount={creativeSel.length} picked={recs.filter((r) => selected.includes(r.id))} panel onCancel={() => setDialog(false)} onCreate={create} onRemove={toggle} />
             </ConfigProvider>
           </motion.div>
         ) : (
@@ -418,8 +452,13 @@ export function AdDetail() {
                   {/* K27 (R-M3, R-V2) */}
                   {bp.md && <span className="muted small left">Select more suggestions to create more variations.</span>}
                 </>
+              ) : dupOnly ? (
+                <>
+                  <b className="bar-sentence">Duplicate this ad with {plural(adSel.length, 'fix', 'fixes')}</b>
+                  {bp.md && <span className="muted small left">Changes the {listJoin(recs.filter((r) => adSel.includes(r.id)).map((r) => (r.field ? FIELD_LABEL[r.field].toLowerCase() : '')))}. The creative stays the same, so no credits are used.</span>}
+                </>
               ) : selected.length === 0 ? (
-                <span>Select a suggestion to create variations</span>
+                <span>{iterable ? 'Select a suggestion to create creatives' : 'Select a fix to duplicate this ad'}</span>
               ) : short_ ? (
                 <span>
                   {/* K18 (R-M8) */}
@@ -431,12 +470,12 @@ export function AdDetail() {
                     // 229 (Mancini 16:03): image ads read as one sentence, "Create 8 variations that ...", using the picked actions.
                     bp.md ? (
                       <b className="bar-sentence">
-                        Create <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} that {roundPhrase(recs.filter((r) => selected.includes(r.id)))}
+                        Create <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} that {roundPhrase(recs.filter((r) => creativeSel.includes(r.id)))}
                       </b>
                     ) : (
                       // 232 (Mancini 16:07): phones use the short form so the bar stays one line.
                       <b className="bar-sentence">
-                        <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} from {plural(selected.length, 'suggestion')}
+                        <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} from {plural(creativeSel.length, 'suggestion')}
                       </b>
                     )
                   ) : (
@@ -445,7 +484,12 @@ export function AdDetail() {
                     </b>
                   )}
                   {/* Mancini 14:47: the bar says what the round will be, as in mock B. Phones keep one compact row. */}
-                  {bp.md && (c.media === 'Image' ? <span className="muted small left">{cost} of {balance.toLocaleString('en-US')} credits</span> : <span className="muted small left">{plural(total, 'creative')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>)}
+                  {bp.md && (
+                    <span className="muted small left">
+                      {cost} of {balance.toLocaleString('en-US')} credits
+                      {adSel.length > 0 && `\u00a0· ${plural(adSel.length, 'ad fix', 'ad fixes')} saved for Link to Ad`}
+                    </span>
+                  )}
                 </>
               )}
             </div>
@@ -470,8 +514,12 @@ export function AdDetail() {
                 <Button type="primary" size="large" onClick={() => viewRound(s.jobId)}>
                   View variations
                 </Button>
+              ) : dupOnly ? (
+                <Button type="primary" size="large" icon={<CopyOutlined />} onClick={duplicate}>
+                  Duplicate ad
+                </Button>
               ) : (
-                <Button type="primary" size="large" disabled={selected.length === 0} onClick={() => setDialog(true)}>
+                <Button type="primary" size="large" disabled={creativeSel.length === 0} onClick={() => setDialog(true)}>
                   Create creatives
                 </Button>
               ))}
@@ -638,15 +686,7 @@ export function AdDetail() {
             </div>
           </motion.div>
           {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
-          {/* 254: always shown. Ads made in Atria list the chain from its original; an original gets an empty state. */}
-          <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-            <SectionHead title="Iteration history" help={madeFromHistory.length > 0 ? 'The ads this one was made from and how each step did against the one before.' : undefined} />
-            {madeFromHistory.length > 0 ? (
-              <IterationHistory items={madeFromHistory} limit={6} empty="" resultsLabel={null} currentId={c.id} originalId={rootId} />
-            ) : (
-              <p className="t-help ih-empty-first">This is the first ad. It wasn't made from another ad.</p>
-            )}
-          </motion.div>
+          {/* 261 (Mancini 17:36): "Iteration history" is gone from the left. What came from this ad is "Related", on the right. */}
         </aside>
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
@@ -743,22 +783,65 @@ export function AdDetail() {
               parts={suggestionParts(c, r, accountOf(c).avg)}
               selected={selected.includes(r.id)}
               suggested={suggestedIds.includes(r.id)}
-              disabled={!iterable}
+              // 260: video and carousel ads can still take ad-level fixes (they duplicate the ad); only creative ones are locked.
+              disabled={!iterable && r.scope !== 'ad'}
+              scopeLabel={r.scope === 'ad' && r.field ? FIELD_LABEL[r.field] : 'Creative'}
               onToggle={() => toggle(r.id)}
               footer={footerFor(r)}
             />
           ))}
 
-          {madeHereHistory.length > 0 && (
-            <>
-              <motion.div variants={fadeUp} className="section-title made-here-head">
-                <SectionHead bar title="Made from this ad" help="Rounds made from this ad, and how the ads made from it did in Meta." />
-              </motion.div>
-              <motion.div variants={fadeUp} className="panel made-here">
-                <IterationHistory items={madeHereHistory} limit={6} empty="" />
-              </motion.div>
-            </>
-          )}
+          {/* 261 (Mancini 17:36): "Related" has two parts: creatives generated from this ad (each opens its creative page)
+              and ads duplicated from it (drafts made with "Duplicate ad", and ads set up from its creatives). */}
+          <motion.div variants={fadeUp} className="section-title made-here-head">
+            <SectionHead bar title="Related" help="Creatives made from this ad, and ads that came from it." />
+          </motion.div>
+          <motion.div variants={fadeUp} className="panel rel-panel">
+            <div className="rel-sub">
+              <span className="rel-sub-title">Related creatives <span className="tab-count">{relatedCreatives.length}</span></span>
+              {relatedCreatives.length ? (
+                <ul className="rel-grid">
+                  {relatedCreatives.slice(0, 11).map(({ v, j }) => (
+                    <li key={v.id}>
+                      <Tooltip title={v.angle}>
+                        <Link to={`/creation/${c.id}/${v.id}/edit?round=${j.id}`} className="rel-thumb" aria-label={`Open creative ${v.angle}`}>
+                          <Thumb c={{ img: v.img, media: 'Image', name: v.angle }} size={64} />
+                        </Link>
+                      </Tooltip>
+                    </li>
+                  ))}
+                  {relatedCreatives.length > 11 && (
+                    <li>
+                      <Link to="/creation" className="rel-thumb rel-more">+{relatedCreatives.length - 11}</Link>
+                    </li>
+                  )}
+                </ul>
+              ) : (
+                <p className="t-help">{iterable ? 'None yet. Select suggestions above to create some.' : 'Only image ads can make new creatives.'}</p>
+              )}
+            </div>
+            <div className="rel-sub">
+              <span className="rel-sub-title">Ads duplicated from this ad <span className="tab-count">{relatedAds.length}</span></span>
+              {relatedAds.length ? (
+                <ul className="rel-ads">
+                  {relatedAds.map((a) => (
+                    <li key={a.id}>
+                      <Link to={a.to} className="rel-ad">
+                        <Thumb c={{ img: a.img, media: 'Image', name: a.name }} size={40} />
+                        <span className="rel-ad-text">
+                          <b>{a.name}</b>
+                          <span className="t-help">{a.meta}</span>
+                        </span>
+                        <span className={`rel-state ${a.live ? 'live' : ''}`}>{a.state}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="t-help">None yet. Select a fix to the ad above and duplicate it.</p>
+              )}
+            </div>
+          </motion.div>
 
         </motion.section>
       </div>

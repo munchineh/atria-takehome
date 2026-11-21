@@ -22,7 +22,7 @@ import { duration, ease } from '../motion/tokens';
 const RAIL = [
   { icon: <CompassOutlined />, label: 'Inspo' },
   { icon: <BarChartOutlined />, label: 'Analytics', to: '/' },
-  { icon: <BulbOutlined />, label: 'Creation', to: '/creation' },
+  { icon: <BulbOutlined />, label: 'Creation', to: '/creation/ads' },
   { icon: <VideoCameraOutlined />, label: 'Assets' },
   { icon: <AppstoreOutlined />, label: 'Brands' },
 ];
@@ -126,7 +126,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             </Tooltip>
           )}
           {RAIL.map((r) => {
-            const active = r.to === '/creation' ? inCreation : r.to === '/' && !inCreation;
+            const active = r.to?.startsWith('/creation') ? inCreation : r.to === '/' && !inCreation;
             return (
               <Tooltip key={r.label} title={wide ? '' : r.label} placement="right">
                 <div
@@ -169,7 +169,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             <span className="meta-glyph blue">∞</span>
             <span className="ellipsis">{accountName}</span>
           </div>
-          {!inCreation && header}
+          {header}
           <div className="topbar-right">
             {!mobile && (
               <Tooltip title={`Last synced from Meta on ${WINDOW.synced}. Results use ${ATTRIBUTION} attribution.`}>
@@ -219,7 +219,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
         {mobile && (
           <nav className="drawer-rail" aria-label="Main">
             {RAIL.map((r) => {
-              const active = r.to === '/creation' ? inCreation : r.to === '/' && !inCreation;
+              const active = r.to?.startsWith('/creation') ? inCreation : r.to === '/' && !inCreation;
               return (
                 <button
                   key={r.label}
@@ -240,7 +240,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           </nav>
         )}
         {/* 5d Gm-01: phones hide the top bar switch, so Overview and Radar sit at the top of the drawer. */}
-        {mobile && !inCreation && header && (
+        {mobile && header && (
           <div className="drawer-nav" onClick={() => setDrawer(false)}>
             {header}
           </div>

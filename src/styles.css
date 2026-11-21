@@ -2938,3 +2938,89 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .radar-card .card-foot .status-cell.idle.next-fill { background: color-mix(in srgb, var(--c-primary) 14%, #fff); border-color: transparent; }
 .radar-card .card-foot .status-cell.idle.next-text, .radar-card .card-foot .status-cell.healthy.next-text { background: transparent; border-color: transparent; padding-inline: 0; color: var(--c-text-2); }
 .radar-card .card-foot .status-cell.next-outline { background: #fff; border-color: var(--c-border); }
+
+/* 260 Suggestion header: what it changes ("Creative", "Landing page", "Ad copy") as a quiet grey tag after the metric. */
+.rec-four .rec-diag-left .rec-scope { flex: none; padding: 0 8px; border-radius: var(--r-tag); background: color-mix(in srgb, #000 5%, transparent); font-size: var(--fs-small); line-height: 20px; color: var(--c-text-2); }
+
+/* 261 Ad page "Related": two sub-sections in one panel, divided by an inset rule. Creatives as a wrapping grid of
+   64 px thumbnails that open their creative page; ads as rows with a state tag on the right. */
+.rel-panel { display: flex; flex-direction: column; gap: 16px; }
+.rel-sub + .rel-sub { padding-top: 16px; border-top: 1px solid var(--c-border-2); }
+.rel-sub-title { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); margin-bottom: 8px; }
+.rel-sub .t-help { margin: 0; }
+.rel-grid { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.rel-thumb { display: block; border-radius: var(--r-tag); outline-offset: 2px; transition: transform 0.16s; }
+.rel-thumb:hover { transform: translateY(-1px); }
+.rel-more { display: grid; place-items: center; width: 64px; height: 64px; background: var(--c-fill); color: var(--c-text-2); font-weight: 600; }
+.rel-ads { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; }
+.rel-ad { display: flex; align-items: center; gap: 12px; padding: 8px; margin: 0 -8px; border-radius: var(--r-control); color: var(--c-text); }
+.rel-ad:hover { background: var(--c-fill-2); color: var(--c-text); }
+.rel-ad-text { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.rel-ad-text b { font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rel-state { flex: none; padding: 0 8px; border-radius: var(--r-tag); background: var(--c-fill); font-size: var(--fs-small); line-height: 20px; color: var(--c-text-2); }
+.rel-state.live { background: var(--c-success-bg); color: var(--c-success); }
+
+/* 262 Ad Library list: status tabs, then one row per ad (48 px thumbnail, name and source, headline on wide screens,
+   a status tag, chevron). Rows fill on hover. Status: Running green, Paused grey, Not running amber. */
+.lib-tabs { margin: 0 0 16px; }
+.lib-tab { display: inline-flex; align-items: center; gap: 6px; }
+.lib-list { list-style: none; margin: 0; padding: 0; background: #fff; border: 1px solid var(--c-border-2); border-radius: var(--r-surface); }
+.lib-list > li + li { border-top: 1px solid var(--c-border-2); margin: 0 16px; }
+.lib-list > li + li .lib-row { margin: 0 -16px; }
+.lib-row { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 16px; cursor: pointer; }
+.lib-row:hover { background: var(--c-fill-2); }
+.lib-row:focus-visible { box-shadow: inset 0 0 0 2px var(--c-primary); }
+.lib-main { display: flex; flex-direction: column; min-width: 0; flex: 1; }
+.lib-name { font-weight: 400; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-sub { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-head { display: flex; flex-direction: column; width: 32%; min-width: 0; }
+.lib-k { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
+.lib-v { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.lib-status { flex: none; padding: 0 8px; border-radius: var(--r-tag); font-size: var(--fs-small); line-height: 20px; background: var(--c-fill); color: var(--c-text-2); }
+.lib-status.s-running { background: var(--c-success-bg); color: var(--c-success); }
+.lib-status.s-not-running { background: var(--c-warning-bg); color: color-mix(in srgb, var(--c-warning) 70%, #000); }
+.lib-chev { color: var(--c-text-3); font-size: var(--fs-small); }
+
+/* 262 Ad page in Ad Library: creative on the left with "Edit creative" under it; title, fixes and the setup form on the right. */
+.lib-creative { border-radius: var(--r-surface); overflow: hidden; }
+.lib-creative-actions { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.lib-ad-title { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; }
+.lib-ad-title .ph-title { margin: 4px 0 0; }
+.lib-ad-title .ph-desc { margin: 0; }
+.lib-form { display: flex; flex-direction: column; gap: 16px; }
+.lib-field { display: flex; flex-direction: column; gap: 6px; }
+.lib-field > span:first-child { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); font-weight: 600; }
+.lib-places .t-help { margin: 0; }
+.lib-fix-list { list-style: none; margin: 8px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.lib-fix-list li { display: flex; gap: 8px; align-items: flex-start; }
+.lib-fix-list li > span { display: flex; flex-direction: column; }
+.lib-fix-list b { font-weight: 600; }
+.lib-fix-icon { margin-top: 3px; color: var(--c-text-4); }
+.lib-fix-list li.met .lib-fix-icon { color: var(--c-success); }
+.lib-ad .detail-right { display: flex; flex-direction: column; gap: 16px; }
+
+/* 262 Edit creative dialog: preview left (320 px), controls right; footer has "Open in its own page" on the left. */
+.ecd { display: grid; grid-template-columns: 320px minmax(0, 1fr); gap: 24px; }
+.ecd-preview { position: relative; border-radius: var(--r-surface); overflow: hidden; align-self: start; }
+.ecd-busy { position: absolute; inset: auto 12px 12px 12px; padding: 6px 12px; border-radius: var(--r-control); background: rgba(20, 18, 22, 0.8); color: #fff; font-size: var(--fs-small); line-height: var(--lh-small); text-align: center; }
+.ecd-controls { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.ecd-fields { display: flex; flex-direction: column; gap: 12px; }
+.ecd-fields .t-help { margin: 0; }
+.ecd-field { display: flex; flex-direction: column; gap: 6px; }
+.ecd-field > span { font-weight: 600; font-size: var(--fs-body); line-height: var(--lh-body); }
+.ecd-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.ecd-run { display: flex; align-items: center; gap: 12px; }
+.ecd-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.ecd-foot-actions { display: inline-flex; gap: 8px; }
+@media (max-width: 767px) {
+  .ecd { grid-template-columns: minmax(0, 1fr); }
+  .ecd-preview { max-width: 240px; }
+  .lib-head { display: none; }
+}
+/* 262 (fix): list dividers are inset pseudo-lines, so every row spans the full width and lines up. */
+.lib-list > li { position: relative; }
+.lib-list > li + li { border-top: 0; margin: 0; }
+.lib-list > li + li .lib-row { margin: 0; }
+.lib-list > li + li::before { content: ''; position: absolute; top: 0; left: 16px; right: 16px; height: 1px; background: var(--c-border-2); }
+.lib-list > li:first-child .lib-row { border-radius: var(--r-surface) var(--r-surface) 0 0; }
+.lib-list > li:last-child .lib-row { border-radius: 0 0 var(--r-surface) var(--r-surface); }

@@ -1,5 +1,6 @@
+import type { AdSetup } from './adsetup';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, type Creative, type AdCopy } from './mock';
+import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, ACCOUNT_NAMES, type Creative, type AdCopy } from './mock';
 import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
 import { ANGLE_REASON, applyToImage, buildVariations, stylizedRender, type Variation, type Version } from './variations';
 import { generateLive } from './live';
@@ -34,6 +35,8 @@ export const DEMO_ACCOUNTS: MockAccount[] = [
   ...MORE_ACCOUNTS,
 ];
 export const ALL_CREATIVES: Creative[] = [...DEMO_ACCOUNTS.flatMap((a) => a.creatives), ...PROJECT_CREATIVES];
+// 260: register account names so ad setups can name the brand and domain.
+for (const a of DEMO_ACCOUNTS) ACCOUNT_NAMES[a.id] = a.name;
 // 5c line breaks: "Sad Pink · Fits in your palm" must never wrap with the middle dot starting a line.
 for (const c of ALL_CREATIVES) {
   c.name = c.name.replace(/ · /g, '\u00a0· ');
@@ -101,6 +104,8 @@ export interface Job {
   minutesAgo: number;
   label?: string;
   variations: Variation[];
+  /** 260: ad-level suggestions picked with this round, carried to Link to Ad. */
+  adRecIds?: string[];
   /** 258: prototype switch so designers can see a failed or partly failed round. */
   willFail?: 'all' | 'some';
 }
@@ -150,6 +155,24 @@ export interface StartOpts {
   perRec: number;
   size: string;
   like?: Variation;
+  /** 260: ad-level suggestions picked with the creative ones. They don't make images; Link to Ad pre-fills them. */
+  adRecIds?: string[];
+}
+
+/** 260 (Mancini 17:36): an ad in Ad Library that isn't running yet: a duplicate with fixes, or a creative linked to an ad. */
+export interface DraftAd {
+  id: string;
+  name: string;
+  accountId: string;
+  /** The ad it was duplicated from or whose creative it was made from. */
+  sourceAdId?: string;
+  /** The creative it uses: the source ad's own image, or a generated creative. */
+  creative: { img: string; copy?: AdCopy; jobId?: string; vid?: string };
+  setup: AdSetup;
+  /** Suggestions this ad was set up to meet. */
+  recIds: string[];
+  how: 'duplicate' | 'linked';
+  date: string;
 }
 
 interface Store {
@@ -166,6 +189,14 @@ interface Store {
   dismissedBanners: string[];
   dismissBanner: (jobId: string) => void;
   markSeen: (jobId: string) => void;
+  drafts: DraftAd[];
+  createDraft: (d: Omit<DraftAd, 'id' | 'date'>) => string;
+  updateDraft: (id: string, patch: Partial<DraftAd>) => void;
+  /** 262: edits saved to an existing ad in Ad Library (setup fields and its creative). */
+  adEdits: Record<string, { setup?: AdSetup; creative?: { img: string; copy?: AdCopy } }>;
+  /** 262: charge credits for a one-off generation outside a round (Edit creative dialog). */
+  spendCredits: (n: number) => void;
+  saveAdEdit: (adId: string, edit: { setup?: AdSetup; creative?: { img: string; copy?: AdCopy } }) => void;
   briefs: Record<string, string>;
   setBrief: (product: string, brief: string) => void;
   /** Last settings per creative, so "Create more" is one click (G4). */
@@ -234,6 +265,35 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [jobs, setJobs] = useState<Job[]>(loadJobs);
   const [dismissedBanners, setDismissedBanners] = useState<string[]>(() => loadList(BANNERS_KEY));
   const [failNext, setFailNext] = useState<false | 'all' | 'some'>(false);
+  // 260: draft ads persist like rounds.
+  const [drafts, setDrafts] = useState<DraftAd[]>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('atria.drafts.v1') ?? '[]');
+    } catch {
+      return [];
+    }
+  });
+  const [adEdits, setAdEdits] = useState<Store['adEdits']>(() => {
+    try {
+      return JSON.parse(localStorage.getItem('atria.adedits.v1') ?? '{}');
+    } catch {
+      return {};
+    }
+  });
+  useEffect(() => {
+    try {
+      localStorage.setItem('atria.adedits.v1', JSON.stringify(adEdits));
+    } catch {
+      /* ignore */
+    }
+  }, [adEdits]);
+  useEffect(() => {
+    try {
+      localStorage.setItem('atria.drafts.v1', JSON.stringify(drafts.map((d) => (d.creative.img.startsWith('live-') ? { ...d, creative: { ...d.creative, img: 'x01' } } : d))));
+    } catch {
+      /* ignore */
+    }
+  }, [drafts]);
   useEffect(() => {
     try {
       // Live images can be large data URLs; keep the sample image reference instead of the bytes.
@@ -383,6 +443,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         minutesAgo: 0,
         label: o.like ? `More like ${o.like.angle}` : undefined,
         variations,
+        adRecIds: o.adRecIds?.length ? o.adRecIds : undefined,
         willFail: failNext || undefined,
       };
       setJobs((p) => [...p, job]);
@@ -564,6 +625,16 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       },
       failNext,
       setFailNext,
+      drafts,
+      createDraft: (d) => {
+        const id = `draft-${Date.now().toString(36)}`;
+        setDrafts((p) => [...p, { ...d, id, date: TODAY_LABEL() }]);
+        return id;
+      },
+      updateDraft: (id, patch) => setDrafts((p) => p.map((d) => (d.id === id ? { ...d, ...patch } : d))),
+      adEdits,
+      spendCredits: (n) => setCredits((c) => c - n),
+      saveAdEdit: (adId, edit) => setAdEdits((p) => ({ ...p, [adId]: { ...p[adId], ...edit } })),
       dismissedBanners,
       dismissBanner: (jid) => setDismissedBanners((d) => (d.includes(jid) ? d : [...d, jid])),
       markSeen: (jid) => setJobs((p) => (p.some((j) => j.id === jid && j.unseen) ? p.map((j) => (j.id === jid ? { ...j, unseen: false } : j)) : p)),
@@ -592,7 +663,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       choose,
       iterate,
     }),
-    [saved, setSaved, archived, setArchived, chosen, choose, iterate, jobs, failNext, dismissedBanners, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
+    [saved, setSaved, archived, setArchived, chosen, choose, iterate, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

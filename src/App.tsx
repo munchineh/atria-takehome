@@ -12,6 +12,8 @@ import { ImageAds } from './screens/ImageAds';
 import { CreativePage } from './screens/CreativePage';
 import { Editor } from './screens/Editor';
 import { Overview } from './screens/Overview';
+import { AdLibrary } from './screens/AdLibrary';
+import { LibraryAd } from './screens/LibraryAd';
 import { theme } from './theme';
 import { ease, duration } from './motion/tokens';
 
@@ -34,6 +36,9 @@ function Routed() {
           <Route path="/ad/:id/variations" element={<Results />} />
           <Route path="/ad/:id/variations/:vid" element={<Editor key={loc.pathname} />} />
           <Route path="/creation" element={<ImageAds />} />
+          {/* 262 (Mancini 17:36): Ad Library sits beside the Creative Gallery under Creation. */}
+          <Route path="/creation/ads" element={<AdLibrary />} />
+          <Route path="/creation/ads/:id" element={<LibraryAd key={loc.pathname} />} />
           {/* DL-06: rounds and the editor also live under Creation, so gallery tiles never leave it. */}
           <Route path="/creation/:id" element={<Results />} />
           <Route path="/creation/:id/:vid" element={<CreativePage key={loc.pathname} />} />

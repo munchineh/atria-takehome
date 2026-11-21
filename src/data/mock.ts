@@ -1,3 +1,4 @@
+import { adRecsFor, type AdField } from './adsetup';
 /**
  * Mock data. Moody Mochi and every other account name are fictional.
  * Keep values consistent across screens: the original product contradicts
@@ -88,6 +89,8 @@ export function goalOf(c: Pick<Creative, 'ads'>): Objective {
 export const goalsOf = (c: Pick<Creative, 'ads'>) => [...new Set(c.ads.map((a) => a.objective ?? 'Sales'))] as Objective[];
 /** Extra suggestion providers for accounts defined in accounts.ts. */
 export const REC_PROVIDERS: Record<string, (c: Creative) => Recommendation[]> = {};
+/** 260: account display names, filled in by accounts.ts, so ad setups can name the brand and domain. */
+export const ACCOUNT_NAMES: Record<string, string> = { 'moody-mochi': 'Moody Mochi' };
 
 export interface Recommendation {
   id: string;
@@ -102,6 +105,11 @@ export interface Recommendation {
   /** 226 (Mancini 16:00): ideas for the image itself, shown beside the copy ideas. */
   visuals?: string[];
   tried?: { date: string; count: number; jobId: string };
+  /** 260 (Mancini 17:36): "ad" suggestions change an ad field (headline, copy, button, link) instead of the creative. */
+  scope?: 'ad';
+  field?: AdField;
+  /** The new value for that field. */
+  value?: string;
 }
 
 /** CSS text drawn over the photo so creatives read as ads (and text stays editable). */
@@ -523,7 +531,9 @@ export function recommendationsFor(c: Creative): Recommendation[] {
     const g = key[r.target] ? c.grades[key[r.target]!] : null;
     return g ? 'ABCD'.indexOf(g[0]) : 1.5;
   };
-  return recsFor(c)
+  // 260: ad-level suggestions sit with the creative ones, ranked the same way.
+  const extra = c.project ? [] : adRecsFor(c, ACCOUNT_NAMES[c.accountId] ?? ACCOUNT.name, goalOf(c) === 'Sales', goal.primary.includes('CPA'));
+  return [...recsFor(c), ...extra]
     .map((r, i) => ({ r, i }))
     .filter(({ r }) => tier(r) < 2)
     .sort((a, b) => tier(a.r) - tier(b.r) || rank(b.r) - rank(a.r) || a.i - b.i)
