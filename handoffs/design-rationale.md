@@ -332,6 +332,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 282 | Ad page bar, shorter. Ad fixes only: "Duplicate ad" and "Changes the ad details only. Creative stays the same, so no credits are used." Creative suggestions picked: "Generate new creatives" and "You can change both the ad details and the creatives after." The count and credits move to the form, where the number is chosen | Mancini 19:27 | The bar names the action; the form is where the round is sized |
 | 283 | Link buttons with an icon ("Create from product page", "Clear"): the hover underline sits under the words only, not under the icon or the gap | Mancini 19:27 | The underline started at the icon and looked broken |
 | 284 | Create form: "Regenerate brief" is now "Reset changes". It rewrites the brief from the picked suggestions, dropping the designer's edits | Mancini 19:28 | It says what happens to your edits instead of naming an internal step |
+| 285 | Create form, reference images: the add tile shows a plus only, in the same 64 px dashed tile. "Add image" stays as its accessible name; no tooltip, since the plus is clear | Mancini 19:28 | The label crowded the tile's edges |
 
 ## With more time
 

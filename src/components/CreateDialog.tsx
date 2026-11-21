@@ -270,9 +270,9 @@ export function Body({
               ))}
             </AnimatePresence>
             {images.length < 4 && (
-              <button className="img-tile add" onClick={() => file.current?.click()}>
+              // 285 (Mancini 19:28): a plus only; the label was crowding the tile. The name stays for screen readers, no tooltip (clear icon).
+              <button className="img-tile add" aria-label="Add image" onClick={() => file.current?.click()}>
                 <PlusOutlined />
-                <span>Add image</span>
               </button>
             )}
             <input ref={file} type="file" accept="image/png,image/jpeg" hidden onChange={(e) => addFile(e.target.files?.[0])} />
