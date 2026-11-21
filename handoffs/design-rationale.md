@@ -141,3 +141,4 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 89 | "Where it runs" popover: every copy and every placement listed, padding 16 all round, footer facts grouped | Mancini 13:36 | "4 and 2 more" sent people away to see the rest; uneven padding |
 | 90 | Overview / Radar switch back to a pill (V-10 reverted) | Mancini 13:36 | Our own control (D1); the pill was the stronger shape |
 | 91 | Overview: period back on the title row, Ask Raya first, headline ends "against the period before."; the help line says "in this period" so the phrase appears once | Mancini 13:36 | The pre-overhaul layout read better |
+| 92 | Long press to preview on touch: Radar rows and cards, gallery cards, iteration history thumbnails. Shows the creative large until release; a tap still opens; light haptic where supported; iOS image menu suppressed | Mancini 13:23, 13:36 | No hover on phones and tablets |

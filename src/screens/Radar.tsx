@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { Peek } from '../components/Peek';
 import { setHub } from '../data/nav';
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
@@ -11,7 +12,7 @@ import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOW
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
 import { GOAL_ICON } from '../components/Goal';
 import { useStore } from '../data/store';
-import { Thumb } from '../components/Thumb';
+import { Creative as CreativeArt, Thumb } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell, weakest } from '../components/StatusCell';
 import { PageHeader } from '../components/PageHeader';
@@ -127,6 +128,7 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
   const parent = c.variationOf ? ALL_CREATIVES.find((x) => x.id === c.variationOf) : null;
   const go = useNavigate();
   return (
+    <Peek preview={<CreativeArt c={c} />} title={c.name} sub={`${c.media} · ${money(c.spend)} spent`}>
     <div className="name-cell">
       <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
       <div className="name-text">
@@ -162,6 +164,7 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
       </div>
       {aside}
     </div>
+    </Peek>
   );
 }
 

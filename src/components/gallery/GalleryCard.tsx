@@ -3,6 +3,7 @@ import { ArchiveOutlined, ArchiveRestoreOutlined, CopyOutlined, EllipsisOutlined
 import { motion } from 'motion/react';
 import type { GalleryItem } from '../../data/gallery';
 import { AdArt } from '../Thumb';
+import { Peek } from '../Peek';
 import { MadeFromIcon } from '../Icons';
 import { duration, ease, listDelay } from '../../motion/tokens';
 
@@ -68,7 +69,9 @@ export function GalleryCard({
           onClick={() => onOpen(item.to)}
           aria-label={`Open ${item.name}`}
         >
-          <AdArt slot={item.img} copy={item.copy} ratio="2 / 3" alt={`${item.name} creative`} />
+          <Peek preview={<AdArt slot={item.img} copy={item.copy} ratio="2 / 3" alt="" />} title={item.name}>
+            <AdArt slot={item.img} copy={item.copy} ratio="2 / 3" alt={`${item.name} creative`} />
+          </Peek>
         </button>
       </div>
 

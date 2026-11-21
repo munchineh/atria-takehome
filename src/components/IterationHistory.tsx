@@ -4,7 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import type { HistoryItem } from '../data/insights';
 import { findCreative, timeAgo } from '../data/store';
 import { OverallTag } from './GradeTag';
-import { Thumb } from './Thumb';
+import { Creative, Thumb } from './Thumb';
+import { Peek } from './Peek';
 
 /**
  * One iteration history for Overview, Radar and the ad page (Mancini 09:43, item 20).
@@ -33,7 +34,7 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate }: { item
               return (
                 <li key={r.id}>
                   <button type="button" className="ih-row" onClick={() => go(`/ad/${r.adId}/variations?round=${r.id}`)}>
-                    <Thumb c={ad} size={36} />
+                    <Peek preview={<Creative c={ad} />} title={ad.name}><Thumb c={ad} size={36} /></Peek>
                     <span className="ih-text">
                       <b className="ih-name">{r.name}</b>
                       {active ? (
@@ -68,7 +69,7 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate }: { item
               return (
                 <li key={r.id}>
                   <button type="button" className="ih-row" onClick={() => go(`/ad/${r.adId}`)}>
-                    <Thumb c={ad} size={36} />
+                    <Peek preview={<Creative c={ad} />} title={ad.name}><Thumb c={ad} size={36} /></Peek>
                     <span className="ih-text">
                       <span className="ih-head">
                         <b className="ih-name">{r.name}</b>
