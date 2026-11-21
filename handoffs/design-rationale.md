@@ -150,3 +150,78 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 98 | "Made from" uses the corner-arrow icon everywhere (Radar rows, History drawer); the branch icon is gone | Mancini 13:47 | Same icon the gallery cards already use |
 | 99 | Ask Raya keeps a warm accent: soft orange wash on the card, pill prompts with warm edges | Mancini 13:47 | The foundation sweep had flattened it into a plain data card |
 | 100 | Key metrics as KPI tiles: label with the definition in an ⓘ tooltip, value, change vs. previous period coloured by meaning (spend neutral), sparkline of this period over the previous one (dashed); legend on the section head. Headline sentence removed | Mancini 13:49; SaaS KPI card patterns (saasui.design, Lazarev dashboard examples), live Atria Overview | Every tile has the same four parts; the sentence repeated two tiles in bigger type |
+
+## Figma consistency pass (21 Nov, 14:00 to 14:40)
+
+Every value below was measured from the brief's Figma file (`RzwU4dPm55NcDcTFZrW7ry`, page "Radar key interfaces") by reading node properties on frames FG1 Radar, FG2 AI recommendation, FG3 Ad context, FG5 Image ads generated and FG6 Project list. Figma stores greys as black with alpha. Their hex on white is in brackets.
+
+Mancini asked for the build without a review round, so the audit's leans became the decisions. Rows marked **Reverses** replace a call he made earlier the same day. They sit in their own commit (pass B) so they can be reverted alone with `git revert <pass B hash>`.
+
+### What the frames say (token spec)
+
+| Area | Measured |
+|---|---|
+| Canvas | White on Radar. `#F5F5F5` on Project list and inside the "Details - Ad name" drawer |
+| Card, modal, popover | White |
+| Inset fills | Black 0.02 (`#FAFAFA`): table header, neutral tags. Black 0.04 (`#F5F5F5`): segmented track |
+| Control border | 1 px black 0.15 (`#D9D9D9`) |
+| Card, tag, divider border | 1 px black 0.06 (`#F0F0F0`) |
+| Shadows | None on cards. antd three-layer shadow on popover and drawer only |
+| Radius | 4 tags, thumbnails, checkboxes. 6 controls, chips, segmented items, card tabs (top corners). 8 cards, modal, segmented track, 40 px buttons |
+| Page title | 24/32 Bold ("Radar", "Image Ads") |
+| Overlay and account title | 20/28 Semi Bold ("Details - Ad name", "Ad context", "Lipsum Brand") |
+| Section title | 16/24 Semi Bold ("Performance", "3 Projects") |
+| Strong | 14/22 Semi Bold (table headers, tab labels, group labels) |
+| Body | 14/22 Regular at 0.88. One-liners at 0.65 |
+| Small | 12/20 Regular at 0.88, 0.65 or 0.45. Grade letters 12/20 Semi Bold in the status hue |
+| Letter-spacing | None anywhere |
+| Page padding and block gap | 24 and 16. Title to one-liner 0 |
+| Radar tab strip | 46 high, 12 padding, 4 between tabs, table directly under |
+| Radar table | Header 48, rows 66, cells 12 vertical and 8 horizontal, thumbnail 40 with radius 4 |
+| Grade tag | 22 high, 1/8 padding, hugs its letter |
+| Project card | 12 padding, 8 inner gap, 16 gutter |
+| Modal and popover | 24 and 12 padding |
+
+### Decisions and rationale
+
+| ID | Change | Source in Figma | Why |
+|---|---|---|---|
+| F-01 | Top bar 64 high with a 1 px `#F0F0F0` divider, no blur. Account name 20/28 Semi Bold | FG1 "Lipsum Brand", FG2 "Frame 87" 1400 x 64 | The bar was 60 high with a 16 px name, so the shell read lighter than Atria's |
+| F-02 | Credits shown as 12/20 Semi Bold at 0.65 with no fill | FG1 popover "1,298" beside the coins icon | The orange pill made a read-only number look like a button. Meta has no box (S-30) |
+| F-03 | Workspace icon is flat `#F66C30`, radius 6 | FG1 "Workspace icon" 32 x 32 | The orange-to-yellow gradient is not in any frame |
+| F-04 | Page title without letter-spacing. One-liner directly under it. 16 under the header | FG1 "Frame 96197": 32 + 44 with gap 0; "Frame 96767" gap 16 | Matches the frame's rhythm and removes a hand-tuned -0.01em |
+| F-05 | Radar header: 48 high, fill 0.02, 14/22 Semi Bold, 12/8 padding, 22 px split lines | FG1 "Table Item / Header Item" and its "Wrapper" strokes | The system rules said "no column dividers". The frame has them, and they help the eye hold narrow grade columns |
+| F-06 | Radar rows: 66 high, 8 px side padding, 1 px rule, no grey fill on the sorted column, neutral 0.02 hover | FG1 "Row" 1128 x 66, cell padding 12 8 12 8 | Rows were 78 high, so about one more ad now fits per screen at 1504 x 900. No hover is drawn in Figma, so hover uses the frame's own inset fill and orange stays "selected" (S-80) |
+| F-07 | Name cell: 40 px thumbnail, radius 4, no border, 8 to the text. Name 14/22 Regular, sub-line 12/20 at 0.65 with no gap | FG1 "Rectangle 6" 40 x 40 r4, "Table cell text", "3 ads" | The rules doc had the name in Semi Bold and the sub-line at 0.45. The frame is lighter and reads better against Semi Bold headers |
+| F-08 | Media type in the Radar sub-line is plain text with a 12 px icon. Elsewhere it is a neutral tag (fill 0.02, 1 px 0.06, radius 4) | FG1 "3 ads" is plain text; FG1 "Tag / Basic" | The purple and blue pills were outside the palette, and a tag in the sub-line pushed rows past 66 |
+| F-09 | Grade tags: 22 high, hug the letter, 12/20 Semi Bold. A `#18B723` on `#E8F7E6` / `#8ADE87`. B `#1677FF` on `#E6F4FF` / `#91CAFF`. C `#F38D05` on `#FFF8E6` / `#FFD480`. D `#ED383B` on `#FFF2F0` / `#FFBEB8` | FG1 "Tag / Colorful" (Green, Blue, Gold, Red) | Two competing sets of grade colors were in the stylesheet. Both are replaced by the frame's values, now tokens |
+| F-10 | Row action stays a white outlined default button, 32 high, radius 6 | Deliberate departure. FG1's "Iterate" is 30 high with a 0.02 fill and a caret | Locked rule: row actions must never read as grades or tags. The grey "Iterate" sits one column from the grade tags and has the same height and fill as a tag |
+| F-11 | Tab count tags: fill 0.02, 1 px 0.06, radius 4, 12/20 Regular at 0.88 | FG1 "Tag / Basic" inside each tab | Counts were grey text in a border with no fill |
+| F-12 | Radius scale applied everywhere: pills at 999 px, 3 px, 10 px, 14 px, 16 px and 22 px corners are gone | No pill-shaped tag, chip or button appears in any frame | Filter chips, idea chips, rating control and lineage note take 6. Labels and goal tag take 4. Bottom sheets round to 8 |
+| F-13 | Cards: white, 1 px `#F0F0F0`, radius 8, no shadow | FG2 "Frame 44", FG6 "Image ad project" | Confirms S-06 against the frames |
+| F-14 | 40 px buttons take radius 8. 32 and 24 px stay at 6. Default buttons get antd's 0 2 0 shadow at 0.02 | FG3 "Generate image ad" 427 x 40 r8; every default button carries the shadow | The locked rule said 6 for all controls. The frame is specific about large buttons |
+| F-15 | Colors in `src/styles.css` resolve to tokens: 218 hard-coded values replaced. Green, gold, red and blue variants map to the four status hues. Greys map to the two fills, two borders and four text alphas | Palette in the frames has no other values | "No new hex values." What remains is the dark shell and the ad artwork |
+| F-16 | New tokens: `--c-fill-2` (black 0.02) and the eight grade tints | FG1 | The frames use two inset fills, and the tints had no token |
+| F-17 | Divider token `#EFEFEF` corrected to `#F0F0F0` (CSS `--line`, antd `colorBorderSecondary`) | Black 0.06 on white | One value off the frame |
+| F-18 | Dark shell kept: dark rail and sidebar with a warm gradient at the foot | FG1 "Frame 95900" radial `#4B1A05` to `#041729`, "Frame 279" linear brown | The audit asked whether the shell is light or dark. The frames are dark, so nothing changes |
+| F-19 | Emoji not used. Tab icons and row actions use antd outlined icons | Departure. FG1 uses emoji in tab labels and "Iterate" | Locked rule: antd outlined icons only. Emoji render differently per platform |
+| F-20 | **Reverses 12:39 and 13:46.** Radar tab strip as drawn: card tabs on a 1 px rule, 46 high, 12 padding, 4 apart, radius 6 on the top corners. Inactive `#F5F5F5` with a full border, active white and open at the bottom. Every label 14/22 Semi Bold at 0.88. Table square and directly under the strip | FG1 "Tab Item / Container" | The rounded grey bar with a 10 px Chrome-style active tab used a radius outside the scale and a shape no frame has. The brief asks for this component to map 1:1 to the Radar frame |
+| F-21 | **Reverses 13:36.** Overview / Radar switch as Atria's Segmented: 40 px track at fill 0.04 with radius 8, 36 px items with radius 6, 16/24 Regular, selected item solid primary. The slide motion stays | FG1 "Segmented" 209 x 40 and "Segmented Item" 89 x 36 | The pill was the only pill-shaped control left in the product |
+| F-22 | **Reverses part of 13:47.** Ask Raya keeps its soft orange wash. Its border is the card border, prompts are chips (radius 6, 1 px `#D9D9D9`) and the input is a 40 px control with radius 8 | Wash: agreed exception. Chips and input: FG3 controls | The wash is the one agreed exception. Pill prompts and a warm border were two more |
+| F-23 | Phone tab strip: 4 px side padding and gaps so All, Best, Improve and Rework fit at 390 without a "more" menu | No phone frames exist | Same component, tighter |
+| F-24a | Goal tag label in text color on the primary border fill | Token sweep side effect | Orange text on the orange fill was hard to read once both mapped to tokens |
+| F-24 | Not changed: orange link color, section bars on long cards, status row pattern, bookmark for "Saved", glossary | Earlier decisions, already consistent with the frames | Listed so the next pass doesn't reopen them |
+
+### Open points
+
+| Point | State |
+|---|---|
+| Popover radius | Kept at 8 (locked). FG1's popover body is 6 |
+| 16 Regular in 40 px controls | Applied to the Overview / Radar switch only. Large buttons keep 14 |
+| Totals row | Ours shows "Total" plus spend and CPA. The frame's totals row was not measured |
+| Project card padding | FG6 uses 12. Our gallery cards were not changed |
+| Asset library | Not re-measured in this pass |
+
+### Checked
+
+`npm run build` passes. Screens viewed after the change: Radar, Overview, variations page and Creative gallery at 1504; Radar at 834 and 390; ad page at 390. The ad page at 1504 was viewed before pass B only. Not viewed: editor, creative page, create form, and popovers and modals in their open state.

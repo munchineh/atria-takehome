@@ -215,3 +215,19 @@ Every row needs Mancini's yes and a Figma annotation. "Rule says" is what sectio
 6. Add one row per change to `design-rationale.md`, citing S-rules.
 
 Page order: Radar → ad page → create form → variations page → creative gallery → creative page → editor → Overview.
+
+## 14. Amendments from the Figma consistency pass (21 Nov, 14:40)
+
+Measured values replace the earlier wording where they differ. Detail and sources: `design-rationale.md`, "Figma consistency pass".
+
+| Rule | Was | Now |
+|---|---|---|
+| Tokens | One fill (0.04) | Two fills: `--c-fill` 0.04 and `--c-fill-2` 0.02. Grade tints are tokens |
+| Type | Six styles | Adds 20/28 Semi Bold for overlay titles and the account name; 16/24 Regular inside the 40 px segmented switch |
+| Radius | Controls 6 | 40 px buttons 8 |
+| S-16 | Grade tag fixed 30 x 22 | Hugs its letter, 22 high |
+| S-18 | Orange pill switch | Segmented shape: track radius 8, items radius 6, selected item primary |
+| S-19, V-09 | Line tabs on Radar | Card tabs as drawn in FG1; line tabs elsewhere |
+| S-50 | Header fill 0.04, no column dividers, rows 64 | Fill 0.02, split lines, header 48, rows 66, cells 12 / 8 |
+| S-51 | Name Strong, sub-line tertiary | Name Body Regular, sub-line Small at 0.65 |
+| S-81 | Rows hover in the primary tint | Rows hover in `--c-fill-2` |
