@@ -2,16 +2,16 @@ import { useQuota } from '../data/live';
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, App, Breadcrumb, Button, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
+import { Alert, App, Button, Dropdown, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
 import {
-  BarChartOutlined,
-  BulbOutlined,
   ArrowRightOutlined,
+  CopyPlusOutlined,
   DeleteOutlined,
   DownloadOutlined,
+  EllipsisOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
-  LeftOutlined,
+  LockOutlined,
 } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
@@ -22,6 +22,8 @@ import { AdArt } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
 import { ReportAudience } from '../components/ReportAudience';
 import { Rating } from '../components/Rating';
+import { PageHeader } from '../components/PageHeader';
+import { SectionHead } from '../components/SectionHead';
 
 const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
   { key: 'head', label: 'Headline' },
@@ -30,10 +32,9 @@ const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
   { key: 'cta', label: 'Button' },
 ];
 
-/** D2-01 / D2-02: always says "Predicted" (P8). */
+/** D2-01 / D2-02: always says "Predicted" (P8, S-16). */
 export function PredictedTag({ id, bare }: { id: string; bare?: boolean }) {
   const g = predictedCtr(id);
-  // 5d C5d-13: "Predicted CTR" is a label beside a dashed grade tag, not "Predicted CTR: C" in one box.
   const tag = (
     <Tooltip title="Atria's estimate of this image's CTR, from how similar ads did in this account. It can be lower than the original's, which is a sign to refine before you launch.">
       <Tag className={`predicted grade-tag g-${g}`}>{g}</Tag>
@@ -48,9 +49,8 @@ export function PredictedTag({ id, bare }: { id: string; bare?: boolean }) {
 }
 
 /**
- * Screen 7: the editor (E1 to E6, O3, O4, G5). Route #/ad/:id/variations/:vid?round=.
- * Iterate forward: every change adds a version; changing an older version or the prompt
- * makes a new variation, so nothing is ever overwritten.
+ * Editor (S-01 to S-92):
+ * Focal point: creative canvas preview. Single primary action: Apply change (or Save text when editing text, Iterate when locked).
  */
 export function Editor() {
   const { id, vid } = useParams();
@@ -74,7 +74,6 @@ export function Editor() {
 
   const quota = useQuota();
   const [ask, setAsk] = useState('');
-  // 5d option A: one way in (Refine); the choice sits where you describe the change. ?new=1 presets it (gallery entry).
   const [makeNew, setMakeNew] = useState(params.get('new') === '1');
   const [reportedTags, setReportedTags] = useState<string[]>([]);
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
@@ -87,7 +86,6 @@ export function Editor() {
   const strip = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
 
-  // A new variation or new version: follow the latest one.
   useEffect(() => {
     setSel(null);
     setTextMode('editable');
@@ -111,34 +109,38 @@ export function Editor() {
   const recGrade = recMetricKey ? c.grades[recMetricKey] : null;
   const recMeta = recMetricKey ? METRIC_META[recMetricKey] : null;
   const recValKey = recMetricKey ? ({ conversion: 'cpa', ctr: 'ctr', hook: 'hookRate', retention: 'retention' } as const)[recMetricKey] : null;
-  const recVal = recMeta && recValKey && c.values[recValKey] != null ? recMeta.unit(c.values[recValKey]!) : rec?.target === 'ROAS' ? (c.roas ?? 0).toFixed(2) : null;
+  const recVal =
+    recMeta && recValKey && c.values[recValKey] != null
+      ? recMeta.unit(c.values[recValKey]!)
+      : rec?.target === 'ROAS'
+        ? (c.roas ?? 0).toFixed(2)
+        : null;
   const recAvg = recMeta ? recMeta.unit(accountOf(c).avg[recMeta.avgKey]) : null;
   const recMetricLabel = rec ? (rec.target === 'Hook' ? 'Hook rate' : rec.target) : '';
 
-  if (!job || !v || !shown || !latest)
+  if (!job || !v || !shown || !latest) {
     return (
       <div className="page">
-        <Empty description={<b>This variation was deleted</b>}>
+        <Empty description={<strong>This variation was deleted</strong>}>
           <Button type="primary" onClick={() => nav(ws.roundPath(c.id))}>
             View variations
           </Button>
         </Empty>
       </div>
     );
+  }
 
-  // Mancini 11:00: in Creation, editing is a step off the creative page, so back (and Done) return there.
   const back = ws.inCreation ? `/creation/${c.id}/${v.id}` : ws.roundPath(c.id, job.id);
   const locked = Boolean(v.launched);
   const parent = v.from ? job.variations.find((x) => x.id === v.from!.id) : undefined;
   const cost = ACCOUNT.creditsPerImage;
-  // K17 (R-AI6), K24 (R-M6, R-M13): comma thousands, NBSP before credits, lowercase after dot, no parens.
   const costLine = `Uses ${cost} of ${credits.toLocaleString('en-US')}\u00a0credits${quota.live && quota.left === 0 ? '\u00a0· sample image, live images used up today' : ''}`;
   const typoNow = shown.n === 1 && v.typo && shown.copy?.head.includes(v.typo) ? v.typo : undefined;
   const fixedTypo = typoNow ? typoNow.replace(/(.)\1(?!.*\1\1)/, '$1') : '';
   const stylizedSlot = !v.stylized ? STYLIZED[shown.img] ?? STYLIZED[v.img] : undefined;
-  // Item 11: the Stylized text option is offered on every variation that has text, not only those with a ready-made render.
   const canStylize = !v.stylized && Boolean(shown.copy);
-  const preview = textMode === 'stylized' && stylizedSlot ? { img: stylizedSlot, copy: undefined } : editing && draft ? { img: shown.img, copy: draft } : shown;
+  const preview =
+    textMode === 'stylized' && stylizedSlot ? { img: stylizedSlot, copy: undefined } : editing && draft ? { img: shown.img, copy: draft } : shown;
   const canvasVersion = applying && !onOlder ? versions.at(-2) ?? shown : shown;
 
   const go = (nid: string) => nav(ws.editorPath(c.id, nid, job.id));
@@ -170,8 +172,25 @@ export function Editor() {
     }
   };
 
+  // S-46: omit Angle row when it repeats the creative title.
+  const readEntries = Object.entries(tagsFor(v.angle)).filter(([k, val]) => !(k === 'Angle' && val === v.angle));
+  const roundLabel = `Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}`;
+
+  const crumbs = ws.inCreation
+    ? [
+        { title: <Link to="/creation">Creative gallery</Link> },
+        { title: <Link to={back}>{v.angle}</Link> },
+      ]
+    : [
+        { title: <Link to="/">Radar</Link> },
+        { title: <Link to={ws.radarPath(c.id)}>{c.name}</Link> },
+        { title: <Link to={back}>{roundLabel}</Link> },
+      ];
+
+  const applyDisabled = !ask.trim() || (applying && !onOlder);
+
   const canvas = (
-    <div className="ed-canvas">
+    <section className="panel ed-canvas">
       <div className="ed-art">
         <AnimatePresence mode="popLayout" initial={false}>
           <motion.div
@@ -209,78 +228,82 @@ export function Editor() {
         {textMode === 'stylized' && stylizedSlot && <span className="ed-preview-label">Sample</span>}
       </div>
 
-      {/* Mancini 10:51: one compact row under the image. Versions show only once there is more than one; the rating sits at the end. */}
       <div className="ed-under">
-        {versions.length > 1 ? (
-      <div className="filmstrip" ref={strip} role="listbox" aria-label="Versions">
-        {versions.map((x) => (
-          <motion.button
-            key={x.n}
-            role="option"
-            aria-selected={x.n === shown.n}
-            className={`film ${x.n === shown.n ? 'on' : ''} ${x.state}`}
-            onClick={() => x.state === 'ready' && setSel(x.n === latest.n ? null : x.n)}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1, transition: { duration: duration.base } }}
-          >
-            <span className="film-img">
-              {x.state === 'applying' ? <i className="film-skeleton" /> : <AdArt slot={x.img} copy={x.copy} ratio={ratioFor(x.img)} alt={`v${x.n}`} />}
-            </span>
-            <span className="film-cap" title={x.caption}>
-              <b>v{x.n}</b> <span className="muted">{x.state === 'applying' ? 'Applying your change' : x.caption}</span>
-            </span>
-          </motion.button>
-        ))}
+        {versions.length > 1 && (
+          <div className="filmstrip" ref={strip} role="listbox" aria-label="Versions">
+            {versions.map((x) => (
+              <motion.button
+                key={x.n}
+                type="button"
+                role="option"
+                aria-selected={x.n === shown.n}
+                className={`film ${x.n === shown.n ? 'on' : ''} ${x.state}`}
+                onClick={() => x.state === 'ready' && setSel(x.n === latest.n ? null : x.n)}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1, transition: { duration: duration.base } }}
+              >
+                <span className="film-img">
+                  {x.state === 'applying' ? <i className="film-skeleton" /> : <AdArt slot={x.img} copy={x.copy} ratio={ratioFor(x.img)} alt={`v${x.n}`} />}
+                </span>
+                <span className="film-cap" title={x.caption}>
+                  <strong>v{x.n}</strong> <span className="t-help">{x.state === 'applying' ? 'Applying your change' : x.caption}</span>
+                </span>
+              </motion.button>
+            ))}
+          </div>
+        )}
+
+        <div className="ed-meta-row">
+          <span className="ed-predict">
+            <PredictedTag id={v.id} />
+            {c.grades.ctr && <span className="t-help">vs {c.grades.ctr} on the original</span>}
+          </span>
+          <Rating
+            question="Is this result good?"
+            onRate={(r) => {
+              setRating(r);
+              if (r === 'down' && mobile) setTimeout(() => document.querySelector('.ed-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+            }}
+          />
+        </div>
       </div>
-        ) : null}
-        {/* Mancini 10:54: the prediction belongs to this image, so it sits under it, against the original's grade on the same metric. */}
-        <span className="ed-predict">
-          <PredictedTag id={v.id} />
-          {c.grades.ctr && <span className="t-help">vs {c.grades.ctr} on the original</span>}
-        </span>
-        <Rating
-          question="Is this result good?"
-          onRate={(r) => {
-            setRating(r);
-            if (r === 'down' && mobile) setTimeout(() => document.querySelector('.ed-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
-          }}
-        />
-      </div>
-    </div>
+    </section>
   );
 
   const textBlock = (
     <section className="ed-block">
-      <div className="ed-block-head">
-        <b>Text</b>
-        {canStylize && (
-          <Segmented
-            size="small"
-            value={textMode}
-            onChange={(m) => {
-              setTextMode(m as typeof textMode);
-              setEditing(false);
-            }}
-            options={[
-              { value: 'editable', label: 'Editable text' },
-              { value: 'stylized', label: 'Stylized text' },
-            ]}
-          />
-        )}
-      </div>
-      {/* Mancini 10:53: one help line, the text itself, one action. No info box, no fake preview. */}
-      <p className="t-help ed-text-help">
-        {v.stylized
-          ? 'Atria drew this text into the image. Changing it makes a new version.'
-          : textMode === 'stylized'
-            ? 'Atria draws the text into the image. It looks richer, but words can come out misspelled.'
-            : 'Text sits on top of the image, so you can change it any time for free.'}
-      </p>
+      <SectionHead
+        title="Text"
+        help={
+          v.stylized
+            ? 'Atria drew this text into the image. Changing it makes a new version.'
+            : textMode === 'stylized'
+              ? 'Atria draws the text into the image. It looks richer, but words can come out misspelled.'
+              : 'Text sits on top of the image, so you can change it any time for free.'
+        }
+        action={
+          canStylize ? (
+            <Segmented
+              size="small"
+              value={textMode}
+              onChange={(m) => {
+                setTextMode(m as typeof textMode);
+                setEditing(false);
+              }}
+              options={[
+                { value: 'editable', label: 'Editable text' },
+                { value: 'stylized', label: 'Stylized text' },
+              ]}
+            />
+          ) : undefined
+        }
+      />
+
       <AnimatePresence mode="wait" initial={false}>
         {v.stylized || textMode === 'stylized' ? (
           <motion.div key="styl" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            <div className="ed-text-sum small">
-              {shown.copy ? [shown.copy.head, shown.copy.price, shown.copy.band, shown.copy.cta].filter(Boolean).join(' · ') : 'No text'}
+            <div className="ed-text-sum">
+              {shown.copy ? [shown.copy.head, shown.copy.price, shown.copy.band, shown.copy.cta].filter(Boolean).join('\u00a0· ') : 'No text'}
             </div>
             <div className="ed-text-action">
               <Button
@@ -304,23 +327,25 @@ export function Editor() {
               const bad = f.key === 'head' && typoNow && val.includes(typoNow);
               return (
                 <label key={f.key} className="ed-field">
-                  <span className="t-label">{f.label}</span>
+                  <span className="ed-label">{f.label}</span>
                   <Input
                     value={val}
                     status={bad ? 'warning' : undefined}
                     onChange={(e) => setDraft({ ...draft, [f.key]: e.target.value || (f.key === 'band' ? undefined : '') })}
                   />
                   {bad && (
-                    <span className="small warn-line">
+                    <span className="ed-warn">
                       May contain a typo: {typoNow}.{' '}
-                      <a onClick={() => setDraft({ ...draft, head: val.replace(typoNow!, fixedTypo) })}>Change to {fixedTypo}</a>
+                      <button type="button" className="ed-inline-link" onClick={() => setDraft({ ...draft, head: val.replace(typoNow!, fixedTypo) })}>
+                        Change to {fixedTypo}
+                      </button>
                     </span>
                   )}
                 </label>
               );
             })}
             <span className="t-help">Text edits don't use credits</span>
-            <div className="row-gap">
+            <div className="ed-text-action">
               <Button
                 type="primary"
                 disabled={applying}
@@ -337,18 +362,20 @@ export function Editor() {
           </motion.div>
         ) : (
           <motion.div key="view" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-stack">
-            <div className="ed-text-sum small">
-              {shown.copy ? [shown.copy.head, shown.copy.price, shown.copy.band, shown.copy.cta].filter(Boolean).join(' · ') : 'No text'}
+            <div className="ed-text-sum">
+              {shown.copy ? [shown.copy.head, shown.copy.price, shown.copy.band, shown.copy.cta].filter(Boolean).join('\u00a0· ') : 'No text'}
             </div>
             {typoNow && (
-              <span className="small warn-line">
+              <span className="ed-warn">
                 <ExclamationCircleOutlined /> The headline may contain a typo: {typoNow}
               </span>
             )}
             <div className="ed-text-action">
-              <Button icon={<FontSizeOutlined />} onClick={() => setEditing(true)} disabled={onOlder}>
-                Edit text
-              </Button>
+              <Tooltip title={onOlder ? `Switch to v${latest.n} to edit text.` : undefined}>
+                <Button icon={<FontSizeOutlined />} onClick={() => setEditing(true)} disabled={onOlder}>
+                  Edit text
+                </Button>
+              </Tooltip>
               <span className="t-help">Free</span>
             </div>
           </motion.div>
@@ -359,13 +386,14 @@ export function Editor() {
 
   const changeBlock = (
     <section className="ed-block">
+      <SectionHead title="Refine" />
       <AnimatePresence initial={false}>
         {rating === 'down' && (
           <motion.div key="why" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-reasons">
             <span className="t-label">What's wrong?</span>
-            <div className="chips">
+            <div className="ed-chips">
               {REASONS.map((r) => (
-                <button key={r.label} className="chip" onClick={() => reason(r)}>
+                <button key={r.label} type="button" className="chip" onClick={() => reason(r)}>
                   {r.label}
                 </button>
               ))}
@@ -374,7 +402,6 @@ export function Editor() {
         )}
       </AnimatePresence>
       <label className="ed-field">
-        {/* 5d C5d-14: field labels are regular, like the library's form labels; "Refine" is the panel title. */}
         <span className="ed-label">What should change?</span>
         <Input.TextArea
           ref={input as never}
@@ -390,9 +417,9 @@ export function Editor() {
           }}
         />
       </label>
-      <div className="chips">
+      <div className="ed-chips">
         {CHIPS.map((ch) => (
-          <button key={ch} className="chip" onClick={() => chip(ch)}>
+          <button key={ch} type="button" className="chip" onClick={() => chip(ch)}>
             {ch}
           </button>
         ))}
@@ -404,9 +431,9 @@ export function Editor() {
               type="info"
               showIcon
               icon={<MadeFromIcon />}
-              message={`You're on v${shown.n}. A change here makes a new variation, and v${latest.n} stays as it is.`}
+              title={`You're on v${shown.n}. A change here makes a new variation, and v${latest.n} stays as it is.`}
               action={
-                <Button size="small" type="link" onClick={() => setSel(null)}>
+                <Button type="link" onClick={() => setSel(null)}>
                   Go to v{latest.n}
                 </Button>
               }
@@ -426,8 +453,7 @@ export function Editor() {
               { label: 'New variation', value: 'variation' },
             ]}
           />
-          <p className="ed-mode-help">
-            {/* K2 (R-T3): never "a separate creative" or "this creative". */}
+          <p className="t-help ed-mode-help">
             {makeNew
               ? 'Makes a new variation next to this one. You can shortlist and test it on its own.'
               : `Adds v${latest.n + 1} to this variation. Earlier versions stay in the history below the image.`}
@@ -436,11 +462,12 @@ export function Editor() {
       )}
       {!mobile && (
         <div className="ed-apply">
-          <span className="muted small">{costLine}</span>
-          <Button type="primary" disabled={!ask.trim() || (applying && !onOlder)} onClick={() => apply(ask)}>
-            {/* K6 (R-T8): "Create new variation" everywhere. */}
-            {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
-          </Button>
+          <span className="t-help">{costLine}</span>
+          <Tooltip title={applyDisabled ? (!ask.trim() ? 'Describe what you want to change first.' : 'Applying your previous change.') : undefined}>
+            <Button type={editing || locked ? 'default' : 'primary'} disabled={applyDisabled} onClick={() => apply(ask)}>
+              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
+            </Button>
+          </Tooltip>
         </div>
       )}
     </section>
@@ -448,7 +475,7 @@ export function Editor() {
 
   const promptBlock = (
     <section className="ed-block">
-      <button className="link-btn" onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
+      <button type="button" className="ed-inline-link" onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
         {promptOpen ? 'Hide prompt' : 'Show prompt'}
       </button>
       <AnimatePresence initial={false}>
@@ -460,11 +487,11 @@ export function Editor() {
             animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
             exit={{ opacity: 0, height: 0, transition: { height: { duration: duration.base, ease: ease.exit }, opacity: { duration: duration.instant } } }}
           >
-            <span className="t-label">Image prompt</span>
+            <span className="ed-label">Image prompt</span>
             <Input.TextArea value={prompt} onChange={(e) => setPrompt(e.target.value)} autoSize={{ minRows: 4, maxRows: 9 }} />
-            <span className="muted small">Brief v1 · saved for {c.product}</span>
+            <span className="t-help">Brief v1{'\u00a0'}· saved for {c.product}</span>
             {prompt !== promptFor(v, c.product) && (
-              <div className="row-gap wrap">
+              <div className="ed-text-action">
                 <Button
                   onClick={() => {
                     const nid = branch(job.id, v, 'prompt', prompt);
@@ -474,7 +501,7 @@ export function Editor() {
                 >
                   Create new variation
                 </Button>
-                <span className="muted small">{costLine}</span>
+                <span className="t-help">{costLine}</span>
               </div>
             )}
           </motion.div>
@@ -483,19 +510,14 @@ export function Editor() {
     </section>
   );
 
-  const tags = tagsFor(v.angle);
   const tagBlock = (
-    // 5d C5d-12: title styled like "Text"; labels in a column with the dotted line hugging the word; Report on its own row.
-    <section className="ed-block ed-tagblock">
-      <div className="ed-block-head">
-        <b>How Atria reads this image</b>
-      </div>
-      {/* Mancini 10:51: one value per row reads as text, not chips. Each row has its own report, like Likely audience. */}
-      <dl className="ed-tags ed-tags-plain">
-        {Object.entries(tags).map(([k, val]) => (
+    <section className="ed-block">
+      <SectionHead title="How Atria reads this image" />
+      <dl className="ed-tags-plain">
+        {readEntries.map(([k, val]) => (
           <div key={k} className="ed-tag-row">
             <Tooltip title={TAG_TIPS[k]}>
-              <dt className="kv-k dotted">{k}</dt>
+              <dt className="dotted">{k}</dt>
             </Tooltip>
             <dd>{val}</dd>
             <ReportAudience
@@ -511,119 +533,93 @@ export function Editor() {
     </section>
   );
 
-  const roundLabel = `Round ${Math.max(1, jobsFor(c.id).findIndex((r) => r.id === job.id) + 1)}\u00a0· ${job.date}`;
-
   return (
     <motion.div {...pageTransition} className="page editor">
-      <div className="detail-head">
-        <div className="ws-crumb-row">
-          {/* E3 (R-L, R-R): on phones use one clean back link to the round instead of a 3-line breadcrumb. */}
-          {mobile ? (
-            <>
-              <Link to={back} className="phone-back">
-                <LeftOutlined /> {roundLabel}
-              </Link>
-              {ws.inCreation && (
-                <Tag className="ws-cue" icon={<BulbOutlined />}>
-                  Creation
-                </Tag>
-              )}
-            </>
+      <PageHeader
+        crumbs={crumbs}
+        title={ws.inCreation ? `Edit ${v.angle}` : v.angle}
+        tag={
+          locked ? (
+            <Tag color="blue" icon={<LockOutlined />}>
+              In an ad
+            </Tag>
+          ) : undefined
+        }
+        desc={
+          locked
+            ? "This creative is in an ad, so it can't change. Iterate to make a new creative from it."
+            : 'Describe a change or edit the text. Each change is saved as a new version.'
+        }
+        actions={
+          ws.inCreation ? (
+            <Button onClick={() => nav(back)}>Done</Button>
           ) : (
             <>
-              {/* DL-06: mode cue in the breadcrumb when working inside Creation. */}
-              {ws.inCreation && (
-                <Tag className="ws-cue" icon={<BulbOutlined />}>
-                  Creation
-                </Tag>
-              )}
-              <Breadcrumb
-                items={[
-                  ...(c.project || ws.inCreation
-                    ? [{ title: <Link to="/creation">Creative gallery</Link> }, ...(c.project ? [] : [{ title: <span className="crumb-name">{c.name}</span> }])]
-                    : [{ title: <Link to="/">Radar</Link> }, { title: <Link to={ws.radarPath(c.id)} className="crumb-name">{c.name}</Link> }]),
-                  { title: <Link to={back}>{roundLabel}</Link> },
-                  { title: v.angle },
-                ]}
-              />
-            </>
-          )}
-        </div>
-        {/* DL-06: explicit "View in Radar" exit link when inside Creation on a Radar ad. */}
-        {false && ws.inCreation && !c.project && (
-          <div className="detail-head-right">
-            <Button size="small" icon={<BarChartOutlined />} onClick={() => nav(ws.radarPath(c.id))}>
-              View in Radar
-            </Button>
-          </div>
-        )}
-      </div>
-
-      <div className="ed-head">
-        <div className="ed-title">
-          <h1 className="page-title">{ws.inCreation ? `Edit ${v.angle}` : v.angle}</h1>
-          <p className="muted desc">Describe a change or edit the text. Each change is saved as a new version.</p>
-          {(v.from || v.launched || !rec) && (
-            <div className="row-gap wrap small ed-subtags">
-              {!rec && <PredictedTag id={v.id} />}
-              {v.from && (
-                <Tag icon={<MadeFromIcon />} className="from-tag">
-                  {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
-                  {parent ? (
-                    <>
-                      {' '}
-                      of <a onClick={() => go(parent.id)}>{v.from.angle}</a>
-                    </>
-                  ) : null}
-                </Tag>
-              )}
-              {v.launched && <Tag color="default">Paused in Meta</Tag>}
-            </div>
-          )}
-        </div>
-        {/* Item 10 (R-I): Utility actions only in the top-right toolbar. */}
-        <div className="ed-tools">
-          {ws.inCreation ? (
-            <Button type="primary" onClick={() => nav(back)}>
-              Done
-            </Button>
-          ) : (
-            <>
-          <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded v${shown.n}`)} aria-label="Download">
-            {mobile ? '' : 'Download'}
-          </Button>
-          <Button danger type="text" icon={<DeleteOutlined />} onClick={() => setConfirmDelete(true)} aria-label="Delete variation">
-            {mobile ? '' : 'Delete variation'}
-          </Button>
-            </>
-          )}
-        </div>
-      </div>
-
-      {/* Item 12 (DL-05, R-L): Dedicated diagnostic banner — metric + grade tag, full issue line, no truncation. */}
-      {rec && (
-        <section className={`ed-diag-banner ${recGrade ? `tone-${recGrade[0]}` : ''}`} aria-label="Diagnostic summary">
-          <div className="ed-diag-main">
-            <span className="t-label ed-diag-from">Original ad</span>
-            <div className="ed-diag-head">
-              <span className="ed-diag-metric">{recMetricLabel}</span>
-              {/* G9 (R-I): show the grey "No grade" tag + tooltip when a metric (like ROAS) is ungraded on this account. */}
-              {recGrade ? (
-                <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
-              ) : (
-                <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
-                  <Tag className="rec-grade no-grade">No grade</Tag>
+              <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded v${shown.n}`)}>
+                Download
+              </Button>
+              <Dropdown
+                trigger={['click']}
+                placement="bottomRight"
+                menu={{
+                  items: [
+                    {
+                      key: 'delete',
+                      danger: true,
+                      icon: <DeleteOutlined />,
+                      label: 'Delete variation',
+                      onClick: () => setConfirmDelete(true),
+                    },
+                  ],
+                }}
+              >
+                <Tooltip title="More actions.">
+                  <Button icon={<EllipsisOutlined />} aria-label="More actions" />
                 </Tooltip>
-              )}
-              {recVal && <span className="ed-diag-val">{recVal}</span>}
-              {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
-            </div>
-            <p className="ed-diag-issue">{rec.issue}</p>
-            {/* Mancini 10:54: "Fix Say what…" read as one broken sentence. The change follows the issue on its own line. */}
-            <p className="ed-diag-fix">
-              <ArrowRightOutlined aria-hidden /> {rec.fix}
-            </p>
+              </Dropdown>
+            </>
+          )
+        }
+      />
+
+      {v.from && (
+        <p className="ed-origin-note">
+          <MadeFromIcon />
+          <span>
+            {v.from.how === 'stylized' ? 'Stylized text from' : 'New variation from'} v{v.from.v}
+            {parent ? (
+              <>
+                {' '}
+                of{' '}
+                <button type="button" className="ed-inline-link" onClick={() => go(parent.id)}>
+                  {v.from.angle}
+                </button>
+              </>
+            ) : null}
+          </span>
+        </p>
+      )}
+
+      {rec && (
+        <section className="panel ed-diag-banner" aria-label="Original ad diagnostic">
+          <span className="t-help ed-diag-from">Original ad</span>
+          <div className="ed-diag-head">
+            <span className="ed-diag-metric">{recMetricLabel}</span>
+            {recGrade ? (
+              <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
+            ) : (
+              <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                <Tag className="rec-grade no-grade">No grade</Tag>
+              </Tooltip>
+            )}
+            {recVal && <span className="ed-diag-val">{recVal}</span>}
+            {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
           </div>
+          <p className="ed-diag-issue">{rec.issue}</p>
+          <p className="ed-diag-fix">
+            <ArrowRightOutlined aria-hidden />
+            <span>{rec.fix}</span>
+          </p>
         </section>
       )}
 
@@ -633,10 +629,11 @@ export function Editor() {
           {locked && (
             <div className="ed-lock">
               <span>
-                <b>This creative is in an ad, so it can't change.</b> Iterate to make a new creative from it.
+                <strong>Locked while in an ad.</strong> Iterate to edit a new copy.
               </span>
               <Button
                 type="primary"
+                icon={<CopyPlusOutlined />}
                 onClick={() => {
                   const nid = iterate(job.id, v);
                   nav(ws.inCreation ? `/creation/${c.id}/${nid}/edit?round=${job.id}` : ws.editorPath(c.id, nid, job.id));
@@ -646,7 +643,6 @@ export function Editor() {
               </Button>
             </div>
           )}
-          <h4 className="ed-panel-title">Refine</h4>
           {changeBlock}
           {textBlock}
           {promptBlock}
@@ -654,9 +650,8 @@ export function Editor() {
         </aside>
       </div>
 
-      {/* G6 (R-R): on phones only show the docked Apply bar once there is a change to apply so the image stays clear. */}
       <AnimatePresence>
-        {mobile && ask.trim().length > 0 && (
+        {mobile && !locked && ask.trim().length > 0 && (
           <>
             <div className="sticky-spacer" />
             <motion.div
