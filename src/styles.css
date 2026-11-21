@@ -2289,3 +2289,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .var-group-eyebrow { justify-content: flex-start; align-self: flex-start; }
 .total-label { display: inline-flex; align-items: center; gap: 8px; } /* 131 */
 .panel-toggle { flex-wrap: wrap; } .copies-meta { order: 3; flex-basis: 100%; margin: 4px 0 0; justify-content: flex-start; }
+/* 132 Section heads: the help line is the second most important line (Body 14 at 0.65). Meta such as "Updated" is
+   clearly quieter (Small 12 at 0.45), so the two no longer look like one style gone wrong. */
+.sec-head-help, .sec-head-sub .sec-head-help.t-help { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
+.sec-head-meta, .sec-head-meta.t-help, .sec-head-meta .t-help, .sec-head-meta .rec-date { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
+.sec-head-sub { align-items: baseline; }
+/* 133 Switches are true capsules with a round handle: track and thumb share one shape. */
+@supports (corner-shape: round) { .ant-switch, .ant-switch-inner, .ant-switch-handle, .ant-switch-handle::before { corner-shape: round; } }

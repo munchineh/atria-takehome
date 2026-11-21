@@ -181,6 +181,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 129 | Create panel: title at 20/28 Semi Bold; "Create from product page" replaces "Rewrite from a product page"; upload tile padded; footer tighter; focused fields show one orange border with no outer ring (site-wide) | Mancini 14:40 to 14:41 | The title read as a label; double stroke on focus looked messy |
 | 130 | Ad page copies card: title "Where it runs", with a live dot, the copy count and spend beside it. "Copy to clipboard" tooltip has no full stop (it is not a sentence) | Mancini 14:42 | Flat heading; fragment tooltips take no full stop |
 | 131 | Radar totals row shows its count as the same count tag the tabs use, centered on the label | Mancini 14:43 | Two ways to show a count, and the grey "1 ad" sat off the baseline |
+| 132 | Section heads: help line at Body 14 / 0.65, meta ("Updated Nov 19") at Small 12 / 0.45 | Mancini 14:44 | Two near-identical greys looked like an error, and the help line matters more than the timestamp |
+| 133 | Switches are true capsules with a round handle (excluded from the continuous-corner rule) | Mancini 14:44 | A squircle track with a round thumb mixed two shapes |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
