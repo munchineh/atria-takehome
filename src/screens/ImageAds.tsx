@@ -168,7 +168,7 @@ export function ImageAds() {
     <motion.div {...pageTransition} className="page image-ads">
       <PageHeader
         title="Creative gallery"
-        desc="Every creative you've kept. See its versions and the ads it runs in."
+        desc="Every creative you've kept. See its versions and the ads they run in."
         actions={
           <>
             <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
