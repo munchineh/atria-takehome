@@ -2684,3 +2684,6 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 }
 /* 211 Phones: cards on the ad page sit 12 px apart, the same as the suggestion cards. */
 @media (max-width: 767px) { .detail-grid { gap: 12px; } }
+/* 216 Share-of-spend bars are dark blue, mixed from the info blue so it doesn't read as the B grade. */
+:root { --c-share: color-mix(in srgb, var(--c-info) 62%, #000); }
+.bar-list-track i.neutral, .tag-share i { background: var(--c-share); opacity: 1; }
