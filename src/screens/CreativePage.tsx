@@ -11,7 +11,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   EllipsisOutlined,
-  LockOutlined, RightOutlined } from '../components/AppIcons';
+  LockOutlined, DownOutlined } from '../components/AppIcons';
 import { CREATIVES, plural } from '../data/mock';
 import { findCreative, recName, useStore } from '../data/store';
 import { TAG_TIPS, predictedCtr, ratioFor, tagsFor } from '../data/variations';
@@ -285,7 +285,7 @@ export function CreativePage() {
             </dl>
             {briefs[c.product] && (
               <details className="cp-brief">
-                <summary><RightOutlined aria-hidden /> Show the brief</summary>
+                <summary className="acc-toggle"><span>Show brief</span><DownOutlined aria-hidden /></summary>
                 <p>{briefs[c.product]}</p>
               </details>
             )}

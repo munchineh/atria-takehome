@@ -11,7 +11,7 @@ import {
   EllipsisOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
-  LockOutlined, SmileOutlined, BulbOutlined, TagOutlined } from '../components/AppIcons';
+  LockOutlined, SmileOutlined, BulbOutlined, TagOutlined, DownOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
@@ -488,8 +488,9 @@ export function Editor() {
 
   const promptBlock = (
     <section className="ed-block">
-      <button type="button" className="ed-inline-link" onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
-        {promptOpen ? 'Hide prompt' : 'Show prompt'}
+      <button type="button" className="acc-toggle" onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
+        <span>{promptOpen ? 'Hide prompt' : 'Show prompt'}</span>
+        <DownOutlined aria-hidden />
       </button>
       <AnimatePresence initial={false}>
         {promptOpen && (

@@ -2538,3 +2538,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ed-related-ad:hover { background: var(--c-fill); color: var(--c-text); }
 .ed-related-id { display: flex; flex-direction: column; min-width: 0; }
 .ed-related-id b { font-weight: 600; }
+/* 178 Accordion rows ("Show prompt", "Show brief"): a full-width row with the label on the left and a chevron on the right that flips when open. */
+.acc-toggle, .cp-brief summary.acc-toggle { all: unset; box-sizing: border-box; display: flex; align-items: center; justify-content: space-between; gap: 12px; width: calc(100% + 24px); margin: 0 -12px; padding: 8px 12px; border-radius: var(--r-control); font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); cursor: pointer; list-style: none; }
+.acc-toggle:hover { background: var(--c-fill); }
+.acc-toggle:focus-visible { box-shadow: 0 0 0 2px var(--c-primary-border); }
+.acc-toggle .anticon, .cp-brief summary.acc-toggle .anticon { font-size: 12px; color: var(--c-text-3); transition: transform 160ms cubic-bezier(0.2, 0, 0, 1); }
+.acc-toggle[aria-expanded="true"] .anticon, .cp-brief[open] summary.acc-toggle .anticon { transform: rotate(180deg); }
+.cp-brief { padding-top: 4px; }
