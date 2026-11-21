@@ -62,7 +62,7 @@ export const theme: ThemeConfig = {
     InputNumber: { borderRadius: 8, borderRadiusLG: 8 },
     Checkbox: { borderRadiusSM: 4 },
     // F-14: 40 px buttons take radius 8 as in FG3 "Generate image ad"; 32 and 24 px stay at 6.
-    Button: { borderRadius: 8, borderRadiusLG: 8, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: '0 2px 0 rgba(0, 0, 0, 0.02)' },
+    Button: { borderRadius: 8, borderRadiusLG: 8, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: 'none' },
     Segmented: { borderRadius: 8, borderRadiusSM: 4 },
   },
 };

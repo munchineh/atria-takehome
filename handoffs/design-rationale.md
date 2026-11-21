@@ -184,6 +184,11 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 132 | Section heads: help line at Body 14 / 0.65, meta ("Updated Nov 19") at Small 12 / 0.45 | Mancini 14:44 | Two near-identical greys looked like an error, and the help line matters more than the timestamp |
 | 133 | Switches are true capsules with a round handle (excluded from the continuous-corner rule) | Mancini 14:44 | A squircle track with a round thumb mixed two shapes |
 | 134 | Toasts are a dark bar at the bottom center (the action bar's surface), white text, status icon, action as a bold underlined link | Mancini 14:45 | A white toast at the top of a white page was easy to miss and read as stock antd |
+| 135 | Ad page takes mock B's structure on A's tokens. Status chips above the title: the ad's group ("To improve") with a status dot, and the goal. Both are pills | Mancini 14:47; mock B | State before name. Pills are allowed for chips and new components where they lift the design; controls, cards and tags keep A's shapes |
+| 136 | Summary card has no "Summary" label. The reading is the headline (16/24 Semi Bold). Metrics sit in one strip of equal cells: label, value at 20/28, then the grade with a bar for its band and the account average | Mancini 14:47; mock B; research report (one metric strip, the grade as the one colored signal) | The card had a label, a body line and loose stats at the same weight. The bar shows where a grade sits without opening the popover |
+| 137 | Suggestions are numbered in priority order and carry a "Pick" chip that turns dark and reads "Picked". The checkbox is gone; the whole card still toggles | Mancini 14:47; mock B | A checkbox read as a form. The number makes "in order of priority" visible |
+| 138 | Action bar is a pill and says what the round will be: "2 suggestions picked · 8 variations · 32 of 1,298 credits". It squares off when it opens into the form | Mancini 14:47 ("should be suggestions", not fixes) | Count and cost were only visible after opening the form |
+| 139 | No button has a shadow | Mancini 14:48 | Default buttons had antd's faint shadow and primary ones didn't |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

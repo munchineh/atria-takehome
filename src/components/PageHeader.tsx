@@ -10,6 +10,7 @@ export function PageHeader({
   title,
   desc,
   tag,
+  eyebrow,
   actions,
   crumbs,
   className = '',
@@ -17,6 +18,8 @@ export function PageHeader({
   title: ReactNode;
   desc: ReactNode;
   tag?: ReactNode;
+  /** Status chips above the title (Mancini 14:47): what state this thing is in, before its name. */
+  eyebrow?: ReactNode;
   actions?: ReactNode;
   crumbs?: { title: ReactNode }[];
   className?: string;
@@ -26,6 +29,7 @@ export function PageHeader({
       {crumbs && <Breadcrumb className="ph-crumbs" items={crumbs} />}
       <div className="ph-row">
         <div className="ph-text">
+          {eyebrow && <div className="ph-eyebrow">{eyebrow}</div>}
           <div className="ph-title-row">
             <Typography.Title level={1} className="page-title">
               {title}

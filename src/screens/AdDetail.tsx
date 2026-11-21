@@ -1,7 +1,7 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Grid, Button, Checkbox, ConfigProvider, Switch, Tag, Tooltip } from 'antd';
+import { App, Grid, Button, ConfigProvider, Switch, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
 import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -19,7 +19,7 @@ import {
   goalOf,
   type Creative as CreativeT,
   type MetricKey,
-  type Recommendation, copyStatus, copiesTitle, platformOf } from '../data/mock';
+  type Recommendation, copyStatus, copiesTitle, platformOf, TABS } from '../data/mock';
 import { accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { ideaText, iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative } from '../components/Thumb';
@@ -98,6 +98,9 @@ const KV = ({ k, v }: { k: string; v: string }) => (
   </span>
 );
 
+const BAND: Record<string, string> = { A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' };
+const BAND_PCT: Record<string, number> = { A: 92, B: 66, C: 36, D: 12 };
+
 /** Item 4 (R-H, R-I): Suggestion card in four structured parts from suggestionParts(). */
 function RecCard({
   parts,
@@ -107,7 +110,9 @@ function RecCard({
   onToggle,
   footer,
   issuesOnly,
+  index,
 }: {
+  index: number;
   issuesOnly?: boolean;
   parts: SuggestionParts;
   selected: boolean;
@@ -144,12 +149,20 @@ function RecCard({
       {/* Part 1: Diagnosis (What's happening) */}
       <div className="rec-part rec-part-diag">
         <div className="rec-diag-left">
-          {!disabled && <Checkbox checked={selected} tabIndex={-1} className="rec-check" />}
+          <span className="rec-num" aria-hidden>{index}</span>
           {gradeTag}
           <span className="rec-metric">{evidence.metric}</span>
           <span className="rec-issue-text">{diagnosis}</span>
         </div>
-        {recTag}
+        <span className="rec-diag-right">
+          {recTag}
+          {/* Mancini 14:47: a Pick button instead of a checkbox. The whole card still toggles, so this is its visible state. */}
+          {!disabled && (
+            <span className={`pick-chip ${selected ? 'on' : ''}`} aria-hidden>
+              {selected ? 'Picked' : 'Pick'}
+            </span>
+          )}
+        </span>
       </div>
 
       {/* Part 2: Evidence (Metric value vs account average) */}
@@ -203,7 +216,7 @@ function RecCard({
       <div className="rec-part rec-part-apply">
         {!disabled ? (
           // Mancini 14:38: the checkbox in the card's header already says picked or not. One control, one place.
-          <span className="t-help">{selected ? 'Included in the next round.' : 'Tick the box above to include it.'}</span>
+          <span className="t-help">{selected ? 'Included in the next round.' : 'Not in the next round.'}</span>
         ) : (
           <span className="t-help">Apply these ideas when creating your next ad.</span>
         )}
@@ -309,7 +322,7 @@ export function AdDetail() {
     <motion.div
       layout
       className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
-      style={{ borderRadius: bp.md ? 16 : 0 }}
+      style={{ borderRadius: !bp.md ? 0 : morph ? 16 : 32 }}
       initial={{ y: bp.md ? 0 : 24, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: spring.gentle }}
       transition={{ layout: spring.layout }}
@@ -360,7 +373,7 @@ export function AdDetail() {
                   {bp.md && <span className="muted small left">Select more suggestions to create more variations.</span>}
                 </>
               ) : selected.length === 0 ? (
-                <span>Select a suggestion to create variations</span>
+                <span>Pick a suggestion to create variations</span>
               ) : short_ ? (
                 <span>
                   {/* K18 (R-M8) */}
@@ -369,10 +382,10 @@ export function AdDetail() {
               ) : (
                 <>
                   <b>
-                    <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
+                    <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} picked
                   </b>
-                  {/* E1: hide secondary helper on phones so docked bar stays one compact row. */}
-                  {bp.md && <span className="muted small left">Choose how many variations and the size in the next step.</span>}
+                  {/* Mancini 14:47: the bar says what the round will be, as in mock B. Phones keep one compact row. */}
+                  {bp.md && <span className="muted small left">{plural(total, 'variation')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>}
                 </>
               )}
             </div>
@@ -402,6 +415,16 @@ export function AdDetail() {
       <PageHeader
         crumbs={[{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: c.name }]}
         title={c.name}
+        eyebrow={
+          <>
+            {/* Mancini 14:47: the ad's group and goal as pill chips above its name, as in mock B. */}
+            <span className={`state-chip tone-${c.tab}`}>
+              <i aria-hidden />
+              {TABS.find((t) => t.key === c.tab)?.label ?? 'Not graded'}
+            </span>
+            <GoalPill c={c} />
+          </>
+        }
         desc="See why this ad performs as it does and pick the fixes to try."
         actions={
           <>
@@ -541,10 +564,7 @@ export function AdDetail() {
           {/* Item 8 (R-H, R-K1, R-K5, R-N3): Ad summary card structured in three clear zones. */}
           <motion.div variants={fadeUp} className="panel verdict">
             {/* Zone 1: Identity, goal and live status */}
-            <div className="verdict-zone verdict-head">
-              <SectionHead title="Summary" bar action={<GoalPill c={c} />} />
-            </div>
-
+            {/* Mancini 14:47 (mock B's structure on A's tokens): the reading leads the card as its headline; no "Summary" label. */}
             {/* Zone 2: Plain-language diagnosis and action */}
             <div className="verdict-zone verdict-reading">
               <p className="verdict-line">{summary(c, parent)}</p>
@@ -558,15 +578,26 @@ export function AdDetail() {
                   <span className="stat-val">
                     <OverallTag creative={c} />
                   </span>
+                  <span className="t-help stat-note">{c.overall ? BAND[c.overall[0]] : 'Not graded'}</span>
                 </div>
-                {gradedMetrics.map((k, idx) => (
-                  <div className={`stat ${idx === 0 && k === goalMetric ? 'stat-goal' : ''}`} key={k}>
-                    <span className="t-label">{METRIC_META[k].label}</span>
-                    <span className="stat-val">
-                      <GradeTag creative={c} metric={k} /> {val(c, k)}
-                    </span>
-                  </div>
-                ))}
+                {gradedMetrics.map((k, idx) => {
+                  const g = c.grades[k] as string;
+                  const meta = METRIC_META[k];
+                  return (
+                    <div className={`stat ${idx === 0 && k === goalMetric ? 'stat-goal' : ''}`} key={k}>
+                      <span className="t-label">{meta.label}</span>
+                      <span className="stat-val">{val(c, k)}</span>
+                      {/* Each grade shows where it sits: letter, a bar for its band, and the account average it's judged against. */}
+                      <span className="stat-grade">
+                        <GradeTag creative={c} metric={k} />
+                        <span className={`stat-bar g-${g[0]}`} aria-hidden>
+                          <i style={{ width: `${BAND_PCT[g[0]]}%` }} />
+                        </span>
+                      </span>
+                      <span className="t-help stat-note">Average {meta.unit(accountOf(c).avg[meta.avgKey])}</span>
+                    </div>
+                  );
+                })}
                 <div className="stat">
                   <span className="t-label">Spend</span>
                   <span className="stat-val">{money(c.spend)}</span>
@@ -618,9 +649,10 @@ export function AdDetail() {
           )}
 
 
-          {recs.map((r) => (
+          {recs.map((r, i) => (
             <RecCard
               key={r.id}
+              index={i + 1}
               issuesOnly={issuesOnly}
               parts={suggestionParts(c, r, accountOf(c).avg)}
               selected={selected.includes(r.id)}
