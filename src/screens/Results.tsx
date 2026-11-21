@@ -370,7 +370,7 @@ export function Results() {
   const roundCrumb = { title: job ? `Round ${rounds.indexOf(job) + 1}\u00a0· ${job.date}` : 'Variations' };
   const crumbs =
     c.project || ws.inCreation
-      ? [{ title: <Link to="/creation">Creative gallery</Link> }, roundCrumb]
+      ? [{ title: <Link to="/creation">Creative Gallery</Link> }, roundCrumb]
       : [
           { title: <Link to={hubCrumb().to}>{hubCrumb().label}</Link> },
           { title: <Link to={ws.radarPath(c.id)}>{c.name}</Link> },

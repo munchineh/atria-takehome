@@ -1,5 +1,5 @@
 /**
- * Creative gallery model (DL-15). The unit is a creative (one image), not an ad.
+ * Creative Gallery model (DL-15). The unit is a creative (one image), not an ad.
  *
  * A creative may or may not be tied to an ad or a campaign:
  *   - made from an ad's suggestions (a variation)      → tied to that ad

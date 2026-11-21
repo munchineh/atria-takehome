@@ -72,7 +72,7 @@ export function CreativePage() {
     <motion.div {...pageTransition} className="page creative-page">
       <PageHeader
         crumbs={[
-          { title: <Link to="/creation">Creative gallery</Link> },
+          { title: <Link to="/creation">Creative Gallery</Link> },
           { title: <Link to={`/creation/${c.id}?round=${job.id}`}>{`Round ${roundNo}\u00a0· ${job.date}`}</Link> },
           // Mancini 13:21: every breadcrumb ends with the current page.
           { title: nameOf(v) },

@@ -8,7 +8,7 @@ import { MadeFromIcon } from '../Icons';
 import { duration, ease, listDelay } from '../../motion/tokens';
 
 /**
- * Creative gallery card (DL-15, S-06, S-14, S-15, S-23, S-46, S-86):
+ * Creative Gallery card (DL-15, S-06, S-14, S-15, S-23, S-46, S-86):
  * One creative image per card. Omits facts already stated by the active group or origin tab (S-46).
  */
 export function GalleryCard({

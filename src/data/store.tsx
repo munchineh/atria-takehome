@@ -46,7 +46,7 @@ for (const a of DEMO_ACCOUNTS) for (const p of a.personas) p.why = glue(p.why);
 export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === id);
 
 /**
- * DL-16: a creative started in the Creative gallery, tied to no ad. Modeled on Atria's own starts
+ * DL-16: a creative started in the Creative Gallery, tied to no ad. Modeled on Atria's own starts
  * (from a reference, clone an ad, from an ad's suggestions, ask Raya). The gallery's "New creative" offers three;
  * the fourth (from an ad's suggestions) already lives on the ad page.
  */

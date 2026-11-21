@@ -1583,7 +1583,7 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .cols-note { margin: 0; }
 .cols-pop .inline-link { align-self: flex-start; padding: 0; height: auto; }
 
-/* ===== PAGE: Creative gallery (S-01 to S-92) ===== */
+/* ===== PAGE: Creative Gallery (S-01 to S-92) ===== */
 .gal-origin-tabs { margin-bottom: 0; }
 .gal-origin-tabs .ant-tabs-nav { margin-bottom: 16px; }
 .gal-origin-tabs .ant-tabs-tab:first-child,

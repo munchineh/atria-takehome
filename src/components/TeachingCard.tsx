@@ -21,7 +21,7 @@ const write = () => {
 };
 
 /**
- * 6b. One card, triggered by arriving where the old habit lived (Creation › Creative gallery).
+ * 6b. One card, triggered by arriving where the old habit lived (Creation › Creative Gallery).
  * Never blocks, permanent dismiss, not a tour. ?teach=1 brings it back for demos.
  */
 export function TeachingCard() {

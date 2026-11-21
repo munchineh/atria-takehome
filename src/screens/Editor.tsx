@@ -235,7 +235,7 @@ export function Editor() {
 
   const crumbs = ws.inCreation
     ? [
-        { title: <Link to="/creation">Creative gallery</Link> },
+        { title: <Link to="/creation">Creative Gallery</Link> },
         { title: <Link to={back}>{nameOf(v)}</Link> },
         // Mancini 13:21: every breadcrumb ends with the current page.
         { title: 'Edit' },

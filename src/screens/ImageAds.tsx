@@ -54,7 +54,7 @@ const HOW = (
 );
 
 /**
- * Creative gallery (DL-14, DL-15, DL-16, S-05, S-10, S-32, S-33, S-45, S-46):
+ * Creative Gallery (DL-14, DL-15, DL-16, S-05, S-10, S-32, S-33, S-45, S-46):
  * Focal point: the grid/list of saved creatives. Single primary action: New creative.
  */
 export function ImageAds() {
@@ -177,7 +177,7 @@ export function ImageAds() {
   return (
     <motion.div {...pageTransition} className="page image-ads">
       <PageHeader
-        title="Creative gallery"
+        title="Creative Gallery"
         desc="Every creative you've kept. See its versions and the ads they run in."
         actions={
           <>

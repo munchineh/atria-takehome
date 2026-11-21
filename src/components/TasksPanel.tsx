@@ -184,7 +184,7 @@ function PanelBody({ onClose }: { onClose: () => void }) {
               onClose();
             }}
           >
-            Creative gallery
+            Creative Gallery
           </Button>
           .
         </span>

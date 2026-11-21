@@ -340,7 +340,7 @@ export function Overview() {
         </div>
         <div className="ov-col">
           <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-history">
-            <SectionHead id="ov-sec-history" title="Iteration history" action={<ExpandLink to="/creation" icon={<AppstoreOutlined />}>Creative gallery</ExpandLink>} help={<>Rounds you made in Atria and how their variations did once they ran.</>} />
+            <SectionHead id="ov-sec-history" title="Iteration history" action={<ExpandLink to="/creation" icon={<AppstoreOutlined />}>Creative Gallery</ExpandLink>} help={<>Rounds you made in Atria and how their variations did once they ran.</>} />
             <IterationHistory items={history} empty={`No rounds yet for ${account.name.replace(/\.$/, '')}. Open an ad under Iteration suggestions to create variations.`} />
           </motion.section>
         </div>

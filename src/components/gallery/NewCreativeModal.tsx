@@ -14,7 +14,7 @@ const START_ICON: Record<NewCreativeStart, React.ReactNode> = {
 };
 
 /**
- * DL-16: "New creative" flow in the Creative gallery (illustrative, simple).
+ * DL-16: "New creative" flow in the Creative Gallery (illustrative, simple).
  * Step 1: Chooser with the three starts from NEW_CREATIVE_STARTS.
  * Step 2: Create panel with no ad attached (Brand, optional reference/clone picker, Ad brief, Size, count, cost).
  * On Create: calls newProject(start, name, accountId) then startJob({ creativeId: p.id, recIds: ['r1'], perRec, size }).
