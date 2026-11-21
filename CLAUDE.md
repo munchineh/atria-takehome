@@ -20,7 +20,7 @@ Take-home prototype for Atria. React 19 + Ant Design 6 (antd 6.7.1) + motion/rea
 
 ## Product rules
 - Glossary: **ad** (what runs), **copy** (one running instance of an ad in a campaign and ad set), **creative** (the image itself), **suggestion** (never "recommendation" in the UI), **variation** (a new creative made from an ad), **version** (an edit of a variation), **round** (one batch of variations). The gallery is "Creative gallery".
-- Copy rules: no em dashes, no ellipsis, US spelling, sentence case, tooltip sentences end with a full stop. No tacked-on comma phrases ("X, sorted by Y"): one clause or two sentences.
+- Copy rules: no em dashes, no ellipsis, US spelling, sentence case, tooltips that are full sentences end with a full stop; fragments ("Copy to clipboard", "Dismiss") take none, and a control whose label or icon is already clear gets no tooltip. No tacked-on comma phrases ("X, sorted by Y"): one clause or two sentences.
 - Every page has one line under its title that says what the page is for.
 - Check every change at 1504, 834 and 390 px (and 1440 and 375 for the parallel UI branch).
 - UI rules and content rules: `handoffs/ui-research-spec.md`.

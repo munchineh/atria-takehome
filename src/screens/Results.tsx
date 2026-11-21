@@ -579,9 +579,7 @@ export function Results() {
                     ],
                   }}
                 >
-                  <Tooltip title="More actions for saved options.">
                     <Button icon={<EllipsisOutlined />} aria-label="More actions for saved options" />
-                  </Tooltip>
                 </Dropdown>
               </div>
             ) : (

@@ -2350,3 +2350,32 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 139 No shadow on any button: default and primary match. */
 .ant-btn { box-shadow: none; }
 @supports (corner-shape: round) { .rec-num, .state-chip i { corner-shape: round; } }
+/* 140 Ad page top follows mock B: breadcrumb row, then image left with its type as an overlaid pill; chips, name and reading on the right. */
+.ad-top { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 12px; }
+.ad-top .ph-crumbs { margin: 0; }
+.ad-title { margin-bottom: 4px; }
+.ad-lead { margin: 8px 0 0; max-width: 60ch; font-size: var(--fs-section); line-height: var(--lh-section); color: var(--c-text-2); text-wrap: pretty; }
+.creative-panel.creative-bare { position: relative; padding: 0; border: 0; background: none; display: block; }
+.creative-bare .ad-art, .creative-bare .car { width: 100%; border-radius: var(--r-surface); }
+.creative-bare .media-pill.on-art { position: absolute; z-index: 2; left: 12px; top: 12px; margin: 0; height: 24px; padding: 0 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.65); color: #fff; }
+.verdict .verdict-metrics { border-top: 0; }
+/* 141 Likely audience: the report action sits top right of each box. */
+.persona-card { align-items: flex-start; }
+.persona-text { flex: 1; }
+.persona-card > .persona-flag.ant-btn, .persona-card > .persona-reported { flex: none; margin: 0; align-self: flex-start; }
+/* 142 Creative diversity change, in words */
+.div-level { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.div-delta { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; }
+.div-delta.up { color: var(--c-success); } .div-delta.down { color: var(--c-error); }
+.div-cat-name { white-space: normal; overflow: visible; }
+/* 145 Help popovers: real paragraphs. */
+.grade-pop.help-pop { max-width: 320px; display: flex; flex-direction: column; gap: 12px; font-size: var(--fs-body); line-height: var(--lh-body); }
+.grade-pop.help-pop p { margin: 0; line-height: var(--lh-body); color: var(--c-text); }
+/* 146 Archive nudge: fanned stack of the creatives it is about, in the 36 px icon slot. */
+.gal-status-stack { flex: none; position: relative; width: 36px; height: 36px; }
+.gal-status-row .gal-status-stack .thumb { position: absolute; width: 26px !important; height: 26px !important; border-radius: var(--r-tag); box-shadow: 0 0 0 2px #fff; }
+.gal-status-stack .thumb:nth-child(1) { left: 0; top: 0; z-index: 3; }
+.gal-status-stack .thumb:nth-child(2) { left: 5px; top: 5px; z-index: 2; }
+.gal-status-stack .thumb:nth-child(3) { left: 10px; top: 10px; z-index: 1; }
+.gal-status-ring { flex: none; width: 36px; height: 36px; display: inline-flex; } /* 147 */
+.radar .ant-table .status-cell .status-chev { display: none; } /* 148 */

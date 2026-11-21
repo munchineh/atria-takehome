@@ -1,7 +1,7 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Grid, Button, ConfigProvider, Switch, Tag, Tooltip } from 'antd';
+import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Switch, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
 import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -31,7 +31,6 @@ import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
-import { PageHeader } from '../components/PageHeader';
 import { hubCrumb } from '../data/nav';
 import { Rating } from '../components/Rating';
 import { ReportAudience } from '../components/ReportAudience';
@@ -412,21 +411,11 @@ export function AdDetail() {
   return (
     <motion.div {...pageTransition} className="page detail">
       {/* S-32: one header. The period is read-only here (set on Radar), so it's quiet meta, not a control. */}
-      <PageHeader
-        crumbs={[{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: c.name }]}
-        title={c.name}
-        eyebrow={
-          <>
-            {/* Mancini 14:47: the ad's group and goal as pill chips above its name, as in mock B. */}
-            <span className={`state-chip tone-${c.tab}`}>
-              <i aria-hidden />
-              {TABS.find((t) => t.key === c.tab)?.label ?? 'Not graded'}
-            </span>
-            <GoalPill c={c} />
-          </>
-        }
-        desc="See why this ad performs as it does and pick the fixes to try."
-        actions={
+      {/* Mancini 14:56 (mock B): the image leads on the left; chips, the ad's name and the reading sit beside it.
+          The top row keeps only the breadcrumb and the read-only period. */}
+      <header className="ph ad-top">
+        <Breadcrumb className="ph-crumbs" items={[{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: c.name }]} />
+        <div className="ph-actions">
           <>
             <Tooltip title="Set on Radar. Grades on this page use the same period.">
               <span className="ph-meta">
@@ -436,21 +425,16 @@ export function AdDetail() {
             </Tooltip>
             <HistoryButton creative={c} size="middle" />
           </>
-        }
-      />
+        </div>
+      </header>
 
       <div className="detail-grid">
         <aside className="detail-left">
-          <div className="panel creative-panel">
-            <SectionHead
-              title="Creative"
-              action={
-                <span className={`media-pill ${c.media.toLowerCase()} ad-media`}>
-                  {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
-                  {c.media}
-                </span>
-              }
-            />
+          <div className="creative-panel creative-bare">
+            <span className={`media-pill ${c.media.toLowerCase()} ad-media on-art`}>
+              {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
+              {c.media}
+            </span>
             {c.media === 'Carousel' ? <CarouselArt c={c} /> : <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />}
           </div>
 
@@ -561,15 +545,27 @@ export function AdDetail() {
         </aside>
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
+          <motion.div variants={fadeUp} className="ad-title">
+            <div className="ph-eyebrow">
+          <>
+            {/* Mancini 14:47: the ad's group and goal as pill chips above its name, as in mock B. */}
+            <span className={`state-chip tone-${c.tab}`}>
+              <i aria-hidden />
+              {TABS.find((t) => t.key === c.tab)?.label ?? 'Not graded'}
+            </span>
+            <GoalPill c={c} />
+          </>
+            </div>
+            <Typography.Title level={1} className="page-title">
+              {c.name}
+            </Typography.Title>
+            {/* The reading is this page's one line under the title: it says what is wrong and where to look. */}
+            <p className="ad-lead">{summary(c, parent)}</p>
+          </motion.div>
           {/* Item 8 (R-H, R-K1, R-K5, R-N3): Ad summary card structured in three clear zones. */}
           <motion.div variants={fadeUp} className="panel verdict">
             {/* Zone 1: Identity, goal and live status */}
             {/* Mancini 14:47 (mock B's structure on A's tokens): the reading leads the card as its headline; no "Summary" label. */}
-            {/* Zone 2: Plain-language diagnosis and action */}
-            <div className="verdict-zone verdict-reading">
-              <p className="verdict-line">{summary(c, parent)}</p>
-            </div>
-
             {/* Zone 3: KPI stat strip (Overall -> goal metric -> other graded metrics -> Spend -> ROAS) */}
             <div className="verdict-zone verdict-metrics">
               <div className="stat-strip">
@@ -625,7 +621,7 @@ export function AdDetail() {
               meta={
                 <span className="rec-date">
                   Updated {WINDOW.synced}
-                  <Tooltip title="Refresh suggestions.">
+                  <Tooltip title="Refresh suggestions">
                     <Button type="text" size="small" className="icon-only" icon={<ReloadOutlined />} aria-label="Refresh suggestions" onClick={() => message.success('Suggestions are up to date')} />
                   </Tooltip>
                 </span>
@@ -686,8 +682,9 @@ export function AdDetail() {
                   <span className="persona-text">
                     <b>{p.label}</b>
                     <span className="t-help">{p.why}</span>
-                    <ReportAudience audience={p.label} reported={reportedAud.includes(p.label)} onReported={() => setReportedAud((x) => [...x, p.label])} />
                   </span>
+                  {/* Mancini 14:56: the report action sits on the right of the card, out of the reading line. */}
+                  <ReportAudience audience={p.label} reported={reportedAud.includes(p.label)} onReported={() => setReportedAud((x) => [...x, p.label])} />
                 </div>
               ))}
             </div>

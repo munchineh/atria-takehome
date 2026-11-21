@@ -17,7 +17,7 @@ import { PageHeader } from '../components/PageHeader';
 import { SectionHead } from '../components/SectionHead';
 
 const HOW = (
-  <div className="grade-pop">
+  <div className="grade-pop help-pop">
     <p>A round gives you several options. Save the ones you want to keep and they appear here. Anything you add to an ad is saved too.</p>
     <p>Each creative keeps all its versions. Once it's in an ad it can't change, so you iterate on it instead, which makes a new&nbsp;creative.</p>
     <p>Archive creatives you're done with. Find them again under Archived, next to the&nbsp;tabs.</p>
@@ -200,8 +200,11 @@ export function ImageAds() {
           })}
           {showNudge && (
             <div className="gal-status-row">
-              <span className="gal-status-icon" aria-hidden>
-                <InboxOutlined />
+              {/* Mancini 14:58: a stack of the creatives themselves says what will be archived better than an inbox icon. */}
+              <span className="gal-status-stack" aria-hidden>
+                {stale.slice(0, 3).map((i) => (
+                  <Thumb key={i.id} c={{ img: i.img, media: 'Image', name: i.name }} size={28} />
+                ))}
               </span>
               <span className="gal-status-body">
                 <strong className="gal-status-name">{plural(stale.length, 'creative')} not used in over a week</strong>
@@ -223,7 +226,7 @@ export function ImageAds() {
                 >
                   Archive all
                 </Button>
-                <Tooltip title="Dismiss.">
+                <Tooltip title="Dismiss">
                   <Button type="text" icon={<CloseOutlined />} aria-label="Dismiss" onClick={() => setNudgeOff(true)} />
                 </Tooltip>
               </span>

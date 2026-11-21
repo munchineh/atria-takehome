@@ -587,9 +587,7 @@ export function Editor() {
                   ],
                 }}
               >
-                <Tooltip title="More actions.">
                   <Button icon={<EllipsisOutlined />} aria-label="More actions" />
-                </Tooltip>
               </Dropdown>
             </>
           )

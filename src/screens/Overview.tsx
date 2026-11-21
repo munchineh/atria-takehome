@@ -81,21 +81,6 @@ function Kpi({ label, value, help, delta, compact }: { label: string; value: str
   );
 }
 
-/** Score trend for Creative diversity: one line, no axes. */
-function ScoreTrend({ points }: { points: number[] }) {
-  const W = 100;
-  const H = 24;
-  const lo = Math.min(...points) - 2;
-  const hi = Math.max(...points) + 2;
-  const d = points.map((v, i) => `${i ? 'L' : 'M'}${((i / (points.length - 1)) * W).toFixed(1)},${(H - ((v - lo) / (hi - lo)) * H).toFixed(1)}`).join(' ');
-  return (
-    <svg className="div-trend" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden>
-      <path d={d} />
-    </svg>
-  );
-}
-
-
 export function Overview() {
   // Breadcrumbs below this page start from here (Mancini 13:21).
   useEffect(() => setHub('overview'), []);
@@ -228,12 +213,20 @@ export function Overview() {
             />
           </div>
           <div className="div-read">
-            <span className="div-level">{diversity.label}</span>
+            {/* Mancini 14:56: an unlabelled line read as random. The change is stated in words instead. */}
+            <span className="div-level">
+              {diversity.label}
+              {diversity.trend[0] !== diversity.score && (
+                <span className={`div-delta ${diversity.score > diversity.trend[0] ? 'up' : 'down'}`}>
+                  {diversity.score > diversity.trend[0] ? <ArrowUpOutlined aria-hidden /> : <ArrowDownOutlined aria-hidden />}
+                  {Math.abs(diversity.score - diversity.trend[0])} points in 8 weeks
+                </span>
+              )}
+            </span>
             <p className="div-line">{diversity.line}</p>
             <p className="t-help div-meta">
               {plural(diversity.concepts, 'concept')} · {plural(diversity.formats, 'format')} · biggest concept {Math.round(diversity.topShare * 100)}% of spend
             </p>
-            <ScoreTrend points={diversity.trend} />
           </div>
           <ul className="div-cats" aria-label="Diversity by creative dimension">
             {diversity.categories.map((cat) => (

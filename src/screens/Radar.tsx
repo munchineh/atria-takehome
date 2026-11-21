@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, LineChartOutlined, InfoCircleOutlined } from '../components/AppIcons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, InfoCircleOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -210,15 +210,15 @@ const GradingNote = ({ spend }: { spend: number }) => {
   return (
     <div className="panel gal-status grading-note">
       <div className="gal-status-row">
-        <span className="gal-status-icon" aria-hidden>
-          <LineChartOutlined />
+        {/* Mancini 14:59: the icon is the measure itself. A ring shows how far this account's spend is toward the $10,000 mark. */}
+        <span className="gal-status-ring" aria-hidden>
+          <Progress type="circle" percent={Math.min(100, Math.round((spend / RELIABLE_SPEND) * 100))} size={36} strokeWidth={12} showInfo={false} strokeColor="var(--c-primary)" railColor="var(--c-fill)" />
         </span>
         <span className="gal-status-body">
           <strong className="gal-status-name">Grades are most accurate above {amount(RELIABLE_SPEND)}{'\u00a0'}a&nbsp;month</strong>
           <span className="t-help">
             {showBar ? `This account spends ${amount(spend)} a month, so grades may change as more data comes in.` : 'This account spends less, so grades may change as more data comes in.'}
           </span>
-          {showBar && <Progress percent={Math.round((spend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="var(--c-primary)" />}
         </span>
       </div>
     </div>

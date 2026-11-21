@@ -189,6 +189,15 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 137 | Suggestions are numbered in priority order and carry a "Pick" chip that turns dark and reads "Picked". The checkbox is gone; the whole card still toggles | Mancini 14:47; mock B | A checkbox read as a form. The number makes "in order of priority" visible |
 | 138 | Action bar is a pill and says what the round will be: "2 suggestions picked · 8 variations · 32 of 1,298 credits". It squares off when it opens into the form | Mancini 14:47 ("should be suggestions", not fixes) | Count and cost were only visible after opening the form |
 | 139 | No button has a shadow | Mancini 14:48 | Default buttons had antd's faint shadow and primary ones didn't |
+| 140 | Ad page top follows mock B: a breadcrumb row with the period, then the creative on the left with no card and its type as a pill on the image; chips, the ad's name and the reading on the right, then the metric strip | Mancini 14:56 | The image leads, and the reading replaces the generic page one-liner because it says more about this page |
+| 141 | Likely audience: the report action sits at the top right of each box | Mancini 14:56 | It broke the reading line under the description |
+| 142 | Creative diversity: the unlabelled trend line is gone; the change is stated beside the level ("up 12 points in 8 weeks"). Dimension names wrap instead of truncating | Mancini 14:56 | A line with no axis or label read as decoration |
+| 143 | Tooltips: fragments take no full stop ("Dismiss", "Refresh suggestions"); the "More actions" tooltips on "…" buttons are removed | Mancini 14:42, 14:57 | The menu opens on click and names itself; a tooltip over it sat against the viewport edge. Rule updated in CLAUDE.md |
+| 144 | Creative page: "Not in an ad yet." becomes "Not running in any ad yet. It was made from an ad, and it only runs once you add it to one." | Mancini 14:57 | "Made from" (where it came from) and "in an ad" (where it runs) read as the same link |
+| 145 | "How the gallery works" popover: three paragraphs 12 px apart at Body 14/22 | Mancini 14:58 | The paragraphs ran together as one block |
+| 146 | Gallery archive nudge shows a small fanned stack of the creatives it is about, in place of the inbox icon | Mancini 14:58 | The icon was generic; the thumbnails show what will be archived |
+| 147 | Radar grade accuracy note: a 36 px ring showing the account's spend toward $10,000 replaces the chart icon and the long bar | Mancini 14:59 | The icon said nothing and the bar repeated the sentence at full width |
+| 148 | Next steps buttons on Radar have no chevron (desktop table); phone cards keep it | Mancini 14:59 | The whole row already opens the ad, and the chevron made each button a third longer |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

@@ -115,14 +115,12 @@ export function GalleryCard({
               ],
             }}
           >
-            <Tooltip title="More actions.">
               <Button
                 className="gal-more-btn"
                 icon={<EllipsisOutlined />}
                 aria-label={`More actions for ${item.name}`}
                 onClick={(e) => e.stopPropagation()}
               />
-            </Tooltip>
           </Dropdown>
         </div>
 

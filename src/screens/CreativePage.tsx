@@ -150,9 +150,7 @@ export function CreativePage() {
                 ],
               }}
             >
-              <Tooltip title="More actions.">
                 <Button icon={<EllipsisOutlined />} aria-label="More actions" />
-              </Tooltip>
             </Dropdown>
           </>
         }
@@ -237,7 +235,8 @@ export function CreativePage() {
               </dl>
             ) : (
               <div className="cp-empty">
-                <p className="t-help">Not in an ad yet.</p>
+                {/* Mancini 14:57: "made from an ad" and "running in an ad" are two different links. Say which one this is. */}
+                <p className="t-help">Not running in any ad yet. It was made from an ad, and it only runs once you add it to one.</p>
                 <Button onClick={() => nav(`/creation/${c.id}?round=${job.id}`)}>Add to an ad</Button>
               </div>
             )}
