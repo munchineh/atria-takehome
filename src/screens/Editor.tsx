@@ -315,7 +315,8 @@ export function Editor() {
               <label className="ed-style-note">
                 <span className="t-label">Text style (optional)</span>
                 <Input.TextArea value={styleNote} onChange={(e) => setStyleNote(e.target.value)} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="For example, hand-drawn chalk lettering" maxLength={160} />
-                <span className="t-help">Added to this variation's prompt. It changes the lettering only. See the full prompt under Show prompt.</span>
+                <span className="t-help">This will only adjust the text generated on the image. Edit the full prompt below to change the whole image.</span>
+                <span className="t-help ed-style-caveat">The image is drawn again, so small details can shift and the text may not match your description exactly. Check the result before you save it.</span>
               </label>
             )}
             <div className="ed-text-action">
