@@ -174,7 +174,7 @@ export function GalleryCard({
           View
         </Button>
         <Button onClick={() => onOpen(item.linkTo)}>
-          Link to Ad
+          Create ad
         </Button>
       </div>
       )}
