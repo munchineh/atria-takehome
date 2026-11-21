@@ -3225,3 +3225,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 289 (Mancini 19:34) Suggestion header: content centred, so the space above and below the action is equal. */
 .rec-four .rec-part-diag { align-items: center; }
 .rec-four .rec-diag-left { align-items: center; }
+/* 290 (Mancini 19:37) Save as: "Recommended" on New variation once something has been generated. */
+.ed-save-opt { display: inline-flex; align-items: center; gap: 6px; }
+.ed-rec-tag { padding: 0 6px; border-radius: var(--r-tag); background: var(--c-primary); color: #fff; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; }
+/* 291 (Mancini 19:37) Reading chips start with an emoji for the value. */
+.ed-chip-emoji { font-size: 15px; line-height: 1; }
+/* 292 (Mancini 19:38) History card: more room between the figure and "Average". */
+.ed-hist-metric .t-help { margin-left: 8px; }

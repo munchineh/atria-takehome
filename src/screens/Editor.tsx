@@ -10,13 +10,13 @@ import {
   EllipsisOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
-  LockOutlined, SmileOutlined, BulbOutlined, TagOutlined, DownOutlined, WarningFilled, ExclamationCircleFilled } from '../components/AppIcons';
+  LockOutlined, DownOutlined, WarningFilled, ExclamationCircleFilled } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
 import { hubCrumb, useWorkspace } from '../data/nav';
 import { leave, setLeaveGuard } from '../data/leaveGuard';
-import { nameOf, CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
+import { emojiFor, nameOf, CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt, Thumb } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
 import { ReportAudience } from '../components/ReportAudience';
@@ -61,7 +61,7 @@ export function Editor() {
   const mobile = !bp.md;
   const { message, modal } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, versionsOf, applyChange, branch, deleteVariation, credits, iterate, restoreVersion, commitVersion, commitVariation, renameCreative } = useStore();
+  const { jobsFor, versionsOf, applyChange, branch, deleteVariation, credits, iterate, restoreVersion, stylizeVersion, commitVersion, commitVariation, renameCreative } = useStore();
   const job = jobsFor(c.id).find((j) => j.variations.some((v) => v.id === vid));
   const v = job?.variations.find((x) => x.id === vid);
 
@@ -166,6 +166,8 @@ export function Editor() {
   const pendingCount = versions.filter((x) => x.n > opened).length;
   const textDirty = editing && !!draft && JSON.stringify(draft) !== JSON.stringify(shown.copy);
   const nameDirty = nameDraft.trim() !== nameOf(v);
+  // 290: anything generated (an image change or drawn-in text) since the page opened. We recommend a new variation for these.
+  const aiPending = versions.some((x) => x.n > opened && x.cost > 0);
   const onlyName = nameDirty && !pendingCount && !textDirty;
   const dirty = !locked && (pendingCount > 0 || textDirty || nameDirty);
   const saveLabel = onlyName ? 'Save' : makeNew ? 'Save as new variation' : 'Save new version';
@@ -213,7 +215,6 @@ export function Editor() {
   const chip = (label: string) => {
     if ((label === 'Edit text' || label === 'Fix the text') && !v.stylized) {
       setScope('text');
-      setMakeNew(false);
       setTextMode('editable');
       setEditing(true);
       return;
@@ -310,8 +311,7 @@ export function Editor() {
   const pickMethod = (m: 'editable' | 'stylized') => {
     setTextMode(m);
     setEditing(false);
-    // Typed text is always a new version. Stylized text redraws the image, so it is always a new variation.
-    if (!v.stylized) setMakeNew(m === 'stylized');
+    // 290 (Mancini 19:37): either method can be saved as a version or a variation; Save as decides.
   };
   const methodNow = v.stylized || textMode === 'stylized' ? 'stylized' : 'editable';
   const textBlock = (
@@ -323,7 +323,7 @@ export function Editor() {
           <span className="t-help">
             {v.stylized
               ? "Not available. This creative's text is drawn into the image."
-              : 'Free. The text sits on top of the image and stays editable. Saved as a new version.'}
+              : 'Free. The text sits on top of the image and stays editable.'}
           </span>
         </button>
         <button type="button" role="radio" aria-checked={methodNow === 'stylized'} disabled={!v.stylized && !canStylize} className={`ed-method ${methodNow === 'stylized' ? 'on' : ''}`} onClick={() => pickMethod('stylized')}>
@@ -331,7 +331,7 @@ export function Editor() {
           <span className="t-help">
             {v.stylized
               ? 'Atria redraws the whole image with the new text in it.'
-              : "Atria redraws the whole image with the text in it. It looks richer, but words can come out misspelled and you can't type over the text afterwards. Always a new variation."}
+              : "Atria redraws the whole image with the text in it. It looks richer, but words can come out misspelled and you can't type over the text afterwards."}
           </span>
         </button>
       </div>
@@ -358,26 +358,25 @@ export function Editor() {
                   if (v.stylized) return apply('Create a new version with updated text');
                   // 235 (Mancini 16:09): confirm first. Once the text is drawn into the image it can't be typed over again.
                   modal.confirm({
-                    title: 'Create a stylized variation?',
+                    title: 'Draw the text into the image?',
                     content: (
                       <>
-                        <p>Atria draws the text into a new image. You won't be able to change it with Type to edit afterwards.</p>
-                        <p>To change the text later, you'll need to create another variation. It uses {cost}{'\u00a0'}credits.</p>
+                        <p>Atria redraws the image with the text in it. You won't be able to change that text with Type to edit afterwards.</p>
+                        <p>It uses {cost}{'\u00a0'}credits. Save it as a new version or a new variation when you're done.</p>
                       </>
                     ),
-                    okText: 'Create variation',
+                    okText: 'Draw the text in',
                     cancelText: 'Cancel',
                     icon: <ExclamationCircleFilled className="stylize-confirm-icon" />,
                     className: 'stylize-confirm',
                     onOk: () => {
-                      const nid = branch(job.id, v, 'stylized', styleNote.trim());
-                      message.success({ content: 'Generating a stylized-text variation', duration: 3 });
-                      go(nid);
+                      stylizeVersion(v, styleNote.trim());
+                      setStyleNote('');
                     },
                   });
                 }}
               >
-                {v.stylized ? 'Create new version' : 'Create stylized variation'}
+                Draw the text in
               </Button>
               <span className="t-help">{costLine}</span>
             </div>
@@ -520,18 +519,23 @@ export function Editor() {
             block
             size={mobile ? 'large' : 'middle'}
             value={makeNew ? 'variation' : 'version'}
-            onChange={(val) => {
-              setMakeNew(val === 'variation');
-              if (!v.stylized) setTextMode(val === 'variation' && canStylize ? 'stylized' : 'editable');
-              setEditing(false);
-            }}
+            onChange={(val) => setMakeNew(val === 'variation')}
             options={[
               { label: 'New version', value: 'version' },
-              { label: 'New variation', value: 'variation' },
+              {
+                label: (
+                  <span className="ed-save-opt">
+                    New variation{aiPending && <span className="ed-rec-tag">Recommended</span>}
+                  </span>
+                ),
+                value: 'variation',
+              },
             ]}
           />
           <p className="t-help ed-mode-help">
-            {makeNew
+            {aiPending && !makeNew
+              ? "You've generated a new image or text. We recommend saving it as a new variation so you can test it against this one."
+              : makeNew
               ? 'Makes a new, separate creative and leaves this one as it is. Best for a different idea you want to test against this one. It adds one more creative to manage.'
               : `Saves your changes to this creative as v${opened + 1}. Best for small fixes. It stays one creative, so you can go back to an earlier version but can't test two versions against each other.`}
           </p>
@@ -768,7 +772,7 @@ export function Editor() {
         {readEntries.map(([k, val]) => (
           <div key={k} className="ed-chip">
             <Tooltip title={TAG_TIPS[k]}>
-              <dt>{k === 'Emotion' ? <SmileOutlined aria-hidden /> : k === 'Theme' ? <BulbOutlined aria-hidden /> : <TagOutlined aria-hidden />}{k}</dt>
+              <dt><span className="ed-chip-emoji" aria-hidden>{emojiFor(k, val)}</span>{k}</dt>
             </Tooltip>
             <dd>{val}</dd>
             <ReportAudience

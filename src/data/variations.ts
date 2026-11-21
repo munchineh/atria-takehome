@@ -103,6 +103,12 @@ export const CUSTOM_NAMES: Record<string, string> = (() => {
   }
 })();
 export const nameOf = (v: { id?: string; angle: string }) => (v.id && CUSTOM_NAMES[v.id]) || NAME[v.angle] || v.angle;
+/** 291 (Mancini 19:37): an emoji for each reading, shown before its label in "How Atria reads this image". */
+export const TAG_EMOJI: Record<string, string> = {
+  Excitement: '🤩', Urgency: '⏰', Warmth: '🤗', Curiosity: '🤔', Confidence: '😎', Value: '💸', Playfulness: '😜', Comfort: '😌',
+  Savings: '🏷️', 'Limited edition': '✨', Collection: '🧺', Gifting: '🎁', 'Stress relief': '🫧', Quality: '💎', 'Self-care': '🛁',
+};
+export const emojiFor = (k: string, val: string) => TAG_EMOJI[val] ?? (k === 'Emotion' ? '🙂' : k === 'Theme' ? '💡' : '🎯');
 export const tagsFor = (angle: string) => ({ Angle: angle, Emotion: EMOTION[angle] ?? 'Comfort', Theme: THEME[angle] ?? 'Self-care' });
 export const TAG_TIPS: Record<string, string> = {
   Angle: 'The approach an ad takes to get a response, such as scarcity or social proof.',

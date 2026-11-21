@@ -239,6 +239,8 @@ interface Store {
   iterate: (jobId: string, v: Variation) => string;
   /** 265 (Mancini 17:36): makes vN the latest version again. Later versions are removed; variations made from them are kept. */
   restoreVersion: (v: Variation, n: number) => void;
+  /** 290 (Mancini 19:37): draws the text into the image as a pending version; Save decides version or variation. */
+  stylizeVersion: (v: Variation, note: string) => void;
   /** 266 (Mancini 18:24): the creative page keeps changes pending until Save. These fold every change made since vN
    * (plus typed text, if any) into one new version, or move them into a new variation and leave this one at vN. */
   commitVersion: (v: Variation, base: number, copy?: Variation['copy']) => number;
@@ -522,6 +524,25 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     [versionsOf, land, addVariation, liveVersion],
   );
 
+  const stylizeVersion = useCallback(
+    (v: Variation, note: string) => {
+      const list = versionsOf(v);
+      const last = list.at(-1)!;
+      const render = stylizedRender(last.img, v.img);
+      const img = render ?? last.img;
+      const copy = render ? undefined : last.copy && { ...last.copy, stylized: true };
+      const n = list.length + 1;
+      setCredits((c) => c - ACCOUNT.creditsPerImage);
+      setVersions((p) => ({ ...p, [v.id]: [...list, { n, img, copy, caption: note ? `Stylized text, ${note}` : 'Stylized text', cost: ACCOUNT.creditsPerImage, state: 'applying' }] }));
+      land(v.id, n, 3000);
+      if (last.copy && (!render || note))
+        void generateLive(last.img, 'Keep the composition. Leave clear space for the text.', '3:4', textParts(last.copy), note || undefined).then((slot) => {
+          if (slot) setVersions((p) => ({ ...p, [v.id]: (p[v.id] ?? []).map((x) => (x.n === n ? { ...x, img: slot, copy: undefined } : x)) }));
+        });
+    },
+    [versionsOf, land],
+  );
+
   const saveText = useCallback(
     (v: Variation, copy: Variation['copy']) => {
       const list = versionsOf(v);
@@ -725,10 +746,11 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       choose,
       iterate,
       restoreVersion,
+      stylizeVersion,
       commitVersion,
       commitVariation,
     }),
-    [saved, setSaved, archived, setArchived, chosen, choose, iterate, restoreVersion, commitVersion, commitVariation, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
+    [saved, setSaved, archived, setArchived, chosen, choose, iterate, restoreVersion, stylizeVersion, commitVersion, commitVariation, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
