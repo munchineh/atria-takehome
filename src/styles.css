@@ -2565,3 +2565,5 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .credits .ant-progress { line-height: 1; }
 .credits-pop { display: flex; flex-direction: column; gap: 2px; max-width: 240px; }
 .credits-pop b { font-weight: 600; }
+/* 183 Gallery card: the name is centered on the more button. */
+.gal-grid .gal-title-row, .gal-title-row { align-items: center; }
