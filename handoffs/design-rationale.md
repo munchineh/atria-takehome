@@ -335,6 +335,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 285 | Create form, reference images: the add tile shows a plus only, in the same 64 px dashed tile. "Add image" stays as its accessible name; no tooltip, since the plus is clear | Mancini 19:28 | The label crowded the tile's edges |
 | 286 | "Reset changes" in the Create form asks "Reset your changes?" when the brief has edits ("The brief goes back to what Atria wrote from the suggestions in this round. Your edits are lost.", "Reset" / "Keep my edits"). With no edits it resets straight away | Mancini 19:29 | It throws away typed work |
 | 287 | Ad page bar buttons read "Continue" in both states. The bold text beside them ("Generate new creatives" / "Duplicate ad") names what happens, so the bar doesn't say the same words twice. Both lead to a page to review first (the Create form, or the new ad's setup), so "Continue" is accurate. The duplicate button drops its copy icon. With nothing picked, the button still reads "Make something new" | Mancini 19:33 | Avoids repeating the title on the button |
+| 288 | "Clicking but not buying" evidence: "CTR 2.04% (A) · but CPA $32.06 (D)" now uses grade tags ("CTR 2.04% [A] · but CPA $32.06 [D]"), each with the Radar explainer on hover, like the other evidence lines | Mancini 19:34 | The letters were typed into the text, so they never became tags |
 
 ## With more time
 

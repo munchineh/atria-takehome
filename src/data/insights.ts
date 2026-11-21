@@ -16,7 +16,7 @@ export interface SuggestionParts {
   /** 1. What's happening. */
   diagnosis: string;
   /** 2. The number behind it, with the account average beside it. */
-  evidence: { metric: string; grade: Creative['overall']; value: string; average: string | null; text: string; row: { label: string; value: string; note: string | null } };
+  evidence: { metric: string; grade: Creative['overall']; value: string; average: string | null; text: string; row: { label: string; value: string; note: string | null; valueMetric?: MetricKey; noteMetric?: MetricKey } };
   /** 3. What to change, and why that fixes it. */
   action: { title: string; why: string; examples: string[]; visuals: string[] };
   /** 4. What "use this" does: the suggestion is selected and its fix goes into the brief. */
@@ -67,7 +67,8 @@ function evidenceRow(c: Creative, r: Recommendation, label: string, shown: strin
     return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'the price is in a small band' };
   }
   if (/clicking[\s\S]*aren't\s+buying|watch\s+but\s+aren't\s+buying/i.test(r.issue) && c.grades.ctr) {
-    return { label: 'CTR', value: `${c.values.ctr.toFixed(2)}% (${c.grades.ctr})`, note: `but ${label} ${shown}${c.grades.conversion ? ` (${c.grades.conversion})` : ''}` };
+    // 288 (Mancini 19:34): grades show as grade tags (with the Radar explainer), not letters in brackets.
+    return { label: 'CTR', value: `${c.values.ctr.toFixed(2)}%`, note: `but ${label} ${shown}`, valueMetric: 'ctr' as MetricKey, noteMetric: c.grades.conversion ? ('conversion' as MetricKey) : undefined };
   }
   return { label, value: shown, note: average ? `account average ${average}` : null };
 }

@@ -136,6 +136,12 @@ function RecCard({
   const { diagnosis, evidence, action } = parts;
   const { message } = App.useApp();
   const metricKey = ({ CPA: 'conversion', CTR: 'ctr', 'Hook rate': 'hook', Hook: 'hook', Retention: 'retention' } as Record<string, MetricKey>)[evidence.metric];
+  const tagFor = (k: MetricKey) =>
+    creative && creative.grades[k] ? (
+      <span className="rec-grade-wrap" onClick={(e) => e.stopPropagation()}>
+        <GradeTag creative={creative} metric={k} />
+      </span>
+    ) : null;
   const gradeTag = creative && metricKey && creative.grades[metricKey] ? (
     // 280 (Mancini 19:23): hovering the grade explains it, as in the Radar table. Clicks don't toggle the card.
     <span className="rec-grade-wrap" onClick={(e) => e.stopPropagation()}>
@@ -194,9 +200,9 @@ function RecCard({
         <b className="rec-how">{diagnosis}</b>
         <p className="rec-ev-line">
           <span className="rec-ev-label">Evidence</span>{' '}
-          {evidence.row.label} <b>{evidence.row.value}</b>{evidence.row.label === evidence.metric && <> {gradeTag}</>}
+          {evidence.row.label} <b>{evidence.row.value}</b>{evidence.row.valueMetric ? <> {tagFor(evidence.row.valueMetric)}</> : evidence.row.label === evidence.metric && <> {gradeTag}</>}
           {/* 280 (Mancini 19:23): the grade already says how it compares, so the account average is dropped here. */}
-          {evidence.row.note && !evidence.row.note.startsWith('account average') && <span className="muted">{'\u00a0'}· {evidence.row.note}</span>}
+          {evidence.row.note && !evidence.row.note.startsWith('account average') && <span className="muted">{'\u00a0'}· {evidence.row.note}{evidence.row.noteMetric && <> {tagFor(evidence.row.noteMetric)}</>}</span>}
         </p>
         <p className="rec-why">{action.why}</p>
         {action.examples.length + action.visuals.length > 0 && (
