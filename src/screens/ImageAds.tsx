@@ -16,11 +16,39 @@ import { pageTransition } from '../motion/tokens';
 import { PageHeader } from '../components/PageHeader';
 import { SectionHead } from '../components/SectionHead';
 
+/**
+ * Mancini 15:06: three paragraphs were heavy to read. Each idea is now a small box with a looping picture of what
+ * happens, a short title and one line. The pictures are CSS only (transform and opacity) and stop under reduced motion.
+ */
 const HOW = (
-  <div className="grade-pop help-pop">
-    <p>A round gives you several options. Save the ones you want to keep and they appear here. Anything you add to an ad is saved too.</p>
-    <p>Each creative keeps all its versions. Once it's in an ad it can't change, so you iterate on it instead, which makes a new&nbsp;creative.</p>
-    <p>Archive creatives you're done with. Find them again under Archived, next to the&nbsp;tabs.</p>
+  <div className="how-cards">
+    <div className="how-card">
+      <span className="how-art how-save" aria-hidden>
+        <i /><i /><i /><b />
+      </span>
+      <span className="how-text">
+        <strong>Save what you want to keep</strong>
+        <span>A round gives you several options. The ones you save appear here.</span>
+      </span>
+    </div>
+    <div className="how-card">
+      <span className="how-art how-versions" aria-hidden>
+        <i /><i /><i />
+      </span>
+      <span className="how-text">
+        <strong>Each creative keeps its versions</strong>
+        <span>Once it's in an ad it can't change. Iterate on it to make a new&nbsp;one.</span>
+      </span>
+    </div>
+    <div className="how-card">
+      <span className="how-art how-archive" aria-hidden>
+        <i /><b />
+      </span>
+      <span className="how-text">
+        <strong>Archive when you're done</strong>
+        <span>Archived creatives stay next to the&nbsp;tabs.</span>
+      </span>
+    </div>
   </div>
 );
 

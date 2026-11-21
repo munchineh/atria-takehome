@@ -211,6 +211,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 159 | Tasks panel dividers are inset to the padding; the footer has no grey band | Mancini 15:04 | Edge-to-edge rules look dated. Same rule as the editor panel (row 122): dividers stop at the content edge |
 | 160 | Count tags use one style everywhere: grey fill, no stroke. Radar tabs and the totals row now match the gallery tabs | Mancini 15:05 | Radar counts had a stroke and no fill; the gallery had the reverse. Supersedes F-11 |
 | 161 | "Variations ready" notification uses the toast's shadow and is no longer clipped on the left | Mancini 15:05 | The wide shadow was cut off by its container |
+| 162 | "How the gallery works" is three small boxes, each with a looping picture of what happens (save, versions, archive), a short title and one line. CSS only, transform and opacity, still under reduced motion | Mancini 15:06; same idea as the teaching card's mini demo (6b) | Three paragraphs were text-heavy. 56 words became 38, and each idea can be read from its picture and title alone. Supersedes row 145 |
+| 163 | Creative diversity: rating tags pin to the bottom of each box, so every tag in a row sits on the same line | Mancini 15:07 | A two-line name pushed its tag lower than its neighbours |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
