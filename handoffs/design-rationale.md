@@ -352,7 +352,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 
 ## Code lock (Sat 21 Nov, 19:51 KST)
 
-Code is frozen at tag `code-lock-2026-11-21` (rows up to 301). Figma frames and annotations are made from this build. Any change after this needs a new row and a note in the Figma file.
+Code is frozen at commit `8857218` on main (rows up to 301). Suggested tag: `code-lock-2026-11-21`. Figma frames and annotations are made from this build. Any change after this needs a new row and a note in the Figma file.
 
 ## With more time
 
