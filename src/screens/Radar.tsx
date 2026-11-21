@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -28,7 +28,11 @@ const RUNS_MAX = 4;
 function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
   const [open, setOpen] = useState(false);
   const go = useNavigate();
+  const { message } = App.useApp();
   const paused = c.ads.filter((a) => copyStatus(c, a) === 'Paused').length;
+  const single = c.ads.length === 1;
+  // Name the platform on each row only when this ad runs on more than one (Meta and TikTok).
+  const mixed = new Set(c.ads.map(platformOf)).size > 1;
   const sorted = [...c.ads].sort((x, y) => y.spend - x.spend);
   const shown = sorted.slice(0, RUNS_MAX);
   const more = sorted.length - shown.length;
@@ -49,14 +53,17 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
             <li key={a.id} className="runs2-row">
               <i className={`live-dot ${st === 'Paused' ? 'paused' : ''}`} aria-label={st} />
               <span className="runs2-name">{a.campaign}</span>
-              <span className="runs2-share">{Math.round(share * 100)}%</span>
+              {!single && <span className="runs2-share">{Math.round(share * 100)}%</span>}
               <span className="runs2-meta">
+                {mixed ? `${platformOf(a)} · ` : ''}
                 {money(a.spend).replace(/\.\d\d$/, '')} · CPA {money(a.cpa)}
                 {st === 'Paused' ? ' · Paused' : ''}
               </span>
-              <span className="runs2-bar" aria-hidden>
-                <i style={{ width: `${Math.max(share * 100, 2)}%` }} />
-              </span>
+              {!single && (
+                <span className="runs2-bar" aria-hidden>
+                  <i style={{ width: `${Math.max(share * 100, 2)}%` }} />
+                </span>
+              )}
             </li>
           );
         })}
@@ -66,9 +73,17 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
         <span className="t-label">Placements</span> {placeLine}
       </p>
       {paused > 0 && <p className="t-help runs2-note">Paused copies still count toward this ad's grades.</p>}
+      <div className="runs2-actions">
       <Button type={mobile ? 'primary' : 'default'} block={mobile} size={mobile ? 'large' : 'middle'} className="runs2-cta" onClick={openAd}>
         See copy details
       </Button>
+      {/* One copy: its Ads Manager link, named after the platform it runs on (Meta or TikTok). */}
+      {single && (
+        <Button type="link" size="small" className="inline-link runs2-out" icon={<ExportOutlined />} iconPlacement="end" onClick={() => message.info(`In the live product, this opens the ad in ${platformOf(c.ads[0])} Ads Manager. It's not part of this prototype.`)}>
+          Open in {platformOf(c.ads[0])} Ads Manager
+        </Button>
+      )}
+      </div>
     </div>
   );
   const title = copiesTitle(c);
