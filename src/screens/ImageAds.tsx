@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App, Button, Empty, Progress, Tabs } from 'antd';
-import { BarChartOutlined, PlusOutlined, QuestionCircleOutlined } from '../components/AppIcons';
+import { App, Button, Empty, Progress, Tabs, Tooltip } from 'antd';
+import { BarChartOutlined, CloseOutlined, InboxOutlined, PlusOutlined, QuestionCircleOutlined } from '../components/AppIcons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { findCreative, useStore } from '../data/store';
@@ -110,6 +110,7 @@ export function ImageAds() {
     [jobs, filters.accountId],
   );
 
+  const showNudge = stale.length >= 3 && !nudgeOff && !filters.showArchived;
   const activeJobs = useMemo(
     () =>
       jobs.filter((j) => {
@@ -149,6 +150,69 @@ export function ImageAds() {
         }
       />
 
+      {/* Mancini 13:40: status rows (rounds to review, rounds generating, the archive nudge) sit together in one card above
+          the gallery, apart from the creatives. One row pattern: thumb, title, one help line, one default button on the right. */}
+      {(toReview.length > 0 || activeJobs.length > 0 || showNudge) && (
+        <div className="panel gal-status" aria-live="polite">
+          {toReview.map((j) => {
+            const src = findCreative(j.creativeId)!;
+            return (
+              <div key={j.id} className="gal-status-row">
+                <Thumb c={src} size={40} />
+                <span className="gal-status-body">
+                  <strong className="gal-status-name">{src.name}</strong>
+                  <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Save the ones to keep.</span>
+                </span>
+                <Button onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}>Review</Button>
+              </div>
+            );
+          })}
+          {activeJobs.map((j) => {
+            const src = findCreative(j.creativeId);
+            if (!src) return null;
+            return (
+              <div key={j.id} className="gal-status-row">
+                <Thumb c={src} size={40} />
+                <span className="gal-status-body">
+                  <strong className="gal-status-name">{src.name}</strong>
+                  <span className="t-help">
+                    {j.state === 'queued' ? `Queued\u00a0· ${plural(j.count, 'creative')}` : `Generating ${plural(j.count, 'creative')}\u00a0· ${timeLeft(j.progress)}`}
+                  </span>
+                  <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="var(--c-primary)" />
+                </span>
+              </div>
+            );
+          })}
+          {showNudge && (
+            <div className="gal-status-row">
+              <span className="gal-status-icon" aria-hidden>
+                <InboxOutlined />
+              </span>
+              <span className="gal-status-body">
+                <strong className="gal-status-name">{plural(stale.length, 'creative')} not used in over a week</strong>
+                <span className="t-help">Archive them to keep the gallery tidy. You can restore them from Filter.</span>
+              </span>
+              <span className="gal-status-actions">
+                <Button
+                  onClick={() => {
+                    setArchived(
+                      stale.map((i) => i.id),
+                      true,
+                    );
+                    message.success(`Archived ${plural(stale.length, 'creative')}`);
+                  }}
+                >
+                  Archive {stale.length}
+                </Button>
+                <Tooltip title="Not now.">
+                  <Button type="text" icon={<CloseOutlined />} aria-label="Not now" onClick={() => setNudgeOff(true)} />
+                </Tooltip>
+              </span>
+            </div>
+          )}
+        </div>
+      )}
+
       <Tabs
         className="gal-origin-tabs"
         activeKey={filters.origin}
@@ -181,78 +245,6 @@ export function ImageAds() {
         order={order}
         onOrder={setOrder}
       />
-
-      {stale.length >= 3 && !nudgeOff && !filters.showArchived && (
-        <div className="gal-nudge" role="status">
-          <span className="gal-nudge-text">
-            <strong>{plural(stale.length, 'creative')}</strong> haven't gone into an ad in over a week. Archive them to keep the gallery tidy?
-          </span>
-          <span className="gal-nudge-actions">
-            <Button
-              onClick={() => {
-                setArchived(
-                  stale.map((i) => i.id),
-                  true,
-                );
-                message.success(`Archived ${plural(stale.length, 'creative')}`);
-              }}
-            >
-              Archive {stale.length}
-            </Button>
-            <Button type="text" onClick={() => setNudgeOff(true)}>
-              Not now
-            </Button>
-          </span>
-        </div>
-      )}
-
-      {toReview.length > 0 && (
-        <div className="gal-live-list">
-          {toReview.map((j) => {
-            const src = findCreative(j.creativeId)!;
-            return (
-              <button
-                key={j.id}
-                type="button"
-                className="panel gal-live-row gal-review-row"
-                onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}
-              >
-                <Thumb c={src} size={40} />
-                <span className="gal-live-body">
-                  <strong className="gal-live-name">{src.name}</strong>
-                  <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Save the ones to keep.</span>
-                </span>
-                <span className="gal-review-cta">Review</span>
-              </button>
-            );
-          })}
-        </div>
-      )}
-
-      {activeJobs.length > 0 && (
-        <div className="gal-live-list" aria-live="polite">
-          {activeJobs.map((j) => {
-            const src = findCreative(j.creativeId);
-            if (!src) return null;
-            return (
-              <div key={j.id} className="panel gal-live-row">
-                <Thumb c={src} size={40} />
-                <div className="gal-live-body">
-                  <div className="gal-live-head">
-                    <strong className="gal-live-name">{src.name}</strong>
-                    <span className="t-help gal-live-meta">
-                      {j.state === 'queued'
-                        ? `Queued\u00a0· ${plural(j.count, 'creative')}`
-                        : `Generating ${plural(j.count, 'creative')}\u00a0· ${timeLeft(j.progress)}`}
-                    </span>
-                  </div>
-                  <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="var(--c-primary)" />
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      )}
 
       {filtered.length === 0 ? (
         <div className="gal-empty">

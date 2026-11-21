@@ -1971,3 +1971,20 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .peek-text { display: flex; flex-direction: column; gap: 2px; padding: 12px 16px; }
 .peek-title { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); }
 .peek-sub { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+/* Mancini 13:40: gallery status rows grouped in one card above the tabs, divided by rules, one row pattern and one button style. */
+.gal-status { display: flex; flex-direction: column; padding: 0 16px; margin-bottom: 16px; }
+.gal-status-row { display: flex; align-items: center; gap: 12px; padding: 12px 0; }
+.gal-status-row + .gal-status-row { border-top: 1px solid var(--c-border-2); }
+.gal-status-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.gal-status-body .t-help { margin: 0; line-height: var(--lh-small); }
+.gal-status-body .ant-progress { margin: 4px 0 0; line-height: 1; }
+.gal-status-name { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); }
+.gal-status-icon { width: 40px; height: 40px; flex: none; display: grid; place-items: center; border-radius: var(--r-control); background: var(--c-fill); color: var(--c-text-2); font-size: var(--fs-section); }
+.gal-status-actions { display: inline-flex; align-items: center; gap: 4px; flex: none; }
+@media (max-width: 767px) { .gal-status-row > .ant-btn, .gal-status-actions .ant-btn:not(.ant-btn-icon-only) { min-height: 44px; } }
+@media (max-width: 767px) {
+  .gal-status-row { flex-wrap: wrap; }
+  .gal-status-actions { width: 100%; padding-left: 52px; }
+  .gal-status-actions .ant-btn:not(.ant-btn-icon-only) { flex: 1; }
+}
+.gal-origin-tabs > .ant-tabs-nav { margin-left: 0 !important; margin-right: 0 !important; }
