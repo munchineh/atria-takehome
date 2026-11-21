@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Empty, Progress, Segmented, Tooltip } from 'antd';
+import { Button, Empty, Progress } from 'antd';
 import { CloseOutlined, RightOutlined } from './AppIcons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useWorkspace } from '../data/nav';
@@ -85,7 +85,7 @@ function TaskRow({ j, i, onOpen, onDetails }: { j: Job; i: number; onOpen: (j: J
 }
 
 function PanelBody({ onClose }: { onClose: () => void }) {
-  const { jobs, markSeen, failNext, setFailNext, accountId, setAccount } = useStore();
+  const { jobs, markSeen, accountId, setAccount } = useStore();
   const nav = useNavigate();
   const ws = useWorkspace();
   const [tab, setTab] = useState<'tasks' | 'notes'>('tasks');
@@ -153,23 +153,6 @@ function PanelBody({ onClose }: { onClose: () => void }) {
         ) : (
           <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="No notifications" />
         )}
-      </div>
-      {/* 258: prototype only. Lets designers see a failed or partly failed round without waiting for a real error. */}
-      <div className="tasks-proto">
-        {/* 276 (Mancini 19:12): says what the switch is for. Real rounds rarely fail, so this is how a reviewer sees the failure states. */}
-        <Tooltip title="Real rounds rarely fail. Pick how your next round ends to see the failure states.">
-          <span className="small muted">Demo: how the next round ends</span>
-        </Tooltip>
-        <Segmented
-          size="small"
-          value={failNext || 'ok'}
-          onChange={(v) => setFailNext(v === 'ok' ? false : (v as 'all' | 'some'))}
-          options={[
-            { label: 'Works', value: 'ok' },
-            { label: 'Some fail', value: 'some' },
-            { label: 'All fail', value: 'all' },
-          ]}
-        />
       </div>
       <div className="tasks-foot small muted">
         {/* K52 (R-L9): link + closing punctuation kept cleanly together. */}
