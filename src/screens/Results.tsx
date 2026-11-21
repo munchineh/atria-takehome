@@ -12,14 +12,14 @@ import {
   ExclamationCircleOutlined,
   FontSizeOutlined,
   LockOutlined,
-  SendOutlined,
-  BookmarkFilled,
-  BookmarkOutlined,
+  CheckSquareFilled,
+  CheckSquareOutlined,
+  LinkOutlined,
   SwapOutlined,
   PlusCircleOutlined,
 } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
-import { ACCOUNT, CREATIVES, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
+import { ACCOUNT, CREATIVES, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
 import { hubCrumb, useWorkspace } from '../data/nav';
 import { nameOf, ANGLE_REASON, ANGLE_TIP, answers, recIdsOf, ratioFor, type Variation, type Version } from '../data/variations';
@@ -269,15 +269,16 @@ function VariationCard({
               Refine
             </Button>
           )}
-          <Tooltip title={picked ? 'Saved to the gallery. Click to remove it.' : 'Save to the gallery.'}>
+          {/* 301 (Mancini 19:47): every creative is already in the gallery, so this selects it to compare or link. */}
+          <Tooltip title={picked ? 'Selected' : 'Select'}>
             <Button
               size={mobile ? 'large' : 'middle'}
               type="text"
               className={`var-icon pick-btn ${picked ? 'on' : ''}`}
-              icon={picked ? <BookmarkFilled /> : <BookmarkOutlined />}
+              icon={picked ? <CheckSquareFilled /> : <CheckSquareOutlined />}
               onClick={onPick}
               aria-pressed={picked}
-              aria-label={picked ? 'Remove from gallery' : 'Save to gallery'}
+              aria-label={picked ? 'Selected' : 'Select'}
             />
           </Tooltip>
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
@@ -294,7 +295,7 @@ function VariationCard({
 /**
  * Variations page (S-01 to S-92):
  * Focal point: the variation cards grouped by suggestion.
- * Single primary action: Test in Meta (in the floating bar once options are saved).
+ * Single primary action: Link to Ad (in the floating bar once a creative is selected).
  */
 export function Results() {
   const { id } = useParams();
@@ -305,7 +306,7 @@ export function Results() {
   const mobile = !bp.md;
   const { message } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, startJob, retryJob, markSeen, credits, lastSettings, versionsOf, launch, saved, setSaved } = useStore();
+  const { jobsFor, startJob, retryJob, markSeen, credits, lastSettings, versionsOf } = useStore();
   const rounds = jobsFor(c.id);
   const job = rounds.find((j) => j.id === params.get('round')) ?? rounds.at(-1);
   const recs = useMemo(() => {
@@ -316,15 +317,15 @@ export function Results() {
   }, [c, job]);
   const recFilter = params.get('rec') ?? 'all';
   const roundIds = job ? job.variations.map((v) => v.id) : [];
-  const shortlist = roundIds.filter((vid) => saved.includes(vid));
-  const setShortlist = (f: string[] | ((p: string[]) => string[])) => setSaved(roundIds, typeof f === 'function' ? f(shortlist) : f);
+  // 301: a selection on this page only (to compare or link); the gallery already holds every creative.
+  const [picked, setPicked] = useState<string[]>([]);
+  const shortlist = roundIds.filter((vid) => picked.includes(vid));
+  const setShortlist = (f: string[] | ((p: string[]) => string[])) => setPicked(typeof f === 'function' ? f(shortlist) : f);
   const [compare, setCompare] = useState(false);
-  const [testing, setTesting] = useState(false);
   const [nudgeOff, setNudgeOff] = useState(false);
   const [sameRecOff, setSameRecOff] = useState(false);
   const [nextAngle, setNextAngle] = useState<string | null>(null);
   const [edit, setEdit] = useState(false);
-  const platform = c.ads[0] ? platformOf(c.ads[0]) : 'Meta';
 
   useEffect(() => {
     if (job?.unseen && job.state === 'ready') markSeen(job.id);
@@ -347,13 +348,13 @@ export function Results() {
   const perRecCost = settings.perRec * ACCOUNT.creditsPerImage;
   const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || answers(v, recFilter)));
   const openEditor = (v: Variation, text = false) => nav(ws.editorPath(c.id, v.id, job.id, text));
-  const audience = c.ads[0]?.adSet ?? 'Variation_Test';
   const allAngles = [...new Set(rounds.flatMap((r) => r.variations.map((v) => v.angle)))];
   const allVars = rounds.flatMap((r) => r.variations).slice(-12);
   const counts = allVars.reduce<Record<string, number>>((a, v) => ({ ...a, [v.angle]: (a[v.angle] ?? 0) + 1 }), {});
   const [topAngle, topN] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] ?? ['', 0];
   const unused = ['Before and after', 'Social proof', 'Lifestyle', 'Gift'].find((a) => !allAngles.includes(a)) ?? 'Social proof';
   const picks = job.variations.filter((v) => shortlist.includes(v.id));
+  const linkOne = () => shortlist[0] && nav(`/creation/link/${shortlist[0]}?round=${job.id}`);
   // 250: a combined variation already covers more than one suggestion, so it never counts as "the same issue".
   const sameRec = picks.length >= 2 && picks.every((p) => recIdsOf(p).length === 1 && p.recId === picks[0].recId) && recs.length > 1;
   const otherRec = recs.find((r) => r.id !== picks[0]?.recId);
@@ -460,7 +461,7 @@ export function Results() {
                 <Alert
                   type="info"
                   showIcon
-                  title={`All ${picks.length} saved variations fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
+                  title={`All ${picks.length} selected variations fix the same issue. Add one that targets ${otherRec.target} to compare both fixes.`}
                   action={
                     <span className="res-alert-actions">
                       <Button onClick={() => go({ rec: otherRec.id })}>Show {otherRec.target}</Button>
@@ -568,13 +569,13 @@ export function Results() {
           >
             <div className="sticky-summary">
               <strong>
-                <Rolling value={shortlist.length} /> saved
+                <Rolling value={shortlist.length} /> selected
               </strong>
             </div>
             {mobile ? (
               <div className="res-bar-actions">
-                <Button type="primary" icon={<SendOutlined />} onClick={() => setTesting(true)}>
-                  Test in {platform}
+                <Button type="primary" icon={<LinkOutlined />} disabled={shortlist.length !== 1} onClick={linkOne}>
+                  Link to Ad
                 </Button>
                 <Dropdown
                   trigger={['click']}
@@ -588,11 +589,11 @@ export function Results() {
                         onClick: () => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`),
                       },
                       { type: 'divider' },
-                      { key: 'clear', label: 'Unsave all', onClick: () => setShortlist([]) },
+                      { key: 'clear', label: 'Clear selection', onClick: () => setShortlist([]) },
                     ],
                   }}
                 >
-                    <Button icon={<EllipsisOutlined />} aria-label="More actions for saved options" />
+                    <Button icon={<EllipsisOutlined />} aria-label="More actions for selected creatives" />
                 </Dropdown>
               </div>
             ) : (
@@ -603,9 +604,11 @@ export function Results() {
                 <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded ${plural(shortlist.length, 'variation')}`)}>
                   Download {shortlist.length}
                 </Button>
-                <Button type="primary" icon={<SendOutlined />} onClick={() => setTesting(true)}>
-                  Test in {platform}
-                </Button>
+                <Tooltip title={shortlist.length > 1 ? 'Select one creative to link it to an ad.' : undefined}>
+                  <Button type="primary" icon={<LinkOutlined />} disabled={shortlist.length !== 1} onClick={linkOne}>
+                    Link to Ad
+                  </Button>
+                </Tooltip>
                 <Button type="text" className="on-dark" onClick={() => setShortlist([])}>
                   Clear
                 </Button>
@@ -649,45 +652,6 @@ export function Results() {
         </div>
       </Modal>
 
-      <Modal
-        open={testing}
-        title={`Test ${plural(picks.length, 'variation')} in ${platform}`}
-        okText={`Add ${picks.length} paused ${picks.length === 1 ? 'ad' : 'ads'}`}
-        cancelText="Cancel"
-        onCancel={() => setTesting(false)}
-        onOk={() => {
-          launch(
-            job.id,
-            picks.map((p) => p.id),
-            audience,
-          );
-          setTesting(false);
-          message.success({
-            content: (
-              <span>
-                {plural(picks.length, 'paused ad')} added to {audience}
-                {'\u00a0'}·{' '}
-                <a onClick={() => message.info("In the live product, this opens the ads in Meta Ads Manager. It's not part of this prototype.")}>
-                  Open in {platform}
-                </a>
-              </span>
-            ),
-            duration: 5,
-          });
-        }}
-        width={480}
-      >
-        <p>
-          Atria adds them to {audience} as paused ads. Nothing spends until you turn them on in {platform}.
-        </p>
-        <div className="test-thumbs">
-          {picks.map((p) => {
-            const cur = versionsOf(p).filter((x) => x.state === 'ready').at(-1)!;
-            return <AdArt key={p.id} slot={cur.img} copy={cur.copy} ratio={ratioFor(cur.img)} alt={p.angle} />;
-          })}
-        </div>
-        <p className="t-help">Their results come back to Radar as ads tagged "Variation of {c.name}".</p>
-      </Modal>
 
       <CreateDialog
         open={edit}
