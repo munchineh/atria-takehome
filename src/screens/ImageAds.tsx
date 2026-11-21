@@ -297,7 +297,7 @@ export function ImageAds() {
                 <>
                   <strong>No creatives yet</strong>
                   <br />
-                  Create from a brief, a clone, or an existing ad.
+                  Generate with AI, start from ads you like, or make variations of your own ads.
                 </>
               }
             >

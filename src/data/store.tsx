@@ -46,8 +46,8 @@ export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === 
 export type NewCreativeStart = 'scratch' | 'clone';
 export const NEW_CREATIVE_STARTS: { value: NewCreativeStart; title: string; help: string }[] = [
   // Mancini 10:31: two starts, named the same as the gallery tabs (From a brief, Clones). Reference and clone were one idea told twice.
-  { value: 'scratch', title: 'Start from a brief', help: 'Describe the product, who it\u2019s for, the goal and the tone.' },
-  { value: 'clone', title: 'Clone ads you like', help: 'Pick 1 to 10 ads. Atria rebuilds their idea with your brand and product.' },
+  { value: 'scratch', title: 'Generate with AI', help: 'Describe the product, who it\u2019s for, the goal and the tone.' },
+  { value: 'clone', title: 'Start from ads you like', help: 'Pick 1 to 10 ads. Atria rebuilds their idea with your brand and product.' },
 ];
 let projectCount = 0;
 /** Adds an untied project to the account and returns it; start its first round with `startJob({ creativeId: project.id, recIds: ['r1'], … })`. */

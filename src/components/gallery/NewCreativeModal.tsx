@@ -94,7 +94,7 @@ export function NewCreativeModal({
 
   const submit = () => {
     if (!canCreate) return;
-    const p = newProject(start, name || (start === 'clone' ? 'Cloned ad' : 'New creative'), account.id);
+    const p = newProject(start, name || (start === 'clone' ? 'From an ad you like' : 'New creative'), account.id);
     const job = startJob({ creativeId: p.id, recIds: ['r1'], perRec: count, size });
     message.success({ content: `Generating ${plural(job.count, 'creative')}`, duration: 3 });
     onCreated(p.id, job.id);
@@ -156,7 +156,7 @@ export function NewCreativeModal({
                 <section className="dlg-block">
                   <div className="dlg-label-row">
                     <span className="dlg-label">
-                      <span className="nc-req" aria-hidden>*</span>Ads to clone
+                      <span className="nc-req" aria-hidden>*</span>Ads you like
                     </span>
                     <span className="t-help">
                       {`${pickedIds.length} of 10 selected.`}
@@ -247,7 +247,7 @@ export function NewCreativeModal({
                       : shortCredits
                         ? 'Not enough credits for this batch.'
                         : needsPick
-                          ? 'Select at least one ad to clone.'
+                          ? 'Select at least one ad to continue.'
                           : 'Add an ad brief to continue.'
                   }
                 >

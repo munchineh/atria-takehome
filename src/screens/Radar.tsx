@@ -90,8 +90,8 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
       </Button>
       {/* One copy: its Ads Manager link, named after the platform it runs on (Meta or TikTok). */}
       {single && (
-        <Button type="link" size="small" className="inline-link runs2-out" icon={<ExportOutlined />} iconPlacement="end" onClick={() => message.info(`In the live product, this opens the ad in ${platformOf(c.ads[0])} Ads Manager. It's not part of this prototype.`)}>
-          Open in {platformOf(c.ads[0])} Ads Manager
+        <Button type="text" className="runs2-out" icon={<ExportOutlined />} iconPlacement="end" onClick={() => message.info(`In the live product, this opens the ad in ${platformOf(c.ads[0])} Ads Manager. It's not part of this prototype.`)}>
+          Open in {platformOf(c.ads[0])}
         </Button>
       )}
       </div>

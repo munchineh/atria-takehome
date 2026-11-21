@@ -205,6 +205,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 153 | Radar grade accuracy note sits on the primary tint with the primary border | Mancini 15:01 | A white notice among white surfaces was easy to skip |
 | 154 | "Where it runs" popover button reads "See ad details"; the copies link shows the product focus ring | Mancini 15:01 | It opens the ad page, not a copy; the blue browser outline was off-palette |
 | 155 | "Where it runs" popover: each copy's share reads "60% of spend" | Mancini 15:02 | An unlabelled percentage beside a bar could have been anything |
+| 156 | "Where it runs" popover actions sit side by side: "See ad details" as the default button and "Open in Meta" as a text button | Mancini 15:02 | A button with an orange link stacked under it looked untidy, and "Ads Manager" added length without meaning |
+| 157 | Gallery origin names say where the idea came from. Tabs: All, From your ads, From ads you like, Generated with AI. New creative starts: "Generate with AI" and "Start from ads you like". Card tags, the creative page, the variations page and the empty state use the same words. Replaces D5's "Variations, Clones, From a brief" | Mancini 13:47 options (B), 15:03; Atria's Figma sidebar "AI Playground" | "Clone" and "brief" named the tool, not the creative. Internal ids (`cloned`, `scratch`) are unchanged |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

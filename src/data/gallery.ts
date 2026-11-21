@@ -17,7 +17,7 @@ import type { Variation, Version } from './variations';
 export type Origin = 'variation' | 'cloned' | 'scratch';
 export type GroupBy = 'none' | 'date' | 'ad' | 'campaign' | 'product';
 
-export const ORIGIN_LABEL: Record<Origin, string> = { variation: 'Variation', cloned: 'Clone', scratch: 'From a brief' };
+export const ORIGIN_LABEL: Record<Origin, string> = { variation: 'From your ad', cloned: 'From an ad you like', scratch: 'Generated with AI' };
 /** Atria's own Image Ads page groups by date by default and offers Product among others; Ad and Campaign are ours (DL-15). */
 export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
   { value: 'date', label: 'Date' },
@@ -30,9 +30,10 @@ export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
 export const ORIGIN_TABS: { value: 'all' | Origin; label: string }[] = [
   { value: 'all', label: 'All' },
   // Mancini 10:31: one name per way in. Variations come from "Create variations" on an ad; the other two match New creative's starts.
-  { value: 'variation', label: 'Variations' },
-  { value: 'cloned', label: 'Clones' },
-  { value: 'scratch', label: 'From a brief' },
+  // Mancini 15:03: tabs say where the idea came from, in plain words. "Generate with AI" is Atria's AI Playground in the Figma sidebar.
+  { value: 'variation', label: 'From your ads' },
+  { value: 'cloned', label: 'From ads you like' },
+  { value: 'scratch', label: 'Generated with AI' },
 ];
 /** Title of the last group, for creatives the grouping has no value for. */
 export const UNGROUPED_LABEL: Record<GroupBy, string> = { none: '', date: 'Earlier', ad: 'Not made from an ad', campaign: 'Not in a campaign yet', product: 'No product' };

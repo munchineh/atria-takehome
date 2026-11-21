@@ -45,12 +45,12 @@ export function GalleryCard({
   ) : hideOrigin ? null : item.origin === 'cloned' ? (
     <span className="gal-source">
       <CopyOutlined />
-      <span>Clone</span>
+      <span>From an ad you like</span>
     </span>
   ) : (
     <span className="gal-source">
       <FormOutlined />
-      <span>From a brief</span>
+      <span>Generated with AI</span>
     </span>
   );
 
