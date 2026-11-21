@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { setHub } from '../data/nav';
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
@@ -151,7 +152,7 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
         )}
         <div className="name-sub">
           {/* Media type back on the row (Mancini, 19:05): only image ads can get variations, so the type has to read at a glance. */}
-          <span className={`media-pill ${c.media.toLowerCase()}`}>
+          <span className={`media-pill ${c.media.toLowerCase()}`} title={c.media}>
             {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
             {c.media}
           </span>
@@ -405,6 +406,8 @@ function ActiveFilters({
 }
 
 export function Radar() {
+  // Breadcrumbs below this page start from here (Mancini 13:21).
+  useEffect(() => setHub('radar'), []);
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
   const [cols, setColsState] = useState<string[]>(loadCols);
@@ -495,12 +498,12 @@ export function Radar() {
       width: wide ? 170 : 144,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!weakShown(c)} />,
     },
-    ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 72, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),
+    ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 64, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),
     ...(shown('conv') ? [metricCol('conversion', 'conv', wide ? 104 : 92)] : []),
     ...(shown('hook') ? [metricCol('hook', 'hook', 70)] : []),
     ...(shown('ret') ? [metricCol('retention', 'ret', 92)] : []),
     ...(shown('ctr') ? [metricCol('ctr', 'ctr', wide ? 64 : 56)] : []),
-    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period across all its copies." />, key: 'spend', width: 124, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
+    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period across all its copies." />, key: 'spend', width: wide ? 124 : 112, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
     ...(shown('cpa') ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
     ...(shown('roas') ? [{ title: <Head label="ROAS" tip="Purchase value divided by spend." />, key: 'roas', width: 76, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{c.roas.toFixed(2)}</span> }] : []),
   ];

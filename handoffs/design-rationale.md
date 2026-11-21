@@ -134,3 +134,6 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | K15 | Suggestion cards lead with the problem, stated plainly | Mancini 13:09 | A problem and a suggestion are different things; softened lines read as fixes |
 | 83 | Copy rule R-M4a: no tacked-on comma phrases. Fixed 9 help lines and tooltips ("Ways to improve this ad in order of priority.") | Mancini 13:12 | |
 | 84 | Final pass: gallery tab counts hidden below 768 so the four tabs fit | R-L2 | antd's overflow menu cut "From a brief" at 390 |
+| 85 | Every breadcrumb ends with the current page; rounds read "Round 1 · Nov 12" | Mancini 13:21 | The ad page did, the rest didn't |
+| 86 | The breadcrumb root and the Overview / Radar switch follow where you came from: an ad opened from Overview says "Overview" | Mancini 13:21 | Entering from Overview and landing under "Radar" broke the trail |
+| 87 | Radar at tablet width: names keep two lines, the media tag is icon only, cells pad 10 | Mancini 13:22 | One-line names cut to "All moods · …"; this gives names room without losing them |

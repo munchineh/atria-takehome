@@ -16,7 +16,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
-import { useWorkspace } from '../data/nav';
+import { hubCrumb, useWorkspace } from '../data/nav';
 import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
@@ -180,11 +180,14 @@ export function Editor() {
     ? [
         { title: <Link to="/creation">Creative gallery</Link> },
         { title: <Link to={back}>{v.angle}</Link> },
+        // Mancini 13:21: every breadcrumb ends with the current page.
+        { title: 'Edit' },
       ]
     : [
-        { title: <Link to="/">Radar</Link> },
+        { title: <Link to={hubCrumb().to}>{hubCrumb().label}</Link> },
         { title: <Link to={ws.radarPath(c.id)}>{c.name}</Link> },
         { title: <Link to={back}>{roundLabel}</Link> },
+        { title: v.angle },
       ];
 
   const applyDisabled = !ask.trim() || (applying && !onOlder);

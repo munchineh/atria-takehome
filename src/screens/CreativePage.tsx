@@ -70,7 +70,9 @@ export function CreativePage() {
       <PageHeader
         crumbs={[
           { title: <Link to="/creation">Creative gallery</Link> },
-          { title: <Link to={`/creation/${c.id}?round=${job.id}`}>{`Round ${roundNo}`}</Link> },
+          { title: <Link to={`/creation/${c.id}?round=${job.id}`}>{`Round ${roundNo}\u00a0· ${job.date}`}</Link> },
+          // Mancini 13:21: every breadcrumb ends with the current page.
+          { title: v.angle },
         ]}
         title={v.angle}
         tag={

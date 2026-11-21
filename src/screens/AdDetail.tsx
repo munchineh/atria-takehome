@@ -32,6 +32,7 @@ import { HistoryButton } from '../components/LineageDrawer';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
 import { PageHeader } from '../components/PageHeader';
+import { hubCrumb } from '../data/nav';
 import { Rating } from '../components/Rating';
 import { ReportAudience } from '../components/ReportAudience';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
@@ -238,6 +239,7 @@ export function AdDetail() {
   const { id } = useParams();
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
+  const hub = hubCrumb();
   const [issuesOnly, setIssuesOnly] = useState(false);
   const nav = useNavigate();
   const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs } = useStore();
@@ -400,7 +402,7 @@ export function AdDetail() {
     <motion.div {...pageTransition} className="page detail">
       {/* S-32: one header. The period is read-only here (set on Radar), so it's quiet meta, not a control. */}
       <PageHeader
-        crumbs={[{ title: <Link to="/">Radar</Link> }, { title: c.name }]}
+        crumbs={[{ title: <Link to={hub.to}>{hub.label}</Link> }, { title: c.name }]}
         title={c.name}
         desc="See why this ad performs as it does and pick the fixes to try."
         actions={

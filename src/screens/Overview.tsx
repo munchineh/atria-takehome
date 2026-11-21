@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { Empty, Grid, Select } from 'antd';
+import { setHub } from '../data/nav';
 import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -78,6 +80,8 @@ function Headline({ lead, fallback }: { lead: { best?: Delta; worst?: Delta }; f
 }
 
 export function Overview() {
+  // Breadcrumbs below this page start from here (Mancini 13:21).
+  useEffect(() => setHub('overview'), []);
   const { accountId, windowDays, setWindowDays, jobs } = useStore();
   const bp = Grid.useBreakpoint();
   const nav = useNavigate();

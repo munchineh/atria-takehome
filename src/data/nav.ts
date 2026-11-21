@@ -27,3 +27,26 @@ export function useWorkspace() {
     radarPath: (creativeId: string) => `/ad/${creativeId}`,
   };
 }
+
+/**
+ * Breadcrumb root for Analytics pages (Mancini 13:21): an ad opened from Overview says "Overview",
+ * from Radar says "Radar". The last hub page visited in this tab decides, so rounds and the editor follow too.
+ */
+const HUB_KEY = 'atria.hub.v1';
+export type Hub = 'radar' | 'overview';
+export function setHub(hub: Hub) {
+  try {
+    sessionStorage.setItem(HUB_KEY, hub);
+  } catch {
+    /* storage can be unavailable; crumbs then fall back to Radar */
+  }
+}
+export function hubCrumb(): { label: string; to: string } {
+  let hub: string | null = null;
+  try {
+    hub = sessionStorage.getItem(HUB_KEY);
+  } catch {
+    hub = null;
+  }
+  return hub === 'overview' ? { label: 'Overview', to: '/overview' } : { label: 'Radar', to: '/' };
+}

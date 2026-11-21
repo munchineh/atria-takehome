@@ -1941,3 +1941,9 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 }
 /* Final pass: the four gallery tabs fit at 390 without antd's overflow menu. */
 @media (max-width: 767px) { .gal-origin-tabs .tab-count { display: none; } }
+/* Mancini 13:22: at tablet width the Ad column is narrow. One-line names cut to "All moods · …", so names keep two lines and the media tag drops its word (icon only, named in its tooltip) so the sub-line fits on one line. */
+@media (min-width: 768px) and (max-width: 1199px) {
+  .radar .ant-table .name-sub .media-pill { font-size: 0; gap: 0; padding: 0 4px; }
+  .radar .ant-table .name-sub .media-pill .anticon { font-size: var(--fs-small); }
+  .radar .ant-table .ant-table-thead > tr > th, .radar .ant-table .ant-table-tbody > tr > td, .radar .ant-table .ant-table-summary td { padding-left: 10px; padding-right: 10px; }
+}

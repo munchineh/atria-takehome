@@ -20,7 +20,7 @@ import {
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
-import { useWorkspace } from '../data/nav';
+import { hubCrumb, useWorkspace } from '../data/nav';
 import { ANGLE_REASON, ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
@@ -353,13 +353,15 @@ export function Results() {
     setParams({ round: j.id }, { replace: false });
   };
 
-  // S-31 & S-46: plain-link breadcrumb, without Creation tags or repeating the ad name / round date.
+  // Mancini 13:21: every breadcrumb ends with the current page. Here that's the round.
+  const roundCrumb = { title: job ? `Round ${rounds.indexOf(job) + 1}\u00a0· ${job.date}` : 'Variations' };
   const crumbs =
     c.project || ws.inCreation
-      ? [{ title: <Link to="/creation">Creative gallery</Link> }]
+      ? [{ title: <Link to="/creation">Creative gallery</Link> }, roundCrumb]
       : [
-          { title: <Link to="/">Radar</Link> },
+          { title: <Link to={hubCrumb().to}>{hubCrumb().label}</Link> },
           { title: <Link to={ws.radarPath(c.id)}>{c.name}</Link> },
+          roundCrumb,
         ];
 
   return (

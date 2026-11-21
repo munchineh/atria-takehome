@@ -1,3 +1,4 @@
+import { hubCrumb } from '../data/nav';
 import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { animate, motion, useAnimationControls, useReducedMotion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -91,7 +92,8 @@ type Mode = (typeof OPTIONS)[number]['value'];
 export function ModeSwitch() {
   const loc = useLocation();
   const nav = useNavigate();
-  const routeMode: Mode = loc.pathname.startsWith('/overview') ? 'overview' : 'radar';
+  // Below the hubs (an ad, its rounds), the switch shows where you came from, like the breadcrumb.
+  const routeMode: Mode = loc.pathname.startsWith('/overview') || (loc.pathname.startsWith('/ad/') && hubCrumb().to === '/overview') ? 'overview' : 'radar';
   const [active, setActive] = useState<Mode>(routeMode);
   const [plays, setPlays] = useState<Record<Mode, number>>({ overview: 0, radar: 0 });
   const btns = useRef<Record<string, HTMLButtonElement | null>>({});
