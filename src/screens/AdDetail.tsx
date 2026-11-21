@@ -515,13 +515,13 @@ export function AdDetail() {
                   View variations
                 </Button>
               ) : dupOnly ? (
-                <Button type="primary" size="large" icon={<CopyOutlined />} onClick={duplicate}>
-                  Duplicate ad
+                <Button type="primary" size="large" onClick={duplicate}>
+                  Continue
                 </Button>
               ) : (
                 <Button type="primary" size="large" disabled={creativeSel.length === 0} onClick={() => setDialog(true)}>
                   {/* 281 (Mancini 19:25): with nothing picked the button reads as an invitation, not an action. */}
-                  {creativeSel.length === 0 ? 'Make something new' : 'Generate new creatives'}
+                  {creativeSel.length === 0 ? 'Make something new' : 'Continue'}
                 </Button>
               ))}
           </motion.div>

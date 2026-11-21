@@ -334,6 +334,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 284 | Create form: "Regenerate brief" is now "Reset changes". It rewrites the brief from the picked suggestions, dropping the designer's edits | Mancini 19:28 | It says what happens to your edits instead of naming an internal step |
 | 285 | Create form, reference images: the add tile shows a plus only, in the same 64 px dashed tile. "Add image" stays as its accessible name; no tooltip, since the plus is clear | Mancini 19:28 | The label crowded the tile's edges |
 | 286 | "Reset changes" in the Create form asks "Reset your changes?" when the brief has edits ("The brief goes back to what Atria wrote from the suggestions in this round. Your edits are lost.", "Reset" / "Keep my edits"). With no edits it resets straight away | Mancini 19:29 | It throws away typed work |
+| 287 | Ad page bar buttons read "Continue" in both states. The bold text beside them ("Generate new creatives" / "Duplicate ad") names what happens, so the bar doesn't say the same words twice. Both lead to a page to review first (the Create form, or the new ad's setup), so "Continue" is accurate. The duplicate button drops its copy icon. With nothing picked, the button still reads "Make something new" | Mancini 19:33 | Avoids repeating the title on the button |
 
 ## With more time
 
