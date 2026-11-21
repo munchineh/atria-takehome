@@ -405,3 +405,24 @@ export function askRaya(q: string, account: MockAccount, windowDays: number, job
   }
   return `${b.now.headline} ${b.changed.length ? `${b.changed.length} variation ads have results against the ad they came from; see Iteration history.` : ''}`.trim();
 }
+
+/* ---------- Mancini 10:27: what an idea pill copies ---------- */
+
+export interface IdeaText {
+  /** What the pill shows. */
+  label: string;
+  /** Exactly what goes on the clipboard, without quotation marks. Null when the idea is an instruction, not ad copy. */
+  copy: string | null;
+}
+
+/**
+ * One quoted phrase is ad copy: copy just that phrase ('Show the price: "$14 each, 3 for $36"' copies $14 each, 3 for $36).
+ * Two or more quoted phrases are a choice the person makes ('drop "Free stickers" or "Buy 3, save 15%"'), so nothing is copied.
+ * No quotes at all: the whole line is the copy.
+ */
+export function ideaText(idea: string): IdeaText {
+  const quoted = [...idea.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
+  if (quoted.length === 1) return { label: idea, copy: quoted[0] };
+  if (quoted.length === 0) return { label: idea, copy: idea };
+  return { label: idea, copy: null };
+}

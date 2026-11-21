@@ -1813,3 +1813,19 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .radar .radar-tabs > .ant-tabs-nav { margin-left: 0 !important; margin-right: 0 !important; }
 .radar .radar-tabs .ant-tabs-tab:first-child { padding-left: 0; }
 .radar .radar-tabs .ant-tabs-tab:first-child .ant-tabs-tab-btn { padding-left: 0; }
+/* Ideas (Mancini 10:27): more room above, no copy icon, advice pills don't look clickable. */
+.rec-card .rec-try { margin-top: 16px; gap: 8px; }
+.rec-ideas { gap: 8px; }
+.idea-pill { padding: 6px 14px; }
+.idea-pill.idea-note { cursor: default; background: #fff; border-style: dashed; border-color: #d6ccf3; }
+.idea-pill.idea-note:hover { background: #fff; border-color: #d6ccf3; }
+/* Per-audience report */
+.persona-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.persona-flag.ant-btn { align-self: flex-start; margin: 4px 0 0 -7px; height: 26px; padding: 0 7px; font-size: 13px; color: #6b6b6b; }
+.persona-flag.ant-btn:hover { color: #1f1f1f; }
+.persona-reported { display: inline-flex; align-items: center; gap: 6px; margin-top: 6px; }
+.report-pop .ant-popover-inner { width: 320px; }
+.report-form { display: flex; flex-direction: column; gap: 12px; }
+.report-reasons.ant-radio-group { display: flex; flex-direction: column; gap: 8px; }
+.report-actions { display: flex; justify-content: flex-end; gap: 8px; }
+@media (max-width: 767px) { .report-actions .ant-btn { flex: 1; height: 44px; } }

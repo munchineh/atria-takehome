@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CheckOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, CopyOutlined, FlagOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -22,7 +22,7 @@ import {
   type MetricKey,
   type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
 import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
-import { iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
+import { ideaText, iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative, Thumb } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
@@ -31,6 +31,7 @@ import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { IterationHistory } from '../components/IterationHistory';
+import { ReportAudience } from '../components/ReportAudience';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
 /** Persona icons per account (accounts.ts Persona['icon']). */
@@ -185,23 +186,29 @@ function RecCard({
           <div className="rec-try">
             <span className="t-label">Ideas to try</span>
             <div className="rec-ideas">
-              {/* Mancini 09:43: ideas are pills that copy on click, so they can go straight into a brief or Ads Manager. */}
-              {action.examples.map((e) => (
-                <Tooltip key={e} title="Copy">
-                  <button
-                    type="button"
-                    className="idea-pill"
-                    onClick={(ev) => {
-                      ev.stopPropagation();
-                      void navigator.clipboard?.writeText(e.replace(/^"|"$/g, ''));
-                      message.success('Copied');
-                    }}
-                  >
-                    <span>{e}</span>
-                    <CopyOutlined aria-hidden />
-                  </button>
-                </Tooltip>
-              ))}
+              {/* Mancini 10:27: no copy icon; hover says what will be copied. A pill with two or more quoted options is advice, so it doesn't copy. */}
+              {action.examples.map((e) => {
+                const idea = ideaText(e);
+                return idea.copy ? (
+                  <Tooltip key={e} title="Copy to clipboard.">
+                    <button
+                      type="button"
+                      className="idea-pill"
+                      onClick={(ev) => {
+                        ev.stopPropagation();
+                        void navigator.clipboard?.writeText(idea.copy!);
+                        message.success("Copied to clipboard");
+                      }}
+                    >
+                      {idea.label}
+                    </button>
+                  </Tooltip>
+                ) : (
+                  <span key={e} className="idea-pill idea-note">
+                    {idea.label}
+                  </span>
+                );
+              })}
             </div>
           </div>
         )}
@@ -215,7 +222,7 @@ function RecCard({
             <span>{selected ? 'Added to brief' : apply.label}</span>
           </span>
         ) : (
-          <span className="t-help">You can make this change yourself in your ad.</span>
+          <span className="t-help">Apply these ideas when creating your next ad.</span>
         )}
         <RateRow />
       </div>
@@ -251,6 +258,7 @@ export function AdDetail() {
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
   const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
+  const [reportedAud, setReportedAud] = useState<string[]>([]);
   const adHistory = iterationHistory(accountOf(c) as never, windowDays, allJobs, c.id);
   const parent = c.variationOf ? findCreative(c.variationOf) : undefined;
   const s: RowStatus = statusOf(c.id);
@@ -687,14 +695,11 @@ export function AdDetail() {
                   <span className="persona-text">
                     <b>{p.label}</b>
                     <span className="t-help">{p.why}</span>
+                    <ReportAudience audience={p.label} reported={reportedAud.includes(p.label)} onReported={() => setReportedAud((x) => [...x, p.label])} />
                   </span>
                 </div>
               ))}
             </div>
-            {/* Mancini 09:43: the report link came back (same pattern as "Report a wrong tag" in the editor). */}
-            <Button type="text" size="small" icon={<FlagOutlined />} className="persona-report" onClick={() => message.success('Thanks. We use reports to improve audience reads.')}>
-              Report a wrong audience
-            </Button>
           </motion.div>
         </motion.section>
       </div>
