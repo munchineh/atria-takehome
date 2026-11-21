@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CheckOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, CopyOutlined, FlagOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -74,10 +74,10 @@ function summary(c: CreativeT, parent?: CreativeT) {
       : `Strong on what matters for ${goalOf(c).toLowerCase()}. Use it as the starting point for new variations.`;
   }
   return {
-    conversion: `People click but few ${({ Leads: 'sign up', 'App promotion': 'install' } as Record<string, string>)[goalOf(c)] ?? 'buy'}. Fix what happens after the click, starting with the fixes below.`,
-    ctr: 'Few people click. Make the ad stop the scroll, starting with the fixes below.',
-    hook: 'People scroll past in the first seconds. Change the opening, starting with the fixes below.',
-    retention: 'People stop watching early. Tighten the middle of the video, starting with the fixes below.',
+    conversion: `Customers click but few ${({ Leads: 'sign up', 'App promotion': 'install' } as Record<string, string>)[goalOf(c)] ?? 'buy'}. Improve what happens after the click, starting with the suggestions below.`,
+    ctr: 'Few customers click. Make the ad stop the scroll, starting with the suggestions below.',
+    hook: 'Customers scroll past in the first seconds. Change the opening, starting with the suggestions below.',
+    retention: 'Customers stop watching early. Tighten the middle of the video, starting with the suggestions below.',
   }[weak];
 }
 
@@ -90,12 +90,12 @@ function RateRow() {
         <span className="t-help">Thanks for the feedback.</span>
       ) : (
         <>
-          <span className="t-help">Useful?</span>
-          <Tooltip title="Useful">
-            <Button type="text" size="small" className="icon-only" icon={<LikeOutlined />} aria-label="Useful" onClick={() => setV('up')} />
+          <span className="t-help">Was this suggestion helpful?</span>
+          <Tooltip title="Helpful">
+            <Button type="text" size="small" className="icon-only" icon={<LikeOutlined />} aria-label="Helpful" onClick={() => setV('up')} />
           </Tooltip>
-          <Tooltip title="Not useful">
-            <Button type="text" size="small" className="icon-only" icon={<DislikeOutlined />} aria-label="Not useful" onClick={() => setV('down')} />
+          <Tooltip title="Not helpful">
+            <Button type="text" size="small" className="icon-only" icon={<DislikeOutlined />} aria-label="Not helpful" onClick={() => setV('down')} />
           </Tooltip>
         </>
       )}
@@ -127,6 +127,7 @@ function RecCard({
   footer?: { text: string; action?: () => void; running?: boolean };
 }) {
   const { diagnosis, evidence, action, apply } = parts;
+  const { message } = App.useApp();
   const gradeTag = evidence.grade ? (
     <Tag className={`rec-grade grade-tag g-${evidence.grade[0]}`}>{evidence.grade}</Tag>
   ) : (
@@ -181,10 +182,26 @@ function RecCard({
         <p className="rec-why">{action.why}</p>
         {action.examples.length > 0 && (
           <div className="rec-try">
-            <span className="t-label">Try</span>
-            {action.examples.map((e) => (
-              <span key={e} className="rec-chip">{e}</span>
-            ))}
+            <span className="t-label">Ideas to try</span>
+            <div className="rec-ideas">
+              {/* Mancini 09:43: ideas are pills that copy on click, so they can go straight into a brief or Ads Manager. */}
+              {action.examples.map((e) => (
+                <Tooltip key={e} title="Copy">
+                  <button
+                    type="button"
+                    className="idea-pill"
+                    onClick={(ev) => {
+                      ev.stopPropagation();
+                      void navigator.clipboard?.writeText(e.replace(/^"|"$/g, ''));
+                      message.success('Copied');
+                    }}
+                  >
+                    <span>{e}</span>
+                    <CopyOutlined aria-hidden />
+                  </button>
+                </Tooltip>
+              ))}
+            </div>
           </div>
         )}
       </div>
@@ -197,7 +214,7 @@ function RecCard({
             <span>{selected ? 'Added to brief' : apply.label}</span>
           </span>
         ) : (
-          <span className="t-help">Apply manually on {evidence.metric}</span>
+          <span className="t-help">You can make this change yourself in your ad.</span>
         )}
         <RateRow />
       </div>
@@ -248,7 +265,7 @@ export function AdDetail() {
   void fresh;
   const [selected, setSelected] = useState<string[]>(preselect);
   const [adsOpen, setAdsOpen] = useState(true);
-  const [showAllAds, setShowAllAds] = useState(false);
+  const [openCopy, setOpenCopy] = useState<string | null>(null);
   const [dialog, setDialog] = useState(false);
   useEffect(() => {
     setSelected(preselect());
@@ -273,7 +290,6 @@ export function AdDetail() {
     return { text: `${plural(n, 'variation')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
   };
 
-  const ads = showAllAds ? c.ads : c.ads.slice(0, 3);
   const morph = dialog && !!bp.md;
   const create = ({ perRec, size }: { perRec: number; size: string }) => {
     setDialog(false);
@@ -460,34 +476,53 @@ export function AdDetail() {
                   <div className="placement">
                     <Placements items={c.placements} animate />
                   </div>
-                  {ads.map((a) => (
-                    <div key={a.id} className="ad-row">
-                      <div className="ad-row-id">
-                        <i className={`live-dot ${copyStatus(c, a) === 'Paused' ? 'paused' : ''}`} aria-label={copyStatus(c, a)} /> <span className="campaign">{a.campaign}</span>
-                        <ExportOutlined className="muted ext-link" aria-label="Open in Ads Manager" role="link" onClick={() => message.info(`In the live product, this opens the ad in ${platformOf(a)} Ads Manager. It's not part of this prototype.`)} />
-                      </div>
-                      {/* 5d C5d-13: label + value, no colons (Atria's own label style: grey regular label, dark value). */}
-                      <div className="ad-fields kv-line">
-                        <KV k="Platform" v={platformOf(a)} />
-                        <KV k="Goal" v={objectiveOf(a)} />
-                        <KV k="Audience" v={a.adSet} />
-                        <KV k="Ad ID" v={a.id} />
-                      </div>
-                      <div className="ad-row-nums">
-                        <span>
-                          <span className="muted">Spend</span> {money(a.spend)}
-                        </span>
-                        <span>
-                          <span className="muted">{ACCOUNT.conversionMetric}</span> {money(a.cpa)}
-                        </span>
-                      </div>
-                    </div>
-                  ))}
-                  {c.ads.length > 3 && !showAllAds && (
-                    <Button type="link" size="small" onClick={() => setShowAllAds(true)}>
-                      Show {plural(c.ads.length - 3, 'more copy', 'more copies')}
-                    </Button>
-                  )}
+                  {/* Mancini 09:43: one compact, scrollable list from the start. Each row shows the campaign, spend and CPA;
+                      a click opens its details; the arrow jumps to the platform's Ads Manager. No "Show more". */}
+                  <div className="copies-scroll" role="list">
+                    {c.ads.map((a) => {
+                      const open = openCopy === a.id;
+                      return (
+                        <div key={a.id} className={`copy-row ${open ? 'open' : ''}`} role="listitem">
+                          <button type="button" className="copy-row-main" onClick={() => setOpenCopy(open ? null : a.id)} aria-expanded={open}>
+                            <i className={`live-dot ${copyStatus(c, a) === 'Paused' ? 'paused' : ''}`} aria-label={copyStatus(c, a)} />
+                            <span className="campaign">{a.campaign}</span>
+                            <span className="copy-nums">
+                              {money(a.spend)}
+                              <span className="muted">{'\u00a0'}· {ACCOUNT.conversionMetric} {money(a.cpa)}</span>
+                            </span>
+                            <motion.span animate={{ rotate: open ? 180 : 0 }} transition={spring.snappy} className="chev">
+                              <DownOutlined />
+                            </motion.span>
+                          </button>
+                          <Tooltip title={`Open in ${platformOf(a)} Ads Manager.`}>
+                            <Button
+                              type="text"
+                              size="small"
+                              className="icon-only ext-link"
+                              icon={<ExportOutlined />}
+                              aria-label={`Open in ${platformOf(a)} Ads Manager`}
+                              onClick={() => message.info(`In the live product, this opens the ad in ${platformOf(a)} Ads Manager. It's not part of this prototype.`)}
+                            />
+                          </Tooltip>
+                          <AnimatePresence initial={false}>
+                            {open && (
+                              <motion.div
+                                className="ad-fields kv-line"
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto', transition: { height: spring.layout, opacity: { duration: duration.fast } } }}
+                                exit={{ opacity: 0, height: 0, transition: { duration: duration.fast, ease: ease.exit } }}
+                              >
+                                <KV k="Platform" v={platformOf(a)} />
+                                <KV k="Goal" v={objectiveOf(a)} />
+                                <KV k="Audience" v={a.adSet} />
+                                <KV k="Ad ID" v={a.id} />
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </motion.div>
               )}
             </AnimatePresence>
@@ -549,10 +584,8 @@ export function AdDetail() {
           <motion.div variants={fadeUp} className="panel verdict">
             {/* Zone 1: Identity, goal and live status */}
             <div className="verdict-zone verdict-head">
-              <div className="verdict-head-left">
-                <h2 className="panel-title">Summary</h2>
-                <Tag className="status-pill">{statusLabel(c)}</Tag>
-              </div>
+              {/* Mancini 09:43: "Active" repeated the copies panel ("5 running") and read as a disabled tag. Removed. */}
+              <h2 className="panel-title">Summary</h2>
               <GoalPill c={c} />
             </div>
 
@@ -593,13 +626,11 @@ export function AdDetail() {
 
           <motion.div variants={fadeUp} className="section-title">
             <h2 className="panel-title">Suggestions</h2>
-            <span className="t-help">{iterable && preselect().length === 2 ? 'Most important first. The top 2 are already selected.' : 'Most important first.'}</span>
-            {!iterable && (
-              /* K28 (R-I7, R-V6): no roadmap promise; visible line on the page. */
-              <span className="t-help image-only-note">
-                <InfoCircleOutlined /> Atria can make variations of image{'\u00a0'}ads. You can still apply these suggestions yourself.
-              </span>
-            )}
+            {/* Mancini 09:43: one line that says what to do here; the image-only note is gone (if variations aren't
+                offered, the button simply isn't there). */}
+            <span className="t-help section-sub">
+              Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}
+            </span>
             <span className="t-help rec-date">
               Updated {WINDOW.synced}
               <Tooltip title="Refresh suggestions.">
@@ -631,9 +662,13 @@ export function AdDetail() {
           ))}
 
           <motion.div variants={fadeUp} className="panel personas">
-            <h2 className="panel-title">Likely audience</h2>
-            {/* K4 (R-T4): "text", never "copy" for ad words. */}
-            <p className="t-help persona-help">Who this ad seems to speak to, read from its image and text.</p>
+            <div className="panel-title-row">
+              <h2 className="panel-title">Likely audience</h2>
+              <Tooltip title="Atria's AI reads this from the ad's image and text. It may not be exact.">
+                <InfoCircleOutlined className="title-info" aria-label="About this section" />
+              </Tooltip>
+            </div>
+            <p className="t-help persona-help">Who this ad seems to speak to, based on its image and text.</p>
             {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
             <div className="persona-cards">
               {accountOf(c).personas.map((p) => (
@@ -648,6 +683,10 @@ export function AdDetail() {
                 </div>
               ))}
             </div>
+            {/* Mancini 09:43: the report link came back (same pattern as "Report a wrong tag" in the editor). */}
+            <Button type="text" size="small" icon={<FlagOutlined />} className="persona-report" onClick={() => message.success('Thanks. We use reports to improve audience reads.')}>
+              Report a wrong audience
+            </Button>
           </motion.div>
         </motion.section>
       </div>

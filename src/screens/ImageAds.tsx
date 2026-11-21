@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Empty, Progress, Typography } from 'antd';
+import { Button, Empty, Progress, Tabs, Typography } from 'antd';
 import { BarChartOutlined, PlusOutlined } from '@ant-design/icons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { findCreative, useStore } from '../data/store';
-import { galleryItems, gallerySummary, groupGallery, type GroupBy } from '../data/gallery';
+import { galleryItems, gallerySummary, groupGallery, ORIGIN_TABS, type GroupBy } from '../data/gallery';
 import { PopSheet } from '../components/PopSheet';
 import { TeachingCard } from '../components/TeachingCard';
 import { Thumb } from '../components/Thumb';
@@ -54,6 +54,23 @@ export function ImageAds() {
   }, [accountId]);
 
   const [groupBy, setGroupBy] = useState<GroupBy>('date');
+  // Mancini 09:43: grid and list views, like Atria's own view toggles on Overview's Top performing.
+  const [view, setView] = useState<'grid' | 'list'>(() => {
+    try {
+      return (localStorage.getItem('atria-gallery-view') as 'grid' | 'list') || 'grid';
+    } catch {
+      return 'grid';
+    }
+  });
+  const changeView = (v: 'grid' | 'list') => {
+    setView(v);
+    try {
+      localStorage.setItem('atria-gallery-view', v);
+    } catch {
+      /* ignore */
+    }
+  };
+  const itemsClass = view === 'grid' ? 'gal-grid' : 'gal-list';
   const [newOpen, setNewOpen] = useState(false);
 
   // Seed 2 realistic shortlisted creatives on first visit so the Shortlisted filter works immediately.
@@ -97,7 +114,6 @@ export function ImageAds() {
   );
 
   const groups = useMemo(() => groupGallery(filtered, groupBy), [filtered, groupBy]);
-  const summary = useMemo(() => gallerySummary(filtered), [filtered]);
   const accountShortlisted = useMemo(() => gallerySummary(accountScoped).shortlisted, [accountScoped]);
 
   const activeJobs = useMemo(
@@ -124,10 +140,6 @@ export function ImageAds() {
     filters.campaign !== 'all' ||
     filters.shortlistedOnly;
 
-  const metaParts = [plural(summary.total, 'creative')];
-  if (summary.fromAds > 0 && summary.standalone > 0) {
-    metaParts.push(`${summary.fromAds} from ads`, `${summary.standalone} standalone`);
-  }
 
   return (
     <motion.div {...pageTransition} className="page image-ads">
@@ -136,8 +148,8 @@ export function ImageAds() {
           <Typography.Title level={1} className="page-title">
             Creative gallery
           </Typography.Title>
-          <p className="muted desc">Every creative you've made in Atria, ready to refine or use in an ad.</p>
-          <p className="t-help pl-meta">{metaParts.join('\u00a0· ')}</p>
+          {/* Mancini 09:43: one line under the title, no extra meta line; counts live in the tabs below. */}
+          <p className="muted desc">Browse every creative you've made. Open one to edit it or add it to an ad.</p>
         </div>
         <div className="gal-head-actions">
           <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
@@ -152,7 +164,20 @@ export function ImageAds() {
         </div>
       </div>
 
+      {/* DL-17: origin as tabs with counts, like Atria's All, Clone, Iterate, Raya. */}
+      <Tabs
+        className="gal-origin-tabs"
+        activeKey={filters.origin}
+        onChange={(k) => setFilters((f) => ({ ...f, origin: k as GalleryFilters['origin'] }))}
+        items={ORIGIN_TABS.map((t) => {
+          const n = t.value === 'all' ? accountScoped.length : accountScoped.filter((i) => i.origin === t.value).length;
+          return { key: t.value, label: <span className="tab-label">{t.label}<span className="tab-count">{n}</span></span> };
+        })}
+      />
+
       <GalleryToolbar
+        view={view}
+        onChangeView={changeView}
         filters={filters}
         onChangeFilters={setFilters}
         onClearFilters={clearFilters}
@@ -225,7 +250,7 @@ export function ImageAds() {
           )}
         </div>
       ) : groupBy === 'none' ? (
-        <div className="gal-grid">
+        <div className={itemsClass}>
           {filtered.map((item, i) => (
             <GalleryCard
               key={item.id}
@@ -257,7 +282,7 @@ export function ImageAds() {
                   </Button>
                 )}
               </div>
-              <div className="gal-grid">
+              <div className={itemsClass}>
                 {group.items.map((item, i) => (
                   <GalleryCard
                     key={item.id}

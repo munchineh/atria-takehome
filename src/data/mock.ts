@@ -418,19 +418,19 @@ const HERO_RECS: Recommendation[] = [
   {
     id: 'different',
     priority: 1,
-    issue: 'No reason to choose this one',
-    issueDetail: 'The ad shows a cute mochi but never says what makes it better than other squishies.',
-    why: `It shows a cute mochi but never says why to pick it. One clear difference gives people a reason to choose this one over other squishies.`,
+    issue: "Customers don't have a clear reason to buy",
+    issueDetail: "Your ad shows a cute mochi but doesn't say what makes it better than other squishies.",
+    why: `Your ad shows a cute mochi, but doesn't tell customers why they should buy it. Give them a clear reason to choose your product over other squishies.`,
     fix: 'Say what makes it different',
-    target: 'ROAS',
+    target: 'CPA',
     examples: ['"Slow-rise squish. Back in shape in 8 seconds."', '"Every face is hand-painted, so no two match."'],
   },
   {
     id: 'offer',
     priority: 2,
-    issue: "Clicks don't turn into purchases",
-    issueDetail: 'People click (CTR A) but few buy (CPA D). There is no price, and two offers compete for attention.',
-    why: `People click but few buy: there's no price, and two offers compete. One clear price makes buying an easy yes after the click.`,
+    issue: "Customers are clicking your ad but aren't buying",
+    issueDetail: 'Customers click (CTR A) but few buy (CPA D). There is no price, and two offers compete for attention.',
+    why: `There's no price, and two offers compete for attention. Show one clear price so buying is an easy yes after the click.`,
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['Show the price: "$14 each, 3 for $36"', 'Keep one offer: drop "Free stickers" or "Buy 3, save 15%"'],
@@ -438,9 +438,9 @@ const HERO_RECS: Recommendation[] = [
   {
     id: 'cta',
     priority: 3,
-    issue: 'The button says nothing specific',
+    issue: "The button doesn't say what customers get",
     issueDetail: 'CTR is already strong, so this matters less than what happens after the click.',
-    why: `"Shop now" could be any brand. A specific button tells people what they get. CTR is already strong, so this comes last.`,
+    why: `"Shop now" could be any brand. Tell customers what they get when they tap. Your CTR is already strong, so try this last.`,
     fix: 'Use a more specific call to action',
     target: 'CTR',
     examples: ['"Pick your mood"', '"Get the Sad Pink one"'],
@@ -452,9 +452,9 @@ const CTR_RECS: Recommendation[] = [
   {
     id: 'stop',
     priority: 1,
-    issue: 'Nothing stops the scroll',
+    issue: 'Customers scroll past your ad',
     issueDetail: 'CTR is the lowest grade on this ad. The product sits small in a busy scene.',
-    why: `The product sits small in a busy scene. Filling the frame with it gives people a reason to stop scrolling.`,
+    why: `Your product sits small in a busy scene. Let it fill the frame so customers stop scrolling.`,
     fix: 'Make the product the first thing you see',
     target: 'CTR',
     examples: ['Crop in so the mochi fills half the frame', 'Use one bold background color'],
@@ -462,9 +462,9 @@ const CTR_RECS: Recommendation[] = [
   {
     id: 'offer',
     priority: 2,
-    issue: "Clicks don't turn into purchases",
-    issueDetail: 'There is no price on the ad, so people who click are still deciding.',
-    why: `There's no price on the ad, so people who click are still deciding. Showing it up front brings in people who are ready to buy.`,
+    issue: "Customers are clicking your ad but aren't buying",
+    issueDetail: 'There is no price on the ad, so customers who click are still deciding.',
+    why: `There's no price on your ad, so customers who click are still deciding. Show it up front to bring in people who are ready to buy.`,
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['"$14 each, 3 for $36"'],
@@ -475,9 +475,9 @@ const VIDEO_RECS: Recommendation[] = [
   {
     id: 'hook',
     priority: 1,
-    issue: 'The first 3 seconds lose people',
+    issue: 'Customers leave in the first 3 seconds',
     issueDetail: 'Hook is the lowest grade on this ad. The video opens on a talking head before the product appears.',
-    why: `The video opens on a talking head. Leading with the squish shows the product before people scroll away.`,
+    why: `Your video opens on a talking head. Lead with the squish so customers see the product before they scroll away.`,
     fix: 'Show the squish in the first second',
     target: 'Hook',
     examples: ['Open on a close-up squeeze', 'Put the price on screen by second 3'],
@@ -485,9 +485,9 @@ const VIDEO_RECS: Recommendation[] = [
   {
     id: 'offer',
     priority: 2,
-    issue: "Clicks don't turn into purchases",
-    issueDetail: 'People watch and click, but the offer only appears in the caption.',
-    why: `The offer only appears in the caption, which most people don't read. Putting it on screen reaches everyone who watches.`,
+    issue: "Customers watch but aren't buying",
+    issueDetail: 'Customers watch and click, but the offer only appears in the caption.',
+    why: `Your offer is only in the caption, which most customers don't read. Put it on screen so everyone who watches sees it.`,
     fix: 'Make one clear offer',
     target: 'CPA',
     examples: ['End card: "3 for $36"'],
@@ -607,9 +607,9 @@ export const SMALL_CREATIVES: Creative[] = [
 
 /** RA-15. One line per tab, saying what is true of the rows. */
 export const TABS: { key: TabKey; label: string; desc: string }[] = [
-  { key: 'winners', label: 'Best', desc: 'Your strongest ads. Every graded metric is B or above.' },
-  { key: 'potential', label: 'Improve', desc: 'Doing well in places. A few changes could lift the rest.' },
-  { key: 'candidates', label: 'Rework', desc: 'Struggling on most metrics, but spending enough to be worth trying new variations.' },
+  { key: 'winners', label: 'Best', desc: 'Your strongest ads. Build more of these.' },
+  { key: 'potential', label: 'Improve', desc: 'These ads do well in a few places, but could be better optimized.' },
+  { key: 'candidates', label: 'Rework', desc: 'These ads perform poorly on most metrics. Try new variations or a different approach.' },
 ];
 
 /** Sidebar accounts (all fictional). Only the first two are clickable demo accounts. */

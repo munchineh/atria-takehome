@@ -74,7 +74,7 @@ export const STEP_NOTES: Record<string, StepNote> = {
     traits: { price: 'no price', headline: 'demonstration', product: 'hand squeezing one mochi' },
   },
   // Other accounts: one step each.
-  'pp-duo-v2': { date: 'Oct 30', summary: 'Put the gift price in the headline.', reason: 'The ad never said what the set costs.', traits: { price: 'price as headline' } },
+  'pp-duo-v2': { date: 'Oct 30', summary: 'Put the gift price in the headline.', reason: "The ad didn't say what the set costs.", traits: { price: 'price as headline' } },
   'sg-teal-v2': { date: 'Nov 3', summary: 'Changed the background to one bold color.', reason: 'The product blended into a busy scene.', traits: { background: 'one bold color' } },
 };
 

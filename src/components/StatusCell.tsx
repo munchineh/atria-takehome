@@ -21,8 +21,11 @@ export function diagnosis(c: Creative) {
   // K47 (R-L2): concise string so dense rows and phone cards never clip.
   if (!worst) return 'Not enough data';
   if (rank(c.grades[worst]) <= 1) return 'No fix needed';
+  // Mancini 21 Nov 09:43: the action names the tab it belongs to. Improve tab: improve one metric. Rework tab: most
+  // metrics are weak, so the step is to rework the whole ad with new variations, not to tune one number.
+  if (c.tab === 'candidates') return 'Rework ad';
   const metric = worst === 'conversion' ? ACCOUNT.conversionMetric : worst === 'ctr' ? 'CTR' : METRIC_META[worst].label.toLowerCase();
-  return `Fix ${metric}`;
+  return `Improve ${metric}`;
 }
 
 export function StatusCell({ creative, status, withGrade }: { creative: Creative; status: RowStatus; withGrade?: boolean }) {
@@ -80,8 +83,8 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
             <>
               <CheckCircleFilled className="status-icon ok" />
               {/* K32 (R-I7): says what opens instead of repeating the button label. */}
-              <Tooltip title="Open this round's variations.">
-                <span>Review {status.count} new</span>
+              <Tooltip title={`${status.count} new variations are ready to review.`}>
+                <span>See results</span>
               </Tooltip>
               <AnimatePresence>
                 {status.unseen && (

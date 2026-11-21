@@ -1,7 +1,7 @@
 import { useState } from 'react';
-import { Badge, Button, Checkbox, Drawer, Grid, Select } from 'antd';
-import { AppstoreOutlined, CheckOutlined, CloseOutlined, FilterOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
-import { GROUP_OPTIONS, ORIGIN_LABEL, type GroupBy, type Origin } from '../../data/gallery';
+import { Badge, Button, Checkbox, Drawer, Grid, Segmented, Select, Tooltip } from 'antd';
+import { AppstoreOutlined, UnorderedListOutlined, CheckOutlined, CloseOutlined, FilterOutlined, StarFilled, StarOutlined } from '@ant-design/icons';
+import { GROUP_OPTIONS, type GroupBy, type Origin } from '../../data/gallery';
 import { DEMO_ACCOUNTS } from '../../data/store';
 import { PopSheet } from '../PopSheet';
 
@@ -26,7 +26,11 @@ export function GalleryToolbar({
   campaigns,
   shortlistedCount,
   defaultAccountId,
+  view,
+  onChangeView,
 }: {
+  view: 'grid' | 'list';
+  onChangeView: (v: 'grid' | 'list') => void;
   filters: GalleryFilters;
   onChangeFilters: (next: GalleryFilters) => void;
   onClearFilters: () => void;
@@ -41,13 +45,21 @@ export function GalleryToolbar({
   const [groupSheetOpen, setGroupSheetOpen] = useState(false);
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
 
+  const viewToggle = (
+    <Segmented
+      size="small"
+      className="gal-view-toggle"
+      value={view}
+      onChange={(v) => onChangeView(v as 'grid' | 'list')}
+      options={[
+        { value: 'grid', icon: <Tooltip title="Grid"><AppstoreOutlined aria-label="Grid view" /></Tooltip> },
+        { value: 'list', icon: <Tooltip title="List"><UnorderedListOutlined aria-label="List view" /></Tooltip> },
+      ]}
+    />
+  );
   const accountOptions = [
     { value: 'all', label: 'All brands' },
     ...DEMO_ACCOUNTS.map((a) => ({ value: a.id, label: a.name })),
-  ];
-  const originOptions = [
-    { value: 'all', label: 'All origins' },
-    ...(['variation', 'cloned', 'scratch'] as Origin[]).map((o) => ({ value: o, label: ORIGIN_LABEL[o] })),
   ];
   const campaignOptions = [
     { value: 'all', label: 'All campaigns' },
@@ -56,7 +68,6 @@ export function GalleryToolbar({
 
   const activeCount =
     (filters.accountId !== defaultAccountId ? 1 : 0) +
-    (filters.origin !== 'all' ? 1 : 0) +
     (filters.campaign !== 'all' ? 1 : 0) +
     (filters.shortlistedOnly ? 1 : 0);
 
@@ -67,9 +78,6 @@ export function GalleryToolbar({
     if (filters.accountId !== defaultAccountId) {
       const lbl = accountOptions.find((a) => a.value === filters.accountId)?.label ?? filters.accountId;
       activePills.push({ key: 'acct', label: lbl, remove: () => onChangeFilters({ ...filters, accountId: defaultAccountId }) });
-    }
-    if (filters.origin !== 'all') {
-      activePills.push({ key: 'orig', label: ORIGIN_LABEL[filters.origin], remove: () => onChangeFilters({ ...filters, origin: 'all' }) });
     }
     if (filters.campaign !== 'all') {
       activePills.push({ key: 'camp', label: filters.campaign, remove: () => onChangeFilters({ ...filters, campaign: 'all' }) });
@@ -88,16 +96,6 @@ export function GalleryToolbar({
             value={filters.accountId}
             onChange={(v) => onChangeFilters({ ...filters, accountId: v, campaign: 'all' })}
             options={accountOptions}
-            className="filters-search"
-            getPopupContainer={(n) => n.parentElement ?? document.body}
-          />
-        </div>
-        <div className="filters-row">
-          <div className="filters-label t-label">Origin</div>
-          <Select
-            value={filters.origin}
-            onChange={(v) => onChangeFilters({ ...filters, origin: v })}
-            options={originOptions}
             className="filters-search"
             getPopupContainer={(n) => n.parentElement ?? document.body}
           />
@@ -139,13 +137,13 @@ export function GalleryToolbar({
       <div className="gal-toolbar-phone">
         <div className="gal-toolbar-phone-row">
           <Button
-            icon={<AppstoreOutlined />}
             className="gal-group-trigger"
             onClick={() => setGroupSheetOpen(true)}
             aria-label={`Group by: ${currentGroupLabel}`}
           >
-            {currentGroupLabel}
+            Group by {currentGroupLabel.toLowerCase()}
           </Button>
+          {viewToggle}
 
           <PopSheet
             content={filterSheetContent}
@@ -241,13 +239,6 @@ export function GalleryToolbar({
           popupMatchSelectWidth={false}
         />
         <Select
-          value={filters.origin}
-          onChange={(v) => onChangeFilters({ ...filters, origin: v })}
-          aria-label="Origin"
-          options={originOptions}
-          popupMatchSelectWidth={false}
-        />
-        <Select
           showSearch
           value={filters.campaign}
           onChange={(v) => onChangeFilters({ ...filters, campaign: v })}
@@ -283,6 +274,7 @@ export function GalleryToolbar({
           options={GROUP_OPTIONS}
           popupMatchSelectWidth={false}
         />
+        {viewToggle}
       </div>
     </div>
   );

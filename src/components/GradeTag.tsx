@@ -71,9 +71,10 @@ export function GradeTag({ creative, metric }: { creative: Creative; metric: Met
         <span className="grade-pop-val">{meta.unit(avg)}</span>
       </div>
 
+      {/* Mancini 09:43: two footer lines in two greys looked accidental. "Compared with other ads" already lives in the
+          lead ("Beats N% of the ads in this account"), so the footer is one line, one style. */}
       <div className="grade-pop-footer">
         <p className="grade-pop-window">{windowLong}</p>
-        <p className="grade-pop-note">Compared with other ads in this account.</p>
       </div>
     </div>
   );
@@ -126,13 +127,11 @@ export function OverallTag({ creative }: { creative: Creative }) {
           <span className="t-key">Spend</span>
           <span className="grade-pop-val">{money(creative.spend)}</span>
         </span>
+        {creative.media !== 'Video' && <span className="grade-pop-kv-note">Hook and retention apply to video ads{'\u00a0'}only.</span>}
       </div>
 
       <div className="grade-pop-footer">
         <p className="grade-pop-window">{windowLong}</p>
-        <p className="grade-pop-note">
-          {creative.media !== 'Video' ? 'Hook and retention apply to video ads\u00a0only.' : 'Ads that spend more carry more weight.'}
-        </p>
       </div>
     </div>
   );
