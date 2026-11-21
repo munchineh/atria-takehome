@@ -329,7 +329,17 @@ export function AdDetail() {
     if (!morph) return;
     const esc = (e: KeyboardEvent) => e.key === 'Escape' && setDialog(false);
     window.addEventListener('keydown', esc);
-    return () => window.removeEventListener('keydown', esc);
+    // 247 (Mancini 16:17): the page behind the open form doesn't scroll. The scrollbar's width is kept so nothing shifts.
+    const root = document.documentElement;
+    const gap = window.innerWidth - root.clientWidth;
+    const prev = { overflow: root.style.overflow, pad: root.style.paddingRight };
+    root.style.overflow = 'hidden';
+    if (gap > 0) root.style.paddingRight = `${gap}px`;
+    return () => {
+      window.removeEventListener('keydown', esc);
+      root.style.overflow = prev.overflow;
+      root.style.paddingRight = prev.pad;
+    };
   }, [morph]);
   // R-K1 / R-K5: goal metric comes first after Overall, followed by the remaining graded metrics.
   const goalMetric = GOALS[goalOf(c)].metric;

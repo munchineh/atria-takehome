@@ -2762,8 +2762,6 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .sheet-drawer .dlg-ref-problem, .create-sheet .dlg-ref-problem, .sheet-drawer .dlg-ref-x, .create-sheet .dlg-ref-x { color: var(--c-text-2); }
 @media (max-width: 767px) { .dlg-ref-x { width: 44px; height: 44px; } .dlg-ref-chip { width: 100%; } .dlg-ref-text { flex: 1; } }
 
-/* 228 Create form on desktop: the dim layer no longer blocks the page, so suggestions can be picked while it's open. */
-.bar-scrim { pointer-events: none; background: rgba(20, 18, 22, 0.12); }
 
 /* 229 Action bar on image ads: the round as one sentence. It may wrap to two lines; the credits line stays under it. */
 .sticky-summary .bar-sentence { font-weight: 600; white-space: normal; text-wrap: pretty; }

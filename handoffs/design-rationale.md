@@ -296,6 +296,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 244 | Ad history: the repeat warning is a compact note (12/16 padding, 14 px icon, Body text). The current step's letter stays white on orange when it is also a repeat. Each card's grade sits at the top right, level with the thumbnail. | Mancini 16:15 | The warning box had large empty padding; "D" was orange on orange; grades floated mid-card. |
 | 245 | Ad history panel: the close button sits at the top right of the header. | Mancini 16:16 | It sat left of the title, unlike the other panels. |
 | 246 | Fix to 237: the editor's history steps use their own class names (`ed-hist-*`). The first build reused `.ed-step`, the editor's Refine sections, which put a stray "›" beside "What to change" and squeezed the switches to "New variati…" and "Whole i…" at 834. | 834 sweep (open item 6) | Found while checking every screen at 834. |
+| 247 | Create form on desktop: the page behind it doesn't scroll while it's open (scrollbar width kept so nothing shifts), and the dim layer catches clicks again. Row 228's CSS, which let clicks through, is removed. | Mancini 16:17 | Row 230 restored the click-to-close but left 228's `pointer-events: none` in place, and the page still scrolled behind the form. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
