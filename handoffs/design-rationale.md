@@ -155,7 +155,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 
 Every value below was measured from the brief's Figma file (`RzwU4dPm55NcDcTFZrW7ry`, page "Radar key interfaces") by reading node properties on frames FG1 Radar, FG2 AI recommendation, FG3 Ad context, FG5 Image ads generated and FG6 Project list. Figma stores greys as black with alpha. Their hex on white is in brackets.
 
-Mancini asked for the build without a review round, so the audit's leans became the decisions. Rows marked **Reverses** replace a call he made earlier the same day. They sit in their own commit (pass B) so they can be reverted alone with `git revert <pass B hash>`.
+Mancini asked for the build without a review round, so the audit's leans became the decisions. Three of them (F-20 to F-22) replaced calls he had made earlier the same day. He reviewed them at 14:14 and kept his own versions, so those three rows are recorded as **Not adopted**.
 
 ### What the frames say (token spec)
 
@@ -197,7 +197,7 @@ Mancini asked for the build without a review round, so the audit's leans became 
 | F-09 | Grade tags: 22 high, hug the letter, 12/20 Semi Bold. A `#18B723` on `#E8F7E6` / `#8ADE87`. B `#1677FF` on `#E6F4FF` / `#91CAFF`. C `#F38D05` on `#FFF8E6` / `#FFD480`. D `#ED383B` on `#FFF2F0` / `#FFBEB8` | FG1 "Tag / Colorful" (Green, Blue, Gold, Red) | Two competing sets of grade colors were in the stylesheet. Both are replaced by the frame's values, now tokens |
 | F-10 | Row action stays a white outlined default button, 32 high, radius 6 | Deliberate departure. FG1's "Iterate" is 30 high with a 0.02 fill and a caret | Locked rule: row actions must never read as grades or tags. The grey "Iterate" sits one column from the grade tags and has the same height and fill as a tag |
 | F-11 | Tab count tags: fill 0.02, 1 px 0.06, radius 4, 12/20 Regular at 0.88 | FG1 "Tag / Basic" inside each tab | Counts were grey text in a border with no fill |
-| F-12 | Radius scale applied everywhere: pills at 999 px, 3 px, 10 px, 14 px, 16 px and 22 px corners are gone | No pill-shaped tag, chip or button appears in any frame | Filter chips, idea chips, rating control and lineage note take 6. Labels and goal tag take 4. Bottom sheets round to 8 |
+| F-12 | Radius scale applied everywhere: pill and off-scale corners are gone except on the three kept controls in F-20 to F-22 | No pill-shaped tag, chip or button appears in any frame | Filter chips, idea chips, rating control and lineage note take 6. Labels and goal tag take 4. Bottom sheets round to 8 |
 | F-13 | Cards: white, 1 px `#F0F0F0`, radius 8, no shadow | FG2 "Frame 44", FG6 "Image ad project" | Confirms S-06 against the frames |
 | F-14 | 40 px buttons take radius 8. 32 and 24 px stay at 6. Default buttons get antd's 0 2 0 shadow at 0.02 | FG3 "Generate image ad" 427 x 40 r8; every default button carries the shadow | The locked rule said 6 for all controls. The frame is specific about large buttons |
 | F-15 | Colors in `src/styles.css` resolve to tokens: 218 hard-coded values replaced. Green, gold, red and blue variants map to the four status hues. Greys map to the two fills, two borders and four text alphas | Palette in the frames has no other values | "No new hex values." What remains is the dark shell and the ad artwork |
@@ -205,10 +205,9 @@ Mancini asked for the build without a review round, so the audit's leans became 
 | F-17 | Divider token `#EFEFEF` corrected to `#F0F0F0` (CSS `--line`, antd `colorBorderSecondary`) | Black 0.06 on white | One value off the frame |
 | F-18 | Dark shell kept: dark rail and sidebar with a warm gradient at the foot | FG1 "Frame 95900" radial `#4B1A05` to `#041729`, "Frame 279" linear brown | The audit asked whether the shell is light or dark. The frames are dark, so nothing changes |
 | F-19 | Emoji not used. Tab icons and row actions use antd outlined icons | Departure. FG1 uses emoji in tab labels and "Iterate" | Locked rule: antd outlined icons only. Emoji render differently per platform |
-| F-20 | **Reverses 12:39 and 13:46.** Radar tab strip as drawn: card tabs on a 1 px rule, 46 high, 12 padding, 4 apart, radius 6 on the top corners. Inactive `#F5F5F5` with a full border, active white and open at the bottom. Every label 14/22 Semi Bold at 0.88. Table square and directly under the strip | FG1 "Tab Item / Container" | The rounded grey bar with a 10 px Chrome-style active tab used a radius outside the scale and a shape no frame has. The brief asks for this component to map 1:1 to the Radar frame |
-| F-21 | **Reverses 13:36.** Overview / Radar switch as Atria's Segmented: 40 px track at fill 0.04 with radius 8, 36 px items with radius 6, 16/24 Regular, selected item solid primary. The slide motion stays | FG1 "Segmented" 209 x 40 and "Segmented Item" 89 x 36 | The pill was the only pill-shaped control left in the product |
-| F-22 | **Reverses part of 13:47.** Ask Raya keeps its soft orange wash. Its border is the card border, prompts are chips (radius 6, 1 px `#D9D9D9`) and the input is a 40 px control with radius 8 | Wash: agreed exception. Chips and input: FG3 controls | The wash is the one agreed exception. Pill prompts and a warm border were two more |
-| F-23 | Phone tab strip: 4 px side padding and gaps so All, Best, Improve and Rework fit at 390 without a "more" menu | No phone frames exist | Same component, tighter |
+| F-20 | **Not adopted (Mancini 14:14).** Proposed: Radar tab strip as drawn: card tabs on a 1 px rule, 46 high, 12 padding, 4 apart, radius 6 on the top corners. Inactive `#F5F5F5` with a full border, active white and open at the bottom. Every label 14/22 Semi Bold at 0.88. Table square and directly under the strip. Kept: the rounded tab bar with a Chrome-style active tab (12:39, 13:46) | FG1 "Tab Item / Container" | Mancini prefers his tab bar. It departs from the frame in shape and in a 10 px radius, and needs a deviation annotation in Figma |
+| F-21 | **Not adopted (Mancini 14:14).** Proposed: Overview / Radar switch as Atria's Segmented: 40 px track at fill 0.04 with radius 8, 36 px items with radius 6, 16/24 Regular, selected item solid primary. The slide motion stays. Kept: the pill switch (13:36) | FG1 "Segmented" 209 x 40 and "Segmented Item" 89 x 36 | It is our own control and the pill is the stronger shape (row 90). Needs a deviation annotation |
+| F-22 | **Not adopted (Mancini 14:14).** Proposed: Raya prompts as radius 6 chips with a standard card border. Kept: the wash, pill prompts and warm edges (13:47). The two edge colors are now tokens, `--c-raya-border` and `--c-raya-chip-border` | Wash: agreed exception. Chips and input: FG3 controls | Raya should read apart from the data cards (row 99) |
 | F-24a | Goal tag label in text color on the primary border fill | Token sweep side effect | Orange text on the orange fill was hard to read once both mapped to tokens |
 | F-24 | Not changed: orange link color, section bars on long cards, status row pattern, bookmark for "Saved", glossary | Earlier decisions, already consistent with the frames | Listed so the next pass doesn't reopen them |
 
@@ -217,11 +216,11 @@ Mancini asked for the build without a review round, so the audit's leans became 
 | Point | State |
 |---|---|
 | Popover radius | Kept at 8 (locked). FG1's popover body is 6 |
-| 16 Regular in 40 px controls | Applied to the Overview / Radar switch only. Large buttons keep 14 |
+| 16 Regular in 40 px controls | Not applied anywhere. Large buttons keep 14 |
 | Totals row | Ours shows "Total" plus spend and CPA. The frame's totals row was not measured |
 | Project card padding | FG6 uses 12. Our gallery cards were not changed |
 | Asset library | Not re-measured in this pass |
 
 ### Checked
 
-`npm run build` passes. Screens viewed after the change: Radar, Overview, variations page and Creative gallery at 1504; Radar at 834 and 390; ad page at 390. The ad page at 1504 was viewed before pass B only. Not viewed: editor, creative page, create form, and popovers and modals in their open state.
+`npm run build` passes. Screens viewed on the final build: Radar at 1504 and 390, and Overview at 1504 (top of each page). Viewed on the build before the three shapes were restored: Radar at 834, variations page and Creative gallery at 1504, ad page at 390. Not viewed: editor, creative page, create form, and popovers and modals in their open state.

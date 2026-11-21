@@ -20,6 +20,8 @@
   --c-info: #1677ff;
   /* Figma audit 21 Nov: second inset fill and the grade tag tints, exactly as drawn in the Radar frame. */
   --c-fill-2: rgba(0, 0, 0, 0.02);
+  /* Ask Raya's warm edges (Mancini 13:47), the one agreed exception to the palette. */
+  --c-raya-border: #f6e3d8; --c-raya-chip-border: #f0e2d9;
   --c-success-bg: #e8f7e6; --c-success-border: #8ade87;
   --c-info-bg: #e6f4ff;    --c-info-border: #91caff;
   --c-warning-bg: #fff8e6; --c-warning-border: #ffd480;
@@ -2097,49 +2099,8 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* F-13 Cards: white, 1 px #f0f0f0, radius 8, no shadow (FG2 "Frame 44", FG6 project card). */
 .panel, .radar-card, .ov-tile { border-color: var(--c-border-2); border-radius: var(--r-surface); box-shadow: none; }
 
-/* =====================================================================
-   FIGMA CONSISTENCY PASS B (21 Nov, 14:25). Three shapes brought back to the frames. Each one replaces a call
-   Mancini made earlier today (12:39, 13:36, 13:46, 13:47), so this block is its own commit and can be reverted alone.
-   Rationale: handoffs/design-rationale.md, F-20 to F-22.
-   ===================================================================== */
-/* F-20 Radar tab strip as drawn in FG1 "Tab Item / Container": card tabs on a 1 px rule, 46 high, 12 padding, 4 apart,
-   radius 6 on the top corners. Inactive tabs are #f5f5f5 with a full border; the active tab is white and open at the bottom.
-   Every label is 14/22 Semi Bold at 0.88 (the active tab is not orange in FG1). The table starts directly under the strip. */
-.radar .radar-card-tabs > .ant-tabs-nav { margin: 0 !important; padding: 0; background: none; border-radius: 0 !important; }
-.radar .radar-card-tabs > .ant-tabs-nav::before { display: block; border-bottom: 1px solid var(--c-border-2); }
-.radar .radar-card-tabs .ant-tabs-nav-list { gap: 4px; }
-.radar .radar-card-tabs .ant-tabs-tab,
-.radar .radar-card-tabs .ant-tabs-tab:first-child { height: 46px; margin: 0 !important; padding: 12px !important; background: var(--c-layout) !important; border: 1px solid var(--c-border-2) !important; border-radius: var(--r-control) var(--r-control) 0 0 !important; transition: background-color var(--dur-fast), color var(--dur-fast); }
-.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active):hover { background: var(--c-fill) !important; }
-.radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { background: #fff !important; border-bottom-color: #fff !important; border-radius: var(--r-control) var(--r-control) 0 0 !important; padding: 12px !important; margin: 0 !important; }
-.radar .radar-card-tabs .ant-tabs-tab-active::before, .radar .radar-card-tabs .ant-tabs-tab-active::after { display: none; }
-.radar .radar-card-tabs .ant-tabs-tab .ant-tabs-tab-btn,
-.radar .radar-card-tabs .ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--c-text) !important; font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; }
-.radar-card-tabs .tab-label { gap: 8px; }
-.radar-card-tabs .tab-icon, .radar-card-tabs .ant-tabs-tab-active .tab-icon { color: var(--c-text); font-size: 16px; }
-.radar-card-tabs .tab-info { margin-left: 16px; font-size: 16px; color: var(--c-text-3); }
-.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .tab-count { background: var(--c-fill-2); }
-.radar .ant-table-container, .radar .ant-table-summary > tr:last-child > td:first-child, .radar .ant-table-summary > tr:last-child > td:last-child { border-radius: 0; }
-@media (max-width: 1199px) {
-  .radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child, .radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { padding: 12px 8px !important; }
-  .radar-card-tabs .tab-info { margin-left: 4px; }
-  .radar .radar-card-tabs > .ant-tabs-nav { margin: 0 !important; }
-}
-/* F-21 Overview / Radar switch as FG1's Segmented: 40 px track at fill 0.04 with radius 8 and 2 px padding,
-   36 px items with radius 6, 16/24 Regular, selected item solid primary with white text. The sliding motion stays. */
-.topbar .mode-switch { height: 40px; padding: 2px; border: 0; border-radius: var(--r-surface); background: var(--c-fill); }
-.topbar .mode-pill-btn { height: 36px; padding: 0 12px; border-radius: var(--r-control); font-size: var(--fs-section); line-height: var(--lh-section); font-weight: 400; }
-.topbar .mode-pill-btn.active { font-weight: 400; color: #fff; }
-.topbar .mode-pill-thumb { inset: 2px auto 2px 0; border-radius: var(--r-control); box-shadow: none; }
-.drawer-nav .mode-switch, .drawer-nav .mode-pill-btn, .drawer-nav .mode-pill-thumb { border-radius: var(--r-control); }
-/* F-22 Ask Raya keeps its soft orange wash (the one agreed exception). Its border, prompts and input follow the system:
-   card border #f0f0f0, prompts are chips (radius 6, 1 px #d9d9d9), the input is a 40 px control with radius 8 like FG3's large controls. */
-.panel.raya, .raya { border-color: var(--c-border-2); }
-.raya .raya-chip, .raya-chip { border-radius: var(--r-control); border-color: var(--c-border); padding: 4px 12px; }
-.raya-form .ant-input { border-radius: var(--r-surface); padding-inline: 12px; }
-@media (max-width: 767px) {
-  .radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child, .radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { padding: 12px 4px !important; }
-  .radar .radar-card-tabs .ant-tabs-nav-list { gap: 4px; }
-  .radar-card-tabs .tab-label { gap: 4px; }
-}
+/* Pass B (card tabs as drawn, segmented switch, Raya chips) was reverted on 21 Nov 14:14 at Mancini's call:
+   the Chrome-style tab bar (12:39, 13:46), the pill switch (13:36) and the Raya pill prompts (13:47) stay. See F-20 to F-22. */
+.panel.raya, .raya { border-color: var(--c-raya-border); }
+.raya .raya-chip { border-color: var(--c-raya-chip-border); }
 .goal-split-k { color: var(--c-text); } /* F-24a */
