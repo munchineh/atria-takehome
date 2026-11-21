@@ -4,7 +4,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, ProfileOutlined, InsertRowRightOutlined } from '../components/AppIcons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, ProfileOutlined, InsertRowRightOutlined, TrophyOutlined, FlagOutlined, EyeOutlined, InfoCircleOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -18,7 +18,12 @@ import { IterationHistory } from '../components/IterationHistory';
 import { iterationHistory } from '../data/insights';
 import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../motion/tokens';
 
-type TabKey = (typeof TABS)[number]['key'];
+type TabKey = (typeof TABS)[number]['key'] | 'all';
+// FG1 tabs: All plus the three groups, each with an icon and an info button. Our names stay (Mancini 12:39).
+const RADAR_TABS: { key: TabKey; label: string; desc: string; icon?: React.ReactNode }[] = [
+  { key: 'all', label: 'All', desc: 'Every ad with spend in this period.' },
+  ...TABS.map((t) => ({ ...t, icon: t.key === 'winners' ? <TrophyOutlined /> : t.key === 'potential' ? <FlagOutlined /> : <EyeOutlined /> })),
+];
 
 /**
  * "Where it runs" (reworked Mancini 10:41, after foundey.com/blog/popover-ux): one concept, no scrolling, one clear next step.
@@ -449,9 +454,9 @@ export function Radar() {
   // Overview's grade counts link to a tab (#/?tab=winners).
   const [search] = useSearchParams();
   const asked = search.get('tab') as TabKey | null;
-  const [tab, setTab] = useState<TabKey>(asked && TABS.some((t) => t.key === asked) ? asked : 'potential');
+  const [tab, setTab] = useState<TabKey>(asked && RADAR_TABS.some((t) => t.key === asked) ? asked : 'potential');
   useEffect(() => {
-    if (asked && TABS.some((t) => t.key === asked)) setTab(asked);
+    if (asked && RADAR_TABS.some((t) => t.key === asked)) setTab(asked);
   }, [asked]);
   const [picked, setPicked] = useState<Picked>({});
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -469,8 +474,9 @@ export function Radar() {
     any('Placement', (v) => c.placements.some((p) => p.label === v)) &&
     any('Ad status', (v) => v === adStatusOf(c)) &&
     any('Source', (v) => v === sourceOf(c));
-  const rows = CREATIVES.filter((c) => c.tab === tab && matches(c)).sort((a, b) => b.spend - a.spend);
-  const count = (k: TabKey) => CREATIVES.filter((c) => c.tab === k && matches(c)).length;
+  const inTab = (c: Creative, k: TabKey) => k === 'all' || c.tab === k;
+  const rows = CREATIVES.filter((c) => inTab(c, tab) && matches(c)).sort((a, b) => b.spend - a.spend);
+  const count = (k: TabKey) => CREATIVES.filter((c) => inTab(c, k) && matches(c)).length;
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
   // 5c audit A-01 to A-03: the Ad column takes the spare width so names wrap before they truncate, and
@@ -576,27 +582,38 @@ export function Radar() {
       </div>
       <ActiveFilters picked={picked} setPicked={setPicked} panelOpen={filtersOpen} mobile={cards} onOpenFilters={() => setFiltersOpen(true)} />
 
+      {/* FG1 card tabs, refined like Chrome's: the selected tab joins the table, the others sit back (Mancini 12:39). */}
       <Tabs
         activeKey={tab}
         onChange={(k) => setTab(k as TabKey)}
-        className="radar-tabs"
-        items={TABS.map((t) => ({
+        type="card"
+        className="radar-tabs radar-card-tabs"
+        items={RADAR_TABS.map((t) => ({
           key: t.key,
           label: (
             <span className="tab-label">
+              {bp.md && t.icon && <span className="tab-icon" aria-hidden>{t.icon}</span>}
               {t.label} <span className="tab-count">{count(t.key)}</span>
+              {bp.md && t.key !== 'all' && (
+                <Tooltip title={t.desc}>
+                  <InfoCircleOutlined className="tab-info" aria-label={`About ${t.label}`} />
+                </Tooltip>
+              )}
             </span>
           ),
         }))}
       />
 
-      <div className="tab-desc" aria-live="polite">
-        <AnimatePresence mode="wait" initial={false}>
-          <motion.p key={tab} variants={fadeUp} initial="hidden" animate="show" exit="exit">
-            {TABS.find((t) => t.key === tab)!.desc}
-          </motion.p>
-        </AnimatePresence>
-      </div>
+      {/* Phones have no hover, so the tab's explanation stays as a line there. */}
+      {!bp.md && (
+        <div className="tab-desc" aria-live="polite">
+          <AnimatePresence mode="wait" initial={false}>
+            <motion.p key={tab} variants={fadeUp} initial="hidden" animate="show" exit="exit">
+              {RADAR_TABS.find((t) => t.key === tab)!.desc}
+            </motion.p>
+          </AnimatePresence>
+        </div>
+      )}
 
       {rows.length === 0 ? (
         <motion.div variants={fadeUp} initial="hidden" animate="show" className="radar-empty">
@@ -606,7 +623,7 @@ export function Radar() {
               description={
                 <>
                   {/* K26, K35 (R-V2, R-I9, R-E5): distinct empty copy when no filters are active. */}
-                  <b>No {TABS.find((t) => t.key === tab)!.label} ads in the {win.short.toLowerCase()}</b>
+                  <b>{tab === 'all' ? 'No ads' : `No ${RADAR_TABS.find((t) => t.key === tab)!.label} ads`} in the {win.short.toLowerCase()}</b>
                   <br />
                   {tab === 'winners' ? 'No ad is strong on every graded metric yet. The closest are under Improve.' : 'Ads appear here once their grades land in this group.'}
                 </>

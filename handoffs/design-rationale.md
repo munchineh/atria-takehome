@@ -119,3 +119,4 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 |---|---|---|---|
 | 74 | Radar's History renamed Activity log (list icon); the ad page button is History | Glossary | History belongs to one ad; the account-wide list is a log |
 | 75 | Customize columns (FG1): pick Overall, each grade, Spend, CPA and ROAS (ROAS off by default). Saved per browser. Next steps shows the weak grade whenever that grade's column is off | FG1, S-46 | Mancini asked for it; ROAS is in FG1 but wasn't on our table |
+| 76 | Radar tabs back to FG1: card tabs, icons, ⓘ with the tab's meaning, All tab. Refined like Chrome: the selected tab is white, joins the line below with curved feet; the others have no fill or border so they sit back. Phones drop icons and ⓘ and keep the meaning as a line | FG1, V-09 reversed | Mancini: deviate only with a strong reason; line tabs had none |

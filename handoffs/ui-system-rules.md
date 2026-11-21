@@ -198,7 +198,7 @@ Every row needs Mancini's yes and a Figma annotation. "Rule says" is what sectio
 | V-06 | Weight 500 in many places; sizes 11, 13, 15 | 400 / 600; six styles (S-04) | **Change.** |
 | V-07 | Lavender idea pills (D3) | Chip (S-17) in neutral style | **Change to neutral chips** with a copy icon on hover. Lavender is outside the palette |
 | V-08 | Grade tags in antd preset colours | Library status hues (LP-07) | **Change.** |
-| V-09 | Radar line tabs with counts | FG1 uses card tabs with icons and info buttons | **Keep line tabs.** The library's Tabs page has line tabs, FG2 uses them, and they are calmer above a table. Annotate |
+| V-09 | Radar tabs | FG1 uses card tabs with icons, info buttons and an All tab | **Follow FG1** (Mancini 12:40): card tabs, icons, ⓘ, All. Refinement: Chrome-style selected tab joined to the content, other tabs recessed. Our names stay |
 | V-10 | Overview / Radar switch as a pill | FG1: rectangular, radius 6, orange selected | **Change shape to radius 6.** Keep the motion |
 | V-11 | Dark floating action bar that morphs into the form | FG2 has a large primary "Iterate ads" button in the Recommendations header; FG3 is a modal | **Keep** (approved, core to the flow). Annotate |
 | V-12 | Creative page before the editor, starred-only gallery, archive (D11) | FG6 lists projects; the editor opens directly | **Keep** (Mancini 11:00). Annotate |
