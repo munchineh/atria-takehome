@@ -707,18 +707,18 @@ export function Editor() {
         <section className="panel ed-related" aria-label="Iteration history">
           {/* 237 (Mancini 16:10): one row of three steps (the ad, the problem, the suggestion used) instead of four loose lines. */}
           <SectionHead title="Iteration history" help="The ad this creative was made from, the problem it was meant to fix and the suggestion used." />
-          <ol className="ed-steps">
-            <li className="ed-step">
-              <span className="ed-step-label">Made from</span>
-              <Link to={ws.radarPath(c.id)} className="ed-step-ad">
+          <ol className="ed-hist-steps">
+            <li className="ed-hist-step">
+              <span className="ed-hist-label">Made from</span>
+              <Link to={ws.radarPath(c.id)} className="ed-hist-ad">
                 <Thumb c={c} size={36} />
                 <b>{c.name}</b>
               </Link>
             </li>
-            <li className="ed-step">
-              <span className="ed-step-label">Problem</span>
-              <b className="ed-step-text">{rec.issue}</b>
-              <span className="ed-step-metric">
+            <li className="ed-hist-step">
+              <span className="ed-hist-label">Problem</span>
+              <b className="ed-hist-text">{rec.issue}</b>
+              <span className="ed-hist-metric">
                 <span>{recMetricLabel}</span>
                 {recGrade ? (
                   <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
@@ -731,9 +731,9 @@ export function Editor() {
                 {recAvg && <span className="t-help">Average{'\u00a0'}{recAvg}</span>}
               </span>
             </li>
-            <li className="ed-step">
-              <span className="ed-step-label">Suggestion used</span>
-              <b className="ed-step-text">{rec.fix}</b>
+            <li className="ed-hist-step">
+              <span className="ed-hist-label">Suggestion used</span>
+              <b className="ed-hist-text">{rec.fix}</b>
             </li>
           </ol>
         </section>

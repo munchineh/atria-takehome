@@ -178,7 +178,8 @@ export function LineageDrawer({
       placement={mobile ? 'bottom' : 'right'}
       size={mobile ? 'large' : 560}
       styles={mobile ? { wrapper: { height: '86svh' } } : undefined}
-      closable={!mobile}
+      // 245 (Mancini 16:16): close button at the top right, as on the other panels.
+      closable={mobile ? false : { placement: 'end' }}
       extra={
         mobile ? (
           <Button type="text" icon={<CloseOutlined />} aria-label="Close" className="sheet-close-btn" onClick={onClose} />

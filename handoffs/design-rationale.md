@@ -294,6 +294,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 242 | Ad page: the "Already applied" note above the suggestions is removed. | Mancini 16:14 | It repeated "Where it came from" and the left "Iteration history". |
 | 243 | Ad page: the line under the title uses the full column width, and a variation's line is shorter: "Costs more per purchase than the ad it was made from. Only $1,265 spent, so let it run." | Mancini 16:14 | It broke at 60 characters and left "spent so far." alone on a second line. |
 | 244 | Ad history: the repeat warning is a compact note (12/16 padding, 14 px icon, Body text). The current step's letter stays white on orange when it is also a repeat. Each card's grade sits at the top right, level with the thumbnail. | Mancini 16:15 | The warning box had large empty padding; "D" was orange on orange; grades floated mid-card. |
+| 245 | Ad history panel: the close button sits at the top right of the header. | Mancini 16:16 | It sat left of the title, unlike the other panels. |
+| 246 | Fix to 237: the editor's history steps use their own class names (`ed-hist-*`). The first build reused `.ed-step`, the editor's Refine sections, which put a stray "›" beside "What to change" and squeezed the switches to "New variati…" and "Whole i…" at 834. | 834 sweep (open item 6) | Found while checking every screen at 834. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

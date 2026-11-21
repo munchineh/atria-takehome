@@ -2805,20 +2805,20 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 
 /* 237 Editor "Iteration history": three steps in one fill box, each with a small label, joined by chevrons.
    Phones stack the steps with dividers. */
-.ed-steps { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--c-fill-2); border-radius: var(--r-surface); }
-.ed-step { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 16px; min-width: 0; }
-.ed-step + .ed-step::before { content: '›'; position: absolute; left: -6px; top: 50%; translate: 0 -50%; font-size: var(--fs-section, 16px); line-height: 1; color: var(--c-text-4); }
-.ed-step-label { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
-.ed-step-text { font-weight: 600; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
-.ed-step-ad { display: inline-flex; align-items: center; gap: 8px; color: var(--c-text); min-width: 0; }
-.ed-step-ad b { font-weight: 600; }
-.ed-step-ad:hover b { color: var(--c-primary); }
-.ed-step-metric { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
-.ed-step-metric .ant-tag { margin: 0; }
+.ed-hist-steps { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: var(--c-fill-2); border-radius: var(--r-surface); }
+.ed-hist-step { position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px 16px; min-width: 0; }
+.ed-hist-step + .ed-hist-step::before { content: '›'; position: absolute; left: -6px; top: 50%; translate: 0 -50%; font-size: var(--fs-section, 16px); line-height: 1; color: var(--c-text-4); }
+.ed-hist-label { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
+.ed-hist-text { font-weight: 600; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
+.ed-hist-ad { display: inline-flex; align-items: center; gap: 8px; color: var(--c-text); min-width: 0; }
+.ed-hist-ad b { font-weight: 600; }
+.ed-hist-ad:hover b { color: var(--c-primary); }
+.ed-hist-metric { display: inline-flex; align-items: center; gap: 6px; flex-wrap: wrap; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.ed-hist-metric .ant-tag { margin: 0; }
 @media (max-width: 767px) {
-  .ed-steps { grid-template-columns: minmax(0, 1fr); }
-  .ed-step + .ed-step { border-top: 1px solid var(--c-border-2); margin: 0 16px; padding-inline: 0; }
-  .ed-step + .ed-step::before { content: none; }
+  .ed-hist-steps { grid-template-columns: minmax(0, 1fr); }
+  .ed-hist-step + .ed-hist-step { border-top: 1px solid var(--c-border-2); margin: 0 16px; padding-inline: 0; }
+  .ed-hist-step + .ed-hist-step::before { content: none; }
 }
 
 /* 238 Variations page: each suggestion heading is a plain section divider: no box, no border, no tint. The tag and
