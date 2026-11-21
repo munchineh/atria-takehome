@@ -192,7 +192,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   const [accountId, setAccount] = useState(ACCOUNT.id);
   const [briefs, setBriefs] = useState<Record<string, string>>({
     'Sad Pink mochi':
-      'Moody Mochi Sad Pink: a slow-rise squishy toy with a hand-painted sad face. $14 each, 3 for $36. For adults 18 to 34 who buy small comfort gifts for themselves or friends. Goal: more purchases from people who already click. Tone: warm, a little deadpan, never childish.',
+      'Moody Mochi Sad Pink: a slow-rise squishy toy with a hand-painted sad face. $14 each, 3 for $36. For adults 18 to 34 who buy small comfort gifts for themselves or friends. Goal: more purchases from people who already click. Tone: warm and a little deadpan, for grown-ups.',
     'Mystery mood box':
       'Moody Mochi Mystery Box: one of 8 moods, chosen at random. $16. For collectors and gift buyers. Goal: more purchases. Tone: playful, curious.',
   });

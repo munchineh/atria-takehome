@@ -2,9 +2,9 @@ import type { ReactNode } from 'react';
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
-import { Alert, Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
+import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '@ant-design/icons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyFacts, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS, accountOf } from '../data/store';
@@ -17,12 +17,6 @@ import { StatusCell } from '../components/StatusCell';
 import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../motion/tokens';
 
 type TabKey = (typeof TABS)[number]['key'];
-
-/** Variation number: order among the ads made from the same parent (layout 2, Mancini 20 Nov 17:06). */
-function variationNo(c: Creative) {
-  if (!c.variationOf) return 0;
-  return ALL_CREATIVES.filter((x) => x.variationOf === c.variationOf).findIndex((x) => x.id === c.id) + 1;
-}
 
 /** "Where it runs": floating panel on desktop, bottom sheet on mobile (Mancini, 20 Nov 17:03). */
 function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
@@ -115,7 +109,7 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
 
 function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creative; morph?: boolean; mobile?: boolean; meta?: ReactNode; aside?: ReactNode }) {
   const parent = c.variationOf ? ALL_CREATIVES.find((x) => x.id === c.variationOf) : null;
-  const n = variationNo(c);
+  const go = useNavigate();
   return (
     <div className="name-cell">
       <Thumb c={c} layoutId={morph ? `creative-${c.id}` : undefined} />
@@ -123,14 +117,23 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
         <div className="name-line">
           {/* G1 (R-L): glue last words and keep middle dot bound so names never break right after "·". */}
           <span className="name clamp2">{mobile ? glue(c.name).replace(/\u00a0· /g, '\u00a0·\u00a0') : c.name}</span>
-          {parent && (
-            <Tooltip title={`Variation ${n} of ${parent.name}.`}>
-              <span className="var-mark" aria-label={`Variation ${n} of ${parent.name}`}>
-                Variation {n}
-              </span>
-            </Tooltip>
-          )}
         </div>
+        {/* Mancini 09:43, item 20: "Variation 2" didn't say what it came from or look clickable. Name the parent and link to it. */}
+        {parent && (
+          <button
+            type="button"
+            className="made-from"
+            onClick={(e) => {
+              e.stopPropagation();
+              go(`/ad/${parent.id}`);
+            }}
+          >
+            <BranchesOutlined aria-hidden />
+            <span className="made-from-text">
+              Made from <b>{parent.name}</b>
+            </span>
+          </button>
+        )}
         <div className="name-sub">
           {/* Media type back on the row (Mancini, 19:05): only image ads can get variations, so the type has to read at a glance. */}
           <span className={`media-pill ${c.media.toLowerCase()}`}>
@@ -171,9 +174,31 @@ const howGrading = (lowSpend: boolean) => (
       ))}
     </div>
     <p>Overall combines an ad's grades, so it can carry a plus or minus. Hook and retention apply to video ads&nbsp;only.</p>
+    <p>Purchases count when they happen within 7 days of a click or 1 day of a view, as set in&nbsp;Meta.</p>
     <p className="grade-pop-meta">An estimate from how ads performed in this account. Not a guarantee.{lowSpend ? '' : ' Grades are more accurate for accounts that spend over $10,000 a\u00a0month.'}</p>
   </div>
 );
+
+/** One component for grade accuracy (Mancini 09:43, item 19). Above about $3,000 a month it shows progress
+ *  toward $10,000; below that, the same card without the bar, since the bar would barely move. */
+const GradingNote = ({ spend }: { spend: number }) => {
+  const showBar = spend >= RELIABLE_SPEND * 0.3;
+  const amount = (n: number) => money(n).replace('.00', '');
+  return (
+    <div className="grading-note">
+      <div className="grading-note-head">
+        <span className="grading-note-title">Grades are still settling</span>
+        {showBar && (
+          <span className="data-meter-num">
+            <b>{amount(spend)}</b> of {amount(RELIABLE_SPEND)} a month
+          </span>
+        )}
+      </div>
+      {showBar && <Progress percent={Math.round((spend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f66c30" />}
+      <span className="t-help">Radar is most accurate when an account spends over {amount(RELIABLE_SPEND)} a month. Until then, grades may change as more data comes in.</span>
+    </div>
+  );
+};
 
 /** Column header with a one-sentence definition (RA-21, RA-23, RA-24). */
 const Head = ({ label, tip }: { label: string; tip: string }) => (
@@ -402,34 +427,24 @@ export function Radar() {
   return (
     <motion.div {...pageTransition} className="page radar">
       <div className="page-head">
-        <Typography.Title level={1} className="page-title">
-          Radar
-        </Typography.Title>
+        <div className="page-title-row">
+          <Typography.Title level={1} className="page-title">
+            Radar
+          </Typography.Title>
+          <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
+            <Button type="text" size="small" className="hgw" aria-label="How Radar grades your ads">
+              <QuestionCircleOutlined className="hgw-icon" />
+              <span className="hgw-text">How grading works</span>
+            </Button>
+          </PopSheet>
+        </div>
         <p className="muted desc">Find out how each ad is performing and what to do next.</p>
       </div>
 
       <AnimatePresence initial={false}>
         {lowSpend && (
           <motion.div key={account.id} variants={fadeUp} initial="hidden" animate="show" exit="exit" className="spend-alert">
-            {/* L-051: between 30% and 100% of $10,000 a month, a progress bar instead of a warning (Mancini, 19:02). */}
-            {account.monthlySpend >= RELIABLE_SPEND * 0.3 ? (
-              <div className="data-meter">
-                <div className="data-meter-head">
-                  <span className="t-label">Data for grading</span>
-                  <span className="data-meter-num">
-                    <b>{money(account.monthlySpend).replace('.00', '')}</b> of {money(RELIABLE_SPEND).replace('.00', '')} a month
-                  </span>
-                </div>
-                <Progress percent={Math.round((account.monthlySpend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
-                <span className="t-help">Grades get more accurate as your monthly spend grows.</span>
-              </div>
-            ) : (
-              <Alert
-                type="info"
-                showIcon
-                message="Radar is more accurate for accounts that spend over $10,000 a month. On smaller accounts, grades may change as more data comes in."
-              />
-            )}
+            <GradingNote spend={account.monthlySpend} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -474,18 +489,6 @@ export function Radar() {
             }))}
           />
           {period.sheet}
-          <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
-            <Button type="link" size="small" className="inline-link hgw" aria-label="How Radar grades your ads">
-              <QuestionCircleOutlined className="hgw-icon" />
-              <span className="hgw-text">How Radar grades your ads</span>
-            </Button>
-          </PopSheet>
-          {/* 5d OG-02: Atria shows the attribution window beside its Radar settings; ours had none. */}
-          {!cards && (
-            <Tooltip title="Purchases count when they happen within 7 days of a click or 1 day of a view. Set in Meta.">
-              <span className="attr-note t-help">7-day click, 1-day view</span>
-            </Tooltip>
-          )}
         </div>
         <FiltersButton key={account.id} popOpen={filtersOpen} setPopOpen={setFiltersOpen} goals={[...new Set(CREATIVES.map((c) => goalOf(c)))]} picked={picked} setPicked={setPicked} campaigns={[...new Set(CREATIVES.flatMap((c) => c.ads.map((a) => a.campaign)))]} placements={[...new Set(CREATIVES.flatMap((c) => c.placements.map((p) => p.label)))]} />
       </div>

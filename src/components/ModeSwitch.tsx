@@ -1,56 +1,143 @@
-import { useId } from 'react';
-import { BarChartOutlined, RadarChartOutlined } from '@ant-design/icons';
-import { motion } from 'motion/react';
+import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { motion, useAnimationControls } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { spring } from '../motion/tokens';
-
-const OPTIONS = [
-  { value: 'overview', label: 'Overview', to: '/overview', icon: <BarChartOutlined /> },
-  { value: 'radar', label: 'Radar', to: '/', icon: <RadarChartOutlined /> },
-] as const;
 
 /**
- * Item 13 (DL-02, R-MO): Overview and Radar sliding pill switch.
- * Labels stay "Overview" and "Radar"; motion uses spring.snappy (bounce: 0).
+ * Overview and Radar switch (Item 13, DL-02; reworked 21 Nov after Mancini 09:43).
+ *
+ * Why it felt stunted: the thumb used layoutId on a span that unmounted with the route change, the page render
+ * landed in the same frame as the slide, and the label weight jumped from 400 to 600 so the buttons changed width
+ * mid-slide. Now: one thumb measured from the buttons and moved with x and width, the selection updates at once and
+ * navigation runs a frame later inside startTransition, and the label weight never changes.
+ * Motion: a soft spring with no overshoot, about a third of a second, like a native segmented control.
+ * Icons play one short gesture when their side becomes active: bars rise in a wave, radar spokes pulse out and back.
  */
+
+const SLIDE = { type: 'spring', bounce: 0, visualDuration: 0.32 } as const;
+
+function BarsIcon({ play }: { play: number }) {
+  const controls = useAnimationControls();
+  useEffect(() => {
+    if (play) void controls.start((i: number) => ({ scaleY: [1, 0.35, 1], transition: { duration: 0.42, delay: i * 0.06, ease: [0.2, 0, 0, 1] } }));
+  }, [play, controls]);
+  const bars = [
+    { x: 2.5, h: 6 },
+    { x: 6.5, h: 10 },
+    { x: 10.5, h: 4 },
+  ];
+  return (
+    <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden>
+      <path d="M1.5 14.5h13" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" fill="none" />
+      {bars.map((b, i) => (
+        <motion.rect
+          key={b.x}
+          custom={i}
+          animate={controls}
+          x={b.x}
+          y={13 - b.h}
+          width="2.4"
+          height={b.h}
+          rx="0.6"
+          fill="currentColor"
+          style={{ originY: 1, transformBox: 'fill-box' }}
+        />
+      ))}
+    </svg>
+  );
+}
+
+function RadarIcon({ play }: { play: number }) {
+  const controls = useAnimationControls();
+  useEffect(() => {
+    if (play) void controls.start((i: number) => ({ scale: [1, 1.28, 1], transition: { duration: 0.44, delay: i * 0.04, ease: [0.2, 0, 0, 1] } }));
+  }, [play, controls]);
+  // Five spokes from the centre; each spoke tip grows out and back, so the shape breathes.
+  const tips = [0, 72, 144, 216, 288].map((deg) => {
+    const r = (deg - 90) * (Math.PI / 180);
+    return { x: 8 + Math.cos(r) * 6, y: 8 + Math.sin(r) * 6 };
+  });
+  return (
+    <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round">
+      <polygon points={tips.map((t) => `${t.x},${t.y}`).join(' ')} opacity="0.45" />
+      {tips.map((t, i) => (
+        <motion.line key={i} custom={i} animate={controls} x1="8" y1="8" x2={t.x} y2={t.y} style={{ originX: '8px', originY: '8px', transformOrigin: '8px 8px' }} />
+      ))}
+      <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+const OPTIONS = [
+  { value: 'overview', label: 'Overview', to: '/overview', Icon: BarsIcon },
+  { value: 'radar', label: 'Radar', to: '/', Icon: RadarIcon },
+] as const;
+type Mode = (typeof OPTIONS)[number]['value'];
+
 export function ModeSwitch() {
   const loc = useLocation();
   const nav = useNavigate();
-  const id = useId();
-  const active = loc.pathname.startsWith('/overview') ? 'overview' : 'radar';
+  const routeMode: Mode = loc.pathname.startsWith('/overview') ? 'overview' : 'radar';
+  const [active, setActive] = useState<Mode>(routeMode);
+  const [plays, setPlays] = useState<Record<Mode, number>>({ overview: 0, radar: 0 });
+  const btns = useRef<Record<string, HTMLButtonElement | null>>({});
+  const [thumb, setThumb] = useState<{ x: number; w: number } | null>(null);
+  const first = useRef(true);
 
-  const onKeyDown = (e: React.KeyboardEvent, idx: number) => {
-    if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
-      e.preventDefault();
-      const next = OPTIONS[(idx + 1) % OPTIONS.length];
-      nav(next.to);
-    }
+  useEffect(() => setActive(routeMode), [routeMode]);
+
+  useLayoutEffect(() => {
+    const measure = () => {
+      const b = btns.current[active];
+      if (b) setThumb({ x: b.offsetLeft, w: b.offsetWidth });
+    };
+    measure();
+    window.addEventListener('resize', measure);
+    return () => window.removeEventListener('resize', measure);
+  }, [active]);
+
+  const choose = (m: Mode) => {
+    if (m === active) return;
+    setActive(m);
+    setPlays((p) => ({ ...p, [m]: p[m] + 1 }));
+    first.current = false;
+    const to = OPTIONS.find((o) => o.value === m)!.to;
+    // Let the slide start before the next page renders.
+    requestAnimationFrame(() => startTransition(() => nav(to)));
   };
 
   return (
-    <div className="mode-switch top-nav" role="tablist" aria-label="View mode">
+    <div className="mode-switch top-nav" role="tablist" aria-label="View">
+      {thumb && (
+        <motion.span
+          className="mode-pill-thumb"
+          aria-hidden
+          initial={false}
+          animate={{ x: thumb.x, width: thumb.w }}
+          transition={first.current ? { duration: 0 } : SLIDE}
+        />
+      )}
       {OPTIONS.map((opt, idx) => {
         const selected = active === opt.value;
         return (
           <button
             key={opt.value}
+            ref={(el) => {
+              btns.current[opt.value] = el;
+            }}
             type="button"
             role="tab"
             aria-selected={selected}
             className={`mode-pill-btn ${selected ? 'active' : ''}`}
-            onClick={() => nav(opt.to)}
-            onKeyDown={(e) => onKeyDown(e, idx)}
+            onClick={() => choose(opt.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+                e.preventDefault();
+                choose(OPTIONS[(idx + 1) % OPTIONS.length].value);
+              }
+            }}
           >
-            {selected && (
-              <motion.span
-                layoutId={`mode-pill-${id}`}
-                className="mode-pill-thumb"
-                transition={spring.snappy}
-                aria-hidden
-              />
-            )}
             <span className="mode-pill-content">
-              {opt.icon}
+              <opt.Icon play={plays[opt.value]} />
               <span>{opt.label}</span>
             </span>
           </button>

@@ -2,7 +2,7 @@ import { briefFromSuggestions } from '../data/insights';
 import type { Recommendation } from '../data/mock';
 import { useQuota } from '../data/live';
 import { useEffect, useRef, useState } from 'react';
-import { Alert, App, Button, Drawer, Input, Modal, Select } from 'antd';
+import { App, Button, Drawer, Input, Modal, Select } from 'antd';
 import { CloseOutlined, EditOutlined, LinkOutlined, LoadingOutlined, PlusOutlined, ThunderboltOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural, type Creative } from '../data/mock';
@@ -52,8 +52,11 @@ export function Body({
   const account = accountOf(creative);
   const brand = 'brand' in account ? account.brand : null;
   const saved = briefs[creative.product];
-  const [mode, setMode] = useState<BriefMode>(saved ? 'filled' : 'empty');
-  const [brief, setDraft] = useState(saved ?? '');
+  // Mancini 09:43: the brief starts filled in from the picked suggestions; a product page is the alternative.
+  const fromSuggestions = !!picked && picked.length > 0;
+  const [mode, setMode] = useState<BriefMode>(fromSuggestions ? 'write' : saved ? 'filled' : 'empty');
+  const [brief, setDraft] = useState(() => (fromSuggestions ? briefFromSuggestions(creative, picked!, account, saved) : saved ?? ''));
+  const [prefilled, setPrefilled] = useState(fromSuggestions);
   const [url, setUrl] = useState('');
   const [images, setImages] = useState<string[]>(PRODUCT_IMAGES[creative.product] ?? []);
   const [uploadError, setUploadError] = useState('');
@@ -69,6 +72,7 @@ export function Body({
   // Item 9: fill the brief from the diagnosis. Everything stays editable; nothing is saved until Create.
   const prefill = () => {
     setDraft(briefFromSuggestions(creative, picked ?? [], account, saved));
+    setPrefilled(true);
     setMode('write');
   };
 
@@ -79,6 +83,7 @@ export function Body({
       const text = draftFromPage(creative.product);
       setDraft(text);
       setBrief(creative.product, text);
+      setPrefilled(false);
       setMode('filled');
     }, 1400);
   };
@@ -135,20 +140,15 @@ export function Body({
           <div className="dlg-label-row">
             <span className="dlg-label">Ad brief</span>
             <span className="row-gap wrap">
-              {mode === 'filled' && picked && picked.length > 0 && (
-                <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} icon={<ThunderboltOutlined />} onClick={prefill}>
-                  Pre-fill from suggestions
-                </Button>
-              )}
-              {mode === 'filled' && saved && (
-                <Button type={panel ? 'default' : 'link'} size="small" className={panel ? undefined : 'inline-link'} onClick={() => setMode('url')}>
+              {(mode === 'filled' || mode === 'write') && (
+                <Button type="link" size="small" className="inline-link" icon={<LinkOutlined />} onClick={() => setMode('url')}>
                   Rewrite from a product page
                 </Button>
               )}
             </span>
           </div>
           <AnimatePresence mode="wait" initial={false}>
-            {(mode === 'empty' || mode === 'url' || mode === 'reading' || mode === 'error') && !saved ? (
+            {(mode === 'empty' || mode === 'url' || mode === 'reading' || mode === 'error') && !saved && !brief ? (
               <motion.div key="starts" variants={fadeUp} initial="hidden" animate="show" exit="exit" className={`brief-starts-wrap ${picked && picked.length > 0 ? 'has-prefill' : ''}`}>
                 {picked && picked.length > 0 && (
                   <>
@@ -160,7 +160,7 @@ export function Body({
                         </b>
                         <span className="t-help">Fills in the product, who it's for, the goal and what to change. You can edit it.</span>
                       </div>
-                      <Button onClick={prefill}>Fill in the brief</Button>
+                      <Button color="primary" variant="filled" onClick={prefill}>Fill in the brief</Button>
                     </div>
                     <div className="brief-divider muted small">
                       <span>or start another way</span>
@@ -184,7 +184,7 @@ export function Body({
                       aria-label="Product page link"
                     />
                     {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
-                    <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                    <Button color="primary" variant="filled" onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
                       {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                     </Button>
                   </div>
@@ -192,7 +192,7 @@ export function Body({
                   <div className="brief-start">
                     <b>Write your own</b>
                     <span className="t-help">Cover the product, who it's for, the goal and the tone.</span>
-                    <Button icon={<EditOutlined />} onClick={() => setMode('write')}>
+                    <Button color="primary" variant="filled" icon={<EditOutlined />} onClick={() => setMode('write')}>
                       Write it yourself
                     </Button>
                   </div>
@@ -212,10 +212,10 @@ export function Body({
                 />
                 {mode === 'error' && <span className="field-error">Couldn't read that page. Check the link, or write the brief yourself.</span>}
                 <span className="row-gap">
-                  <Button onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
+                  <Button color="primary" variant="filled" onClick={readPage} disabled={!url || mode === 'reading'} icon={mode === 'reading' ? <LoadingOutlined /> : undefined}>
                     {mode === 'reading' ? 'Reading the page' : 'Write brief'}
                   </Button>
-                  <Button type="text" onClick={() => setMode('filled')}>
+                  <Button type="text" onClick={() => setMode(prefilled || !saved ? 'write' : 'filled')}>
                     Cancel
                   </Button>
                 </span>
@@ -231,6 +231,7 @@ export function Body({
                   autoFocus={mode === 'write'}
                   aria-label="Ad brief"
                 />
+                {mode === 'write' && prefilled && <span className="brief-foot">Filled in from the suggestions you picked. Change anything you like.</span>}
                 {mode === 'filled' && saved && <span className="brief-foot">Saved for {creative.product}. Used for every variation of this product.</span>}
               </motion.div>
             )}
@@ -289,7 +290,10 @@ export function Body({
 
       {quota.live && quota.left === 0 && (
         // L-163: the demo's daily cap for live Gemini images.
-        <Alert className="live-alert" type="warning" showIcon message="You've used today's 10 live images." description="New variations use sample images until tomorrow." />
+        <div className="demo-banner" role="status">
+          <span className="demo-banner-tag">Demo</span>
+          <span>This prototype makes 10 live images a day, and they're used up. New variations use sample images until tomorrow.</span>
+        </div>
       )}
       <footer className="dlg-foot">
         <div className="dlg-sum">
@@ -299,11 +303,6 @@ export function Body({
           <span className="t-help">
             Uses <Rolling value={cost} /> of {credits.toLocaleString('en-US')}{'\u00a0'}credits
           </span>
-          {quota.live && quota.left > 0 && (
-            <span className="t-help live-left">
-              {quota.left} of {quota.limit} live images left today{total > quota.left ? `. The other ${total - quota.left} use samples.` : '.'}
-            </span>
-          )}
           {/* 5c A-22, A-23: one hint, under the total, instead of a tooltip plus a floating line. */}
           {!ready && <span className="t-help dlg-need">Add a brief to continue</span>}
         </div>
@@ -356,9 +355,9 @@ export function CreateDialog({
         onClose={onClose}
         placement="bottom"
         size="large"
-        styles={{ wrapper: { height: '100svh' } }}
+        styles={{ wrapper: { height: 'auto', maxHeight: '92svh' } }}
         title="Create variations"
-        className="sheet-drawer"
+        className="sheet-drawer create-sheet"
         destroyOnHidden
       >
         {body}

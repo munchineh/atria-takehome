@@ -1627,3 +1627,55 @@ h1, h2, h3, h4, .panel-title, .rec-how, .ad-name, .name, .ov-row-text b, .task-t
 .copy-row-main .chev { grid-area: chev; }
 @media (max-width: 767px) { .copy-row-main .copy-nums .muted { display: inline; } }
 .gal-list .gal-media .ad-art { aspect-ratio: 1 / 1 !important; }
+/* Overview / Radar switch, reworked (Mancini 09:43): flat track, light thumb shadow, constant label weight */
+.mode-switch { gap: 0; }
+.mode-pill-btn { font-weight: 500; transition: color 0.2s cubic-bezier(0.2, 0, 0, 1); }
+.mode-pill-btn.active { font-weight: 500; }
+.mode-pill-thumb { inset: 3px auto 3px 0; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); will-change: transform, width; }
+.ms-icon { display: block; overflow: visible; }
+.ms-icon rect, .ms-icon line { transform-box: fill-box; }
+/* Radar head: help link beside the title; one grading note (Mancini 09:43, items 4 and 19) */
+.page-title-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.page-title-row .hgw { color: #595959; gap: 6px; padding-inline: 8px; }
+.page-title-row .hgw:hover { color: #1f1f1f; }
+.grading-note { display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--line); border-radius: 10px; background: #fafafa; max-width: 560px; }
+.grading-note-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.grading-note-title { font-size: 14px; font-weight: 600; color: #1f1f1f; }
+.grading-note .ant-progress { margin: 0; line-height: 1; }
+@media (max-width: 767px) { .page-title-row .hgw-text { display: none; } .grading-note { max-width: none; } }
+.page-title-row .hgw .hgw-icon { display: inline-flex; font-size: 14px; }
+/* Action bar floats again (Mancini 09:43, item 17). A white fade sits under it so cards don't show through,
+   the page gets room to scroll its last card clear, and long or translated text wraps instead of pushing the button. */
+.detail { padding-bottom: 120px; }
+.bar-fade { position: fixed; z-index: 29; left: 0; right: 0; bottom: 0; height: 112px; pointer-events: none; background: linear-gradient(to bottom, rgba(255,255,255,0), #fff 70%); }
+@media (min-width: 768px) { .bar-fade { left: var(--rail-w); } }
+@media (min-width: 1200px) { .bar-fade { left: calc(var(--rail-w) + var(--side-w)); } }
+.sticky-bar { box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14), 0 1px 3px rgba(0, 0, 0, 0.08); }
+.sticky-bar .sticky-summary { flex: 1; min-width: 0; }
+.sticky-bar .sticky-summary .left { white-space: normal; overflow-wrap: anywhere; }
+.sticky-bar .bar-row > .ant-btn { flex: none; white-space: nowrap; }
+/* Form is about 10% larger than the bar it grows from. */
+.sticky-bar.expanded { width: min(792px, calc(100vw - 32px)); }
+/* Create button: no stray light edge under the primary button (antd's primary shadow on a dark panel). */
+.ant-btn-primary, .ant-btn-primary:not(:disabled):hover { box-shadow: none; }
+@media (max-width: 767px) { .detail { padding-bottom: 112px; } .bar-fade { height: 96px; } }
+/* Create form (Mancini 09:43, item 18): demo-only limit as its own banner; brief actions read as buttons, not fields. */
+.demo-banner { display: flex; gap: 10px; align-items: flex-start; margin: 0 24px 12px; padding: 10px 12px; border: 1px dashed #c9c4cf; border-radius: 10px; background: repeating-linear-gradient(-45deg, #faf9fb, #faf9fb 8px, #f4f2f6 8px, #f4f2f6 16px); font-size: 13px; color: #45414a; line-height: 1.45; }
+.demo-banner-tag { flex: none; font-size: 11px; font-weight: 600; letter-spacing: 0.02em; padding: 1px 6px; border-radius: 4px; background: #2b2830; color: #fff; }
+.bar-panel .demo-banner { border-color: #4a4550; background: repeating-linear-gradient(-45deg, #26232a, #26232a 8px, #2c2930 8px, #2c2930 16px); color: #cfcbd3; }
+.bar-panel .demo-banner-tag { background: #ece9ef; color: #1f1d22; }
+.bar-panel .inline-link.ant-btn-link { color: #ff9a6b; }
+.create-sheet .ant-drawer-content-wrapper, .create-sheet .ant-drawer-section { border-radius: 16px 16px 0 0; overflow: hidden; }
+.sheet-drawer .demo-banner { margin: 0 16px 12px; }
+/* Phones: the issue line wraps under the metric, so the dot separator would start the line. */
+@media (max-width: 767px) { .rec-issue-text { flex-basis: 100%; } .rec-issue-text::before { content: none; } }
+/* "Made from" link replaces "Variation N" (Mancini 09:43, item 20). */
+.made-from { all: unset; box-sizing: border-box; display: inline-flex; align-items: center; gap: 5px; max-width: 100%; margin: 2px 0 4px; font-size: 12px; color: #6b6b6b; cursor: pointer; border-radius: 4px; }
+.made-from .anticon { flex: none; color: #a83411; font-size: 12px; }
+.made-from-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; min-width: 0; }
+.made-from b { font-weight: 500; color: #45414a; }
+.made-from:hover b { color: #a83411; text-decoration: underline; text-underline-offset: 2px; }
+.made-from:focus-visible { outline: 2px solid #f66c30; outline-offset: 2px; }
+.made-from { align-items: flex-start; }
+.made-from .anticon { margin-top: 2px; }
+.made-from-text { white-space: normal; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow-wrap: anywhere; }

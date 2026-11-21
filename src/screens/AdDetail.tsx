@@ -322,8 +322,8 @@ export function AdDetail() {
   const actionBar = iterable ? (
     <motion.div
       layout
-      className={`sticky-bar ${bp.md && !morph ? 'inline-dock' : ''} ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
-      style={{ borderRadius: bp.md ? 12 : 0 }}
+      className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
+      style={{ borderRadius: bp.md ? 16 : 0 }}
       initial={{ y: bp.md ? 0 : 24, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: spring.gentle }}
       transition={{ layout: spring.layout }}
@@ -646,8 +646,6 @@ export function AdDetail() {
             </motion.div>
           )}
 
-          {/* E2: on desktop, dock the action bar cleanly above the suggestions so it never obscures cards. */}
-          {bp.md && actionBar}
 
           {recs.map((r) => (
             <RecCard
@@ -705,7 +703,9 @@ export function AdDetail() {
           />
         )}
       </AnimatePresence>
-      {!bp.md && actionBar}
+      {/* Mancini 09:43: float the bar again, over a white fade, so it morphs into the form. */}
+      {iterable && <div className="bar-fade" aria-hidden />}
+      {actionBar}
 
       <CreateDialog
         open={dialog && !bp.md}
