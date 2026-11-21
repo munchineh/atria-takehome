@@ -3073,3 +3073,59 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
   .ed-history .ed-hist-step { grid-template-columns: 104px minmax(0, 1fr); }
   .ed-restore .ant-btn { min-height: 44px; }
 }
+
+/* 266 (Mancini 18:24) */
+/* Recommended and the scope tag match the grade tag's 22 px height. */
+.rec-four .rec-diag-left .rec-suggested.ant-tag, .rec-four .rec-diag-left .rec-scope { height: 22px; display: inline-flex; align-items: center; line-height: var(--lh-small); }
+/* Selected: the tick is a plain green circle with a white check, nothing behind it. */
+.pick-chip .pick-tick { display: inline-flex; align-items: center; justify-content: center; width: 16px; height: 16px; border-radius: 50%; background: var(--c-success); color: #fff; font-size: 10px; corner-shape: round; }
+.pick-chip .pick-tick .anticon { font-size: 10px; }
+/* Ideas to try: words to copy are the strongest element (filled, primary icon); directions are stroked with no fill. */
+.rec-card .idea-pill:not(.idea-note) { background: var(--c-primary-border); color: var(--c-text); font-weight: 600; }
+.rec-card .idea-pill:not(.idea-note):hover { background: color-mix(in srgb, var(--c-primary) 40%, #fff); }
+.rec-card .idea-pill.idea-note, .rec-card.selected .idea-pill.idea-note { background: transparent; border-color: var(--c-border); color: var(--c-text-2); font-weight: 400; }
+/* Goal | Sales: one text colour; the value stays bold. */
+.goal-split-k { color: var(--c-text); }
+/* Image-only banner on Radar: info blue so it isn't lost against the grey page. */
+.media-note { background: var(--c-info-bg); border: 1px solid var(--c-info-border); color: var(--c-text); }
+.media-note > .anticon { color: var(--c-info); }
+/* Ad page left column: no inner scroll box; it sticks once its end is in view (top set by the page). */
+@media (min-width: 768px) { .detail .detail-left { top: var(--left-top, 80px); max-height: none; overflow: visible; } }
+/* "How Atria reads this image": the flag sits on the chip's centre line. */
+.ed-chip .persona-flag.ant-btn { display: inline-flex; align-items: center; justify-content: center; align-self: center; }
+.ed-chip .persona-flag .anticon { display: inline-flex; }
+/* Edit creative sits closer to the image on an Ad Library ad. */
+.lib-ad .lib-creative-actions { margin-top: -6px; }
+/* Ad Library: tabs on the left, grid or list on the right. A tab ending in a count chip gets less padding on the right. */
+.lib-toolbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 0 0 16px; flex-wrap: wrap; }
+.lib-toolbar .lib-tabs { margin: 0; }
+.lib-tabs .ant-segmented-item-label { padding-inline: 12px 6px; }
+.lib-view .ant-segmented-item-label { display: inline-flex; align-items: center; justify-content: center; padding-inline: 10px; }
+.lib-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 16px; }
+@media (max-width: 1399px) { .lib-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (max-width: 1023px) { .lib-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .lib-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; } }
+.lib-card { all: unset; box-sizing: border-box; display: flex; flex-direction: column; width: 100%; height: 100%; background: #fff; border: 1px solid var(--c-border-2); border-radius: var(--r-surface); overflow: hidden; cursor: pointer; }
+.lib-card:hover { border-color: var(--c-border); }
+.lib-card:focus-visible { box-shadow: 0 0 0 2px var(--c-primary); }
+.lib-card .ad-art { border-radius: 0; }
+.lib-card-body { display: flex; flex-direction: column; align-items: flex-start; gap: 4px; padding: 12px; min-width: 0; }
+.lib-card-body .lib-name, .lib-card-body .lib-sub { max-width: 100%; }
+.lib-card-body .lib-status { margin-top: 4px; }
+/* The Create form grows straight up from the bar: same width and same centre line open and closed (the collapsed side
+   panel used to move only the closed bar, so the form slid left as it opened). */
+@media (min-width: 768px) { .detail .sticky-bar { width: min(792px, calc(100vw - var(--rail-w) - 32px)); } }
+@media (min-width: 1200px) { .shell.side-collapsed .sticky-bar { left: calc(50% + var(--rail-w) / 2); } }
+/* Step labels ("What to change", "How to change the text") read as labels: body size, semibold, full text colour.
+   Same in the Edit creative dialog and on the creative page. */
+.ed-step-label { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); }
+.ecd-controls { gap: 16px; }
+.ecd-modal .ed-methods { margin-bottom: 0; }
+/* Unsaved-changes dialog: discard on the left, keep editing and save on the right. */
+.ed-leave-foot { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.ed-leave-actions { display: inline-flex; gap: 8px; }
+@media (max-width: 767px) {
+  .lib-toolbar { flex-wrap: nowrap; }
+  .lib-toolbar .lib-tabs { flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+  .lib-view { flex: none; }
+}

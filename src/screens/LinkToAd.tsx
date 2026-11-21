@@ -8,7 +8,7 @@ import { SectionHead } from '../components/SectionHead';
 import { CTA_OPTIONS, FIELD_LABEL, adSetupOf, applyAdRecs, type AdSetup, type CtaButton } from '../data/adsetup';
 import { goalOf, recommendationsFor, type Grade, type Recommendation } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
-import { answers, predictedCtr, ratioFor, recIdsOf } from '../data/variations';
+import { answers, nameOf, predictedCtr, ratioFor, recIdsOf } from '../data/variations';
 import { fadeUp, pageTransition } from '../motion/tokens';
 
 /** Grades on one scale, best first: a projection moves up one notch per suggestion met (C+ to B, not C+ to A). */
@@ -49,7 +49,7 @@ export function LinkToAd() {
   const base = sourceAd ? adSetupOf(sourceAd, accountOf(sourceAd).name, goalOf(sourceAd) === 'Sales') : null;
   const blank: AdSetup = { brand: base?.brand ?? '', headline: '', primaryText: '', cta: 'Shop now', landing: '' };
   const [setup, setSetup] = useState<AdSetup>(() => (core && base ? applyAdRecs(base, adRecs) : blank));
-  const [name, setName] = useState(() => (v ? `${sourceAd?.name.split(' · ')[0] ?? 'New ad'} · ${v.angle}` : `${uploadedAd?.name ?? 'New ad'} · New`));
+  const [name, setName] = useState(() => (v ? `${sourceAd?.name.split(' · ')[0] ?? 'New ad'} · ${nameOf(v)}` : `${uploadedAd?.name ?? 'New ad'} · New`));
   const [filled, setFilled] = useState<'none' | 'ad' | 'fixes'>(core ? 'fixes' : 'none');
 
   if (!sourceAd || (!v && !uploadedAd)) {

@@ -12,7 +12,7 @@
  */
 import type { AdCopy, Creative } from './mock';
 import type { Job } from './store';
-import type { Variation, Version } from './variations';
+import { nameOf, type Variation, type Version } from './variations';
 
 export type Origin = 'variation' | 'cloned' | 'scratch';
 export type GroupBy = 'none' | 'date' | 'ad' | 'campaign' | 'product';
@@ -114,7 +114,7 @@ export function galleryItems(
         id: v.id,
         img: latest?.img ?? v.img,
         copy: latest ? latest.copy : v.copy,
-        name: v.angle,
+        name: nameOf(v),
         origin,
         source: 'ai',
         accountId: source.accountId,
@@ -135,7 +135,7 @@ export function galleryItems(
         to: `/creation/${source.id}/${v.id}/edit?round=${j.id}`,
         editTo: `/creation/${source.id}/${v.id}/edit?round=${j.id}`,
         linkTo: `/creation/link/${v.id}?round=${j.id}`,
-        variantOf: v.from ? { id: v.from.id, name: v.from.angle } : undefined,
+        variantOf: v.from ? { id: v.from.id, name: nameOf(v.from) } : undefined,
       });
     });
   }

@@ -1,9 +1,9 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CheckCircleFilled, CopyOutlined } from '../components/AppIcons';
+import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CopyOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -31,7 +31,7 @@ import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { STEP_NOTES, parentIdOf } from '../data/lineage';
 import { FIELD_LABEL, adSetupOf, applyAdRecs } from '../data/adsetup';
-import { answers } from '../data/variations';
+import { answers, nameOf } from '../data/variations';
 import { Thumb } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
 import { hubCrumb } from '../data/nav';
@@ -111,13 +111,6 @@ const BAND: Record<string, string> = { A: 'Top', B: 'Above average', C: 'Below a
 /** 260: "landing page and ad copy", "a, b and c". */
 const listJoin = (xs: string[]) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 
-/** 229: "say what makes it different and make one clear offer". Three or more picks are counted instead of listed. */
-function roundPhrase(picked: { fix: string }[]) {
-  const verb = (f: string) => f.replace(/\u00a0/g, ' ').replace(/^./, (ch) => ch.toLowerCase());
-  if (picked.length === 1) return verb(picked[0].fix);
-  if (picked.length === 2) return `${verb(picked[0].fix)} and ${verb(picked[1].fix)}`;
-  return `apply your ${picked.length} suggestions`;
-}
 
 /** Item 4 (R-H, R-I): Suggestion card in four structured parts from suggestionParts(). */
 function RecCard({
@@ -181,7 +174,11 @@ function RecCard({
           {/* Mancini 14:47: a Pick button instead of a checkbox. The whole card still toggles, so this is its visible state. */}
           {!disabled && (
             <span className={`pick-chip ${selected ? 'on' : ''}`} aria-hidden>
-              {selected && <CheckCircleFilled className="pick-tick" />}
+              {selected && (
+                <span className="pick-tick">
+                  <CheckOutlined />
+                </span>
+              )}
               {selected ? 'Selected' : 'Select'}
             </span>
           )}
@@ -275,6 +272,22 @@ export function AdDetail() {
   const hub = hubCrumb();
   const nav = useNavigate();
   const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs, createDraft, drafts } = useStore();
+  // 266 (Mancini 18:24): the left column scrolls with the page until its last card is in view, then stays. It used to
+  // scroll inside its own box, which clipped its lower cards once the page ended.
+  const leftRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    const el = leftRef.current;
+    if (!el) return;
+    const set = () => el.style.setProperty('--left-top', `${Math.min(80, window.innerHeight - el.offsetHeight)}px`);
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    window.addEventListener('resize', set);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', set);
+    };
+  }, [id]);
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
   const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
@@ -400,7 +413,7 @@ export function AdDetail() {
       animate={{ y: 0, opacity: 1, transition: spring.gentle }}
       transition={{ layout: spring.layout }}
       role={morph ? 'dialog' : undefined}
-      aria-label={morph ? 'Create creatives' : undefined}
+      aria-label={morph ? 'Generate new creatives' : undefined}
     >
       <AnimatePresence mode="popLayout" initial={false}>
         {morph ? (
@@ -467,17 +480,10 @@ export function AdDetail() {
               ) : (
                 <>
                   {c.media === 'Image' ? (
-                    // 229 (Mancini 16:03): image ads read as one sentence, "Create 8 variations that ...", using the picked actions.
-                    bp.md ? (
-                      <b className="bar-sentence">
-                        Create <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} that {roundPhrase(recs.filter((r) => creativeSel.includes(r.id)))}
-                      </b>
-                    ) : (
-                      // 232 (Mancini 16:07): phones use the short form so the bar stays one line.
-                      <b className="bar-sentence">
-                        <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} from {plural(creativeSel.length, 'suggestion')}
-                      </b>
-                    )
+                    // 266 (Mancini 18:24): back to the short sentence at every width. The cards already say what each fix is.
+                    <b className="bar-sentence">
+                      Create <Rolling value={total} /> {total === 1 ? 'creative' : 'creatives'} from {plural(creativeSel.length, 'suggestion')}
+                    </b>
                   ) : (
                     <b>
                       <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
@@ -520,7 +526,7 @@ export function AdDetail() {
                 </Button>
               ) : (
                 <Button type="primary" size="large" disabled={creativeSel.length === 0} onClick={() => setDialog(true)}>
-                  Create creatives
+                  Generate new creatives
                 </Button>
               ))}
           </motion.div>
@@ -550,7 +556,7 @@ export function AdDetail() {
       </header>
 
       <div className="detail-grid">
-        <aside className="detail-left">
+        <aside className="detail-left" ref={leftRef}>
           <div className="creative-panel creative-bare">
             <span className={`media-pill ${c.media.toLowerCase()} ad-media on-art`}>
               {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
@@ -803,7 +809,7 @@ export function AdDetail() {
                 <ul className="rel-grid">
                   {relatedCreatives.slice(0, 11).map(({ v, j }) => (
                     <li key={v.id}>
-                      <Tooltip title={v.angle}>
+                      <Tooltip title={nameOf(v)}>
                         <Link to={`/creation/${c.id}/${v.id}/edit?round=${j.id}`} className="rel-thumb" aria-label={`Open creative ${v.angle}`}>
                           <Thumb c={{ img: v.img, media: 'Image', name: v.angle }} size={64} />
                         </Link>

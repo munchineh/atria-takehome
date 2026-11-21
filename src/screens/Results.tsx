@@ -22,7 +22,7 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
 import { hubCrumb, useWorkspace } from '../data/nav';
-import { ANGLE_REASON, ANGLE_TIP, answers, recIdsOf, ratioFor, type Variation, type Version } from '../data/variations';
+import { nameOf, ANGLE_REASON, ANGLE_TIP, answers, recIdsOf, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
 import { CreateDialog } from '../components/CreateDialog';
@@ -214,7 +214,7 @@ function VariationCard({
       <div className="var-meta">
         <div className="var-head-row">
           <Tooltip title={ANGLE_TIP}>
-            <strong className="var-angle">{v.angle}</strong>
+            <strong className="var-angle">{nameOf(v)}</strong>
           </Tooltip>
           {state === 'ready' && (
             <span className="var-pred">
@@ -515,7 +515,7 @@ export function Results() {
                             versions={versionsOf(v)}
                             onMore={() => {
                               const j = startJob({ creativeId: c.id, recIds: [v.recId], perRec: 4, size: job.size, like: v });
-                              message.success({ content: `Generating 4 variations like ${v.angle}`, duration: 3 });
+                              message.success({ content: `Generating 4 variations like ${nameOf(v)}`, duration: 3 });
                               setParams({ round: j.id });
                             }}
                             moreCost={`Uses ${4 * ACCOUNT.creditsPerImage} of ${credits.toLocaleString('en-US')}\u00a0credits`}
@@ -639,7 +639,7 @@ export function Results() {
               <figure key={v.id}>
                 <AdArt slot={cur.img} copy={cur.copy} typo={cur.n === 1 ? v.typo : undefined} ratio="2 / 3" alt={v.angle} />
                 <figcaption>
-                  <strong>{v.angle}</strong>
+                  <strong>{nameOf(v)}</strong>
                   <span className="t-help">Improves {recs.find((r) => r.id === v.recId)?.target ?? 'CTR'}</span>
                   <PredictedTag id={v.id} />
                 </figcaption>

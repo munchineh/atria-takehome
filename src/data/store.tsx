@@ -233,6 +233,10 @@ interface Store {
   iterate: (jobId: string, v: Variation) => string;
   /** 265 (Mancini 17:36): makes vN the latest version again. Later versions are removed; variations made from them are kept. */
   restoreVersion: (v: Variation, n: number) => void;
+  /** 266 (Mancini 18:24): the creative page keeps changes pending until Save. These fold every change made since vN
+   * (plus typed text, if any) into one new version, or move them into a new variation and leave this one at vN. */
+  commitVersion: (v: Variation, base: number, copy?: Variation['copy']) => number;
+  commitVariation: (jobId: string, v: Variation, base: number, copy?: Variation['copy']) => string;
   /** Grade window in days (30, 60, 90). The account default is 60. */
   windowDays: number;
   setWindowDays: (d: number) => void;
@@ -595,6 +599,39 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     (v: Variation, n: number) => setVersions((p) => ({ ...p, [v.id]: versionsOf(v).filter((x) => x.n <= n) })),
     [versionsOf],
   );
+  const pendingResult = (v: Variation, base: number, copy?: Variation['copy']) => {
+    const list = versionsOf(v);
+    const last = list.at(-1)!;
+    const changed = list.filter((x) => x.n > base);
+    return {
+      list,
+      img: last.img,
+      copy: copy ?? last.copy,
+      caption: copy && !changed.length ? 'Edited text' : [...changed.map((x) => x.caption), ...(copy && changed.length ? ['Edited text'] : [])].join(', then '),
+      cost: changed.reduce((a, x) => a + x.cost, 0),
+    };
+  };
+  const commitVersion = useCallback(
+    (v: Variation, base: number, copy?: Variation['copy']) => {
+      const r = pendingResult(v, base, copy);
+      const n = base + 1;
+      setVersions((p) => ({ ...p, [v.id]: [...r.list.filter((x) => x.n <= base), { n, img: r.img, copy: r.copy, caption: r.caption, cost: r.cost, state: 'ready' }] }));
+      return n;
+    },
+    [versionsOf], // eslint-disable-line react-hooks/exhaustive-deps
+  );
+  const commitVariation = useCallback(
+    (jobId: string, v: Variation, base: number, copy?: Variation['copy']) => {
+      const r = pendingResult(v, base, copy);
+      counter.current += 1;
+      const nid = `${v.id}-s${counter.current}`;
+      const nv: Variation = { ...v, id: nid, img: r.img, copy: r.copy, typo: undefined, launched: undefined, from: { id: v.id, v: base, angle: v.angle, how: 'version' } };
+      setVersions((p) => ({ ...p, [v.id]: r.list.filter((x) => x.n <= base), [nid]: [{ n: 1, img: r.img, copy: r.copy, caption: r.caption, cost: r.cost, state: 'ready' }] }));
+      addVariation(jobId, nv);
+      return nid;
+    },
+    [versionsOf, addVariation], // eslint-disable-line react-hooks/exhaustive-deps
+  );
   const iterate = useCallback(
     (jobId: string, v: Variation) => {
       const list = versionsOf(v);
@@ -669,8 +706,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       choose,
       iterate,
       restoreVersion,
+      commitVersion,
+      commitVariation,
     }),
-    [saved, setSaved, archived, setArchived, chosen, choose, iterate, restoreVersion, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
+    [saved, setSaved, archived, setArchived, chosen, choose, iterate, restoreVersion, commitVersion, commitVariation, jobs, failNext, dismissedBanners, drafts, adEdits, credits, accountId, statusOf, startJob, briefs, lastSettings, tasksOpen, bump, finished, versionsOf, applyChange, saveText, branch, windowDays],
   );
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;

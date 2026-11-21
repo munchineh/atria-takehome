@@ -6,7 +6,9 @@ import { applyToImage } from '../data/variations';
 import { useStore } from '../data/store';
 
 export type CreativeDraft = { img: string; copy?: AdCopy };
-type Mode = 'type' | 'stylize' | 'image';
+type Scope = 'image' | 'text';
+type Method = 'type' | 'stylize';
+const textOf = (c?: AdCopy) => (c ? [c.head, c.price, c.band, c.cta].filter(Boolean).join('\n') : '');
 
 const CHIPS = ['Make the product bigger', 'Change the background', 'Simplify the layout'];
 
@@ -32,14 +34,18 @@ export function EditCreativeDialog({
   const { message } = App.useApp();
   const { credits, spendCredits } = useStore();
   const [draft, setDraft] = useState<CreativeDraft>(value);
-  const [mode, setMode] = useState<Mode>('type');
+  const [scope, setScope] = useState<Scope>('image');
+  const [method, setMethod] = useState<Method>('type');
+  const [text, setText] = useState('');
   const [style, setStyle] = useState('');
   const [ask, setAsk] = useState('');
   const [busy, setBusy] = useState(false);
   useEffect(() => {
     if (open) {
       setDraft(value);
-      setMode(value.copy?.stylized ? 'image' : 'type');
+      setScope('image');
+      setMethod(value.copy?.stylized ? 'stylize' : 'type');
+      setText(textOf(value.copy));
       setStyle('');
       setAsk('');
     }
@@ -88,20 +94,36 @@ export function EditCreativeDialog({
           {busy && <span className="ecd-busy">Creating the new image</span>}
         </div>
         <div className="ecd-controls">
-          <span className="t-label">How to change it</span>
-          <Segmented
-            block
-            value={mode}
-            onChange={(v) => setMode(v as Mode)}
-            options={[
-              { value: 'type', label: 'Type to edit', disabled: drawn },
-              { value: 'stylize', label: 'Text with AI' },
-              { value: 'image', label: 'Change the image' },
-            ]}
-          />
-          {mode === 'type' && (
+          {/* 266 (Mancini 18:24): the same two levels as the creative page. First what to change, then for text, how. */}
+          <div className="ed-step">
+            <span className="ed-step-label">What to change</span>
+            <Segmented
+              block
+              value={scope}
+              onChange={(v) => setScope(v as Scope)}
+              options={[
+                { value: 'image', label: 'Change the image' },
+                { value: 'text', label: 'Change text' },
+              ]}
+            />
+          </div>
+          {scope === 'text' && (
+            <div className="ed-step">
+              <span className="ed-step-label">How to change the text</span>
+              <div className="ed-methods" role="radiogroup" aria-label="How to change the text">
+                <button type="button" role="radio" aria-checked={method === 'type'} disabled={drawn} className={`ed-method ${method === 'type' ? 'on' : ''}`} onClick={() => setMethod('type')}>
+                  <b>Type to edit</b>
+                  <span className="t-help">{drawn ? "Not available. This creative's text is drawn into the image." : 'Free. The text sits on top of the image and stays editable.'}</span>
+                </button>
+                <button type="button" role="radio" aria-checked={method === 'stylize'} className={`ed-method ${method === 'stylize' ? 'on' : ''}`} onClick={() => setMethod('stylize')}>
+                  <b>Text with AI</b>
+                  <span className="t-help">Atria draws the text into the image. It looks richer, but words can come out misspelled and you can't type over it afterwards.</span>
+                </button>
+              </div>
+            </div>
+          )}
+          {scope === 'text' && method === 'type' && (
             <div className="ecd-fields">
-              <p className="t-help">Free. The text sits on top of the image and stays editable.</p>
               <label className="ecd-field">
                 <span>Headline</span>
                 <Input value={draft.copy?.head ?? ''} onChange={(e) => setCopy({ head: e.target.value.toUpperCase() })} />
@@ -124,21 +146,25 @@ export function EditCreativeDialog({
               </label>
             </div>
           )}
-          {mode === 'stylize' && (
+          {scope === 'text' && method === 'stylize' && (
             <div className="ecd-fields">
-              <p className="t-help">
-                Atria draws the text into the image. It looks richer, but words can come out misspelled and you can't type over it afterwards.
-              </p>
               <label className="ecd-field">
-                <span>Text style (optional)</span>
+                <span>Text</span>
+                <Input.TextArea autoSize={{ minRows: 2, maxRows: 5 }} placeholder="One line per text block, for example the headline, then the button" value={text} onChange={(e) => setText(e.target.value)} />
+              </label>
+              <label className="ecd-field">
+                <span>Style (optional)</span>
                 <Input.TextArea autoSize={{ minRows: 2, maxRows: 4 }} placeholder="For example, hand-drawn chalk lettering" value={style} onChange={(e) => setStyle(e.target.value)} />
               </label>
               <div className="ecd-run">
                 <Button
                   loading={busy}
+                  disabled={!text.trim()}
                   onClick={() =>
                     run(() => {
-                      setCopy({ stylized: true });
+                      const [head = '', ...rest] = text.split('\n').map((x) => x.trim()).filter(Boolean);
+                      const cta = rest.length ? rest[rest.length - 1] : draft.copy?.cta;
+                      setDraft((d) => ({ ...d, copy: { ...d.copy, head: head.toUpperCase(), band: rest.length > 1 ? rest.slice(0, -1).join(' · ').toUpperCase() : d.copy?.band, cta: cta?.toUpperCase(), stylized: true } }));
                       message.success('Text drawn into the image');
                     })
                   }
@@ -151,7 +177,7 @@ export function EditCreativeDialog({
               </div>
             </div>
           )}
-          {mode === 'image' && (
+          {scope === 'image' && (
             <div className="ecd-fields">
               <label className="ecd-field">
                 <span>What should change?</span>
@@ -175,7 +201,7 @@ export function EditCreativeDialog({
                     })
                   }
                 >
-                  Apply change
+                  Generate image
                 </Button>
                 <span className="t-help">
                   Uses {ACCOUNT.creditsPerImage} of {credits.toLocaleString('en-US')} credits

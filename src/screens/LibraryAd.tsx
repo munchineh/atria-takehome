@@ -60,7 +60,7 @@ export function LibraryAd() {
       <header className="ph ad-top">
         <Breadcrumb className="ph-crumbs" items={[{ title: <Link to="/creation/ads">Ad Library</Link> }, { title: a.name }]} />
         <div className="ph-actions">
-          <Tooltip title="Opening the ad in Meta Ads Manager isn't part of this prototype">
+          <Tooltip title="Opening the ad in Meta Ads Manager isn't part of this prototype.">
             <Button icon={<ExportOutlined />} onClick={() => message.info("In the live product, this opens the ad in Meta Ads Manager to run it. It's not part of this prototype.")}>
               {bp.md ? 'Open in Ads Manager' : 'Ads Manager'}
             </Button>

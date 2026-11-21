@@ -204,7 +204,7 @@ export function LineageDrawer({
           <Alert
             type="warning"
             showIcon
-            title={`${plural(lineage.repeats, 'repeat pattern')} found in this chain.`}
+            title={lineage.repeats > 1 ? 'You might be repeating issues from earlier ads' : 'You might be repeating an issue from an earlier ad'}
             description={firstRepeat?.repeat?.text ?? 'A later step went back to something an earlier step had already moved away from.'}
           />
         )}

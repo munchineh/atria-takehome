@@ -1,6 +1,6 @@
 import { useQuota } from '../data/live';
 import { MadeFromIcon } from '../components/Icons';
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Alert, App, Button, Dropdown, Empty, Grid, Input, Modal, Segmented, Tag, Tooltip } from 'antd';
 import {
@@ -15,7 +15,8 @@ import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
 import { hubCrumb, useWorkspace } from '../data/nav';
-import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
+import { leave, setLeaveGuard } from '../data/leaveGuard';
+import { nameOf, CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt, Thumb } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
 import { ReportAudience } from '../components/ReportAudience';
@@ -59,7 +60,7 @@ export function Editor() {
   const mobile = !bp.md;
   const { message, modal } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, versionsOf, applyChange, saveText, branch, deleteVariation, credits, iterate, restoreVersion } = useStore();
+  const { jobsFor, versionsOf, applyChange, branch, deleteVariation, credits, iterate, restoreVersion, commitVersion, commitVariation } = useStore();
   const job = jobsFor(c.id).find((j) => j.variations.some((v) => v.id === vid));
   const v = job?.variations.find((x) => x.id === vid);
 
@@ -86,13 +87,19 @@ export function Editor() {
   const [confirmDelete, setConfirmDelete] = useState(false);
   /** 265: a version picked to restore. It becomes current only once the designer saves. */
   const [restoring, setRestoring] = useState<number | null>(null);
+  // 266 (Mancini 18:24): changes stay pending until Save. `base` is the version the page opened on; anything after it,
+  // and typed text not yet saved, is unsaved. Leaving with unsaved changes asks first.
+  const [base, setBase] = useState<number | null>(null);
+  const [leaveTo, setLeaveTo] = useState<(() => void) | null>(null);
+  const askLeave = useCallback((go: () => void) => setLeaveTo(() => go), []);
   const strip = useRef<HTMLDivElement>(null);
   const input = useRef<HTMLTextAreaElement>(null);
 
   useEffect(() => {
     setSel(null);
     setTextMode('editable');
-  }, [vid]);
+    setBase(latest?.n ?? null);
+  }, [vid]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (latest) setSel(null);
     setRestoring(null);
@@ -151,10 +158,36 @@ export function Editor() {
 
   const editPath = (nid: string) => (ws.inCreation ? `/creation/${c.id}/${nid}/edit?round=${job.id}` : ws.editorPath(c.id, nid, job.id));
   const go = (nid: string) => nav(ws.editorPath(c.id, nid, job.id));
+  const opened = base ?? latest.n;
+  const pendingCount = versions.filter((x) => x.n > opened).length;
+  const textDirty = editing && !!draft && JSON.stringify(draft) !== JSON.stringify(shown.copy);
+  const dirty = !locked && (pendingCount > 0 || textDirty);
+  /** Saves pending changes. Returns the new variation's id when saved as a variation. */
+  const save = (stay = false) => {
+    const copy = textDirty ? draft : undefined;
+    setEditing(false);
+    setLeaveGuard(null);
+    if (makeNew) {
+      const nid = commitVariation(job.id, v, opened, copy);
+      message.success({ content: 'Saved as a new variation', duration: 2 });
+      if (!stay) go(nid);
+      return nid;
+    }
+    const n = commitVersion(v, opened, copy);
+    setBase(n);
+    message.success({ content: `Saved as v${n}`, duration: 2 });
+    return undefined;
+  };
+  const discard = () => {
+    if (pendingCount) restoreVersion(v, opened);
+    setEditing(false);
+    setLeaveGuard(null);
+  };
   const apply = (instruction: string) => {
     const text = instruction.trim();
     if (!text) return;
-    const out = applyChange(job.id, v, shown.n, text, makeNew);
+    // 266: on the latest version a change is a pending version; Save decides whether it becomes a version or a variation.
+    const out = applyChange(job.id, v, shown.n, text, false);
     setAsk('');
     setRating(null);
     if (out !== v.id) {
@@ -188,7 +221,7 @@ export function Editor() {
   const crumbs = ws.inCreation
     ? [
         { title: <Link to="/creation">Creative gallery</Link> },
-        { title: <Link to={back}>{v.angle}</Link> },
+        { title: <Link to={back}>{nameOf(v)}</Link> },
         // Mancini 13:21: every breadcrumb ends with the current page.
         { title: 'Edit' },
       ]
@@ -196,7 +229,7 @@ export function Editor() {
         { title: <Link to={hubCrumb().to}>{hubCrumb().label}</Link> },
         { title: <Link to={ws.radarPath(c.id)}>{c.name}</Link> },
         { title: <Link to={back}>{roundLabel}</Link> },
-        { title: v.angle },
+        { title: nameOf(v) },
       ];
 
   const applyDisabled = !ask.trim() || (applying && !onOlder);
@@ -362,18 +395,7 @@ export function Editor() {
             })}
             <span className="t-help">Text edits don't use credits</span>
             <div className="ed-text-action">
-              <Button
-                type="primary"
-                disabled={applying}
-                onClick={() => {
-                  saveText(v, draft);
-                  setEditing(false);
-                  message.success({ content: `Saved as v${versions.length + 1}`, duration: 2 });
-                }}
-              >
-                Save text
-              </Button>
-              <Button onClick={() => setEditing(false)}>Cancel</Button>
+              <Button onClick={() => setEditing(false)}>Discard text changes</Button>
             </div>
           </motion.div>
         ) : (
@@ -492,7 +514,7 @@ export function Editor() {
           <p className="t-help ed-mode-help">
             {makeNew
               ? 'Makes a new, separate creative and leaves this one as it is. Best for a different idea you want to test against this one. It adds one more creative to manage.'
-              : `Edits this creative and saves it as v${latest.n + 1}. Best for small fixes. It stays one creative, so you can go back to an earlier version but can't test two versions against each other.`}
+              : `Saves your changes to this creative as v${opened + 1}. Best for small fixes. It stays one creative, so you can go back to an earlier version but can't test two versions against each other.`}
           </p>
         </div>
       )}
@@ -541,8 +563,8 @@ export function Editor() {
         <div className="ed-apply">
           <span className="t-help">{costLine}</span>
           <Tooltip title={applyDisabled ? (!ask.trim() ? 'Describe what you want to change first.' : 'Applying your previous change.') : undefined}>
-            <Button type={editing || locked ? 'default' : 'primary'} disabled={applyDisabled} onClick={() => apply(ask)}>
-              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
+            <Button disabled={applyDisabled} onClick={() => apply(ask)}>
+              {onOlder ? `New variation from v${shown.n}` : 'Generate image'}
             </Button>
           </Tooltip>
         </div>
@@ -584,7 +606,7 @@ export function Editor() {
       <li className="ed-hist-step">
         <span className="ed-hist-label">Origin</span>
         <Link to={editPath(parent.id)} className="ed-hist-ad">
-          <b>Variation of {parent.angle} v{v.from.v}</b>
+          <b>Variation of {nameOf(parent)} v{v.from.v}</b>
         </Link>
       </li>
     </ol>
@@ -692,7 +714,7 @@ export function Editor() {
     <ul className="rel-grid">
       {items.slice(0, 11).map(({ x, j }) => (
         <li key={x.id}>
-          <Tooltip title={x.angle}>
+          <Tooltip title={nameOf(x)}>
             <Link to={j.id === job.id ? editPath(x.id) : `/creation/${j.creativeId}/${x.id}/edit?round=${j.id}`} className="rel-thumb" aria-label={`Open creative ${x.angle}`}>
               <Thumb c={{ img: x.img, media: 'Image', name: x.angle }} size={64} />
             </Link>
@@ -747,7 +769,7 @@ export function Editor() {
     <motion.div {...pageTransition} className="page editor">
       <PageHeader
         crumbs={crumbs}
-        title={ws.inCreation ? `Edit ${v.angle}` : v.angle}
+        title={ws.inCreation ? `Edit ${nameOf(v)}` : nameOf(v)}
         tag={
           locked ? (
             <Tag color="blue" icon={<LockOutlined />}>
@@ -757,12 +779,19 @@ export function Editor() {
         }
         desc={
           locked
-            ? "This creative is in an ad, so it can't change. Iterate to make a new creative from it."
-            : 'Describe a change or edit the text. Each change is saved as a new version.'
+            ? "This creative runs in an ad, so it can't get a new version. Make a new variation to change it."
+            : 'Change the image or its text, then save it as a new version or a new variation.'
         }
         actions={
           ws.inCreation ? (
-            <Button onClick={() => nav(back)}>Done</Button>
+            <>
+              <Button onClick={() => leave(() => nav(back))}>Done</Button>
+              {!locked && (
+                <Button type="primary" disabled={!dirty || applying} onClick={() => save()}>
+                  {makeNew ? 'Save as new variation' : 'Save new version'}
+                </Button>
+              )}
+            </>
           ) : (
             <>
               <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded v${shown.n}`)}>
@@ -785,6 +814,11 @@ export function Editor() {
               >
                   <Button icon={<EllipsisOutlined />} aria-label="More actions" />
               </Dropdown>
+              {!locked && (
+                <Button type="primary" disabled={!dirty || applying} onClick={() => save()}>
+                  {makeNew ? 'Save as new variation' : 'Save new version'}
+                </Button>
+              )}
             </>
           )
         }
@@ -800,7 +834,7 @@ export function Editor() {
                 {' '}
                 of{' '}
                 <button type="button" className="ed-inline-link" onClick={() => go(parent.id)}>
-                  {v.from.angle}
+                  {nameOf(v.from)}
                 </button>
               </>
             ) : null}
@@ -854,13 +888,50 @@ export function Editor() {
                 <span className="small">{costLine}</span>
               </div>
               <Button type="primary" block disabled={applying && !onOlder} onClick={() => apply(ask)}>
-                {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
+                {onOlder ? `New variation from v${shown.n}` : 'Generate image'}
               </Button>
             </motion.div>
           </>
         )}
       </AnimatePresence>
 
+      <LeaveGuard dirty={dirty} ask={askLeave} />
+      <Modal
+        open={!!leaveTo}
+        title="Save your changes?"
+        onCancel={() => setLeaveTo(null)}
+        footer={
+          <div className="ed-leave-foot">
+            <Button
+              onClick={() => {
+                const go = leaveTo;
+                discard();
+                setLeaveTo(null);
+                go?.();
+              }}
+            >
+              Discard changes
+            </Button>
+            <span className="ed-leave-actions">
+              <Button onClick={() => setLeaveTo(null)}>Keep editing</Button>
+              <Button
+                type="primary"
+                disabled={applying}
+                onClick={() => {
+                  const go = leaveTo;
+                  save(true);
+                  setLeaveTo(null);
+                  go?.();
+                }}
+              >
+                {makeNew ? 'Save as new variation' : 'Save new version'}
+              </Button>
+            </span>
+          </div>
+        }
+      >
+        {applying ? 'A change is still being applied. Wait for it to finish to save it, or discard it.' : "Your changes to this creative aren't saved. If you leave now, they're lost."}
+      </Modal>
       <Modal
         open={confirmDelete}
         title="Delete this variation?"
@@ -879,4 +950,30 @@ export function Editor() {
       </Modal>
     </motion.div>
   );
+}
+
+/** 266: while the creative page has unsaved changes, links, the shell's buttons and reloading ask first. */
+function LeaveGuard({ dirty, ask }: { dirty: boolean; ask: (go: () => void) => void }) {
+  const nav = useNavigate();
+  useEffect(() => {
+    if (!dirty) return;
+    setLeaveGuard(ask);
+    const onClick = (e: MouseEvent) => {
+      const a = (e.target as Element | null)?.closest?.('a[href^="#/"]');
+      if (!a || a.closest('.ant-modal')) return;
+      e.preventDefault();
+      e.stopPropagation();
+      const to = a.getAttribute('href')!.slice(1);
+      ask(() => nav(to));
+    };
+    const onUnload = (e: BeforeUnloadEvent) => e.preventDefault();
+    document.addEventListener('click', onClick, true);
+    window.addEventListener('beforeunload', onUnload);
+    return () => {
+      setLeaveGuard(null);
+      document.removeEventListener('click', onClick, true);
+      window.removeEventListener('beforeunload', onUnload);
+    };
+  }, [dirty, ask, nav]);
+  return null;
 }

@@ -2,6 +2,7 @@ import { hubCrumb } from '../data/nav';
 import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { animate, motion, useAnimationControls, useReducedMotion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { leave } from '../data/leaveGuard';
 
 /**
  * Overview and Radar switch (Item 13, DL-02; reworked 21 Nov after Mancini 09:43).
@@ -201,7 +202,7 @@ export function ModeSwitch() {
     first.current = false;
     const to = OPTIONS.find((o) => o.value === m)!.to;
     // Let the slide start before the next page renders.
-    requestAnimationFrame(() => startTransition(() => nav(to)));
+    leave(() => requestAnimationFrame(() => startTransition(() => nav(to))));
   };
 
   return (

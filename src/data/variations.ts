@@ -77,6 +77,24 @@ export function promptFor(v: Pick<Variation, 'angle' | 'copy'>, product = 'Sad P
 /** ED-11: how Atria reads the image (read-only, O4). */
 const EMOTION: Record<string, string> = { 'Bold offer': 'Excitement', Scarcity: 'Urgency', Urgency: 'Urgency', Gift: 'Warmth', Demonstration: 'Curiosity', Comparison: 'Confidence', 'Price anchor': 'Value', Bundle: 'Value', Choice: 'Playfulness', Personal: 'Playfulness' };
 const THEME: Record<string, string> = { 'Bold offer': 'Savings', Scarcity: 'Limited edition', 'Price anchor': 'Savings', Bundle: 'Collection', Gift: 'Gifting', Demonstration: 'Stress relief', Comparison: 'Quality', Collection: 'Collection' };
+/** 266 (Mancini 18:24): creative names say what the image shows, so names (and their tooltips) aren't one short word. The angle stays as its tag. */
+const NAME: Record<string, string> = {
+  Demonstration: 'Squeeze it in your hand',
+  Comparison: 'Side by side with another',
+  Urgency: 'Last day of the deal',
+  Scarcity: 'Limited gold edition',
+  'Product detail': 'Close look at the squish',
+  'Price anchor': 'Was $18, now $14',
+  Personal: 'Pick your mood',
+  Gift: 'Gift box reveal',
+  Collection: 'All the moods together',
+  'Close-up': 'Close-up of the face',
+  Choice: 'Which one are you',
+  Bundle: 'Three in a bundle',
+  'Bold offer': 'Big price, bold offer',
+  'Bold color': 'Bold color backdrop',
+};
+export const nameOf = (v: { angle: string }) => NAME[v.angle] ?? v.angle;
 export const tagsFor = (angle: string) => ({ Angle: angle, Emotion: EMOTION[angle] ?? 'Comfort', Theme: THEME[angle] ?? 'Self-care' });
 export const TAG_TIPS: Record<string, string> = {
   Angle: 'The approach an ad takes to get a response, such as scarcity or social proof.',

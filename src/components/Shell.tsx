@@ -18,6 +18,7 @@ import { DEMO_ACCOUNTS, useStore } from '../data/store';
 import { TasksPanel } from './TasksPanel';
 import { GenBanners } from './GenBanners';
 import { duration, ease } from '../motion/tokens';
+import { leave } from '../data/leaveGuard';
 
 const RAIL = [
   { icon: <CompassOutlined />, label: 'Inspo' },
@@ -50,8 +51,10 @@ function AccountList({ onPick }: { onPick?: () => void }) {
                 message.info({ content: `${a} has no demo data. Try Moody Mochi or Tiny Toast Co.`, key: 'demo' });
                 return;
               }
-              setAccount(demo.id);
-              nav(loc.pathname.startsWith('/overview') ? '/overview' : '/');
+              leave(() => {
+                setAccount(demo.id);
+                nav(loc.pathname.startsWith('/overview') ? '/overview' : '/');
+              });
               onPick?.();
             }}
           >
@@ -133,7 +136,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                   className={`rail-item link ${active ? 'active' : ''}`}
                   role="link"
                   tabIndex={0}
-                  onClick={() => (r.to ? nav(r.to) : message.info({ content: `In the live product, this opens ${r.label}. It's not part of this prototype.`, key: 'rail' }))}
+                  onClick={() => (r.to ? leave(() => nav(r.to!)) : message.info({ content: `In the live product, this opens ${r.label}. It's not part of this prototype.`, key: 'rail' }))}
                 >
                   {r.icon}
                   <span>{r.label}</span>
@@ -229,7 +232,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                   onClick={() => {
                     if (!r.to) return message.info({ content: `In the live product, this opens ${r.label}. It's not part of this prototype.`, key: 'rail' });
                     setDrawer(false);
-                    nav(r.to);
+                    leave(() => nav(r.to!));
                   }}
                 >
                   {r.icon}

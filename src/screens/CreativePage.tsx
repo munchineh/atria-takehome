@@ -14,7 +14,7 @@ import {
   LockOutlined, DownOutlined } from '../components/AppIcons';
 import { CREATIVES, plural } from '../data/mock';
 import { findCreative, recName, useStore } from '../data/store';
-import { TAG_TIPS, predictedCtr, recIdsOf, ratioFor, tagsFor } from '../data/variations';
+import { nameOf, TAG_TIPS, predictedCtr, recIdsOf, ratioFor, tagsFor } from '../data/variations';
 import { AdArt, Thumb } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
 import { PageHeader } from '../components/PageHeader';
@@ -71,9 +71,9 @@ export function CreativePage() {
           { title: <Link to="/creation">Creative gallery</Link> },
           { title: <Link to={`/creation/${c.id}?round=${job.id}`}>{`Round ${roundNo}\u00a0· ${job.date}`}</Link> },
           // Mancini 13:21: every breadcrumb ends with the current page.
-          { title: v.angle },
+          { title: nameOf(v) },
         ]}
-        title={v.angle}
+        title={nameOf(v)}
         tag={
           <Tag color={locked ? 'blue' : undefined} className="cp-status" icon={locked ? <LockOutlined /> : undefined}>
             {status}
@@ -86,7 +86,7 @@ export function CreativePage() {
         }
         actions={
           <>
-            <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded ${v.angle} v${shown.n}`)}>
+            <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded ${nameOf(v)} v${shown.n}`)}>
               Download
             </Button>
             {locked ? (
@@ -134,7 +134,7 @@ export function CreativePage() {
                           label: 'Delete',
                           onClick: () =>
                             modal.confirm({
-                              title: `Delete ${v.angle}?`,
+                              title: `Delete ${nameOf(v)}?`,
                               content: 'Its versions go too. This cannot be undone.',
                               okText: 'Delete',
                               okButtonProps: { danger: true },
@@ -284,7 +284,7 @@ export function CreativePage() {
                 <div>
                   <dt>Iterated from</dt>
                   <dd>
-                    {v.from.angle} v{v.from.v}
+                    {nameOf(v.from)} v{v.from.v}
                   </dd>
                 </div>
               )}
