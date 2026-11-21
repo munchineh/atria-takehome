@@ -333,6 +333,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 283 | Link buttons with an icon ("Create from product page", "Clear"): the hover underline sits under the words only, not under the icon or the gap | Mancini 19:27 | The underline started at the icon and looked broken |
 | 284 | Create form: "Regenerate brief" is now "Reset changes". It rewrites the brief from the picked suggestions, dropping the designer's edits | Mancini 19:28 | It says what happens to your edits instead of naming an internal step |
 | 285 | Create form, reference images: the add tile shows a plus only, in the same 64 px dashed tile. "Add image" stays as its accessible name; no tooltip, since the plus is clear | Mancini 19:28 | The label crowded the tile's edges |
+| 286 | "Reset changes" in the Create form asks "Reset your changes?" when the brief has edits ("The brief goes back to what Atria wrote from the suggestions in this round. Your edits are lost.", "Reset" / "Keep my edits"). With no edits it resets straight away | Mancini 19:29 | It throws away typed work |
 
 ## With more time
 

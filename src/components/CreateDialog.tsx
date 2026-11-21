@@ -51,7 +51,7 @@ export function Body({
 }) {
   const { briefs, setBrief, credits, lastSettings } = useStore();
   const quota = useQuota();
-  const { message } = App.useApp();
+  const { message, modal } = App.useApp();
   const account = accountOf(creative);
   const brand = 'brand' in account ? account.brand : null;
   const saved = briefs[creative.product];
@@ -77,6 +77,18 @@ export function Body({
     setDraft(briefFromSuggestions(creative, picked ?? [], account, saved));
     setPrefilled(true);
     setMode('write');
+  };
+  // 286 (Mancini 19:29): "Reset changes" asks first when the brief has edits, since they're lost.
+  const resetBrief = () => {
+    const fresh = briefFromSuggestions(creative, picked ?? [], account, saved);
+    if (brief.trim() === fresh.trim()) return prefill();
+    modal.confirm({
+      title: 'Reset your changes?',
+      content: 'The brief goes back to what Atria wrote from the suggestions in this round. Your edits are lost.',
+      okText: 'Reset',
+      cancelText: 'Keep my edits',
+      onOk: prefill,
+    });
   };
 
   const readPage = () => {
@@ -114,7 +126,7 @@ export function Body({
           <div className="dlg-refs">
             <div className="dlg-refs-head">
               <span className="dlg-field-label">Suggestions in this round</span>
-              <Button type="text" size="small" icon={<ReloadOutlined />} onClick={prefill}>
+              <Button type="text" size="small" icon={<ReloadOutlined />} onClick={resetBrief}>
                 Reset changes
               </Button>
             </div>
