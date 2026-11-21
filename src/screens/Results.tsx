@@ -261,6 +261,7 @@ function VariationCard({
           <Tooltip title={picked ? 'Saved to the gallery. Click to remove it.' : 'Save to the gallery.'}>
             <Button
               size={mobile ? 'large' : 'middle'}
+              type="text"
               className={`var-icon pick-btn ${picked ? 'on' : ''}`}
               icon={picked ? <BookmarkFilled /> : <BookmarkOutlined />}
               onClick={onPick}
@@ -270,7 +271,7 @@ function VariationCard({
           </Tooltip>
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
             <Tooltip title="More like this: create 4 new variations close to this one.">
-              <Button size={mobile ? 'large' : 'middle'} className="var-icon" icon={<CopyPlusOutlined />} aria-label="More like this" />
+              <Button size={mobile ? 'large' : 'middle'} type="text" className="var-icon" icon={<CopyPlusOutlined />} aria-label="More like this" />
             </Tooltip>
           </Popconfirm>
         </div>
@@ -475,7 +476,9 @@ export function Results() {
               return (
                 <section key={r.id} className="var-group">
                   <div className="var-group-head">
-                    <SectionHead title={r.fix} help={!mobile ? r.why : undefined} meta={meta} />
+                    {/* Mancini 14:31: say what this heading is. It's the suggestion the round was made from, so it looks like the suggestion card. */}
+                    <span className="var-group-eyebrow"><Tag className="rec-suggested">Suggestion used</Tag><span className="t-help">{meta}</span></span>
+                    <SectionHead title={r.fix} help={!mobile ? r.why : undefined} />
                     {r.why && <GroupWhy why={r.why} mobile={mobile} />}
                   </div>
 

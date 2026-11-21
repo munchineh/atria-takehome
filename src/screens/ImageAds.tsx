@@ -42,6 +42,7 @@ export function ImageAds() {
   });
   const [order, setOrder] = useState<Order>('newest');
   const [nudgeOff, setNudgeOff] = useState(false);
+  const [staleOnly, setStaleOnly] = useState(false);
   useEffect(() => {
     setFilters((f) => ({ ...f, accountId, campaign: 'all' }));
   }, [accountId]);
@@ -87,12 +88,13 @@ export function ImageAds() {
         (filters.campaign === 'all' || i.campaigns.includes(filters.campaign)) &&
         (filters.use === 'all' || (filters.use === 'used') === i.inMeta) &&
         // Mancini 13:45: archived creatives have their own view (the Archived button by the tabs), not a filter.
-        (filters.showArchived ? i.archived : !i.archived),
+        (filters.showArchived ? i.archived : !i.archived) &&
+        (!staleOnly || (!i.inMeta && i.minutesAgo > 7 * 1440)),
     );
     if (order === 'oldest') out.reverse();
     if (order === 'name') out.sort((a, b) => a.name.localeCompare(b.name));
     return out;
-  }, [accountScoped, filters, order]);
+  }, [accountScoped, filters, order, staleOnly]);
 
   const groups = useMemo(() => groupGallery(filtered, groupBy), [filtered, groupBy]);
   const stale = useMemo(
@@ -206,16 +208,20 @@ export function ImageAds() {
                 <span className="t-help">Archive them to keep the gallery tidy. They stay under Archived.</span>
               </span>
               <span className="gal-status-actions">
+                {/* Mancini 14:35: two actions. Review shows only these creatives; Archive all is the main one. */}
+                <Button onClick={() => setStaleOnly((x) => !x)}>{staleOnly ? 'Show all' : 'Review'}</Button>
                 <Button
+                  type="primary"
                   onClick={() => {
                     setArchived(
                       stale.map((i) => i.id),
                       true,
                     );
+                    setStaleOnly(false);
                     message.success(`Archived ${plural(stale.length, 'creative')}`);
                   }}
                 >
-                  Archive {stale.length}
+                  Archive all
                 </Button>
                 <Tooltip title="Dismiss.">
                   <Button type="text" icon={<CloseOutlined />} aria-label="Dismiss" onClick={() => setNudgeOff(true)} />

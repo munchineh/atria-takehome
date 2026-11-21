@@ -117,7 +117,7 @@ export function Body({
             <span className="row-gap wrap">
               {(mode === 'filled' || mode === 'write') && (
                 <Button type="link" size="small" className="inline-link" icon={<LinkOutlined />} onClick={() => setMode('url')}>
-                  Rewrite from a product page
+                  Create from product page
                 </Button>
               )}
             </span>

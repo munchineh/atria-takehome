@@ -753,7 +753,7 @@ export function Radar() {
                   <Table.Summary.Cell key={String(col.key)} index={i} align={col.key === 'spend' || col.key === 'cpa' ? 'right' : undefined}>
                     {/* S-55: "Total" in Strong. CPA is the account's overall CPA (total spend over total purchases), not an average of rows. */}
                     {col.key === 'name' ? (
-                      <span><b>Total</b> <span className="t-help">{plural(rows.length, 'ad')}</span></span>
+                      <span className="total-label"><b>Total</b> <span className="tab-count">{rows.length}</span></span>
                     ) : col.key === 'spend' ? (
                       <b>{money(totSpend)}</b>
                     ) : col.key === 'cpa' ? (

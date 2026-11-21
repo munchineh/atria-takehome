@@ -12,6 +12,7 @@ import { duration } from './motion/tokens';
 export const theme: ThemeConfig = {
   token: {
     colorPrimary: '#f66c30',
+    controlOutlineWidth: 0, // Mancini 14:41: focus is one orange border, not a border plus a ring
     // S-13, V-03: links in the library orange (not the old AA brown #a83411; contrast 3.0:1 is a known trade-off, annotated).
     colorLink: '#f66c30',
     colorLinkHover: '#ff8f5c',
@@ -30,7 +31,7 @@ export const theme: ThemeConfig = {
     colorError: '#ed383b',
     fontWeightStrong: 600,
     lineHeight: 22 / 14,
-    borderRadius: 6,
+    borderRadius: 8, // Mancini 14:36: controls take the table's curve (8)
     borderRadiusLG: 8,
     borderRadiusSM: 6,
     fontFamily: "'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
@@ -56,13 +57,13 @@ export const theme: ThemeConfig = {
     Drawer: { borderRadiusLG: 8 },
     Dropdown: { borderRadiusLG: 8 },
     // Controls follow the asset library as drawn (S-11, S-22, V-02): white, 1 px outline, radius 6.
-    Input: { borderRadius: 6, borderRadiusLG: 6 },
-    Select: { borderRadius: 6, borderRadiusLG: 6, optionSelectedBg: '#fff7f0' },
-    InputNumber: { borderRadius: 6, borderRadiusLG: 6 },
+    Input: { borderRadius: 8, borderRadiusLG: 8 },
+    Select: { borderRadius: 8, borderRadiusLG: 8, optionSelectedBg: '#fff7f0' },
+    InputNumber: { borderRadius: 8, borderRadiusLG: 8 },
     Checkbox: { borderRadiusSM: 4 },
     // F-14: 40 px buttons take radius 8 as in FG3 "Generate image ad"; 32 and 24 px stay at 6.
-    Button: { borderRadius: 6, borderRadiusLG: 8, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: '0 2px 0 rgba(0, 0, 0, 0.02)' },
-    Segmented: { borderRadius: 6, borderRadiusSM: 4 },
+    Button: { borderRadius: 8, borderRadiusLG: 8, borderRadiusSM: 6, fontWeight: 400, primaryShadow: 'none', defaultShadow: '0 2px 0 rgba(0, 0, 0, 0.02)' },
+    Segmented: { borderRadius: 8, borderRadiusSM: 4 },
   },
 };
 
@@ -71,6 +72,7 @@ export const darkBarTheme: ThemeConfig = {
   algorithm: antdTheme.darkAlgorithm,
   token: {
     colorPrimary: '#f66c30',
+    controlOutlineWidth: 0,
     colorLink: '#ffb185',
     colorLinkHover: '#ffcead',
     colorLinkActive: '#f66c30',

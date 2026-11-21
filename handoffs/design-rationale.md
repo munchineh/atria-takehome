@@ -162,6 +162,25 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 110 | No question-mark cursor on tooltip triggers (dotted column headers, N/A, grade placeholders) | Mancini 14:25 | The help cursor felt like an error state; the dotted underline already signals a definition |
 | 111 | Goal tag: "Goal" on the light tint in secondary text, the goal ("Sales") on the deeper tint in Semi Bold with a dark icon | Mancini 14:27 | The key had the stronger fill, so the label outweighed the answer |
 | 112 | Ad page "Where it came from": "Made in: Outside Atria" becomes "Source: Uploaded" (variations: "Source: Created in Atria"), the same values as Radar's Source filter. "Synced from: Meta" stays | Mancini 14:27 | "Made in Outside Atria" didn't parse, and the page used different words from the filter for the same fact |
+| 113 | Creative card: 12 px between header and image. Media tags (Image, Video, Carousel) are borderless: grey fill, icon, secondary text | Mancini 14:30; antd 6 Tag default is the borderless filled variant | The header crowded the image and bordered tinted tags read as antd 5 |
+| 114 | Controls (buttons, inputs, selects, chips) take radius 8, the same curve as the table and tab strip. Tags stay 4 | Mancini 14:36 "the table's curving is nicer, take it as source of truth" | Departs from the Figma frames' 6 on 32 px controls; needs a deviation note |
+| 115 | "Recommended" tag becomes "Top pick": primary tint, primary border, Semi Bold | Mancini 14:39; glossary bans "recommendation" | The grey tag was invisible on the tinted card |
+| 116 | Likely audience: 12 px under the help line, audience cards become fill boxes, icon tiles are squircles | Mancini 14:38; research report (box inside a box) | Cards nested in a card; circles were not a deliberate choice |
+| 117 | Variations page group heading shows as the suggestion it came from: "Suggestion used" tag, what it improves, title and reason in a tinted box like the selected suggestion card | Mancini 14:31 | The heading read as loose text with no stated role |
+| 118 | Variation card actions: one tonal main button (Refine or Edit text) and two quiet icon buttons; a saved card shows a filled orange bookmark | Mancini 14:31 | Three outlined boxes had no hierarchy |
+| 119 | Editor: preview column capped at 484 px, the form takes the remaining width | Mancini 14:32 | Empty space either side of the image while the form was cramped at 400 |
+| 120 | Editor grade line: "Same as the original" when the predicted grade matches, otherwise "The original is A" | Mancini 14:32 | "C vs C on the original" said nothing |
+| 121 | Editor segmented controls are pills with 12 px label padding, matching the Overview / Radar switch | Mancini 14:33 | Small and cramped, and a different shape from the other switch |
+| 122 | Editor panel dividers are inset 16 px instead of edge to edge | Mancini 14:33 | Full-bleed rules chopped the panel into strips |
+| 123 | Stylized text takes its own optional prompt ("Text style"). It is appended to the variation's prompt and steers lettering only; help text says so and points to Show prompt | Mancini 14:34 | The AI text mode had no way to direct it, and its relation to the main prompt was not stated |
+| 124 | "How Atria reads this image" as pill chips with an icon, key, value and a flag button | Mancini 14:35 | A two-row table for two facts |
+| 125 | Gallery archive nudge has two actions: "Review" (shows only those creatives) and "Archive all" as the primary | Mancini 14:35 | One button forced a blind bulk action |
+| 126 | "Made from" uses a grey arrow everywhere | Mancini 14:36 | Orange on Radar, grey in the gallery |
+| 127 | Sidebar slides and fades in 240 ms, out in 160 ms, instead of popping | Mancini 14:37; research report motion bands | Exit shorter than enter, no overshoot |
+| 128 | Suggestion cards: the footer's "Added to brief" control is gone; the header checkbox is the one control, and the footer states the result in a line | Mancini 14:38 | Two controls said the same thing |
+| 129 | Create panel: title at 20/28 Semi Bold; "Create from product page" replaces "Rewrite from a product page"; upload tile padded; footer tighter; focused fields show one orange border with no outer ring (site-wide) | Mancini 14:40 to 14:41 | The title read as a label; double stroke on focus looked messy |
+| 130 | Ad page copies card: title "Where it runs", with a live dot, the copy count and spend beside it. "Copy to clipboard" tooltip has no full stop (it is not a sentence) | Mancini 14:42 | Flat heading; fragment tooltips take no full stop |
+| 131 | Radar totals row shows its count as the same count tag the tabs use, centered on the label | Mancini 14:43 | Two ways to show a count, and the grey "1 ad" sat off the baseline |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

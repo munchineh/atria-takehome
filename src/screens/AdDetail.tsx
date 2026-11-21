@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Grid, Button, Checkbox, ConfigProvider, Switch, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
+import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -116,7 +116,7 @@ function RecCard({
   onToggle: () => void;
   footer?: { text: string; action?: () => void; running?: boolean };
 }) {
-  const { diagnosis, evidence, action, apply } = parts;
+  const { diagnosis, evidence, action } = parts;
   const { message } = App.useApp();
   const gradeTag = evidence.grade ? (
     <Tag className={`rec-grade grade-tag g-${evidence.grade[0]}`}>{evidence.grade}</Tag>
@@ -128,7 +128,7 @@ function RecCard({
   const recTag = suggested && !disabled && (
     <Tooltip title="High priority for this ad's goal.">
       {/* K37 (R-I11, R-C1): neutral tag; orange stays on primary action, progress and selection only. */}
-      <Tag className="rec-suggested">Recommended</Tag>
+      <Tag className="rec-suggested">Top pick</Tag>
     </Tooltip>
   );
   return (
@@ -175,7 +175,7 @@ function RecCard({
               {action.examples.map((e) => {
                 const idea = ideaText(e);
                 return idea.copy ? (
-                  <Tooltip key={e} title="Copy to clipboard.">
+                  <Tooltip key={e} title="Copy to clipboard">
                     <button
                       type="button"
                       className="idea-pill"
@@ -202,10 +202,8 @@ function RecCard({
       {/* Part 4: Apply to brief + per-suggestion rating */}
       <div className="rec-part rec-part-apply">
         {!disabled ? (
-          <span className={`rec-apply-pill ${selected ? 'on' : ''}`}>
-            {selected ? <CheckOutlined aria-hidden /> : <PlusOutlined aria-hidden />}
-            <span>{selected ? 'Added to brief' : apply.label}</span>
-          </span>
+          // Mancini 14:38: the checkbox in the card's header already says picked or not. One control, one place.
+          <span className="t-help">{selected ? 'Included in the next round.' : 'Tick the box above to include it.'}</span>
         ) : (
           <span className="t-help">Apply these ideas when creating your next ad.</span>
         )}
@@ -436,9 +434,12 @@ export function AdDetail() {
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
               {/* Mancini 10:29: the count carries the weight; the rest of the title is regular. */}
-              <b className="panel-title copies-title">
-                <span className="copies-n">{copiesTitle(c).split(' ')[0]}</span> {copiesTitle(c).split(' ').slice(1).join(' ')}
-              </b>
+              {/* Mancini 14:42: the plain sentence was flat. Title says what the card is; the live count and spend sit beside it. */}
+              <b className="panel-title copies-title">Where it runs</b>
+              <span className="copies-meta">
+                <i className="live-dot" aria-hidden /> {copiesTitle(c).replace(' of this ad', '')}
+                <span className="copies-spend">{money(c.spend).replace(/\.\d\d$/, '')}</span>
+              </span>
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
               </motion.span>

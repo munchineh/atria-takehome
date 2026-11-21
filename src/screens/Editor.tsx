@@ -11,8 +11,7 @@ import {
   EllipsisOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
-  LockOutlined,
-} from '../components/AppIcons';
+  LockOutlined, SmileOutlined, BulbOutlined, TagOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
@@ -78,6 +77,7 @@ export function Editor() {
   const [reportedTags, setReportedTags] = useState<string[]>([]);
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [textMode, setTextMode] = useState<'editable' | 'stylized'>('editable');
+  const [styleNote, setStyleNote] = useState('');
   const [editing, setEditing] = useState(params.get('text') === '1');
   const [draft, setDraft] = useState<AdCopy | undefined>(undefined);
   const [promptOpen, setPromptOpen] = useState(false);
@@ -259,7 +259,8 @@ export function Editor() {
         <div className="ed-meta-row">
           <span className="ed-predict">
             <PredictedTag id={v.id} />
-            {c.grades.ctr && <span className="t-help">vs {c.grades.ctr} on the original</span>}
+            {/* Mancini 14:32: "C vs C" said nothing. Same grade reads as a sentence; a different one names both. */}
+            {c.grades.ctr && <span className="t-help">{predictedCtr(v.id) === c.grades.ctr[0] ? 'Same as the original' : `The original is ${c.grades.ctr}`}</span>}
           </span>
           <Rating
             question="Is this result good?"
@@ -287,7 +288,7 @@ export function Editor() {
         action={
           canStylize ? (
             <Segmented
-              size="small"
+              className="ed-seg"
               value={textMode}
               onChange={(m) => {
                 setTextMode(m as typeof textMode);
@@ -308,12 +309,21 @@ export function Editor() {
             <div className="ed-text-sum">
               {shown.copy ? [shown.copy.head, shown.copy.price, shown.copy.band, shown.copy.cta].filter(Boolean).join('\u00a0· ') : 'No text'}
             </div>
+            {/* Mancini 14:34: stylized text is drawn by the model, so it takes its own short prompt. It is added to
+                this variation's prompt and only steers the lettering; the image, product and layout stay as they are. */}
+            {!v.stylized && (
+              <label className="ed-style-note">
+                <span className="t-label">Text style (optional)</span>
+                <Input.TextArea value={styleNote} onChange={(e) => setStyleNote(e.target.value)} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="For example, hand-drawn chalk lettering" maxLength={160} />
+                <span className="t-help">Added to this variation's prompt. It changes the lettering only. See the full prompt under Show prompt.</span>
+              </label>
+            )}
             <div className="ed-text-action">
               <Button
                 disabled={applying}
                 onClick={() => {
                   if (v.stylized) return apply('Create a new version with updated text');
-                  const nid = branch(job.id, v, 'stylized', '');
+                  const nid = branch(job.id, v, 'stylized', styleNote.trim());
                   message.success({ content: 'Generating a stylized-text variation', duration: 3 });
                   go(nid);
                 }}
@@ -516,11 +526,12 @@ export function Editor() {
   const tagBlock = (
     <section className="ed-block">
       <SectionHead title="How Atria reads this image" />
-      <dl className="ed-tags-plain">
+      {/* Mancini 14:35: chips with an icon instead of a key-value table. */}
+      <dl className="ed-chips">
         {readEntries.map(([k, val]) => (
-          <div key={k} className="ed-tag-row">
+          <div key={k} className="ed-chip">
             <Tooltip title={TAG_TIPS[k]}>
-              <dt className="dotted">{k}</dt>
+              <dt>{k === 'Emotion' ? <SmileOutlined aria-hidden /> : k === 'Theme' ? <BulbOutlined aria-hidden /> : <TagOutlined aria-hidden />}{k}</dt>
             </Tooltip>
             <dd>{val}</dd>
             <ReportAudience

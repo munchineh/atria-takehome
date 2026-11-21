@@ -27,7 +27,7 @@
   --c-warning-bg: #fff8e6; --c-warning-border: #ffd480;
   --c-error-bg: #fff2f0;   --c-error-border: #ffbeb8;
   --r-tag: 4px;
-  --r-control: 6px;
+  --r-control: 8px;
   --r-surface: 8px;
   --fs-title: 24px;  --lh-title: 32px;
   --fs-section: 16px; --lh-section: 24px;
@@ -2208,7 +2208,7 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
    (Safari, Firefox today) keep the plain radius. */
 @supports (corner-shape: superellipse(1.5)) {
   *, *::before, *::after { corner-shape: superellipse(1.5); }
-  .unseen-dot, .live-dot, .swatches i, .td-cursor, .persona-avatar, .lin-letter, .img-remove, .play, .mochi-blob,
+  .unseen-dot, .live-dot, .swatches i, .td-cursor, .lin-letter, .img-remove, .play, .mochi-blob,
   .filter-pill button, .ant-btn-circle, .ant-avatar-circle, .ant-badge-dot, .ant-badge-count, .ant-radio-inner,
   .ant-switch-handle, .ant-switch-handle::before, .ant-slider-handle, .ant-slider-handle::after, .ant-steps-icon,
   .ant-color-picker-color-block, .ant-spin-dot-item, .ant-timeline-item-head { corner-shape: round; }
@@ -2221,3 +2221,71 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .goal-split-k { background: var(--c-primary-tint); color: var(--c-text-2); font-weight: 400; }
 .goal-split-v { background: var(--c-primary-border); color: var(--c-text); font-weight: 600; }
 .goal-split-v .anticon { color: var(--c-text); }
+
+/* =====================================================================
+   FEEDBACK BATCH (Mancini 21 Nov, 14:30 to 14:41). Rationale: handoffs/design-rationale.md, rows 113 to 128.
+   ===================================================================== */
+/* 113 Creative card: 12 px between the header and the image. Media tag is borderless: fill, icon, secondary text. */
+.creative-panel > .sec-head { margin-bottom: 12px; }
+.creative-panel .sec-head-row { min-height: 24px; }
+.media-pill, .media-pill.video, .media-pill.carousel { border: 0; background: var(--c-fill); color: var(--c-text-2); gap: 6px; border-radius: var(--r-tag); }
+/* 114 Controls take the table's curve: 8 (was 6). Tags stay 4. Tab strip and its selected tab use 8 too. */
+.radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child, .radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { border-radius: var(--r-surface) var(--r-surface) 0 0 !important; }
+/* 115 "Top pick" tag reads at a glance: primary tint, primary border, Semi Bold. */
+.rec-suggested.ant-tag { margin-right: 0; background: var(--c-primary-tint); border: 1px solid var(--c-primary-border); color: var(--c-text); font-weight: 600; border-radius: var(--r-tag); }
+/* 116 Likely audience: 12 px under the help line; cards become fill boxes (no card inside a card); icon tiles are squircles. */
+.persona-cards { margin-top: 12px; gap: 8px; }
+.persona-card { border: 0; background: var(--c-fill-2); border-radius: var(--r-control); }
+.persona-avatar { border-radius: var(--r-control); }
+/* 117 Variations page: the group heading is the suggestion the round came from, shown like the suggestion card. */
+.var-group-head { padding: 12px 16px; border: 1px solid var(--c-primary-border); border-radius: var(--r-surface); background: var(--c-primary-tint); gap: 4px; margin-bottom: 12px; }
+.var-group-eyebrow { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+/* 118 Variation card actions: one tonal main button, two quiet icon buttons. Saved shows as a filled orange bookmark. */
+.var-actions .var-main.ant-btn { border-color: transparent; background: var(--c-fill); box-shadow: none; font-weight: 600; }
+.var-actions .var-main.ant-btn:hover { background: var(--c-border-2); border-color: transparent; color: var(--c-text); }
+.var-actions .var-icon.ant-btn { border: 0; background: transparent; box-shadow: none; color: var(--c-text-2); }
+.var-actions .var-icon.ant-btn:hover { background: var(--c-fill); color: var(--c-text); }
+.var-actions .pick-btn.on.ant-btn { background: transparent !important; border: 0 !important; color: var(--c-primary) !important; }
+/* 119 Editor: the preview column is only as wide as the image needs; the form takes the rest. */
+.ed-grid { grid-template-columns: minmax(320px, 484px) minmax(0, 1fr); }
+@media (max-width: 1023px) { .ed-grid { grid-template-columns: 1fr; } }
+/* 120 Editor segmented controls match the Overview / Radar pill: 32 high, 3 px inset, 12 px label padding. */
+.editor .ant-segmented { padding: 3px; border-radius: 999px; background: var(--c-fill); }
+.editor .ant-segmented .ant-segmented-item, .editor .ant-segmented .ant-segmented-thumb { border-radius: 999px; }
+.editor .ant-segmented .ant-segmented-item-label { min-height: 26px; line-height: 26px; padding: 0 12px; }
+.editor .ant-segmented .ant-segmented-item-selected { box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08); }
+/* 121 Editor panel: dividers stop at the 16 px padding instead of running edge to edge. */
+.ed-block { border-bottom: 0; position: relative; }
+.ed-block + .ed-block::before, .ed-panel > * + *:not(.ed-block)::before { content: ''; position: absolute; top: 0; left: 16px; right: 16px; height: 1px; background: var(--c-border-2); }
+.ed-panel > * { position: relative; border-top: 0 !important; border-bottom: 0 !important; }
+/* 122 Stylized text note */
+.ed-style-note { display: flex; flex-direction: column; gap: 4px; }
+/* 123 "How Atria reads this image" as chips: icon, key, value, flag. */
+.ed-chips { margin: 0; display: flex; flex-wrap: wrap; gap: 8px; }
+.ed-chip { display: inline-flex; align-items: center; gap: 6px; min-height: 32px; padding: 0 4px 0 12px; border-radius: 999px; background: var(--c-fill); }
+.ed-chip dt { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--c-text-2); font-size: var(--fs-body); line-height: var(--lh-body); }
+.ed-chip dd { margin: 0; font-weight: 600; color: var(--c-text); font-size: var(--fs-body); line-height: var(--lh-body); }
+.ed-chip .persona-flag.ant-btn { margin: 0; width: 24px; height: 24px; padding: 0; border-radius: 50%; color: var(--c-text-3); }
+.ed-chip .persona-reported { margin: 0 8px 0 0; font-size: var(--fs-small); }
+/* 124 "Made from" looks the same on Radar rows and gallery cards: grey arrow, secondary text. */
+.made-from .anticon { color: var(--c-text-3); }
+/* 125 Sidebar slides: it must not squash its content while its margin animates. */
+.sidebar { min-width: var(--side-w); }
+.shell.side-collapsed { --side-w: 248px; }
+/* 126 Create panel title is a title: 20/28 Semi Bold, as overlay titles in the Figma frames. */
+.dlg-panel-title, .create-modal .ant-modal-title, .create-sheet .ant-drawer-title { margin: 0; font-size: var(--fs-figure); line-height: var(--lh-figure); font-weight: 600; }
+/* 127 Focused fields show one stroke: the primary border. No outer ring. */
+.ant-input:focus, .ant-input-focused, .ant-input-affix-wrapper-focused, .ant-select-focused .ant-select-selector, .ant-select-focused.ant-select, .ant-input-number-focused, .ant-picker-focused { box-shadow: none !important; outline: 0 !important; }
+/* 128 Upload tile: label has room. 104 square, 8 px padding, small text under the plus. */
+.ant-upload-wrapper .ant-upload.ant-upload-select { width: 104px !important; height: 104px !important; padding: 8px; box-sizing: border-box; border-radius: var(--r-surface) !important; }
+.ant-upload-wrapper .ant-upload-select .ant-upload { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; font-size: var(--fs-small); line-height: var(--lh-small); text-align: center; }
+/* 129 Create panel footer: tighter. 8 px above and below, lines 2 px apart. */
+.bar-panel .dlg-foot, .dlg-foot { padding-top: 8px; padding-bottom: 8px; }
+.dlg-sum { gap: 0; }
+/* 130 Copies card header */
+.panel-toggle { gap: 8px; }
+.copies-meta { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); white-space: nowrap; }
+.copies-spend { color: var(--c-text); font-weight: 600; font-variant-numeric: tabular-nums; margin-left: 2px; }
+.var-group-eyebrow { justify-content: flex-start; align-self: flex-start; }
+.total-label { display: inline-flex; align-items: center; gap: 8px; } /* 131 */
+.panel-toggle { flex-wrap: wrap; } .copies-meta { order: 3; flex-basis: 100%; margin: 4px 0 0; justify-content: flex-start; }

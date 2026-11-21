@@ -11,7 +11,7 @@ import {
   SyncOutlined,
   VideoCameraOutlined,
 } from './AppIcons';
-import { motion } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { ACCOUNT, ATTRIBUTION, SIDEBAR_ACCOUNTS, WINDOW, plural } from '../data/mock';
 import { DEMO_ACCOUNTS, accountOf, findCreative, useStore } from '../data/store';
@@ -172,8 +172,10 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
           })}
         </nav>
       )}
+      {/* Mancini 14:37: the panel slides and fades instead of popping. Open eases out, close is shorter. */}
+      <AnimatePresence initial={false}>
       {wide && sideOpen && (
-        <aside className="sidebar">
+        <motion.aside className="sidebar" initial={{ x: -24, opacity: 0, marginRight: -248 }} animate={{ x: 0, opacity: 1, marginRight: 0, transition: { duration: 0.24, ease: [0.2, 0, 0, 1] } }} exit={{ x: -24, opacity: 0, marginRight: -248, transition: { duration: 0.16, ease: [0.3, 0, 1, 1] } }}>
           <div className="sidebar-title sidebar-title-row">
             <span>{inCreation ? 'Creation' : 'Analytics'}</span>
             <Tooltip title="Collapse panel" placement="right">
@@ -183,8 +185,9 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             </Tooltip>
           </div>
           <AccountList />
-        </aside>
+        </motion.aside>
       )}
+      </AnimatePresence>
       <div className="main">
         <header className="topbar">
           {!wide && <Button type="text" icon={<MenuOutlined />} onClick={() => setDrawer(true)} aria-label="Ad accounts" />}
