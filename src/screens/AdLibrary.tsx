@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Empty, Grid, Segmented } from 'antd';
+import { Button, Empty, Grid, Segmented, Select } from 'antd';
 import { motion } from 'motion/react';
-import { AppstoreOutlined, RightOutlined, UnorderedListOutlined } from '../components/AppIcons';
+import { AppstoreOutlined, DownOutlined, RightOutlined, SlidersOutlined, UnorderedListOutlined } from '../components/AppIcons';
+import { PopSheet } from '../components/PopSheet';
 import { PageHeader } from '../components/PageHeader';
 import { AdArt, Thumb } from '../components/Thumb';
 import { useLibrary, type LibStatus } from '../data/library';
@@ -37,7 +38,10 @@ export function AdLibrary() {
   };
   const status = (a: (typeof ads)[number]) => <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>;
   const count = (t: 'All' | LibStatus) => (t === 'All' ? ads.length : ads.filter((a) => a.status === t).length);
-  const shown = tab === 'All' ? ads : ads.filter((a) => a.status === tab);
+  // 272 (Mancini 19:03): the same Display menu as Creative Gallery: Grid or List, and an order.
+  const [order, setOrder] = useState<'newest' | 'oldest' | 'name'>('newest');
+  const filtered = tab === 'All' ? ads : ads.filter((a) => a.status === tab);
+  const shown = order === 'name' ? [...filtered].sort((x, y) => x.name.localeCompare(y.name)) : order === 'oldest' ? [...filtered].reverse() : filtered;
   return (
     <motion.div {...pageTransition} className="page lib">
       <PageHeader title="Ad Library" desc="Every ad in this account. Change an ad's setup or creative here, then run it from your ad manager." />
@@ -55,15 +59,43 @@ export function AdLibrary() {
           ),
         }))}
       />
-      <Segmented
-        className="lib-view"
-        value={view}
-        onChange={(v) => changeView(v as 'grid' | 'list')}
-        options={[
-          { value: 'grid', label: <AppstoreOutlined aria-label="Grid" />, title: 'Grid' },
-          { value: 'list', label: <UnorderedListOutlined aria-label="List" />, title: 'List' },
-        ]}
-      />
+      <PopSheet
+        title="Display"
+        trigger="click"
+        placement="bottomRight"
+        classNames={{ root: 'menu-pop' }}
+        content={
+          <div className="menu-body">
+            <Segmented
+              block
+              className="menu-view"
+              value={view}
+              onChange={(v) => changeView(v as 'grid' | 'list')}
+              options={[
+                { value: 'grid', label: <span className="menu-view-opt"><AppstoreOutlined />Grid</span> },
+                { value: 'list', label: <span className="menu-view-opt"><UnorderedListOutlined />List</span> },
+              ]}
+            />
+            <div className="menu-row">
+              <span className="menu-label">Order</span>
+              <Select
+                value={order}
+                onChange={setOrder}
+                className="menu-select"
+                options={[
+                  { value: 'newest', label: 'Newest first' },
+                  { value: 'oldest', label: 'Oldest first' },
+                  { value: 'name', label: 'Name, A to Z' },
+                ]}
+              />
+            </div>
+          </div>
+        }
+      >
+        <Button icon={<SlidersOutlined />} className="lib-display">
+          Display <DownOutlined className="menu-chev" />
+        </Button>
+      </PopSheet>
       </div>
       {shown.length && view === 'grid' ? (
         <ul className="lib-grid">
@@ -73,8 +105,10 @@ export function AdLibrary() {
                 <AdArt slot={a.img} copy={a.copy} media={a.media} ratio={ratioFor(a.img)} alt={a.name} />
                 <span className="lib-card-body">
                   <b className="lib-name">{a.name}</b>
-                  <span className="lib-sub">{a.setup.headline || a.source}</span>
-                  {status(a)}
+                  <span className="lib-card-top">
+                    <span className="lib-sub">{a.setup.headline || a.source}</span>
+                    {status(a)}
+                  </span>
                 </span>
               </button>
             </li>

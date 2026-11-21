@@ -3148,3 +3148,26 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
   .phone-menu .drawer-rail-item { flex-direction: row; justify-content: flex-start; gap: 12px; min-height: 48px; padding: 0 12px; font-size: var(--fs-section); line-height: var(--lh-section); }
   .phone-menu .drawer-rail-item .anticon, .phone-menu .drawer-rail-item svg { font-size: 20px; width: 20px; height: 20px; }
 }
+/* 270 (Mancini 19:01) Overall popover: each grade sits 8 px after its own label, so "Hook" and "CTR"
+   are as close to their grades as "Conversion" and "Retention". Spend keeps its value at the far right. */
+.overall-kv .kv-pair:not(.overall-spend) { justify-content: flex-start; gap: 8px; }
+/* 271 (Mancini 19:01) Filter and Customize columns menus share one type scale with the rest of the UI: group labels
+   and the menu title are body semibold in the main text colour; options, placeholders and footer links are body. */
+.filters-pop .filters-label, .filters-pop .t-label.filters-label { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); margin-bottom: 8px; }
+.filters-pop .ant-checkbox-wrapper, .cols-pop .ant-checkbox-wrapper { font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
+.filters-search.ant-select, .filters-search .ant-select-selection-placeholder, .filters-search .ant-select-selection-item, .filters-search .ant-select-selection-search-input { font-size: var(--fs-body); }
+.filters-foot .ant-btn, .cols-pop .inline-link.ant-btn { font-size: var(--fs-body); line-height: var(--lh-body); height: auto; padding-block: 4px; }
+.ant-popover:has(.cols-pop) .ant-popover-title, .ant-popover:has(.filters-pop) .ant-popover-title { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); }
+/* 272 (Mancini 19:02) Radar tabs: the hover fill stops 4 px above the strip's bottom, the same gap as between tabs. */
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active)::before { inset: 0 0 4px 0; }
+/* Ad Library cards: the name gets the full first line; the status tag sits at the right of the second line. */
+.lib-card-body { align-items: stretch; }
+.lib-card-top { display: flex; align-items: center; gap: 8px; min-width: 0; }
+.lib-card-top .lib-sub { flex: 1; min-width: 0; }
+.lib-card-top .lib-status { margin: 0; }
+.lib-display { flex: none; }
+@media (max-width: 767px) {
+  .lib-card-top { flex-wrap: wrap; row-gap: 4px; }
+  .lib-card-top .lib-sub { flex-basis: 100%; }
+  .lib-card-top .lib-status { margin-left: auto; }
+}
