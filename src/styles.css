@@ -3289,3 +3289,16 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
    ("Needs rework", "To improve"): 24 px pill, 12 px Semi Bold, 10 px sides. Colours unchanged (Mancini 22 Nov 00:25).
    Same in Ad Library (list and cards), Ad Details, the creative page and the ad page's "Related" list. */
 .lib-status, .rel-state { display: inline-flex; align-items: center; height: 24px; padding: 0 10px; border-radius: 999px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; white-space: nowrap; }
+
+/* 312 Phones, Ad Library: the status tabs get their own full-width row above "Select" and "Display", so no tab is
+   cut off ("Runr"). If the row is still too narrow they scroll, with a soft fade on the right edge. */
+@media (max-width: 767px) {
+  .lib-toolbar { flex-wrap: wrap; row-gap: 12px; }
+  .lib-toolbar .lib-tabs { flex: 1 1 100%; max-width: 100%; }
+  .lib-toolbar .lib-tools { margin-left: auto; }
+}
+@media (max-width: 767px) {
+  .lib-toolbar .lib-tabs { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 32px), transparent); }
+  .lib-toolbar .lib-tabs .ant-segmented-group::after { content: ''; flex: none; width: 28px; }
+  .lib-tabs .ant-segmented-item-label { padding-inline: 10px 4px; }
+}
