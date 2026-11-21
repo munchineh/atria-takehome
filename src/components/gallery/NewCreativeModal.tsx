@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { App, Button, Drawer, Grid, Input, Modal, Select } from 'antd';
+import { App, Button, Drawer, Grid, Input, Modal, Select, Tooltip } from 'antd';
 import { CheckOutlined, CloseOutlined, CopyOutlined, EditOutlined, LeftOutlined } from '../AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural } from '../../data/mock';
@@ -125,7 +125,7 @@ export function NewCreativeModal({
           <motion.div key="create" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="nc-step2">
             <div className="dlg-scroll">
               <div className="nc-back-row">
-                <Button type="text" size="small" icon={<LeftOutlined />} onClick={() => setStep('choose')}>
+                <Button type="text" icon={<LeftOutlined />} onClick={() => setStep('choose')}>
                   Change start
                 </Button>
                 <span className="t-help">{startMeta.title}</span>
@@ -151,11 +151,13 @@ export function NewCreativeModal({
                 )}
               </section>
 
-              {/* Illustrative sample ad picker for reference / clone starts */}
+              {/* Illustrative sample ad picker for clone start */}
               {start !== 'scratch' && (
                 <section className="dlg-block">
                   <div className="dlg-label-row">
-                    <span className="dlg-label">Ads to clone</span>
+                    <span className="dlg-label">
+                      <span className="nc-req" aria-hidden>*</span>Ads to clone
+                    </span>
                     <span className="t-help">
                       {`${pickedIds.length} of 10 selected.`}
                     </span>
@@ -171,7 +173,7 @@ export function NewCreativeModal({
                           aria-pressed={picked}
                           onClick={() => toggleSample(ad.id)}
                         >
-                          <Thumb c={ad} size={44} />
+                          <Thumb c={ad} size={40} />
                           <span className="nc-sample-name ellipsis">{ad.name}</span>
                           {picked && <CheckOutlined className="nc-sample-check" aria-hidden />}
                         </button>
@@ -194,7 +196,9 @@ export function NewCreativeModal({
 
               {/* Ad brief */}
               <label className="dlg-block">
-                <span className="dlg-label">Ad brief</span>
+                <span className="dlg-label">
+                  <span className="nc-req" aria-hidden>*</span>Ad brief
+                </span>
                 <Input.TextArea
                   value={brief}
                   onChange={(e) => setBrief(e.target.value)}
@@ -236,9 +240,21 @@ export function NewCreativeModal({
               </div>
               <div className="dlg-actions">
                 <Button onClick={onClose}>Cancel</Button>
-                <Button type="primary" disabled={!canCreate} onClick={submit}>
-                  Create {count} creatives
-                </Button>
+                <Tooltip
+                  title={
+                    canCreate
+                      ? undefined
+                      : shortCredits
+                        ? 'Not enough credits for this batch.'
+                        : needsPick
+                          ? 'Select at least one ad to clone.'
+                          : 'Add an ad brief to continue.'
+                  }
+                >
+                  <Button type="primary" disabled={!canCreate} onClick={submit}>
+                    Create {count} creatives
+                  </Button>
+                </Tooltip>
               </div>
             </footer>
           </motion.div>
