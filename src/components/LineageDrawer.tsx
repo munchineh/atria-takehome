@@ -225,10 +225,10 @@ export function HistoryButton({ creative, size = 'small' }: { creative: Creative
 
   return (
     <>
-      <Button size={size} icon={<HistoryOutlined />} className="history-btn" onClick={() => setOpen(true)}>
-        <span>History</span>
-        {lineage.steps.length > 1 && <span className="hist-path">{lineage.path}</span>}
-        {lineage.repeats > 0 && <WarningOutlined className="hist-warn-ic" aria-label="Repeat pattern warning" />}
+      {/* S-12: a help-level action in the page header is a text button with an icon, like Radar's. */}
+      <Button type="text" size={size} icon={<HistoryOutlined />} className="history-btn" onClick={() => setOpen(true)}>
+        Lineage
+        {lineage.repeats > 0 && <WarningOutlined className="hist-warn-ic" aria-label="Repeats an earlier test" />}
       </Button>
       <LineageDrawer open={open} onClose={() => setOpen(false)} lineage={lineage} all={all} />
     </>

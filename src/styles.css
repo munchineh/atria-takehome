@@ -1956,3 +1956,11 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
   .ph-actions .ant-btn-text > span:not(.ant-btn-icon) { display: none; }
   .ph-actions { flex-wrap: nowrap; }
 }
+
+/* Ad page rebuild (S-32, S-40). */
+.sec-head-bar .sec-head-row > :first-child { position: relative; padding-left: 11px; }
+.sec-head-bar .sec-head-row > :first-child::before { content: ''; position: absolute; left: 0; top: 3px; bottom: 3px; width: 3px; border-radius: 2px; background: var(--c-primary); }
+.ph-meta { display: inline-flex; align-items: center; gap: 6px; color: var(--c-text-2); font-size: var(--fs-body); white-space: nowrap; padding: 0 4px; }
+.ph-meta-sub { color: var(--c-text-3); }
+.ph-meta-sub::before { content: '·'; margin-right: 6px; }
+.sec-head .ad-media { margin: 0; align-self: center; }

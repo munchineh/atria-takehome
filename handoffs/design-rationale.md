@@ -74,3 +74,13 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | D9 | Icons | antd outlined | Lucide at 1.75 stroke | Mancini found antd's thin strokes fussy |
 | D10 | Controls | Dark tonal fields | Light tonal fields on a grey page | Same idea as Atria, in the brief's light theme |
 | D11 | Creative gallery | Image Ads opens straight into the editor; every generation is kept | Review page before editing; only starred options are saved; versions live inside one creative; archive | Mancini 11:00 |
+
+## Ad page rebuild (Opus, Nov 21)
+| # | Change | Rule | Why |
+|---|---|---|---|
+| 55 | One PageHeader: crumbs, title, purpose line, period and Lineage on the right | S-32, S-12 | Two stacked heads (detail-head, page-head) and a lineage line repeated the same facts |
+| 56 | Period shown as quiet read-only text with a tooltip | S-05 (chip = choice) | The period is set on Radar, so a chip here looked clickable but wasn't |
+| 57 | History button renamed Lineage, now a text button | S-12 | Matches Radar's header actions; the path it used to show is in the drawer |
+| 58 | Source, "Made from this ad" and the lineage line merged into "Where it came from" key-value rows | S-46 | Lineage was said four times on one page |
+| 59 | 3 px orange bar on Summary, Suggestions and Likely audience | S-40, V-14 | FG2 marks top-level sections this way; small left cards stay plain |
+| 60 | Media tag drops "· 5 cards" | S-21 | The carousel counter already shows the count |

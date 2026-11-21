@@ -1,10 +1,9 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
-import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
+import { App, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CheckOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
+import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -20,10 +19,10 @@ import {
   goalOf,
   type Creative as CreativeT,
   type MetricKey,
-  type Recommendation, statusOf as adStatusOf, copyStatus, copiesTitle, platformOf } from '../data/mock';
-import { ALL_CREATIVES, accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
+  type Recommendation, copyStatus, copiesTitle, platformOf } from '../data/mock';
+import { accountOf, findCreative, recName, useStore, type RowStatus } from '../data/store';
 import { ideaText, iterationHistory, suggestionParts, type SuggestionParts } from '../data/insights';
-import { CarouselArt, Creative, Thumb } from '../components/Thumb';
+import { CarouselArt, Creative } from '../components/Thumb';
 import { Placements } from '../components/Placements';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { Body, CreateDialog } from '../components/CreateDialog';
@@ -32,6 +31,7 @@ import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
+import { PageHeader } from '../components/PageHeader';
 import { Rating } from '../components/Rating';
 import { ReportAudience } from '../components/ReportAudience';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
@@ -234,7 +234,7 @@ export function AdDetail() {
   const { message } = App.useApp();
   const bp = Grid.useBreakpoint();
   const nav = useNavigate();
-  const { statusOf, jobsFor, startJob, credits: balance, versionsOf, windowDays, jobs: allJobs } = useStore();
+  const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs } = useStore();
   // The grading period set on Radar carries into the ad page (Mancini, 19:00), grades included.
   const c = graded(findCreative(id) ?? CREATIVES[0], windowDays);
   const win = WINDOWS.find((w) => w.days === windowDays) ?? WINDOWS[1];
@@ -292,16 +292,6 @@ export function AdDetail() {
     window.addEventListener('keydown', esc);
     return () => window.removeEventListener('keydown', esc);
   }, [morph]);
-  /** Demo 1, lineage (D6, D7): ads made from this one, graded or still paused in Meta. */
-  const made = [
-    ...ALL_CREATIVES.filter((x) => x.variationOf === c.id).map((x) => ({ kind: 'ad' as const, id: x.id, c: x })),
-    ...jobs.flatMap((j) =>
-      j.variations
-        .filter((v) => v.launched && !v.deleted)
-        .map((v) => ({ kind: 'paused' as const, id: v.id, jobId: j.id, angle: v.angle, img: (versionsOf(v).filter((x) => x.state === 'ready').at(-1) ?? { img: v.img }).img })),
-    ),
-  ];
-  const statusLabel = (x: typeof c) => (adStatusOf(x) === 'Paused' ? 'Paused' : 'Active');
   // R-K1 / R-K5: goal metric comes first after Overall, followed by the remaining graded metrics.
   const goalMetric = GOALS[goalOf(c)].metric;
   const gradedMetrics = (Object.keys(METRIC_META) as MetricKey[])
@@ -402,48 +392,36 @@ export function AdDetail() {
 
   return (
     <motion.div {...pageTransition} className="page detail">
-      <div className="detail-head">
-        <Breadcrumb
-          items={[
-            { title: <Link to="/">Radar</Link> },
-            { title: <span className="crumb-name">{c.name}</span> },
-          ]}
-        />
-        <div className="detail-head-right">
-          {/* Items 16 & 17 (DL-04): History drawer entry point */}
-          <HistoryButton creative={c} />
-          <Tooltip title="Set on Radar. Grades on this page use the same period.">
-            <span className="period-chip">
-              <CalendarOutlined />
-              <span>{win.short}</span>
-              {bp.md && <span className="window-dates">{win.long.split(' · ')[1]}</span>}
-            </span>
-          </Tooltip>
-        </div>
-      </div>
-
-      <div className="page-head detail-page-head">
-        <h1 className="page-title">{c.name}</h1>
-        <p className="muted desc">See why this ad performs as it does and pick the fixes to try.</p>
-      </div>
-
-      {parent && (
-        <motion.div className="lineage" variants={fadeUp} initial="hidden" animate="show">
-          <MadeFromIcon /> Made from <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
-        </motion.div>
-      )}
+      {/* S-32: one header. The period is read-only here (set on Radar), so it's quiet meta, not a control. */}
+      <PageHeader
+        crumbs={[{ title: <Link to="/">Radar</Link> }, { title: c.name }]}
+        title={c.name}
+        desc="See why this ad performs as it does and pick the fixes to try."
+        actions={
+          <>
+            <Tooltip title="Set on Radar. Grades on this page use the same period.">
+              <span className="ph-meta">
+                <CalendarOutlined /> {win.short}
+                {bp.md && <span className="ph-meta-sub">{win.long.split(' · ')[1]}</span>}
+              </span>
+            </Tooltip>
+            <HistoryButton creative={c} size="middle" />
+          </>
+        }
+      />
 
       <div className="detail-grid">
         <aside className="detail-left">
           <div className="panel creative-panel">
-            <div className="creative-panel-head">
-              <h2 className="panel-title">Creative</h2>
-              {/* 5d C5d-02: the same media pill as Radar, so the type reads before the image does. */}
-              <span className={`media-pill ${c.media.toLowerCase()} ad-media`}>
-                {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
-                {c.media === 'Carousel' ? 'Carousel\u00a0· 5 cards' : c.media}
-              </span>
-            </div>
+            <SectionHead
+              title="Creative"
+              action={
+                <span className={`media-pill ${c.media.toLowerCase()} ad-media`}>
+                  {c.media === 'Video' ? <PlayCircleOutlined /> : c.media === 'Carousel' ? <AppstoreOutlined /> : <PictureOutlined />}
+                  {c.media}
+                </span>
+              }
+            />
             {c.media === 'Carousel' ? <CarouselArt c={c} /> : <Creative c={c} layoutId={bp.md ? `creative-${c.id}` : undefined} />}
           </div>
 
@@ -521,60 +499,29 @@ export function AdDetail() {
             </AnimatePresence>
           </motion.div>
 
-          <motion.div className="panel source" variants={fadeUp} initial="hidden" animate="show">
-            <b className="panel-title">Source</b>
-            {parent ? (
-              <div className="source-body">
-                {/* K37 (R-C1): neutral tag. */}
-                <Tag icon={<MadeFromIcon />}>Created in Atria</Tag>
-                <div>
-                  Variation of <Link to={`/ad/${parent.id}`}>{parent.name}</Link>
-                </div>
-                <div className="muted small">From “{recName(parent.id, 'cta')}”{'\u00a0'}· Brief v1{'\u00a0'}· Nov 12</div>
-                <Button size="small" type="link" style={{ padding: 0 }} onClick={() => nav(`/ad/${parent.id}/variations?round=job-hero-1`)}>
-                  View brief and images
-                </Button>
-              </div>
-            ) : (
-              <div className="source-body">
-                <Tag icon={<CloudUploadOutlined />}>Uploaded</Tag>
-                <div className="t-help">Made outside Atria and synced from {c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}.</div>
-              </div>
-            )}
+          {/* S-46: lineage was said four times (line under the title, Source, Made from this ad, history). Now: Where it came from, then the history. */}
+          <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
+            <SectionHead title="Where it came from" />
+            <dl className="cp-kv">
+              {parent ? (
+                <>
+                  <div><dt>Made in</dt><dd>Atria, as a variation</dd></div>
+                  <div><dt>Made from</dt><dd><Link to={`/ad/${parent.id}`}>{parent.name}</Link></dd></div>
+                  <div><dt>To fix</dt><dd>{recName(parent.id, 'cta')}</dd></div>
+                  <div><dt>Round</dt><dd><Link to={`/ad/${parent.id}/variations?round=job-hero-1`}>Round 1 · Nov 12</Link></dd></div>
+                </>
+              ) : (
+                <>
+                  <div><dt>Made in</dt><dd>Outside Atria</dd></div>
+                  <div><dt>Synced from</dt><dd>{c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}</dd></div>
+                </>
+              )}
+            </dl>
           </motion.div>
-                  {/* The history below lists these with their results, so this list shows only when it doesn't. */}
-          {made.length > 0 && !adHistory.some((h) => h.kind === 'result') && (
-            <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-              <b className="panel-title">Made from this ad · {made.length}</b>
-              <div className="made-list">
-                {made.map((m) =>
-                  m.kind === 'ad' ? (
-                    <Link key={m.id} to={`/ad/${m.id}`} className="made-row">
-                      <Thumb c={m.c} size={40} />
-                      <span className="small">
-                        <span className="made-name">{m.c.name}</span>
-                        <span className="muted">
-                          Overall {m.c.overall} · {ACCOUNT.conversionMetric} {money(m.c.values.cpa)} · {statusLabel(m.c)}
-                        </span>
-                      </span>
-                    </Link>
-                  ) : (
-                    <Link key={m.id} to={`/ad/${c.id}/variations/${m.id}?round=${m.jobId}`} className="made-row">
-                      <Thumb c={{ img: m.img, media: 'Image', name: m.angle }} size={40} />
-                      <span className="small">
-                        <span className="made-name">{m.angle}</span>
-                        <span className="muted">Paused in Meta · not graded yet</span>
-                      </span>
-                    </Link>
-                  ),
-                )}
-              </div>
-            </motion.div>
-          )}
           {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
           {adHistory.length > 0 && (
             <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-              <b className="panel-title">Iteration history</b>
+              <SectionHead title="Iteration history" help="Rounds made from this ad, and how its variations did." />
               <IterationHistory items={adHistory} limit={4} empty="" />
             </motion.div>
           )}
@@ -585,9 +532,7 @@ export function AdDetail() {
           <motion.div variants={fadeUp} className="panel verdict">
             {/* Zone 1: Identity, goal and live status */}
             <div className="verdict-zone verdict-head">
-              {/* Mancini 09:43: "Active" repeated the copies panel ("5 running") and read as a disabled tag. Removed. */}
-              <h2 className="panel-title">Summary</h2>
-              <GoalPill c={c} />
+              <SectionHead title="Summary" bar action={<GoalPill c={c} />} />
             </div>
 
             {/* Zone 2: Plain-language diagnosis and action */}
@@ -627,6 +572,7 @@ export function AdDetail() {
 
           <motion.div variants={fadeUp} className="section-title">
             <SectionHead
+              bar
               title="Suggestions"
               help={<>Ways to improve this ad, sorted by priority.{iterable && preselect().length === 2 ? ' The top 2 are selected for you.' : ''}</>}
               meta={
@@ -661,13 +607,18 @@ export function AdDetail() {
           ))}
 
           <motion.div variants={fadeUp} className="panel personas">
-            <div className="panel-title-row">
-              <h2 className="panel-title">Likely audience</h2>
-              <Tooltip title="Atria's AI reads this from the ad's image and text. It may not be exact.">
-                <InfoCircleOutlined className="title-info" aria-label="About this section" />
-              </Tooltip>
-            </div>
-            <p className="t-help persona-help">Who this ad seems to speak to, based on its image and text.</p>
+            <SectionHead
+              bar
+              title={
+                <>
+                  Likely audience{' '}
+                  <Tooltip title="Atria's AI reads this from the ad's image and text. It may not be exact.">
+                    <InfoCircleOutlined className="title-info" aria-label="About this section" />
+                  </Tooltip>
+                </>
+              }
+              help="Who this ad seems to speak to, based on its image and text."
+            />
             {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
             <div className="persona-cards">
               {accountOf(c).personas.map((p) => (
