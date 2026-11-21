@@ -11,7 +11,7 @@ const REASONS = [
   'Something else',
 ] as const;
 
-export function ReportAudience({ audience, onReported, reported }: { audience: string; reported: boolean; onReported: () => void }) {
+export function ReportAudience({ audience, onReported, reported, reasons = REASONS, label = 'Not right?' }: { audience: string; reported: boolean; onReported: () => void; reasons?: readonly string[]; label?: string }) {
   const { message } = App.useApp();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState<string>();
@@ -29,7 +29,7 @@ export function ReportAudience({ audience, onReported, reported }: { audience: s
   const form = (
     <div className="report-form">
       <Radio.Group value={reason} onChange={(e) => setReason(e.target.value)} className="report-reasons">
-        {REASONS.map((r) => (
+        {reasons.map((r) => (
           <Radio key={r} value={r}>
             {r}
           </Radio>
@@ -50,7 +50,7 @@ export function ReportAudience({ audience, onReported, reported }: { audience: s
           onClick={() => {
             setOpen(false);
             onReported();
-            message.success("Thanks. We'll use this to improve audience reads.");
+            message.success("Thanks. We'll use this to improve how Atria reads ads.");
           }}
         >
           Send report
@@ -61,8 +61,8 @@ export function ReportAudience({ audience, onReported, reported }: { audience: s
 
   return (
     <PopSheet content={form} title={`What's wrong with "${audience}"?`} trigger="click" placement="bottomRight" open={open} onOpenChange={setOpen} classNames={{ root: 'report-pop' }}>
-      <Button type="text" size="small" className="persona-flag" icon={<FlagOutlined />} aria-label={`Report ${audience} as wrong`}>
-        Not right?
+      <Button type="text" size="small" className="persona-flag" icon={<FlagOutlined />} aria-label={`Report ${audience} as wrong`} title={label ? undefined : "Report as wrong"}>
+        {label}
       </Button>
     </PopSheet>
   );

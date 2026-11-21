@@ -1,8 +1,8 @@
 import { MadeFromIcon } from '../components/Icons';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Alert, App, Breadcrumb, Button, Checkbox, Dropdown, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
-import { BarChartOutlined, BulbOutlined, CopyOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '../components/AppIcons';
+import { Alert, App, Breadcrumb, Button, Dropdown, Empty, Grid, Modal, Popconfirm, Select, Tag, Tooltip } from 'antd';
+import { BarChartOutlined, BulbOutlined, CopyPlusOutlined, StarFilled, StarOutlined, DownloadOutlined, DownOutlined, EditOutlined, EllipsisOutlined, ExclamationCircleOutlined, FontSizeOutlined, LeftOutlined, SendOutlined, SwapOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, WINDOW, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
@@ -213,33 +213,29 @@ function VariationCard({
       </div>
       {state === 'ready' && (
         <div className={`var-actions ${mobile ? 'phone' : ''}`}>
-          {/* K42 (R-A4): state-aware aria-label; K9 (R-T8, R-A4): "Edit text" with distinct icon; K30 (R-I7): cost stays in Popconfirm. */}
-          <Button
-            size={mobile ? 'large' : 'small'}
-            className={`pick-btn ${picked ? 'on' : ''}`}
-            type={picked ? 'primary' : 'default'}
-            onClick={onPick}
-            aria-pressed={picked}
-            aria-label={picked ? 'Remove from shortlist' : 'Add to shortlist'}
-          >
-            {!mobile && <Checkbox checked={picked} tabIndex={-1} />} {picked ? 'Shortlisted' : 'Shortlist'}
-          </Button>
+          {/* Mancini 10:49: one main action, then two icon toggles that match the gallery (star to shortlist, copy-plus for more like this). */}
           {typo ? (
-            <Button size={mobile ? 'large' : 'small'} icon={<FontSizeOutlined />} onClick={onFixText} aria-label="Edit text">
-              {!mobile && 'Edit text'}
+            <Button size={mobile ? 'large' : 'middle'} className="var-main" icon={<FontSizeOutlined />} onClick={onFixText}>
+              Edit text
             </Button>
           ) : (
-            <Tooltip title="Change this image.">
-              <Button size={mobile ? 'large' : 'small'} icon={<EditOutlined />} onClick={onRefine} aria-label="Refine">
-                {!mobile && 'Refine'}
-              </Button>
-            </Tooltip>
+            <Button size={mobile ? 'large' : 'middle'} className="var-main" icon={<EditOutlined />} onClick={onRefine}>
+              Refine
+            </Button>
           )}
+          <Tooltip title={picked ? 'Remove from shortlist.' : 'Add to shortlist.'}>
+            <Button
+              size={mobile ? 'large' : 'middle'}
+              className={`var-icon pick-btn ${picked ? 'on' : ''}`}
+              icon={picked ? <StarFilled /> : <StarOutlined />}
+              onClick={onPick}
+              aria-pressed={picked}
+              aria-label={picked ? 'Remove from shortlist' : 'Add to shortlist'}
+            />
+          </Tooltip>
           <Popconfirm title="Create 4 new variations close to this one?" description={moreCost} okText="Create 4" cancelText="Cancel" onConfirm={onMore}>
-            <Tooltip title="Create 4 new variations close to this one.">
-              <Button size={mobile ? 'large' : 'small'} type={mobile ? 'default' : 'link'} icon={<CopyOutlined />} className="more-like" aria-label="More like this">
-                {!mobile && 'More like this'}
-              </Button>
+            <Tooltip title="More like this: create 4 new variations close to this one.">
+              <Button size={mobile ? 'large' : 'middle'} className="var-icon" icon={<CopyPlusOutlined />} aria-label="More like this" />
             </Tooltip>
           </Popconfirm>
         </div>

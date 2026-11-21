@@ -59,7 +59,7 @@ function usePrefersReducedMotion() {
 export default function App() {
   const reduce = usePrefersReducedMotion();
   return (
-    <ConfigProvider theme={{ ...theme, token: { ...theme.token, motion: !reduce } }}>
+    <ConfigProvider theme={{ ...theme, token: { ...theme.token, motion: !reduce } }} variant="filled">
       <AntApp notification={{ placement: 'topRight', top: 68 }}>
         {/* reducedMotion="user": transforms are skipped for people who ask for less motion; opacity fades stay. */}
         <MotionConfig reducedMotion="user" transition={{ duration: duration.base, ease: ease.standard }}>

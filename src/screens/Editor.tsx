@@ -7,15 +7,10 @@ import {
   BarChartOutlined,
   BulbOutlined,
   DeleteOutlined,
-  FlagOutlined,
-  DislikeFilled,
-  DislikeOutlined,
   DownloadOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
   LeftOutlined,
-  LikeFilled,
-  LikeOutlined,
 } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
@@ -24,6 +19,8 @@ import { useWorkspace } from '../data/nav';
 import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
 import { AdArt } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
+import { ReportAudience } from '../components/ReportAudience';
+import { Rating } from '../components/Rating';
 
 const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
   { key: 'head', label: 'Headline' },
@@ -78,6 +75,7 @@ export function Editor() {
   const [ask, setAsk] = useState('');
   // 5d option A: one way in (Refine); the choice sits where you describe the change. ?new=1 presets it (gallery entry).
   const [makeNew, setMakeNew] = useState(params.get('new') === '1');
+  const [reportedTags, setReportedTags] = useState<string[]>([]);
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [textMode, setTextMode] = useState<'editable' | 'stylized'>('editable');
   const [editing, setEditing] = useState(params.get('text') === '1');
@@ -208,41 +206,9 @@ export function Editor() {
         {textMode === 'stylized' && <span className="ed-preview-label">{stylizedSlot ? 'Preview' : 'No preview yet'}</span>}
       </div>
 
-      {/* Item 10 (R-I): Outcome feedback lives beside the image, separated from Download and Delete. */}
-      <div className="ed-feedback-bar" role="group" aria-label="Rate this variation">
-        <span className="t-help">Rate this result</span>
-        <div className="ed-feedback-btns">
-          <Tooltip title="Good result.">
-            <Button
-              size={mobile ? 'middle' : 'small'}
-              className={rating === 'up' ? 'ed-rate-up' : ''}
-              aria-label="Good result"
-              aria-pressed={rating === 'up'}
-              icon={rating === 'up' ? <LikeFilled /> : <LikeOutlined />}
-              onClick={() => setRating(rating === 'up' ? null : 'up')}
-            >
-              Good
-            </Button>
-          </Tooltip>
-          <Tooltip title="Bad result.">
-            <Button
-              size={mobile ? 'middle' : 'small'}
-              danger={rating === 'down'}
-              aria-label="Bad result"
-              aria-pressed={rating === 'down'}
-              icon={rating === 'down' ? <DislikeFilled /> : <DislikeOutlined />}
-              onClick={() => {
-                const next = rating === 'down' ? null : 'down';
-                setRating(next);
-                if (next && mobile) setTimeout(() => document.querySelector('.ed-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
-              }}
-            >
-              Needs work
-            </Button>
-          </Tooltip>
-        </div>
-      </div>
-
+      {/* Mancini 10:51: one compact row under the image. Versions show only once there is more than one; the rating sits at the end. */}
+      <div className="ed-under">
+        {versions.length > 1 ? (
       <div className="filmstrip" ref={strip} role="listbox" aria-label="Versions">
         {versions.map((x) => (
           <motion.button
@@ -262,6 +228,17 @@ export function Editor() {
             </span>
           </motion.button>
         ))}
+      </div>
+        ) : (
+          <span className="t-help ed-under-note">v1 · Original</span>
+        )}
+        <Rating
+          question="Is this result good?"
+          onRate={(r) => {
+            setRating(r);
+            if (r === 'down' && mobile) setTimeout(() => document.querySelector('.ed-panel')?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
+          }}
+        />
       </div>
     </div>
   );
@@ -518,20 +495,24 @@ export function Editor() {
       <div className="ed-block-head">
         <b>How Atria reads this image</b>
       </div>
-      <div className="ed-tags">
+      {/* Mancini 10:51: one value per row reads as text, not chips. Each row has its own report, like Likely audience. */}
+      <dl className="ed-tags ed-tags-plain">
         {Object.entries(tags).map(([k, val]) => (
           <div key={k} className="ed-tag-row">
             <Tooltip title={TAG_TIPS[k]}>
-              <span className="kv-k dotted">{k}</span>
+              <dt className="kv-k dotted">{k}</dt>
             </Tooltip>
-            <Tag>{val}</Tag>
+            <dd>{val}</dd>
+            <ReportAudience
+              audience={`${k}: ${val}`}
+              label=""
+              reported={reportedTags.includes(k)}
+              onReported={() => setReportedTags((x) => [...x, k])}
+              reasons={["That's not what the image shows", 'Too vague to be useful', 'Something else']}
+            />
           </div>
         ))}
-      </div>
-      {/* K54 (R-AI11): state what the report changes instead of a dead toast. */}
-      <Button type="text" size="small" icon={<FlagOutlined />} className="ed-report" onClick={() => message.success('Flagged for tag review')}>
-        Report a wrong tag
-      </Button>
+      </dl>
     </section>
   );
 

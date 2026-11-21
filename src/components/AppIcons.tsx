@@ -98,3 +98,4 @@ export const UnorderedListOutlined = make(L.List);
 export const UserAddOutlined = make(L.UserPlus);
 export const VideoCameraOutlined = make(L.Video);
 export const WarningOutlined = make(L.TriangleAlert);
+export const CopyPlusOutlined = make(L.CopyPlus);

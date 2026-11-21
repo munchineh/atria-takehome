@@ -1901,3 +1901,43 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .made-from:hover b, .ih-row:hover .ih-name, .raya-chip:hover { color: #e0561c; }
 /* Mancini 10:49: no side-stroke banners. A plain card; the grade tag carries the colour. */
 .ed-diag-banner, .ed-diag-banner.tone-A, .ed-diag-banner.tone-B, .ed-diag-banner.tone-C, .ed-diag-banner.tone-D { border: 1px solid var(--line); background: #fafafa; }
+/* Control system (Mancini 10:50). Page sits on a soft grey so white cards read as containers; controls inside cards are tonal. */
+:root { --page-bg: #f7f6f8; }
+.main, .content { background: var(--page-bg); }
+.topbar { background: #fff; }
+.panel, .rec-card, .gal-card, .var-card { background: #fff; }
+.ant-input-filled:focus, .ant-input-filled:focus-within, .ant-input-affix-wrapper-filled:focus-within, .ant-select-filled.ant-select-focused .ant-select-selector { background: #fff !important; }
+/* Selected state, one recipe everywhere: orange tint fill, orange border, ink text */
+.is-selected, .pick-btn.on.ant-btn, .gal-shortlist-btn.on.ant-btn, .rec-apply-pill.on, .nc-sample.on { background: #fff1e8 !important; border-color: #ffb48f !important; color: #1f1f1f !important; }
+.pick-btn.on .anticon, .gal-shortlist-btn.on .anticon { color: #f66c30; }
+/* Variation card actions: one wide main button and two square icon buttons */
+.var-actions, .var-actions.phone { display: grid; grid-template-columns: 1fr auto auto; gap: 8px; padding: 8px 12px 12px; }
+.var-actions .ant-btn { flex: none; }
+.var-actions .var-icon.ant-btn { width: 36px; padding: 0; }
+.var-actions.phone .var-icon.ant-btn { width: 44px; }
+/* How Atria reads this image: plain rows, report per row (Mancini 10:51) */
+.ed-tags-plain { margin: 8px 0 0; display: flex; flex-direction: column; }
+.ed-tags-plain .ed-tag-row { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; align-items: center; gap: 8px; min-height: 36px; border-bottom: 1px solid var(--line); }
+.ed-tags-plain .ed-tag-row:last-child { border-bottom: 0; }
+.ed-tags-plain dt { margin: 0; }
+.ed-tags-plain dd { margin: 0; font-weight: 500; color: #1f1f1f; }
+.ed-tags-plain .persona-flag.ant-btn { margin: 0; width: 28px; padding: 0; justify-content: center; opacity: 0.55; }
+.ed-tags-plain .ed-tag-row:hover .persona-flag.ant-btn, .ed-tags-plain .persona-flag.ant-btn:focus-visible { opacity: 1; }
+.ed-tags-plain .persona-reported { margin: 0; font-size: 12px; }
+@media (hover: none) { .ed-tags-plain .persona-flag.ant-btn { opacity: 1; width: 44px; height: 44px; } }
+/* Rating, one compact component (Mancini 10:51) */
+.rating { display: inline-flex; align-items: center; gap: 10px; margin-left: auto; }
+.rating-q { font-size: 13px; color: #6b6b6b; white-space: nowrap; }
+.rating-pill { display: inline-flex; align-items: center; height: 28px; border-radius: 999px; background: #f3f1f5; overflow: hidden; }
+.rating-btn { all: unset; box-sizing: border-box; height: 28px; width: 34px; display: grid; place-items: center; font-size: 14px; color: #45414a; cursor: pointer; transition: background-color 0.16s ease, color 0.16s ease; }
+.rating-btn:hover { background: #ebe8ef; color: #1f1f1f; }
+.rating-btn:focus-visible { outline: 2px solid #f66c30; outline-offset: -2px; }
+.rating-btn.up.on { background: #e8f7e6; color: #137333; }
+.rating-btn.down.on { background: #fff1ef; color: #cf1322; }
+.rating-div { width: 1px; height: 14px; background: #dcd8e0; }
+@media (pointer: coarse) { .rating-pill, .rating-btn { height: 40px; } .rating-btn { width: 48px; } }
+/* Editor: versions and rating share one row under the image */
+.ed-under { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; margin-top: 12px; flex-wrap: wrap; }
+.ed-under .filmstrip { margin: 0; flex: 1 1 auto; min-width: 0; }
+.ed-under-note { align-self: center; }
+.ed-under .rating { align-self: center; }

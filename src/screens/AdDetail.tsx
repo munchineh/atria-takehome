@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, Checkbox, ConfigProvider, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { CheckOutlined, CloudUploadOutlined, LikeOutlined, DislikeOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
+import { CheckOutlined, CloudUploadOutlined, DownOutlined, ExportOutlined, HistoryOutlined, PlusOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -32,6 +32,7 @@ import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
+import { Rating } from '../components/Rating';
 import { ReportAudience } from '../components/ReportAudience';
 import { duration, ease, fadeUp, pageTransition, spring, stagger } from '../motion/tokens';
 
@@ -86,24 +87,7 @@ function summary(c: CreativeT, parent?: CreativeT) {
 
 /** Per-suggestion feedback (Mancini, 20 Nov 17:48: rate each one, not the whole list). */
 function RateRow() {
-  const [v, setV] = useState<'up' | 'down' | null>(null);
-  return (
-    <div className="rec-rate" onClick={(e) => e.stopPropagation()}>
-      {v ? (
-        <span className="t-help">Thanks for the feedback.</span>
-      ) : (
-        <>
-          <span className="t-help">Was this suggestion helpful?</span>
-          <Tooltip title="Helpful">
-            <Button type="text" size="small" className="icon-only" icon={<LikeOutlined />} aria-label="Helpful" onClick={() => setV('up')} />
-          </Tooltip>
-          <Tooltip title="Not helpful">
-            <Button type="text" size="small" className="icon-only" icon={<DislikeOutlined />} aria-label="Not helpful" onClick={() => setV('down')} />
-          </Tooltip>
-        </>
-      )}
-    </div>
-  );
+  return <Rating question="Was this helpful?" />;
 }
 
 /** 5d C5d-13: label + value, no colon. */
