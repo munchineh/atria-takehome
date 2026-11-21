@@ -3235,3 +3235,13 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 296 (Mancini 19:42) Suggested prompts under "What should change?" (and in the Edit creative dialog) use a dashed
    border, so they read as starting points rather than buttons. */
 .ed-chips .chip, .ecd-chips .ant-btn { border-style: dashed; }
+/* 297 (Mancini 19:44) Suggested prompts and "Show prompt" share one row; the prompt opens under it. */
+.ed-chip-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.ed-chip-row .ed-chips { flex: 1; min-width: 0; }
+.ed-prompt-toggle.ant-btn { flex: none; color: var(--c-text-2); }
+.ed-prompt-toggle.ant-btn:hover { color: var(--c-text); }
+.ed-prompt { margin-top: 4px; }
+.ed-prompt:not(:has(.ed-stack)) { display: none; }
+.ed-chip-row { align-items: flex-start; }
+.ed-prompt-toggle.ant-btn { padding-inline: 4px; height: 28px; margin-top: 0; }
+.ed-chip-row .ed-chips { gap: 6px; }

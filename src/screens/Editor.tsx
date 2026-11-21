@@ -10,7 +10,7 @@ import {
   EllipsisOutlined,
   ExclamationCircleOutlined,
   FontSizeOutlined,
-  LockOutlined, DownOutlined, WarningFilled, ExclamationCircleFilled } from '../components/AppIcons';
+  LockOutlined, EyeOutlined, EyeInvisibleOutlined, WarningFilled, ExclamationCircleFilled } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCopy, type MetricKey } from '../data/mock';
 import { accountOf, findCreative, useStore } from '../data/store';
@@ -438,10 +438,6 @@ export function Editor() {
 
   const promptBlock = (
     <div className="ed-step ed-prompt">
-      <button type="button" className="acc-toggle" onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
-        <span>{promptOpen ? 'Hide prompt' : 'Show prompt'}</span>
-        <DownOutlined aria-hidden />
-      </button>
       <AnimatePresence initial={false}>
         {promptOpen && (
           <motion.div
@@ -576,13 +572,20 @@ export function Editor() {
           }}
         />
       </label>
-      <div className="ed-chips">
-        {CHIPS.map((ch) => (
-          <button key={ch} type="button" className="chip" onClick={() => chip(ch)}>
-            {ch}
-          </button>
-        ))}
+      {/* 297 (Mancini 19:44): three suggested prompts on the left, "Show prompt" as a text button on the right of the same row. */}
+      <div className="ed-chip-row">
+        <div className="ed-chips">
+          {CHIPS.filter((ch) => ch !== 'Fix the text').slice(0, 3).map((ch) => (
+            <button key={ch} type="button" className="chip" onClick={() => chip(ch)}>
+              {ch}
+            </button>
+          ))}
+        </div>
+        <Button type="text" size="small" className="ed-prompt-toggle" icon={promptOpen ? <EyeInvisibleOutlined /> : <EyeOutlined />} onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
+          {promptOpen ? 'Hide prompt' : 'Show prompt'}
+        </Button>
       </div>
+      {promptBlock}
       {!mobile && (
         <div className="ed-apply">
           <span className="t-help">{costLine}</span>
@@ -593,7 +596,6 @@ export function Editor() {
           </Tooltip>
         </div>
       )}
-          {promptBlock}
         </>
       ) : (
         textBlock
