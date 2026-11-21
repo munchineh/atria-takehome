@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CheckCircleFilled, FontSizeOutlined } from '../components/AppIcons';
+import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CheckCircleFilled, CopyOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -196,8 +196,10 @@ function RecCard({
               {/* Mancini 10:27: no copy icon; hover says what will be copied. A pill with two or more quoted options is advice, so it doesn't copy.
                   226 (Mancini 16:00): copy ideas carry a text icon and creative ideas an image icon; a creative idea copies its whole line for the brief. */}
               {[...action.examples.map((e) => ({ e, kind: 'copy' as const })), ...action.visuals.map((e) => ({ e, kind: 'visual' as const }))].map(({ e, kind }) => {
-                const idea = kind === 'visual' ? { label: e, copy: e } : ideaText(e);
-                const icon = kind === 'visual' ? <PictureOutlined className="idea-kind" aria-label="Image idea" /> : <FontSizeOutlined className="idea-kind" aria-label="Copy idea" />;
+                // 253 (Mancini 16:24): only words to put in the ad copy on click (a filled chip). Directions and image ideas are
+                // plain sentences in an outlined box that doesn't copy.
+                const idea = kind === 'visual' ? { label: e, copy: null } : ideaText(e);
+                const icon = idea.copy ? <CopyOutlined className="idea-kind" aria-hidden /> : null;
                 return idea.copy ? (
                   <Tooltip key={e} title="Copy to clipboard">
                     <button
@@ -275,6 +277,12 @@ export function AdDetail() {
   // 231: the parent is the step this ad was actually made from (its history note), not always the original.
   const parentId = parentIdOf(c);
   const parent = parentId ? findCreative(parentId) : undefined;
+  // 254: the first ad of this ad's chain.
+  const rootId = (() => {
+    let id = c.id;
+    for (let g = 0, p = parentIdOf(c); p && g < 12; g++) { id = p; const pc = findCreative(p); p = pc ? parentIdOf(pc) : undefined; }
+    return id === c.id ? undefined : id;
+  })();
   const s: RowStatus = statusOf(c.id);
   const jobs = jobsFor(c.id);
   const iterable = c.media === 'Image';
@@ -630,12 +638,15 @@ export function AdDetail() {
             </div>
           </motion.div>
           {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
-          {madeFromHistory.length > 0 && (
-            <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
-              <SectionHead title="Iteration history" help="The ads this one was made from and how each step did against the one before." />
-              <IterationHistory items={madeFromHistory} limit={6} empty="" resultsLabel={null} currentId={c.id} />
-            </motion.div>
-          )}
+          {/* 254: always shown. Ads made in Atria list the chain from its original; an original gets an empty state. */}
+          <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
+            <SectionHead title="Iteration history" help={madeFromHistory.length > 0 ? 'The ads this one was made from and how each step did against the one before.' : undefined} />
+            {madeFromHistory.length > 0 ? (
+              <IterationHistory items={madeFromHistory} limit={6} empty="" resultsLabel={null} currentId={c.id} originalId={rootId} />
+            ) : (
+              <p className="t-help ih-empty-first">This is the first ad. It wasn't made from another ad.</p>
+            )}
+          </motion.div>
         </aside>
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">

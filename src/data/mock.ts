@@ -445,8 +445,9 @@ const HERO_RECS: Recommendation[] = [
     why: `There's no price, and two offers compete for attention. Show one clear price so buying is an easy yes after the click.`,
     fix: 'Make one clear offer',
     target: 'CPA',
-    examples: ['Show the price: "$14 each, 3 for $36"', 'Keep one offer: drop "Free stickers" or "Buy 3, save 15%"'],
-    visuals: ['Three mochi side by side with the price on a sticker'],
+    // 253: copy ideas are only the words to use; directions are plain sentences with no quotes.
+    examples: ['"$14 each, 3 for $36"'],
+    visuals: ['Keep the bundle deal and drop the free stickers', 'Three mochi side by side with the price on a sticker'],
   },
   {
     id: 'cta',
@@ -496,7 +497,7 @@ const VIDEO_RECS: Recommendation[] = [
     why: `Your video opens on a talking head. Lead with the squish so customers see the product before they scroll away.`,
     fix: 'Show the squish in the first second',
     target: 'Hook',
-    examples: ['On-screen text: "Watch it bounce back"'],
+    examples: ['"Watch it bounce back"'],
     visuals: ['Open on a close-up squeeze', 'Put the price on screen by second 3'],
   },
   {
@@ -507,8 +508,8 @@ const VIDEO_RECS: Recommendation[] = [
     why: `Your offer is only in the caption, which most customers don't read. Put it on screen so everyone who watches sees it.`,
     fix: 'Make one clear offer',
     target: 'CPA',
-    examples: ['End card: "3 for $36"'],
-    visuals: ['End on all three mochi with the price beside them'],
+    examples: ['"3 for $36"'],
+    visuals: ['End on all three mochi with the price on the end card'],
   },
 ];
 
@@ -580,8 +581,8 @@ function recsFor(c: Creative): Recommendation[] {
             issueDetail: 'CPA improved to B with one offer, but "3 for $36" sits in a small band under the headline.',
             why: 'The ad has one clear offer now, but the price is the smallest text on it. Make it big enough to read at a glance so people who click are ready to buy.',
             fix: 'Make the price easier to see',
-            examples: ['"3 for $36" as the headline'],
-            visuals: ['The price on its own line, larger than the band', 'Crop the mood grid to make room for the price'],
+            examples: [],
+            visuals: ['Make the price the headline', 'Put the price on its own line, larger than the band', 'Crop the mood grid to make room for the price'],
           }
         : {}),
     }));

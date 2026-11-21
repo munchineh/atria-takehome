@@ -2864,3 +2864,20 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .task-line.bad { color: var(--c-text-2); }
 .status-cell.failed { color: var(--c-text); border-color: var(--c-warning-border); background: var(--c-warning-bg); }
 .status-cell.failed .anticon, .status-icon.bad { color: var(--c-warning); }
+
+/* 253 Ideas to try: text to use is a filled chip that copies on click (light orange fill, no border, copy icon, deeper
+   fill on hover). A direction is a plain sentence in a white box with a full 1 px stroke; it doesn't copy. */
+.rec-card .idea-pill:not(.idea-note) { background: color-mix(in srgb, var(--c-primary) 14%, #fff); border: 1px solid transparent; color: var(--c-text); cursor: pointer; }
+.rec-card .idea-pill:not(.idea-note):hover { background: color-mix(in srgb, var(--c-primary) 22%, #fff); }
+.rec-card .idea-pill:not(.idea-note) .idea-kind { color: var(--c-primary); }
+.rec-card .idea-pill.idea-note { background: #fff; border: 1px solid var(--c-border); border-style: solid; color: var(--c-text-2); cursor: default; }
+
+/* 254 Iteration history: "Original" tag on the first row (same fill as "This ad", neutral), and the empty state for originals. */
+.ih-orig { flex: none; padding: 0 8px; border-radius: var(--r-tag); background: var(--c-fill); font-size: var(--fs-small); line-height: 20px; color: var(--c-text); }
+.ih-empty-first { margin: 8px 0 0; }
+
+/* 255 Fade behind the ad page's action bar: fades into the grey page colour (it was white on grey, so its top and left
+   edges showed), and starts at the rail when the side panel is collapsed. */
+.bar-fade { background: linear-gradient(to bottom, color-mix(in srgb, var(--c-layout) 0%, transparent), var(--c-layout) 70%); }
+@media (min-width: 1200px) { .shell.side-collapsed .bar-fade { left: var(--rail-w); } }
+@media (min-width: 1200px) { .shell.side-collapsed .sticky-bar:not(.expanded) { left: calc(50% + var(--rail-w) / 2); } }

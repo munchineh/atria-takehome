@@ -11,7 +11,7 @@ import { Peek } from './Peek';
  * One iteration history for Overview, Radar and the ad page (Mancini 09:43, item 20).
  * Two groups: rounds made in Atria, then how the variation ads did once they ran.
  */
-export function IterationHistory({ items, limit = 5, empty, onNavigate, resultsLabel = 'Results in Meta', currentId }: { items: HistoryItem[]; limit?: number; empty: string; onNavigate?: () => void; resultsLabel?: string | null; currentId?: string }) {
+export function IterationHistory({ items, limit = 5, empty, onNavigate, resultsLabel = 'Results in Meta', currentId, originalId }: { items: HistoryItem[]; limit?: number; empty: string; onNavigate?: () => void; resultsLabel?: string | null; currentId?: string; /** 254: the first ad of the chain, shown as the first row. */ originalId?: string }) {
   const nav = useNavigate();
   const go = (to: string) => {
     onNavigate?.();
@@ -62,6 +62,28 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate, resultsL
         <div className="ih-group">
           {resultsLabel && <span className="t-label ih-group-title">{resultsLabel}</span>}
           <ul className="ih-list">
+            {/* 254 (Mancini 16:24): the chain starts with the original, which has nothing before it to compare against. */}
+            {originalId && findCreative(originalId) && (() => {
+              const o = findCreative(originalId)!;
+              return (
+                <li key={`orig-${o.id}`}>
+                  <button type="button" className="ih-row" onClick={() => go(`/ad/${o.id}`)}>
+                    <Peek preview={<Creative c={o} />} title={o.name}><Thumb c={o} size={36} /></Peek>
+                    <span className="ih-text">
+                      <span className="ih-head">
+                        <b className="ih-name">{o.name}</b>
+                        <span className="ih-orig">Original</span>
+                        <span className="ih-grades" onClick={(e) => e.stopPropagation()}>
+                          <OverallTag creative={o} />
+                        </span>
+                      </span>
+                      <span className="t-help">The first ad in this chain</span>
+                    </span>
+                    <RightOutlined className="ih-chev" aria-hidden />
+                  </button>
+                </li>
+              );
+            })()}
             {results.map((r) => {
               const ad = findCreative(r.adId);
               const parent = findCreative(r.parentId);

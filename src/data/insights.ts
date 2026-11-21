@@ -491,8 +491,8 @@ export interface IdeaText {
  */
 export function ideaText(idea: string): IdeaText {
   const quoted = [...idea.matchAll(/"([^"]+)"/g)].map((m) => m[1]);
-  if (quoted.length === 1) return { label: idea, copy: quoted[0] };
-  if (quoted.length === 0) return { label: idea, copy: idea };
+  // 253: only a single quoted phrase is text to use. Anything else is a direction and doesn't copy.
+  if (quoted.length === 1 && idea.trim() === `"${quoted[0]}"`) return { label: idea, copy: quoted[0] };
   return { label: idea, copy: null };
 }
 
