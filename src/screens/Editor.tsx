@@ -591,6 +591,45 @@ export function Editor() {
     </section>
   );
 
+  const histBlock = rec && (
+        <section className="ed-block ed-related" aria-label="Iteration history">
+          {/* 256 (Mancini 16:26): inside the right panel as compact rows, not a full-width card. */}
+          {/* 237 (Mancini 16:10): one row of three steps (the ad, the problem, the suggestion used) instead of four loose lines. */}
+          <SectionHead title="Iteration history" />
+          <ol className="ed-hist-steps">
+            <li className="ed-hist-step">
+              <span className="ed-hist-label">Made from</span>
+              <Link to={ws.radarPath(c.id)} className="ed-hist-ad">
+                <Thumb c={c} size={24} />
+                <b>{c.name}</b>
+              </Link>
+            </li>
+            <li className="ed-hist-step">
+              <span className="ed-hist-label">Problem</span>
+              <b className="ed-hist-text">{rec.issue}</b>
+              <span className="ed-hist-metric">
+                <span>{recMetricLabel}</span>
+                {recGrade ? (
+                  <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
+                ) : (
+                  <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                    <Tag className="rec-grade no-grade">No grade</Tag>
+                  </Tooltip>
+                )}
+                {recVal && <span>{recVal}</span>}
+                {recAvg && <span className="t-help">Average{'\u00a0'}{recAvg}</span>}
+              </span>
+              {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.issue}</b>)}
+            </li>
+            <li className="ed-hist-step">
+              <span className="ed-hist-label">{extraRecs.length ? 'Suggestions used' : 'Suggestion used'}</span>
+              <b className="ed-hist-text">{rec.fix}</b>
+              {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.fix}</b>)}
+            </li>
+          </ol>
+        </section>
+  );
+
   const tagBlock = (
     <section className="ed-block">
       <SectionHead title="How Atria reads this image" />
@@ -702,46 +741,10 @@ export function Editor() {
           )}
           {changeBlock}
           {tagBlock}
+          {histBlock}
         </aside>
       </div>
 
-      {rec && (
-        <section className="panel ed-related" aria-label="Iteration history">
-          {/* 237 (Mancini 16:10): one row of three steps (the ad, the problem, the suggestion used) instead of four loose lines. */}
-          <SectionHead title="Iteration history" help="The ad this creative was made from, the problem it was meant to fix and the suggestion used." />
-          <ol className="ed-hist-steps">
-            <li className="ed-hist-step">
-              <span className="ed-hist-label">Made from</span>
-              <Link to={ws.radarPath(c.id)} className="ed-hist-ad">
-                <Thumb c={c} size={36} />
-                <b>{c.name}</b>
-              </Link>
-            </li>
-            <li className="ed-hist-step">
-              <span className="ed-hist-label">Problem</span>
-              <b className="ed-hist-text">{rec.issue}</b>
-              {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.issue}</b>)}
-              <span className="ed-hist-metric">
-                <span>{recMetricLabel}</span>
-                {recGrade ? (
-                  <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
-                ) : (
-                  <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
-                    <Tag className="rec-grade no-grade">No grade</Tag>
-                  </Tooltip>
-                )}
-                {recVal && <span>{recVal}</span>}
-                {recAvg && <span className="t-help">Average{'\u00a0'}{recAvg}</span>}
-              </span>
-            </li>
-            <li className="ed-hist-step">
-              <span className="ed-hist-label">{extraRecs.length ? 'Suggestions used' : 'Suggestion used'}</span>
-              <b className="ed-hist-text">{rec.fix}</b>
-              {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.fix}</b>)}
-            </li>
-          </ol>
-        </section>
-      )}
 
 
       <AnimatePresence>

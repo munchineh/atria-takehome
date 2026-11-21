@@ -2881,3 +2881,13 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .bar-fade { background: linear-gradient(to bottom, color-mix(in srgb, var(--c-layout) 0%, transparent), var(--c-layout) 70%); }
 @media (min-width: 1200px) { .shell.side-collapsed .bar-fade { left: var(--rail-w); } }
 @media (min-width: 1200px) { .shell.side-collapsed .sticky-bar:not(.expanded) { left: calc(50% + var(--rail-w) / 2); } }
+
+/* 256 Editor "Iteration history" sits in the right panel under "How Atria reads this image": three label and value rows
+   (label column 120 px, Small secondary), no fill box and no chevrons. Same on phones. */
+.ed-block .ed-hist-steps { display: flex; flex-direction: column; gap: 8px; margin: 8px 0 0; background: none; border-radius: 0; }
+.ed-block .ed-hist-step { display: grid; grid-template-columns: 120px minmax(0, 1fr); column-gap: 12px; row-gap: 2px; align-items: start; padding: 0; margin: 0; border: 0; }
+.ed-block .ed-hist-step + .ed-hist-step::before { content: none; }
+.ed-block .ed-hist-step > :not(.ed-hist-label) { grid-column: 2; }
+.ed-block .ed-hist-label { grid-row: 1 / span 4; font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text-2); }
+.ed-block .ed-hist-ad img, .ed-block .ed-hist-ad .thumb { width: 24px; height: 24px; }
+@media (max-width: 767px) { .ed-block .ed-hist-step { grid-template-columns: 104px minmax(0, 1fr); } .ed-block .ed-hist-step + .ed-hist-step { margin: 0; border: 0; } }
