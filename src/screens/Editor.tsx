@@ -170,7 +170,7 @@ export function Editor() {
   const aiPending = versions.some((x) => x.n > opened && x.cost > 0);
   const onlyName = nameDirty && !pendingCount && !textDirty;
   const dirty = !locked && (pendingCount > 0 || textDirty || nameDirty);
-  const saveLabel = onlyName ? 'Save' : makeNew ? 'Save as new variation' : 'Save new version';
+  const saveLabel = onlyName ? 'Save' : makeNew ? 'Create variation' : 'Save version';
   /** Saves pending changes. Returns the new variation's id when saved as a variation. */
   const save = (stay = false) => {
     const copy = textDirty ? draft : undefined;

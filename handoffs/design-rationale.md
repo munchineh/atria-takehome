@@ -342,6 +342,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 292 | Edit Creative History: more room between the figure and "Average" ("2.04%   Average 1.42%") | Mancini 19:38 | They ran together |
 | 293 | Wording for creatives in a running ad: they can't get a new version, but they can always make a new variation. Gallery and round tooltips: "It runs in an ad, so it can't get a new version. You can still make a new variation." The gallery explainer and the creative page's version tooltip say the same; "Iterate" and "can't be edited" are gone from the UI | Mancini 19:39 | "Can't be edited" was wrong: a variation is an edit |
 | 294 | Edit Creative "Save as" options read "Edit version" and "Create new variation" (were "New version" / "New variation") | Mancini 19:39 | Says what each does to this creative |
+| 295 | Edit Creative top-right button follows the options: "Save version" or "Create variation" (were "Save new version" / "Save as new variation"). Renaming alone still says "Save"; the leave dialog uses the same label | Mancini 19:40 | One set of words for the choice and the action |
 
 ## With more time
 
