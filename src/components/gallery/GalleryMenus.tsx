@@ -1,4 +1,4 @@
-import { Button, Segmented, Select, Switch } from 'antd';
+import { Button, Segmented, Select } from 'antd';
 import { AppstoreOutlined, CloseOutlined, DownOutlined, FilterOutlined, SlidersOutlined, UnorderedListOutlined } from '../AppIcons';
 import { GROUP_OPTIONS, type GroupBy, type Origin } from '../../data/gallery';
 import { DEMO_ACCOUNTS } from '../../data/store';
@@ -49,7 +49,6 @@ export function GalleryMenus({
   if (filters.accountId !== defaultAccountId) pills.push({ key: 'acc', label: accountName(filters.accountId), remove: () => onChange({ ...filters, accountId: defaultAccountId }) });
   if (filters.campaign !== 'all') pills.push({ key: 'camp', label: filters.campaign, remove: () => onChange({ ...filters, campaign: 'all' }) });
   if (filters.use !== 'all') pills.push({ key: 'use', label: filters.use === 'used' ? 'In an ad' : 'Not in an ad', remove: () => onChange({ ...filters, use: 'all' }) });
-  if (filters.showArchived) pills.push({ key: 'arch', label: 'Showing archived', remove: () => onChange({ ...filters, showArchived: false }) });
 
   const row = (label: string, control: React.ReactNode) => (
     <div className="menu-row">
@@ -93,13 +92,6 @@ export function GalleryMenus({
           ]}
         />,
       )}
-      <div className="menu-row menu-switch">
-        <span>
-          <span className="menu-label">Show archived</span>
-          <span className="t-help">Creatives you've archived stay here, out of the way.</span>
-        </span>
-        <Switch checked={filters.showArchived} onChange={(on) => onChange({ ...filters, showArchived: on })} aria-label="Show archived" />
-      </div>
       {pills.length > 0 && (
         <Button type="link" className="inline-link menu-clear" onClick={onClear}>
           Clear filters

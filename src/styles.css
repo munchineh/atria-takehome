@@ -1992,3 +1992,14 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .grading-note.gal-status { display: flex; flex-direction: column; gap: 0; padding: 0 16px; border: 1px solid var(--c-border-2); border-radius: var(--r-surface); background: #fff; max-width: none; }
 .already-tried.gal-status { display: flex; align-items: stretch; gap: 0; margin-bottom: 12px; font-size: inherit; color: inherit; }
 .already-tried.gal-status > .anticon { margin: 0; }
+/* Mancini 13:45: tighter status rows. Title and help line sit as one block. */
+.gal-status-row { padding: 10px 0; }
+.gal-status-body { gap: 0; }
+.gal-status-name { line-height: 20px; }
+.gal-status-body .t-help { line-height: 18px; }
+.gal-status-row .thumb, .gal-status-icon { width: 36px !important; height: 36px !important; }
+/* Mancini 13:46: round the bottom too. The tab strip is a rounded bar; the table's last row rounds to match its top. */
+.radar .radar-card-tabs > .ant-tabs-nav { border-radius: var(--r-surface) !important; }
+.radar .ant-table-container { border-radius: var(--r-surface); overflow: hidden; }
+.radar .ant-table-summary > tr:last-child > td:first-child { border-bottom-left-radius: var(--r-surface); }
+.radar .ant-table-summary > tr:last-child > td:last-child { border-bottom-right-radius: var(--r-surface); }

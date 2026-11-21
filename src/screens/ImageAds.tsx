@@ -20,7 +20,7 @@ const HOW = (
   <div className="grade-pop">
     <p>A round gives you several options. Save the ones you want to keep and they appear here. Anything you add to an ad is saved too.</p>
     <p>Each creative keeps all its versions. Once it's in an ad it can't change, so you iterate on it instead, which makes a new&nbsp;creative.</p>
-    <p>Archive creatives you're done with. Turn on Show archived in Filter to see them&nbsp;again.</p>
+    <p>Archive creatives you're done with. Find them again under Archived, next to the&nbsp;tabs.</p>
   </div>
 );
 
@@ -31,7 +31,7 @@ const HOW = (
 export function ImageAds() {
   const nav = useNavigate();
   const { message } = App.useApp();
-  const { jobs, accountId, versionsOf, saved, archived, setArchived, chosen } = useStore();
+  const { jobs, accountId, versionsOf, saved, archived, setArchived, chosen, markSeen } = useStore();
 
   const [filters, setFilters] = useState<GalleryFilters>({
     accountId,
@@ -86,7 +86,8 @@ export function ImageAds() {
         (filters.origin === 'all' || i.origin === filters.origin) &&
         (filters.campaign === 'all' || i.campaigns.includes(filters.campaign)) &&
         (filters.use === 'all' || (filters.use === 'used') === i.inMeta) &&
-        (filters.showArchived || !i.archived),
+        // Mancini 13:45: archived creatives have their own view (the Archived button by the tabs), not a filter.
+        (filters.showArchived ? i.archived : !i.archived),
     );
     if (order === 'oldest') out.reverse();
     if (order === 'name') out.sort((a, b) => a.name.localeCompare(b.name));
@@ -111,6 +112,8 @@ export function ImageAds() {
   );
 
   const showNudge = stale.length >= 3 && !nudgeOff && !filters.showArchived;
+  const archivedCount = accountScoped.filter((i) => i.archived).length;
+  const [hidden, setHidden] = useState<string[]>([]);
   const activeJobs = useMemo(
     () =>
       jobs.filter((j) => {
@@ -126,7 +129,7 @@ export function ImageAds() {
   const hasFilters = filters.accountId !== accountId || filters.campaign !== 'all' || filters.use !== 'all';
   const onArchive = (id: string, on: boolean) => {
     setArchived([id], on);
-    message.success(on ? 'Archived. Show archived is in Filter.' : 'Restored to the gallery');
+    message.success(on ? 'Archived. Find it under Archived.' : 'Restored to the gallery');
   };
 
   const hideOriginOnCards = filters.origin === 'cloned' || filters.origin === 'scratch';
@@ -152,7 +155,7 @@ export function ImageAds() {
 
       {/* Mancini 13:40: status rows (rounds to review, rounds generating, the archive nudge) sit together in one card above
           the gallery, apart from the creatives. One row pattern: thumb, title, one help line, one default button on the right. */}
-      {(toReview.length > 0 || activeJobs.length > 0 || showNudge) && (
+      {(toReview.length > 0 || activeJobs.some((j) => !hidden.includes(j.id)) || showNudge) && (
         <div className="panel gal-status" aria-live="polite">
           {toReview.map((j) => {
             const src = findCreative(j.creativeId)!;
@@ -163,11 +166,16 @@ export function ImageAds() {
                   <strong className="gal-status-name">{src.name}</strong>
                   <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Save the ones to keep.</span>
                 </span>
-                <Button onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}>Review</Button>
+                <span className="gal-status-actions">
+                  <Button onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}>Review</Button>
+                  <Tooltip title="Dismiss. The round stays in the gallery.">
+                    <Button type="text" icon={<CloseOutlined />} aria-label="Dismiss" onClick={() => markSeen(j.id)} />
+                  </Tooltip>
+                </span>
               </div>
             );
           })}
-          {activeJobs.map((j) => {
+          {activeJobs.filter((j) => !hidden.includes(j.id)).map((j) => {
             const src = findCreative(j.creativeId);
             if (!src) return null;
             return (
@@ -180,6 +188,11 @@ export function ImageAds() {
                   </span>
                   <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="var(--c-primary)" />
                 </span>
+                <span className="gal-status-actions">
+                  <Tooltip title="Hide. The round keeps generating and shows up when it's ready.">
+                    <Button type="text" icon={<CloseOutlined />} aria-label="Hide" onClick={() => setHidden((h) => [...h, j.id])} />
+                  </Tooltip>
+                </span>
               </div>
             );
           })}
@@ -190,7 +203,7 @@ export function ImageAds() {
               </span>
               <span className="gal-status-body">
                 <strong className="gal-status-name">{plural(stale.length, 'creative')} not used in over a week</strong>
-                <span className="t-help">Archive them to keep the gallery tidy. You can restore them from Filter.</span>
+                <span className="t-help">Archive them to keep the gallery tidy. They stay under Archived.</span>
               </span>
               <span className="gal-status-actions">
                 <Button
@@ -204,8 +217,8 @@ export function ImageAds() {
                 >
                   Archive {stale.length}
                 </Button>
-                <Tooltip title="Not now.">
-                  <Button type="text" icon={<CloseOutlined />} aria-label="Not now" onClick={() => setNudgeOff(true)} />
+                <Tooltip title="Dismiss.">
+                  <Button type="text" icon={<CloseOutlined />} aria-label="Dismiss" onClick={() => setNudgeOff(true)} />
                 </Tooltip>
               </span>
             </div>
@@ -217,8 +230,15 @@ export function ImageAds() {
         className="gal-origin-tabs"
         activeKey={filters.origin}
         onChange={(k) => setFilters((f) => ({ ...f, origin: k as GalleryFilters['origin'] }))}
+        tabBarExtraContent={
+          archivedCount > 0 || filters.showArchived ? (
+            <Button type="text" icon={<InboxOutlined />} onClick={() => setFilters((f) => ({ ...f, showArchived: !f.showArchived }))}>
+              {filters.showArchived ? 'Back to gallery' : `Archived ${archivedCount}`}
+            </Button>
+          ) : null
+        }
         items={ORIGIN_TABS.map((t) => {
-          const live = accountScoped.filter((i) => filters.showArchived || !i.archived);
+          const live = accountScoped.filter((i) => (filters.showArchived ? i.archived : !i.archived));
           const n = t.value === 'all' ? live.length : live.filter((i) => i.origin === t.value).length;
           return {
             key: t.value,
