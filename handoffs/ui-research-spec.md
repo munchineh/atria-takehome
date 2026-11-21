@@ -671,12 +671,12 @@ Work top to bottom. Tick a box in the same commit that finishes the task. Data f
 - [x] Recheck the Tasks status line: relative times are longer now ("2 hours ago").
 
 ### P0: Creative gallery rebuild (DL-14, DL-15)
-- [ ] Gallery shows creatives, not ads: a grid of images from `galleryItems()`, newest first; 4 or 5 columns at 1440, 2 at 375. Each card: image, name (angle), source chip (ad name, "Cloned" or "From scratch"), small state marks (shortlisted, in Meta, versions).
-- [ ] "Group by" control from `GROUP_OPTIONS` (Select on desktop, sheet on phones). Render `groupGallery(items, by)`: group title, meta line, then its grid. The group with `ungrouped: true` is always last and uses its title as given.
-- [ ] Filters: account, origin, campaign, plus "Shortlisted". Keep the filter row to one line at 1440; a sheet at 375.
-- [ ] Primary action "New creative" in the page header (DL-16): a chooser with the three starts from `NEW_CREATIVE_STARTS`, then the Create panel with no ad attached. On Create: `const p = newProject(start, name, accountId)`, then `startJob({ creativeId: p.id, recIds: ['r1'], perRec, size })`. Illustrative: the reference and clone starts can show a simple picker of sample ads.
-- [ ] Page one-liners per DL-14 (Overview, Radar, Creative gallery).
-- [ ] Teaching card per DL-13, shown inline above the grid on phones.
+- [x] Gallery shows creatives, not ads: a grid of images from `galleryItems()`, newest first; 4 or 5 columns at 1440, 2 at 375. Each card: image, name (angle), source chip (ad name, "Cloned" or "From scratch"), small state marks (shortlisted, in Meta, versions).
+- [x] "Group by" control from `GROUP_OPTIONS` (Select on desktop, sheet on phones). Render `groupGallery(items, by)`: group title, meta line, then its grid. The group with `ungrouped: true` is always last and uses its title as given.
+- [x] Filters: account, origin, campaign, plus "Shortlisted". Keep the filter row to one line at 1440; a sheet at 375.
+- [x] Primary action "New creative" in the page header (DL-16): a chooser with the three starts from `NEW_CREATIVE_STARTS`, then the Create panel with no ad attached. On Create: `const p = newProject(start, name, accountId)`, then `startJob({ creativeId: p.id, recIds: ['r1'], perRec, size })`. Illustrative: the reference and clone starts can show a simple picker of sample ads.
+- [x] Page one-liners per DL-14 (Overview, Radar, Creative gallery).
+- [x] Teaching card per DL-13, shown inline above the grid on phones.
 
 ### P2
 - [x] Section 12.1 known issues, Essential first.
