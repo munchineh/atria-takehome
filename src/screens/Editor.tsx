@@ -407,7 +407,7 @@ export function Editor() {
           ref={input as never}
           value={ask}
           onChange={(e) => setAsk(e.target.value)}
-          placeholder="For example, make the headline shorter"
+          placeholder="e.g. Make the headline shorter"
           autoSize={{ minRows: 2, maxRows: 5 }}
           onPressEnter={(e) => {
             if (!e.shiftKey) {

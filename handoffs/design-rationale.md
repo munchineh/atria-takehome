@@ -133,4 +133,4 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | K14 | Create form keeps our brief flow (R4 declined after mocks) | Mancini 13:09 | Cleaner than FG3's always-on link field |
 | K15 | Suggestion cards lead with the problem, stated plainly | Mancini 13:09 | A problem and a suggestion are different things; softened lines read as fixes |
 | 83 | Copy rule R-M4a: no tacked-on comma phrases. Fixed 9 help lines and tooltips ("Ways to improve this ad in order of priority.") | Mancini 13:12 | |
-| 84 | Final pass: gallery tab counts hidden below 768 so the four tabs fit; "e.g." placeholders written out | R-L2, copy | antd's overflow menu cut "From a brief" at 390 |
+| 84 | Final pass: gallery tab counts hidden below 768 so the four tabs fit | R-L2 | antd's overflow menu cut "From a brief" at 390 |
