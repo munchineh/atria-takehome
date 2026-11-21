@@ -141,7 +141,7 @@ export interface Creative {
 }
 
 /** Where an ad came from: a variation made in Atria, or uploaded to the ad account. */
-export const sourceOf = (c: Creative) => (c.variationOf ? 'Created in Atria' : 'Uploaded');
+export const sourceOf = (c: Creative) => (c.variationOf ? 'Created in Atria' : 'Synced from Meta');
 export const statusOf = (c: Creative) => c.status ?? 'Active';
 
 const camp = {

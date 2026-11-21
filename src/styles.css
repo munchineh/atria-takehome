@@ -2592,3 +2592,13 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 192 Ad page bar after a failed round: error color, what happened, credits returned, "Try again". */
 .sticky-bar.failed { background: var(--c-error); color: #fff; }
 .sticky-bar.failed .sticky-summary .left { color: rgba(255, 255, 255, 0.88); }
+/* 193 Suggestion cards: "Recommended" sits after the suggestion text. Recommended cards have an orange header band and an orange number; other cards stay plain. */
+.rec-diag-left .rec-suggested.ant-tag { margin-left: 8px !important; flex: none; }
+.rec-card.is-recommended .rec-part-diag { background: color-mix(in srgb, var(--c-primary) 10%, transparent); }
+.rec-card.is-recommended .rec-num, .rec-card.is-recommended.selected .rec-num { background: var(--c-primary); color: #fff; }
+.rec-card.is-recommended .rec-suggested.ant-tag { background: #fff; }
+/* 194 Likely audience sits in the left column as plain rows with inset dividers, so it doesn't read as another suggestion card. */
+.personas-side .persona-cards { display: flex; flex-direction: column; gap: 0; margin-top: 8px; }
+.personas-side .persona-card { background: none; border-radius: 0; padding: 12px 0; align-items: flex-start; }
+.personas-side .persona-card + .persona-card { border-top: 1px solid var(--c-border-2); }
+.personas-side .persona-card:last-child { padding-bottom: 0; }

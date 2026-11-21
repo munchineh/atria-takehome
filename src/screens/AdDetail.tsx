@@ -132,13 +132,13 @@ function RecCard({
   const recTag = suggested && !disabled && (
     <Tooltip title="High priority for this ad's goal.">
       {/* K37 (R-I11, R-C1): neutral tag; orange stays on primary action, progress and selection only. */}
-      <Tag className="rec-suggested">Top pick</Tag>
+      <Tag className="rec-suggested">Recommended</Tag>
     </Tooltip>
   );
   return (
     <motion.div
       variants={fadeUp}
-      className={`rec-card rec-four ${selected ? 'selected' : ''} ${disabled ? 'read-only' : ''}`}
+      className={`rec-card rec-four ${selected ? 'selected' : ''} ${disabled ? 'read-only' : ''} ${suggested && !disabled ? 'is-recommended' : ''}`}
       onClick={disabled ? undefined : onToggle}
       role={disabled ? undefined : 'checkbox'}
       aria-checked={disabled ? undefined : selected}
@@ -152,13 +152,14 @@ function RecCard({
           {gradeTag}
           <span className="rec-metric">{evidence.metric}</span>
           <span className="rec-issue-text">{diagnosis}</span>
+          {/* Mancini 15:33: the tag belongs to the suggestion, so it sits after its text, away from the button. */}
+          {recTag}
         </div>
         <span className="rec-diag-right">
-          {recTag}
           {/* Mancini 14:47: a Pick button instead of a checkbox. The whole card still toggles, so this is its visible state. */}
           {!disabled && (
             <span className={`pick-chip ${selected ? 'on' : ''}`} aria-hidden>
-              {selected ? 'Picked' : 'Pick'}
+              {selected ? 'Selected' : 'Select'}
             </span>
           )}
         </span>
@@ -383,7 +384,7 @@ export function AdDetail() {
                   {bp.md && <span className="muted small left">Select more suggestions to create more variations.</span>}
                 </>
               ) : selected.length === 0 ? (
-                <span>Pick a suggestion to create variations</span>
+                <span>Select a suggestion to create variations</span>
               ) : short_ ? (
                 <span>
                   {/* K18 (R-M8) */}
@@ -392,7 +393,7 @@ export function AdDetail() {
               ) : (
                 <>
                   <b>
-                    <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} picked
+                    <Rolling value={selected.length} /> {selected.length === 1 ? 'suggestion' : 'suggestions'} selected
                   </b>
                   {/* Mancini 14:47: the bar says what the round will be, as in mock B. Phones keep one compact row. */}
                   {bp.md && <span className="muted small left">{plural(total, 'variation')}{'\u00a0'}· {cost} of {balance.toLocaleString('en-US')} credits</span>}
@@ -551,11 +552,41 @@ export function AdDetail() {
                 </>
               ) : (
                 <>
-                  <div><dt>Source</dt><dd>Uploaded</dd></div>
-                  <div><dt>Synced from</dt><dd>{c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}</dd></div>
+                  {/* Mancini 15:34: one fact, not two. The ad was made outside Atria and came in with the account sync. */}
+                  <div><dt>Source</dt><dd>Synced from {c.ads[0] ? platformOf(c.ads[0]) : 'Meta'}</dd></div>
                 </>
               )}
             </dl>
+          </motion.div>
+          {/* Mancini 15:34: audience is context about the ad, not something to act on, so it sits with the other facts on the left and reads as rows, not cards. */}
+          <motion.div variants={fadeUp} initial="hidden" animate="show" className="panel personas personas-side">
+            <SectionHead
+              title={
+                <>
+                  Likely audience{' '}
+                  <Tooltip title="Atria's AI reads this from the ad's image and text. It may not be exact.">
+                    <InfoCircleOutlined className="title-info" aria-label="About this section" />
+                  </Tooltip>
+                </>
+              }
+              help="Who this ad seems to speak to. Atria reads this from its image and text."
+            />
+            {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
+            <div className="persona-cards">
+              {accountOf(c).personas.map((p) => (
+                <div key={p.label} className="persona-card">
+                  <span className="persona-avatar" style={{ background: p.tint }}>
+                    {PERSONA_ICON[p.icon] ?? <SmileOutlined />}
+                  </span>
+                  <span className="persona-text">
+                    <b>{p.label}</b>
+                    <span className="t-help">{p.why}</span>
+                  </span>
+                  {/* Mancini 14:56: the report action sits on the right of the card, out of the reading line. */}
+                  <ReportAudience audience={p.label} reported={reportedAud.includes(p.label)} onReported={() => setReportedAud((x) => [...x, p.label])} />
+                </div>
+              ))}
+            </div>
           </motion.div>
           {/* Mancini 09:43, item 20: the same iteration history as Overview and Radar, limited to this ad and the ads around it. */}
           {adHistory.length > 0 && (
@@ -681,36 +712,6 @@ export function AdDetail() {
             />
           ))}
 
-          <motion.div variants={fadeUp} className="panel personas">
-            <SectionHead
-              bar
-              title={
-                <>
-                  Likely audience{' '}
-                  <Tooltip title="Atria's AI reads this from the ad's image and text. It may not be exact.">
-                    <InfoCircleOutlined className="title-info" aria-label="About this section" />
-                  </Tooltip>
-                </>
-              }
-              help="Who this ad seems to speak to. Atria reads this from its image and text."
-            />
-            {/* Persona cards (Mancini, 19:01): the reason is shown, not hidden in a tooltip. */}
-            <div className="persona-cards">
-              {accountOf(c).personas.map((p) => (
-                <div key={p.label} className="persona-card">
-                  <span className="persona-avatar" style={{ background: p.tint }}>
-                    {PERSONA_ICON[p.icon] ?? <SmileOutlined />}
-                  </span>
-                  <span className="persona-text">
-                    <b>{p.label}</b>
-                    <span className="t-help">{p.why}</span>
-                  </span>
-                  {/* Mancini 14:56: the report action sits on the right of the card, out of the reading line. */}
-                  <ReportAudience audience={p.label} reported={reportedAud.includes(p.label)} onReported={() => setReportedAud((x) => [...x, p.label])} />
-                </div>
-              ))}
-            </div>
-          </motion.div>
         </motion.section>
       </div>
       {iterable && !bp.md && <div className="sticky-spacer" />}

@@ -296,7 +296,7 @@ const FILTER_GROUPS: { label: string; options: string[] }[] = [
   { label: 'Media', options: ['Image', 'Video', 'Carousel'] },
   { label: 'Platform', options: ['Meta', 'TikTok'] },
   { label: 'Ad status', options: ['Active', 'Paused'] },
-  { label: 'Source', options: ['Uploaded', 'Created in Atria'] },
+  { label: 'Source', options: ['Synced from Meta', 'Created in Atria'] },
 ];
 
 type Picked = Record<string, string[]>;
