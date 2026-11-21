@@ -1,14 +1,15 @@
 import { useEffect } from 'react';
 import { Empty, Grid, Progress, Select, Tooltip } from 'antd';
 import { setHub } from '../data/nav';
-import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, InfoCircleOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
-import { Link, useNavigate } from 'react-router-dom';
+import { AppstoreOutlined, ArrowDownOutlined, ArrowUpOutlined, RadarChartOutlined, CalendarOutlined, InfoCircleOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { WINDOWS, goalOf, graded, money, plural, type TabKey } from '../data/mock';
 import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
 import { creativeDiversity, formatBreakdown, healthBreakdown, iterationHistory, overviewBriefing, topTags, trendSeries, type Delta } from '../data/insights';
 import { AskRaya } from '../components/AskRaya';
 import { SectionHead } from '../components/SectionHead';
+import { ExpandLink } from '../components/ExpandLink';
 import { PageHeader } from '../components/PageHeader';
 import { BarList } from '../components/BarList';
 import { IterationHistory } from '../components/IterationHistory';
@@ -181,7 +182,7 @@ export function Overview() {
 
       <div className="ov-grid ov-grid-even">
         <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-health">
-          <SectionHead id="ov-sec-health" title="Ad health" action={<Link to="/">Open Radar</Link>} help={<>Share of spend going to ads Radar puts in each group. Grades cover the {win.short.toLowerCase()}.</>} />
+          <SectionHead id="ov-sec-health" title="Ad health" action={<ExpandLink to="/" icon={<RadarChartOutlined />}>Open Radar</ExpandLink>} help={<>Share of spend going to ads Radar puts in each group. Grades cover the {win.short.toLowerCase()}.</>} />
           <BarList rows={health} tone={(k) => TAB_TONE[k as TabKey]} onPick={(k) => nav(`/?tab=${k}`)} />
         </motion.section>
         <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-format">
@@ -225,8 +226,9 @@ export function Overview() {
             </span>
             <p className="div-line">{diversity.line}</p>
             <p className="t-help div-meta">
-              {plural(diversity.concepts, 'concept')} · {plural(diversity.formats, 'format')} · biggest concept {Math.round(diversity.topShare * 100)}% of spend
+              {plural(diversity.concepts, 'concept')} · {plural(diversity.formats, 'format')}
             </p>
+            <p className="t-help div-meta">Biggest concept: {Math.round(diversity.topShare * 100)}% of spend</p>
           </div>
           <ul className="div-cats" aria-label="Diversity by creative dimension">
             {diversity.categories.map((cat) => (
@@ -241,16 +243,30 @@ export function Overview() {
 
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-tags">
         <SectionHead id="ov-sec-tags" title="Top creative tags" help={<>What your ads show and say. Ranked by spend, with CPA against the account average.</>} />
-        <ul className="tag-list tag-list-2">
-          {tags.map((t) => (
-            <li key={t.tag} className="tag-row">
-              <span className="tag-name">{t.tag}<span className="bar-list-count">{plural(t.count, 'ad')} · {Math.round(t.share * 100)}% of spend</span></span>
-              <span className={`tag-cpa tone-${t.vsAccount <= 0 ? 'good' : 'bad'}`}>
-                {money(t.cpa)}
-                <span>{t.vsAccount === 0 ? 'average' : `${Math.abs(t.vsAccount)}% ${t.vsAccount < 0 ? 'below' : 'above'}`}</span>
-              </span>
-            </li>
-          ))}
+        {/* Mancini 15:09: each tag is a tile with a hover fill to guide the eye. The bar is its share of spend;
+            the chip says how its CPA compares with the account, in color and words. */}
+        <ul className="tag-list tag-tiles">
+          {tags.map((t) => {
+            const good = t.vsAccount <= 0;
+            return (
+              <li key={t.tag} className="tag-tile">
+                <span className="tag-tile-top">
+                  <span className="tag-name">{t.tag}</span>
+                  <span className="tag-cpa-val">{money(t.cpa)}</span>
+                </span>
+                <span className="tag-share" aria-hidden>
+                  <i style={{ width: `${Math.max(4, Math.round(t.share * 100))}%` }} />
+                </span>
+                <span className="tag-tile-foot">
+                  <span className="bar-list-count">{plural(t.count, 'ad')} · {Math.round(t.share * 100)}% of spend</span>
+                  <span className={`tag-delta tone-${t.vsAccount === 0 ? 'neutral' : good ? 'good' : 'bad'}`}>
+                    {t.vsAccount !== 0 && (good ? <ArrowDownOutlined aria-hidden /> : <ArrowUpOutlined aria-hidden />)}
+                    {t.vsAccount === 0 ? 'Average CPA' : `${Math.abs(t.vsAccount)}% ${good ? 'below' : 'above'} average`}
+                  </span>
+                </span>
+              </li>
+            );
+          })}
         </ul>
       </motion.section>
 
@@ -281,7 +297,7 @@ export function Overview() {
         <div className="ov-col">
           {/* Atria's Overview has weekly iteration suggestions; ours point at the ads to open in Radar first. */}
           <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-fix" aria-labelledby="ov-sec-next">
-            <SectionHead id="ov-sec-next" title="Iteration suggestions" action={<Link to="/">Open Radar</Link>} help={<>{titles.next.help}</>} />
+            <SectionHead id="ov-sec-next" title="Iteration suggestions" action={<ExpandLink to="/" icon={<RadarChartOutlined />}>Open Radar</ExpandLink>} help={<>{titles.next.help}</>} />
             {briefing.next.length === 0 ? (
               <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description="Nothing to improve first. Every ad is B or above on its goal." />
             ) : (
@@ -318,7 +334,7 @@ export function Overview() {
         </div>
         <div className="ov-col">
           <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-history">
-            <SectionHead id="ov-sec-history" title="Iteration history" action={<Link to="/creation">Creative gallery</Link>} help={<>Rounds you made in Atria and how their variations did once they ran.</>} />
+            <SectionHead id="ov-sec-history" title="Iteration history" action={<ExpandLink to="/creation" icon={<AppstoreOutlined />}>Creative gallery</ExpandLink>} help={<>Rounds you made in Atria and how their variations did once they ran.</>} />
             <IterationHistory items={history} empty={`No rounds yet for ${account.name.replace(/\.$/, '')}. Open an ad under Iteration suggestions to create variations.`} />
           </motion.section>
         </div>

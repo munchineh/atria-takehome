@@ -213,6 +213,11 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 161 | "Variations ready" notification uses the toast's shadow and is no longer clipped on the left | Mancini 15:05 | The wide shadow was cut off by its container |
 | 162 | "How the gallery works" is three small boxes, each with a looping picture of what happens (save, versions, archive), a short title and one line. CSS only, transform and opacity, still under reduced motion | Mancini 15:06; same idea as the teaching card's mini demo (6b) | Three paragraphs were text-heavy. 56 words became 38, and each idea can be read from its picture and title alone. Supersedes row 145 |
 | 163 | Creative diversity: rating tags pin to the bottom of each box, so every tag in a row sits on the same line | Mancini 15:07 | A two-line name pushed its tag lower than its neighbours |
+| 164 | Section-head links on Overview ("Open Radar", "Creative gallery") are an icon at rest that slides open to icon plus label on hover or keyboard focus; touch screens always show the label | Mancini 15:07 | Orange text links in every card head competed with the titles. The label's width animates, which is the one exception to "transform and opacity only" |
+| 165 | Grade popovers: 8 px between the title row and its lead line, 12 px between the breakdown box and the period line | Mancini 15:08 | Row 108's 4 px still read as crowded on both ends |
+| 166 | Top creative tags: each tag is a tile in a three-column grid with the tag, its CPA, a bar for its share of spend, and a chip saying how its CPA compares with the account average (arrow, color and words). Tiles fill on hover though they aren't clickable | Mancini 15:09 | Six rows of text with rules between them were hard to scan. The hover fill tracks the eye; the default cursor shows it isn't a link |
+| 167 | Share-of-spend bars on Overview (Spend by format, Top creative tags) are blue (`--c-info`); Ad health keeps green, orange and red for its three groups | Mancini 15:10 | A faded brand orange beside the "To improve" orange looked like the same scale in two shades. Blue says "a share", not "a grade group" |
+| 168 | Creative diversity: "Biggest concept: 25% of spend" is its own line under the concept and format counts | Mancini 15:09 | The three facts wrapped mid-phrase |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

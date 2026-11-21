@@ -2443,3 +2443,37 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 @media (prefers-reduced-motion: reduce) { .how-art i, .how-art b { animation: none !important; opacity: 1 !important; } }
 /* 163 Diversity dimension tags share one baseline per row: the tag pins to the bottom of its box. */
 .div-cats { align-items: stretch; } .div-cat { height: 100%; box-sizing: border-box; } .div-cat .div-label { margin-top: auto; }
+/* 164 Expanding section-head link: 32 px icon button that slides open to show its label. */
+.xlink { display: inline-flex; align-items: center; height: 32px; padding: 0 8px; border-radius: var(--r-control); color: var(--c-text-2); text-decoration: none; transition: background-color var(--dur-fast) var(--ease-standard), color var(--dur-fast) var(--ease-standard); }
+.xlink-icon { display: inline-flex; font-size: 16px; }
+.xlink-label { display: grid; grid-template-columns: 0fr; opacity: 0; transition: grid-template-columns var(--dur-base) var(--ease-standard), opacity var(--dur-fast) var(--ease-standard); }
+.xlink-label > span { overflow: hidden; white-space: nowrap; font-size: var(--fs-body); line-height: var(--lh-body); }
+.xlink:hover, .xlink:focus-visible { background: var(--c-fill); color: var(--c-text); }
+.xlink:hover .xlink-label, .xlink:focus-visible .xlink-label { grid-template-columns: 1fr; opacity: 1; }
+.xlink:hover .xlink-label > span, .xlink:focus-visible .xlink-label > span { padding-left: 8px; }
+.xlink:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; }
+@media (hover: none) { .xlink-label { grid-template-columns: 1fr; opacity: 1; } .xlink-label > span { padding-left: 8px; } }
+@media (prefers-reduced-motion: reduce) { .xlink-label { transition: none; } }
+/* 165 Grade popovers: more air under the title row and above the period line. */
+.grade-pop-header { gap: 8px; }
+.grade-pop-footer, .grade-pop-note + .grade-pop-footer { margin-top: 12px; }
+.grade-pop-note + .grade-pop-footer { margin-top: 8px; }
+/* 166 Top creative tags as tiles. */
+.tag-tiles { list-style: none; margin: 12px -8px -8px; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px 8px; }
+.tag-tile { display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: var(--r-control); transition: background-color var(--dur-fast) var(--ease-standard); cursor: default; }
+.tag-tile:hover { background: var(--c-fill-2); }
+.tag-tile-top, .tag-tile-foot { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.tag-tile .tag-name { display: block; font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tag-cpa-val { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; color: var(--c-text); font-variant-numeric: tabular-nums; }
+.tag-share { display: block; height: 4px; border-radius: 999px; background: var(--c-fill); overflow: hidden; }
+.tag-share i { display: block; height: 100%; border-radius: 999px; background: var(--c-primary); transition: width var(--dur-base) var(--ease-standard); }
+.tag-tile:hover .tag-share { background: var(--c-border-2); }
+.tag-tile .bar-list-count { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.tag-delta { display: inline-flex; align-items: center; gap: 4px; flex: none; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; white-space: nowrap; }
+.tag-delta.tone-good { color: var(--c-success); } .tag-delta.tone-bad { color: var(--c-error); } .tag-delta.tone-neutral { color: var(--c-text-2); }
+@media (max-width: 1199px) { .tag-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .tag-tiles { grid-template-columns: minmax(0, 1fr); } }
+/* 167 Share-of-spend bars are blue, so they can't be read as a shade of the "To improve" orange. */
+.bar-list-track i.neutral { background: var(--c-info); opacity: 1; }
+.tag-share i { background: var(--c-info); }
+.div-meta + .div-meta { margin-top: 0; }
