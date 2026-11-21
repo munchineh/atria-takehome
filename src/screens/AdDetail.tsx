@@ -1,6 +1,6 @@
 import { GoalPill, objectiveOf } from '../components/Goal';
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
 import { CheckOutlined, DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled, CopyOutlined } from '../components/AppIcons';
@@ -20,7 +20,7 @@ import {
   type Creative as CreativeT,
   type MetricKey,
   type Recommendation, copyStatus, copiesTitle, platformOf, TABS } from '../data/mock';
-import { ALL_CREATIVES, accountOf, findCreative, useStore, type RowStatus } from '../data/store';
+import { ALL_CREATIVES, accountOf, creditsReturned, findCreative, useStore, type RowStatus } from '../data/store';
 import { ideaText, suggestionParts, type SuggestionParts } from '../data/insights';
 import { CarouselArt, Creative } from '../components/Thumb';
 import { Placements } from '../components/Placements';
@@ -30,7 +30,7 @@ import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { STEP_NOTES, parentIdOf } from '../data/lineage';
-import { FIELD_LABEL, adSetupOf, applyAdRecs } from '../data/adsetup';
+import { FIELD_LABEL } from '../data/adsetup';
 import { answers, nameOf } from '../data/variations';
 import { Thumb } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
@@ -271,7 +271,7 @@ export function AdDetail() {
   const bp = Grid.useBreakpoint();
   const hub = hubCrumb();
   const nav = useNavigate();
-  const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs, createDraft, drafts } = useStore();
+  const { statusOf, jobsFor, startJob, credits: balance, windowDays, jobs: allJobs, drafts, retryJob } = useStore();
   // 266 (Mancini 18:24): the left column scrolls with the page until its last card is in view, then stays. It used to
   // scroll inside its own box, which clipped its lower cards once the page ended.
   const leftRef = useRef<HTMLElement>(null);
@@ -341,7 +341,12 @@ export function AdDetail() {
   const short_ = cost > balance;
   // Mancini 15:31: when the last round failed, the bar says so first. Picking a suggestion goes back to the normal bar.
   const [failSeen, setFailSeen] = useState(false);
-  const failedJob = s.kind === 'failed' && !failSeen ? jobs.find((j) => j.id === s.jobId) : undefined;
+  // 276 (Mancini 19:12): "View details" on a failed round in Notifications lands here with ?failed=, so the bar says
+  // so again, also when only some creatives failed.
+  const [qs] = useSearchParams();
+  const linked = jobs.find((j) => j.id === qs.get('failed') && j.creativeId === c.id && (j.state === 'failed' || j.failed.length > 0));
+  const failedJob = failSeen ? undefined : linked ?? (s.kind === 'failed' ? jobs.find((j) => j.id === s.jobId) : undefined);
+  const partFailed = failedJob && failedJob.state !== 'failed' ? failedJob.failed.length : 0;
   const toggle = (rid: string) => {
     setFailSeen(true);
     setSelected((p) => (p.includes(rid) ? p.filter((x) => x !== rid) : [...p, rid]));
@@ -388,21 +393,8 @@ export function AdDetail() {
     .sort((a, b) => (a === goalMetric ? -1 : b === goalMetric ? 1 : 0));
 
   // E1 (375px) & E2 (1440px): desktop docks inline above suggestions so no card is covered; phones dock compactly at bottom.
-  const duplicate = () => {
-    const picked = recs.filter((r) => adSel.includes(r.id));
-    const base = adSetupOf(c, accountOf(c).name, goalOf(c) === 'Sales');
-    const id = createDraft({
-      name: `${c.name} · Copy`,
-      accountId: c.accountId,
-      sourceAdId: c.id,
-      creative: { img: c.img, copy: c.copy },
-      setup: applyAdRecs(base, picked),
-      recIds: adSel,
-      how: 'duplicate',
-    });
-    message.success({ content: 'Draft ad created in Ad Library with the fixes filled in', duration: 3 });
-    nav(`/creation/ads/${id}`);
-  };
+  // 277 (Mancini 19:12): Duplicate opens the new ad's setup with the fixes filled in; it's saved only on "Create ad".
+  const duplicate = () => nav(`/creation/ads/new?from=${c.id}&fixes=${adSel.join(',')}`);
   const hasAdRecs = recs.some((r) => r.scope === 'ad');
   const actionBar = iterable || hasAdRecs ? (
     <motion.div
@@ -455,9 +447,9 @@ export function AdDetail() {
               ) : failedJob ? (
                 <>
                   <b className="bar-fail-title">
-                    <ExclamationCircleFilled aria-hidden /> Failed to create variations
+                    <ExclamationCircleFilled aria-hidden /> {partFailed ? `${partFailed} of ${failedJob.count} creatives failed to create` : 'Failed to create creatives'}
                   </b>
-                  <span className="muted small left">{failedJob.cost}{'\u00a0'}credits were returned to you.</span>
+                  <span className="muted small left">{creditsReturned(failedJob)}{'\u00a0'}credits were returned to you.</span>
                 </>
               ) : selected.length === 0 && s.kind === 'ready' ? (
                 <>
@@ -505,8 +497,10 @@ export function AdDetail() {
                   type="primary"
                   size="large"
                   onClick={() => {
-                    setSelected(failedJob.recIds);
                     setFailSeen(true);
+                    // Some failed: make only those again. All failed: reopen the form with the same suggestions.
+                    if (partFailed) return retryJob(failedJob.id);
+                    setSelected(failedJob.recIds);
                     setDialog(true);
                   }}
                 >

@@ -117,8 +117,10 @@ export type RowStatus =
   | { kind: 'ready'; count: number; failed: number; unseen: boolean; jobId: string; recIds: string[] }
   | { kind: 'failed'; count: number; jobId: string; recIds: string[] };
 
+/** 277 (Mancini 19:12): one sample creative already runs in an ad, so the "no new version" rule can be seen. */
+const RUNNING_SAMPLE: Record<string, Variation['launched']> = { 'job-1086424-stop-0': { audience: 'Squishies · Broad US · Q4', date: 'Nov 20' } };
 const mk = (j: Omit<Job, 'variations' | 'count'>): Job => {
-  const variations = forAccount(buildVariations(j.id, j.recIds, j.perRec), j.creativeId);
+  const variations = forAccount(buildVariations(j.id, j.recIds, j.perRec), j.creativeId).map((v) => (RUNNING_SAMPLE[v.id] ? { ...v, launched: RUNNING_SAMPLE[v.id] } : v));
   return { ...j, count: variations.length, variations };
 };
 

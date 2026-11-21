@@ -184,6 +184,9 @@ export function AdLibrary() {
             Delete
           </Button>
         </Tooltip>
+        <Button disabled={!sel.length} onClick={() => message.info("In the live product, this pauses the selected ads in Meta. It's not part of this prototype.")}>
+          Pause
+        </Button>
         <Button type="primary" disabled={!sel.length} onClick={() => message.info("In the live product, this opens the selected ads in Ads Manager. It's not part of this prototype.")}>
           Open in Ads Manager
         </Button>

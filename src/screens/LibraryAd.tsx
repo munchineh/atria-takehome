@@ -1,15 +1,15 @@
 import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { App, Breadcrumb, Button, Empty, Grid, Input, Select, Tooltip } from 'antd';
 import { motion } from 'motion/react';
 import { CheckCircleFilled, EditOutlined, ExportOutlined, PictureOutlined } from '../components/AppIcons';
 import { AdArt, CarouselArt, Creative } from '../components/Thumb';
 import { EditCreativeDialog, type CreativeDraft } from '../components/EditCreativeDialog';
 import { SectionHead } from '../components/SectionHead';
-import { CTA_OPTIONS, FIELD_LABEL, type AdSetup, type CtaButton } from '../data/adsetup';
-import { useLibrary } from '../data/library';
-import { recommendationsFor } from '../data/mock';
-import { findCreative, useStore } from '../data/store';
+import { CTA_OPTIONS, FIELD_LABEL, adSetupOf, applyAdRecs, type AdSetup, type CtaButton } from '../data/adsetup';
+import { useLibrary, type LibAd } from '../data/library';
+import { goalOf, recommendationsFor } from '../data/mock';
+import { accountOf, findCreative, useStore } from '../data/store';
 import { fadeUp, pageTransition } from '../motion/tokens';
 
 /**
@@ -20,11 +20,35 @@ import { fadeUp, pageTransition } from '../motion/tokens';
 export function LibraryAd() {
   const { id = '' } = useParams();
   const ads = useLibrary();
-  const a = ads.find((x) => x.id === id);
+  // 277 (Mancini 19:12): Duplicate opens /creation/ads/new?from=<ad>&fixes=<ids>. Nothing is saved until "Create ad".
+  const [qs] = useSearchParams();
+  const pending = useMemo<LibAd | undefined>(() => {
+    if (id !== 'new') return undefined;
+    const from = findCreative(qs.get('from') ?? '');
+    if (!from) return undefined;
+    const fixIds = (qs.get('fixes') ?? '').split(',').filter(Boolean);
+    const recs = recommendationsFor(from).filter((r) => fixIds.includes(r.id));
+    return {
+      id: 'new',
+      name: `${from.name} · Copy`,
+      accountId: from.accountId,
+      media: from.media,
+      img: from.img,
+      copy: from.copy,
+      status: 'Not running',
+      setup: applyAdRecs(adSetupOf(from, accountOf(from).name, goalOf(from) === 'Sales'), recs),
+      source: `Duplicated from ${from.name}`,
+      sourceAdId: from.id,
+      recIds: fixIds,
+      ad: from,
+      date: '',
+    };
+  }, [id, qs]);
+  const a = pending ?? ads.find((x) => x.id === id);
   const nav = useNavigate();
   const bp = Grid.useBreakpoint();
   const { message } = App.useApp();
-  const { updateDraft, saveAdEdit } = useStore();
+  const { updateDraft, saveAdEdit, createDraft } = useStore();
   const [setup, setSetup] = useState<AdSetup | null>(a?.setup ?? null);
   const [creative, setCreative] = useState<CreativeDraft | null>(a ? { img: a.img, copy: a.copy } : null);
   const [editing, setEditing] = useState(false);
@@ -47,6 +71,19 @@ export function LibraryAd() {
   }
   const dirty = JSON.stringify(setup) !== JSON.stringify(a.setup) || creative.img !== a.img || JSON.stringify(creative.copy) !== JSON.stringify(a.copy);
   const set = (k: keyof AdSetup, v: string) => setSetup((s) => (s ? { ...s, [k]: v } : s));
+  const createFromPending = () => {
+    const nid = createDraft({
+      name: a.name,
+      accountId: a.accountId,
+      sourceAdId: a.sourceAdId,
+      creative: { img: creative.img, copy: creative.copy },
+      setup,
+      recIds: a.recIds,
+      how: 'duplicate',
+    });
+    message.success({ content: 'Ad created in Ad Library', duration: 2 });
+    nav(`/creation/ads/${nid}`, { replace: true });
+  };
   const save = () => {
     if (a.draft) updateDraft(a.id, { setup, creative: { ...a.draft.creative, img: creative.img, copy: creative.copy } });
     else saveAdEdit(a.id, { setup, creative });
@@ -60,6 +97,15 @@ export function LibraryAd() {
       <header className="ph ad-top">
         <Breadcrumb className="ph-crumbs" items={[{ title: <Link to="/creation/ads">Ad Library</Link> }, { title: a.name }]} />
         <div className="ph-actions">
+          {pending ? (
+            <>
+              <Button onClick={() => nav(-1)}>Cancel</Button>
+              <Button type="primary" onClick={createFromPending}>
+                Create ad
+              </Button>
+            </>
+          ) : (
+          <>
           <Tooltip title="Opening the ad in Meta Ads Manager isn't part of this prototype.">
             <Button icon={<ExportOutlined />} onClick={() => message.info("In the live product, this opens the ad in Meta Ads Manager to run it. It's not part of this prototype.")}>
               {bp.md ? 'Open in Ads Manager' : 'Ads Manager'}
@@ -68,6 +114,8 @@ export function LibraryAd() {
           <Button type="primary" disabled={!dirty} onClick={save}>
             Save changes
           </Button>
+          </>
+          )}
         </div>
       </header>
 
@@ -92,7 +140,7 @@ export function LibraryAd() {
 
         <div className="detail-right">
           <div className="lib-ad-title">
-            <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>
+            {pending ? <span className="lib-status s-not-running">Not saved</span> : <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>}
             <h1 className="ph-title">{a.name}</h1>
             <p className="ph-desc">
               {a.source}

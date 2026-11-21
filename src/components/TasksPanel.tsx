@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Button, Empty, Progress, Segmented } from 'antd';
+import { Button, Empty, Progress, Segmented, Tooltip } from 'antd';
 import { CloseOutlined, RightOutlined } from './AppIcons';
 import { AnimatePresence, motion, useDragControls } from 'motion/react';
 import { useWorkspace } from '../data/nav';
@@ -24,7 +24,7 @@ export const timeLeft = (p: number) => {
   return s < 50 ? 'less than a minute left' : `about ${plural(Math.ceil(s / 60), 'minute')} left`;
 };
 
-function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void }) {
+function TaskRow({ j, i, onOpen, onDetails }: { j: Job; i: number; onOpen: (j: Job) => void; onDetails: (j: Job) => void }) {
   const { retryJob, accountId } = useStore();
   const c = findCreative(j.creativeId)!;
   const failedN = j.failed.length;
@@ -69,6 +69,12 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
               Try generating again
             </Button>
           )}
+          {/* 276 (Mancini 19:12): View details goes back to the ad the round came from, where the failure shows again. */}
+          {(j.state === 'failed' || (j.state === 'ready' && failedN > 0)) && (
+            <Button type="link" size="small" className="inline-link task-details" onClick={(e) => { e.stopPropagation(); onDetails(j); }}>
+              View details
+            </Button>
+          )}
         </div>
         {creditNote && <div className="task-line-meta">{creditNote}</div>}
         {j.state === 'generating' && <Progress percent={Math.round(j.progress * 100)} size="small" showInfo={false} strokeColor="#f66c30" className="task-progress" />}
@@ -79,7 +85,7 @@ function TaskRow({ j, i, onOpen }: { j: Job; i: number; onOpen: (j: Job) => void
 }
 
 function PanelBody({ onClose }: { onClose: () => void }) {
-  const { jobs, markSeen, failNext, setFailNext } = useStore();
+  const { jobs, markSeen, failNext, setFailNext, accountId, setAccount } = useStore();
   const nav = useNavigate();
   const ws = useWorkspace();
   const [tab, setTab] = useState<'tasks' | 'notes'>('tasks');
@@ -89,6 +95,13 @@ function PanelBody({ onClose }: { onClose: () => void }) {
     markSeen(j.id);
     // Tasks keep you where you are: Creation stays in Creation, Analytics in Analytics.
     nav(ws.roundPath(j.creativeId, j.id));
+    onClose();
+  };
+  const details = (j: Job) => {
+    markSeen(j.id);
+    const c = findCreative(j.creativeId);
+    if (c && c.accountId !== accountId) setAccount(c.accountId);
+    nav(`/ad/${j.creativeId}?failed=${j.id}`);
     onClose();
   };
 
@@ -106,7 +119,7 @@ function PanelBody({ onClose }: { onClose: () => void }) {
           recent.length ? (
             <ul className="task-list">
               {recent.map((j, i) => (
-                <TaskRow key={j.id} j={j} i={i} onOpen={open} />
+                <TaskRow key={j.id} j={j} i={i} onOpen={open} onDetails={details} />
               ))}
             </ul>
           ) : (
@@ -143,7 +156,10 @@ function PanelBody({ onClose }: { onClose: () => void }) {
       </div>
       {/* 258: prototype only. Lets designers see a failed or partly failed round without waiting for a real error. */}
       <div className="tasks-proto">
-        <span className="small muted">Prototype: next round</span>
+        {/* 276 (Mancini 19:12): says what the switch is for. Real rounds rarely fail, so this is how a reviewer sees the failure states. */}
+        <Tooltip title="Real rounds rarely fail. Pick how your next round ends to see the failure states.">
+          <span className="small muted">Demo: how the next round ends</span>
+        </Tooltip>
         <Segmented
           size="small"
           value={failNext || 'ok'}
