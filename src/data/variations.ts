@@ -94,7 +94,15 @@ const NAME: Record<string, string> = {
   'Bold offer': 'Big price, bold offer',
   'Bold color': 'Bold color backdrop',
 };
-export const nameOf = (v: { angle: string }) => NAME[v.angle] ?? v.angle;
+/** 273 (Mancini 19:07): names the designer typed on the Edit Creative page, by creative id. Kept in sync by the store. */
+export const CUSTOM_NAMES: Record<string, string> = (() => {
+  try {
+    return JSON.parse(localStorage.getItem('atria.names.v1') ?? '{}') as Record<string, string>;
+  } catch {
+    return {};
+  }
+})();
+export const nameOf = (v: { id?: string; angle: string }) => (v.id && CUSTOM_NAMES[v.id]) || NAME[v.angle] || v.angle;
 export const tagsFor = (angle: string) => ({ Angle: angle, Emotion: EMOTION[angle] ?? 'Comfort', Theme: THEME[angle] ?? 'Self-care' });
 export const TAG_TIPS: Record<string, string> = {
   Angle: 'The approach an ad takes to get a response, such as scarcity or social proof.',

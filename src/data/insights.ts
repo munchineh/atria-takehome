@@ -275,7 +275,7 @@ export function formatBreakdown(account: MockAccount, windowDays: number): BarRo
 
 export type HistoryItem =
   | { kind: 'round'; id: string; adId: string; name: string; minutesAgo: number; job: Job; text: string }
-  | { kind: 'result'; id: string; adId: string; parentId: string; name: string; text: string; tone: 'good' | 'bad'; repeat: boolean };
+  | { kind: 'result'; id: string; adId: string; parentId: string; name: string; text: string; tone: 'good' | 'bad'; repeat: boolean; label: string; from: string; to: string; pct: number };
 
 /**
  * Rounds made in Atria and how the variation ads did against the ad they came from.
@@ -344,6 +344,10 @@ export function iterationHistory(account: MockAccount, windowDays: number, jobs:
       text: `${step.result.text} (${step.result.from} to ${step.result.to})`,
       tone: step.result.better ? 'good' : 'bad',
       repeat: !!step.repeat,
+      label: step.result.label,
+      from: step.result.from,
+      to: step.result.to,
+      pct: step.result.pct,
     });
   }
   return [...rounds, ...results];

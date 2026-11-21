@@ -131,8 +131,8 @@ export function galleryItems(
         archived: Boolean(opts.archived?.includes(v.id)),
         shownN: latest?.n ?? 1,
         stylized: Boolean(v.stylized),
-        // 263: the card opens the Edit Creative page; Link to Ad sets the creative up as an ad.
-        to: `/creation/${source.id}/${v.id}/edit?round=${j.id}`,
+        // 273 (Mancini 19:07): the card and View open the creative page (history and linked ads); Edit is on that page.
+        to: `/creation/${source.id}/${v.id}`,
         editTo: `/creation/${source.id}/${v.id}/edit?round=${j.id}`,
         linkTo: `/creation/link/${v.id}?round=${j.id}`,
         variantOf: v.from ? { id: v.from.id, name: nameOf(v.from) } : undefined,

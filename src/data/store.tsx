@@ -2,7 +2,7 @@ import type { AdSetup } from './adsetup';
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, ACCOUNT_NAMES, type Creative, type AdCopy } from './mock';
 import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
-import { ANGLE_REASON, applyToImage, buildVariations, stylizedRender, type Variation, type Version } from './variations';
+import { ANGLE_REASON, CUSTOM_NAMES, applyToImage, buildVariations, stylizedRender, type Variation, type Version } from './variations';
 import { generateLive } from './live';
 
 /**
@@ -216,6 +216,10 @@ interface Store {
   /** ED-10 / ED-09b: a new variation from an edited prompt or as stylized text. Returns its id. */
   branch: (jobId: string, v: Variation, how: 'prompt' | 'stylized', note: string) => string;
   deleteVariation: (jobId: string, vid: string) => void;
+  /** 274: removes ads that were never published (Ad Library drafts). */
+  deleteDrafts: (ids: string[]) => void;
+  /** 273: gives a creative its own name (blank goes back to the default). */
+  renameCreative: (vid: string, name: string) => void;
   /** Demo 1: add shortlisted variations as paused ads. */
   launch: (jobId: string, vids: string[], audience: string) => void;
   /**
@@ -693,6 +697,19 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       applyChange,
       saveText,
       branch,
+      deleteDrafts: (ids) => setDrafts((p) => p.filter((d) => !ids.includes(d.id))),
+      renameCreative: (vid, name) => {
+        const n = name.trim();
+        if (n) CUSTOM_NAMES[vid] = n;
+        else delete CUSTOM_NAMES[vid];
+        try {
+          localStorage.setItem('atria.names.v1', JSON.stringify(CUSTOM_NAMES));
+        } catch {
+          /* storage can be unavailable */
+        }
+        // Names are read outside the store, so nudge everything that lists creatives to re-render.
+        setJobs((p) => [...p]);
+      },
       deleteVariation: (jid, vid) => setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (v.id === vid ? { ...v, deleted: true } : v)) } : j))),
       launch: (jid, vids, audience) =>
         setJobs((p) => p.map((j) => (j.id === jid ? { ...j, variations: j.variations.map((v) => (vids.includes(v.id) ? { ...v, launched: { audience, date: TODAY_LABEL() } } : v)) } : j))),
@@ -724,7 +741,14 @@ export function useStore() {
 /** Recommendation lookup across creatives (for job names). */
 export function recName(creativeId: string, recId: string) {
   const c = findCreative(creativeId);
-  return (c && recommendationsFor(c).find((r) => r.id === recId)?.fix) ?? recId;
+  // 274: a variation can also answer a suggestion from another ad in the round; look it up there before showing the id.
+  const own = c && recommendationsFor(c).find((r) => r.id === recId)?.fix;
+  if (own) return own;
+  for (const other of ALL_CREATIVES) {
+    const hit = recommendationsFor(other).find((r) => r.id === recId)?.fix;
+    if (hit) return hit;
+  }
+  return recId;
 }
 
 /** Credits a job gave back: all of them when the round failed, 4 per image when only some failed (R-AI8). */

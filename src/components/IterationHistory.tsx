@@ -1,5 +1,5 @@
-import { Progress } from 'antd';
-import { ArrowDownOutlined, ArrowUpOutlined, RightOutlined, WarningOutlined } from './AppIcons';
+import { Progress, Tooltip } from 'antd';
+import { ArrowDownOutlined, ArrowUpOutlined, RightOutlined, WarningFilled } from './AppIcons';
 import { useNavigate } from 'react-router-dom';
 import type { HistoryItem } from '../data/insights';
 import { findCreative, timeAgo } from '../data/store';
@@ -86,31 +86,34 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate, resultsL
             })()}
             {results.map((r) => {
               const ad = findCreative(r.adId);
-              const parent = findCreative(r.parentId);
               if (!ad) return null;
               const isCurrent = r.adId === currentId;
               return (
                 <li key={r.id}>
                   <button type="button" className={`ih-row ${isCurrent ? 'is-current' : ''}`} aria-current={isCurrent ? 'page' : undefined} onClick={isCurrent ? undefined : () => go(`/ad/${r.adId}`)}>
                     <Peek preview={<Creative c={ad} />} title={ad.name}><Thumb c={ad} size={36} /></Peek>
+                    {/* 275 (Mancini 19:10): one name line and one plain number line; the change and the grade sit on the right.
+                        The "vs" letters and the long coloured sentence are gone. */}
                     <span className="ih-text">
-                      <span className="ih-head">
+                      <span className="ih-name-row">
                         <b className="ih-name">{r.name}</b>
                         {isCurrent && <span className="ih-this">This ad</span>}
-                        <span className="ih-grades" onClick={(e) => e.stopPropagation()}>
-                          <OverallTag creative={ad} />
-                          {parent?.overall && <span className="t-help">vs {parent.overall}</span>}
-                        </span>
+                        {r.repeat && (
+                          <Tooltip title="This tests an idea an earlier ad in the chain already tried.">
+                            <WarningFilled className="ih-repeat-icon" aria-label="Repeats an earlier idea" />
+                          </Tooltip>
+                        )}
                       </span>
-                      <span className={`ih-delta tone-${r.tone}`}>
-                        {/\bdown\b/i.test(r.text) ? <ArrowDownOutlined aria-hidden /> : <ArrowUpOutlined aria-hidden />}
-                        <span>{r.text}</span>
+                      <span className="t-help">
+                        {r.label} {r.from} to {r.to}
                       </span>
-                      {r.repeat && (
-                        <span className="ih-repeat">
-                          <WarningOutlined aria-hidden /> Tests an idea you already tried
-                        </span>
-                      )}
+                    </span>
+                    <span className={`ih-change tone-${r.tone}`}>
+                      {r.pct < 0 ? <ArrowDownOutlined aria-hidden /> : <ArrowUpOutlined aria-hidden />}
+                      {Math.abs(r.pct)}%
+                    </span>
+                    <span className="ih-grades" onClick={(e) => e.stopPropagation()}>
+                      <OverallTag creative={ad} />
                     </span>
                     {!isCurrent && <RightOutlined className="ih-chev" aria-hidden />}
                   </button>

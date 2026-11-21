@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { App, Button, Empty, Progress, Tabs, Tooltip } from 'antd';
-import { BarChartOutlined, CloseOutlined, InboxOutlined, PlusOutlined, QuestionCircleOutlined } from '../components/AppIcons';
+import { CheckSquareOutlined, BarChartOutlined, CloseOutlined, InboxOutlined, PlusOutlined, QuestionCircleOutlined } from '../components/AppIcons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { ALL_CREATIVES, findCreative, useStore } from '../data/store';
@@ -10,6 +10,7 @@ import { PopSheet } from '../components/PopSheet';
 import { Thumb } from '../components/Thumb';
 import { timeLeft } from '../components/TasksPanel';
 import { GalleryCard } from '../components/gallery/GalleryCard';
+import { BulkBar } from '../components/BulkBar';
 import { GalleryMenus, type GalleryFilters, type Order } from '../components/gallery/GalleryMenus';
 import { NewCreativeModal } from '../components/gallery/NewCreativeModal';
 import { pageTransition } from '../motion/tokens';
@@ -71,6 +72,15 @@ export function ImageAds() {
   const [order, setOrder] = useState<Order>('newest');
   const [nudgeOff, setNudgeOff] = useState(false);
   const [staleOnly, setStaleOnly] = useState(false);
+  // 274 (Mancini 19:08): bulk select. Review opens it with the unused creatives filtered and picked, ready to archive.
+  const [selecting, setSelecting] = useState(false);
+  const [sel, setSel] = useState<string[]>([]);
+  const toggleSel = (id: string) => setSel((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const endSelect = () => {
+    setSelecting(false);
+    setSel([]);
+    setStaleOnly(false);
+  };
   useEffect(() => {
     setFilters((f) => ({ ...f, accountId, campaign: 'all' }));
   }, [accountId]);
@@ -240,7 +250,16 @@ export function ImageAds() {
               </span>
               <span className="gal-status-actions">
                 {/* Mancini 14:35: two actions. Review shows only these creatives; Archive all is the main one. */}
-                <Button onClick={() => setStaleOnly((x) => !x)}>{staleOnly ? 'Show all' : 'Review'}</Button>
+                <Button
+                  onClick={() => {
+                    if (staleOnly) return endSelect();
+                    setStaleOnly(true);
+                    setSelecting(true);
+                    setSel(stale.map((i) => i.id));
+                  }}
+                >
+                  {staleOnly ? 'Show all' : 'Review'}
+                </Button>
                 <Button
                   type="primary"
                   onClick={() => {
@@ -290,6 +309,12 @@ export function ImageAds() {
         })}
       />
 
+      <div className="gal-tools">
+      {!selecting && (
+        <Button icon={<CheckSquareOutlined />} onClick={() => setSelecting(true)}>
+          Select
+        </Button>
+      )}
       <GalleryMenus
         filters={filters}
         onChange={setFilters}
@@ -304,6 +329,16 @@ export function ImageAds() {
         onOrder={setOrder}
       />
       </div>
+      </div>
+
+      {staleOnly && (
+        <div className="gal-review-note">
+          Showing {plural(filtered.length, 'creative')} not used in over a week.{' '}
+          <Button type="link" className="inline-link" onClick={endSelect}>
+            Show all
+          </Button>
+        </div>
+      )}
 
       {filtered.length === 0 ? (
         <div className="gal-empty">
@@ -347,6 +382,9 @@ export function ImageAds() {
               hideOrigin={hideOriginOnCards}
               onOpen={(to) => nav(to)}
               onArchive={onArchive}
+              selecting={selecting}
+              selected={sel.includes(item.id)}
+              onToggle={() => toggleSel(item.id)}
             />
           ))}
         </div>
@@ -381,6 +419,9 @@ export function ImageAds() {
                     hideOrigin={hideOriginOnCards}
                     onOpen={(to) => nav(to)}
                     onArchive={onArchive}
+                    selecting={selecting}
+                    selected={sel.includes(item.id)}
+                    onToggle={() => toggleSel(item.id)}
                   />
                 ))}
               </div>
@@ -388,6 +429,34 @@ export function ImageAds() {
           ))}
         </div>
       )}
+
+      <BulkBar open={selecting} count={sel.length} total={filtered.length} onAll={(on) => setSel(on ? filtered.map((i) => i.id) : [])} onCancel={endSelect}>
+        {filters.showArchived ? (
+          <Button
+            type="primary"
+            disabled={!sel.length}
+            onClick={() => {
+              setArchived(sel, false);
+              message.success(`Restored ${plural(sel.length, 'creative')}`);
+              endSelect();
+            }}
+          >
+            Restore
+          </Button>
+        ) : (
+          <Button
+            type="primary"
+            disabled={!sel.length}
+            onClick={() => {
+              setArchived(sel, true);
+              message.success(`Archived ${plural(sel.length, 'creative')}`);
+              endSelect();
+            }}
+          >
+            Archive
+          </Button>
+        )}
+      </BulkBar>
 
       <NewCreativeModal
         open={newOpen}

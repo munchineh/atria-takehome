@@ -565,7 +565,7 @@ export function Radar() {
       <p className="media-note" role="note">
         <PictureOutlined aria-hidden />
         <span>
-          <b>Only image ads can make new creatives for now.</b> Video and carousel ads get suggestions to apply in Meta.
+          <b>You can generate new creatives to improve image ads.</b> Video and carousel ads still get suggestions.
         </span>
       </p>
 

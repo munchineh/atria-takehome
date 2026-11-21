@@ -11,7 +11,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   EllipsisOutlined,
-  LockOutlined, DownOutlined } from '../components/AppIcons';
+  LockOutlined, DownOutlined, LinkOutlined } from '../components/AppIcons';
 import { CREATIVES, plural } from '../data/mock';
 import { findCreative, recName, useStore } from '../data/store';
 import { nameOf, TAG_TIPS, predictedCtr, recIdsOf, ratioFor, tagsFor } from '../data/variations';
@@ -28,7 +28,7 @@ export function CreativePage() {
   const { id = '', vid = '' } = useParams();
   const nav = useNavigate();
   const { message, modal } = App.useApp();
-  const { jobsFor, versionsOf, chosen, choose, archived, setArchived, iterate, deleteVariation, briefs, saved, setSaved } = useStore();
+  const { jobsFor, versionsOf, chosen, choose, archived, setArchived, iterate, deleteVariation, briefs, saved, setSaved, drafts } = useStore();
   const c = findCreative(id) ?? CREATIVES[0];
   const job = jobsFor(c.id).find((j) => j.variations.some((x) => x.id === vid));
   const v = job?.variations.find((x) => x.id === vid);
@@ -56,6 +56,10 @@ export function CreativePage() {
   const readEntries = Object.entries(tagsFor(v.angle)).filter(([k, val]) => !(k === 'Angle' && val === v.angle));
   const grade = predictedCtr(v.id);
   const editPath = `/creation/${c.id}/${v.id}/edit?round=${job.id}`;
+  const linked = [
+    ...(v.launched ? [{ id: 'live', name: c.name, img: v.img, note: `${v.launched.audience}\u00a0· added ${v.launched.date}`, status: 'Running', to: `/ad/${c.id}` }] : []),
+    ...drafts.filter((d) => d.creative.vid === v.id).map((d) => ({ id: d.id, name: d.name, img: d.creative.img, note: `Ad Library\u00a0· ${d.date}`, status: 'Not running', to: `/creation/ads/${d.id}` })),
+  ];
   const status = isArchived ? 'Archived' : locked ? 'In an ad' : 'Draft';
 
   const doIterate = () => {
@@ -81,8 +85,8 @@ export function CreativePage() {
         }
         desc={
           locked
-            ? 'See where this creative came from and where it runs. Iterate to make a new creative from it.'
-            : 'See where this creative came from and where it runs. Edit it to make a new version.'
+            ? 'See where this creative came from and which ads use it. It runs in an ad, so changes go into a new variation.'
+            : 'See where this creative came from and which ads use it.'
         }
         actions={
           <>
@@ -90,9 +94,9 @@ export function CreativePage() {
               Download
             </Button>
             {locked ? (
-              <Tooltip title="It's in an ad, so it can't change. Iterate makes a new creative from it.">
+              <Tooltip title="It runs in an ad, so it can't get a new version. This makes a new variation to edit.">
                 <Button type="primary" icon={<CopyPlusOutlined />} onClick={doIterate}>
-                  Iterate
+                  Make a new variation
                 </Button>
               </Tooltip>
             ) : (
@@ -211,51 +215,34 @@ export function CreativePage() {
         </motion.section>
 
         <div className="cp-side">
+          {/* 273 (Mancini 19:07): one creative can be in several ads. Linked ads lists every ad that uses it. */}
           <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel">
-            <SectionHead title="Where it runs" help={locked ? 'Changing it would change a live ad, so it is locked.' : undefined} />
-            {v.launched ? (
-              <dl className="cp-kv">
-                <div>
-                  <dt>Status</dt>
-                  <dd>Paused in Meta</dd>
-                </div>
-                <div>
-                  <dt>Campaign</dt>
-                  <dd>{c.ads[0]?.campaign ?? 'New campaign'}</dd>
-                </div>
-                <div>
-                  <dt>Audience</dt>
-                  <dd>{v.launched.audience}</dd>
-                </div>
-                <div>
-                  <dt>Added</dt>
-                  <dd>{v.launched.date}</dd>
-                </div>
-              </dl>
+            <SectionHead title={<>Linked ads <span className="tab-count">{linked.length}</span></>} />
+            {linked.length ? (
+              <ul className="rel-ads">
+                {linked.map((a) => (
+                  <li key={a.id}>
+                    <Link to={a.to} className="rel-ad">
+                      <Thumb c={{ img: a.img, media: 'Image', name: a.name }} size={40} />
+                      <span className="rel-ad-text">
+                        <b>{a.name}</b>
+                        <span className="t-help">{a.note}</span>
+                      </span>
+                      <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
             ) : (
-              origin === 'ad' ? (
-                /* Mancini 15:25: a variation is attached to the ad it was made from automatically. It shows that ad here, marked as not live. */
-                <div className="cp-linked">
-                  <Link to={`/ad/${c.id}`} className="ed-related-ad">
-                    <Thumb c={c} size={36} />
-                    <span className="ed-related-id">
-                      <b>{c.name}</b>
-                      <span className="t-help">Attached to this ad. It starts running when you publish it in Meta.</span>
-                    </span>
-                    <Tag className="cp-status">Not live</Tag>
-                  </Link>
-                </div>
-              ) : (
-                <div className="cp-empty">
-                  <p className="t-help">Not in an ad yet.</p>
-                  <Button onClick={() => nav(`/creation/${c.id}?round=${job.id}`)}>Add to an ad</Button>
-                </div>
-              )
+              <p className="t-help cp-empty-line">Not in an ad yet.</p>
             )}
+            <Button className="cp-link-btn" icon={<LinkOutlined />} onClick={() => nav(`/creation/link/${v.id}?round=${job.id}`)}>
+              Link to Ad
+            </Button>
           </motion.section>
 
           <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel">
-            <SectionHead title="Where it came from" />
+            <SectionHead title="History" />
             <dl className="cp-kv">
               {origin === 'ad' ? (
                 <>

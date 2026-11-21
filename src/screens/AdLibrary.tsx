@@ -1,9 +1,11 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Empty, Grid, Segmented, Select } from 'antd';
+import { App, Button, Checkbox, Empty, Grid, Segmented, Select, Tooltip } from 'antd';
 import { motion } from 'motion/react';
-import { AppstoreOutlined, DownOutlined, RightOutlined, SlidersOutlined, UnorderedListOutlined } from '../components/AppIcons';
+import { AppstoreOutlined, CheckSquareOutlined, DownOutlined, RightOutlined, SlidersOutlined, UnorderedListOutlined } from '../components/AppIcons';
 import { PopSheet } from '../components/PopSheet';
+import { BulkBar } from '../components/BulkBar';
+import { useStore } from '../data/store';
 import { PageHeader } from '../components/PageHeader';
 import { AdArt, Thumb } from '../components/Thumb';
 import { useLibrary, type LibStatus } from '../data/library';
@@ -40,6 +42,17 @@ export function AdLibrary() {
   const count = (t: 'All' | LibStatus) => (t === 'All' ? ads.length : ads.filter((a) => a.status === t).length);
   // 272 (Mancini 19:03): the same Display menu as Creative Gallery: Grid or List, and an order.
   const [order, setOrder] = useState<'newest' | 'oldest' | 'name'>('newest');
+  // 274 (Mancini 19:08): bulk select, like Creative Gallery.
+  const { message, modal } = App.useApp();
+  const { deleteDrafts } = useStore();
+  const [selecting, setSelecting] = useState(false);
+  const [sel, setSel] = useState<string[]>([]);
+  const toggleSel = (id: string) => setSel((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
+  const endSelect = () => {
+    setSelecting(false);
+    setSel([]);
+  };
+  const open = (id: string) => (selecting ? toggleSel(id) : nav(`/creation/ads/${id}`));
   const filtered = tab === 'All' ? ads : ads.filter((a) => a.status === tab);
   const shown = order === 'name' ? [...filtered].sort((x, y) => x.name.localeCompare(y.name)) : order === 'oldest' ? [...filtered].reverse() : filtered;
   return (
@@ -59,6 +72,12 @@ export function AdLibrary() {
           ),
         }))}
       />
+      <span className="lib-tools">
+      {!selecting && (
+        <Button icon={<CheckSquareOutlined />} onClick={() => setSelecting(true)}>
+          Select
+        </Button>
+      )}
       <PopSheet
         title="Display"
         trigger="click"
@@ -96,12 +115,14 @@ export function AdLibrary() {
           Display <DownOutlined className="menu-chev" />
         </Button>
       </PopSheet>
+      </span>
       </div>
       {shown.length && view === 'grid' ? (
         <ul className="lib-grid">
           {shown.map((a) => (
             <li key={a.id}>
-              <button type="button" className="lib-card" onClick={() => nav(`/creation/ads/${a.id}`)}>
+              {selecting && <Checkbox className="gal-check" checked={sel.includes(a.id)} onChange={() => toggleSel(a.id)} aria-label={`Select ${a.name}`} />}
+              <button type="button" className={`lib-card ${sel.includes(a.id) ? 'is-selected' : ''}`} onClick={() => open(a.id)}>
                 <AdArt slot={a.img} copy={a.copy} media={a.media} ratio={ratioFor(a.img)} alt={a.name} />
                 <span className="lib-card-body">
                   <b className="lib-name">{a.name}</b>
@@ -118,7 +139,8 @@ export function AdLibrary() {
         <ul className="lib-list">
           {shown.map((a) => (
             <li key={a.id}>
-              <button type="button" className="lib-row" onClick={() => nav(`/creation/ads/${a.id}`)}>
+              <button type="button" className={`lib-row ${sel.includes(a.id) ? 'is-selected' : ''}`} onClick={() => open(a.id)}>
+                {selecting && <Checkbox checked={sel.includes(a.id)} tabIndex={-1} aria-hidden />}
                 <Thumb c={{ img: a.img, media: a.media, name: a.name }} size={48} />
                 <span className="lib-main">
                   <b className="lib-name">{a.name}</b>
@@ -139,6 +161,33 @@ export function AdLibrary() {
       ) : (
         <Empty image={Empty.PRESENTED_IMAGE_SIMPLE} description={tab === 'Not running' ? 'No ads waiting to run. Duplicate an ad from Radar, or link a creative to an ad.' : 'No ads here'} />
       )}
+      <BulkBar open={selecting} count={sel.length} total={shown.length} onAll={(on) => setSel(on ? shown.map((a) => a.id) : [])} onCancel={endSelect}>
+        <Tooltip title={sel.some((id) => !shown.find((a) => a.id === id)?.draft) ? 'Only ads that never ran can be deleted here. Ads from Meta are removed in Ads Manager.' : undefined}>
+          <Button
+            danger
+            disabled={!sel.filter((id) => shown.find((a) => a.id === id)?.draft).length}
+            onClick={() => {
+              const ids = sel.filter((id) => shown.find((a) => a.id === id)?.draft);
+              modal.confirm({
+                title: `Delete ${ids.length === 1 ? 'this ad' : `${ids.length} ads`}?`,
+                content: "They never ran, so nothing changes in Meta. This can't be undone.",
+                okText: 'Delete',
+                okButtonProps: { danger: true },
+                onOk: () => {
+                  deleteDrafts(ids);
+                  message.success(`Deleted ${ids.length === 1 ? '1 ad' : `${ids.length} ads`}`);
+                  endSelect();
+                },
+              });
+            }}
+          >
+            Delete
+          </Button>
+        </Tooltip>
+        <Button type="primary" disabled={!sel.length} onClick={() => message.info("In the live product, this opens the selected ads in Ads Manager. It's not part of this prototype.")}>
+          Open in Ads Manager
+        </Button>
+      </BulkBar>
     </motion.div>
   );
 }

@@ -776,7 +776,7 @@ export function AdDetail() {
             <p className="media-note" role="note">
               <PictureOutlined aria-hidden />
               <span>
-                <b>Only image ads can make new creatives for now.</b> Apply these suggestions to this {c.media.toLowerCase()} ad in Meta.
+                <b>New creatives can only be generated for image ads.</b> The suggestions below still apply to this {c.media.toLowerCase()} ad.
               </span>
             </p>
           )}
@@ -823,7 +823,7 @@ export function AdDetail() {
                   )}
                 </ul>
               ) : (
-                <p className="t-help">{iterable ? 'None yet. Select suggestions above to create some.' : 'Only image ads can make new creatives.'}</p>
+                <p className="t-help">{iterable ? 'None yet. Select suggestions above to create some.' : 'New creatives can only be generated for image ads.'}</p>
               )}
             </div>
             <div className="rel-sub">

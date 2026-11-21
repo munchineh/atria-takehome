@@ -24,6 +24,7 @@ import { Rating } from '../components/Rating';
 import { PageHeader } from '../components/PageHeader';
 import { SectionHead } from '../components/SectionHead';
 
+const NAME_HINT = 'For example, Gift box reveal';
 const TEXT_FIELDS: { key: keyof AdCopy; label: string }[] = [
   { key: 'head', label: 'Headline' },
   { key: 'price', label: 'Price' },
@@ -60,7 +61,7 @@ export function Editor() {
   const mobile = !bp.md;
   const { message, modal } = App.useApp();
   const c = findCreative(id) ?? CREATIVES[0];
-  const { jobsFor, versionsOf, applyChange, branch, deleteVariation, credits, iterate, restoreVersion, commitVersion, commitVariation } = useStore();
+  const { jobsFor, versionsOf, applyChange, branch, deleteVariation, credits, iterate, restoreVersion, commitVersion, commitVariation, renameCreative } = useStore();
   const job = jobsFor(c.id).find((j) => j.variations.some((v) => v.id === vid));
   const v = job?.variations.find((x) => x.id === vid);
 
@@ -90,6 +91,8 @@ export function Editor() {
   // 266 (Mancini 18:24): changes stay pending until Save. `base` is the version the page opened on; anything after it,
   // and typed text not yet saved, is unsaved. Leaving with unsaved changes asks first.
   const [base, setBase] = useState<number | null>(null);
+  /** 273 (Mancini 19:07): the creative's name, edited at the top of the panel and saved with everything else. */
+  const [nameDraft, setNameDraft] = useState('');
   const [leaveTo, setLeaveTo] = useState<(() => void) | null>(null);
   const askLeave = useCallback((go: () => void) => setLeaveTo(() => go), []);
   const strip = useRef<HTMLDivElement>(null);
@@ -99,6 +102,7 @@ export function Editor() {
     setSel(null);
     setTextMode('editable');
     setBase(latest?.n ?? null);
+    setNameDraft(v ? nameOf(v) : '');
   }, [vid]); // eslint-disable-line react-hooks/exhaustive-deps
   useEffect(() => {
     if (latest) setSel(null);
@@ -161,24 +165,35 @@ export function Editor() {
   const opened = base ?? latest.n;
   const pendingCount = versions.filter((x) => x.n > opened).length;
   const textDirty = editing && !!draft && JSON.stringify(draft) !== JSON.stringify(shown.copy);
-  const dirty = !locked && (pendingCount > 0 || textDirty);
+  const nameDirty = nameDraft.trim() !== nameOf(v);
+  const onlyName = nameDirty && !pendingCount && !textDirty;
+  const dirty = !locked && (pendingCount > 0 || textDirty || nameDirty);
+  const saveLabel = onlyName ? 'Save' : makeNew ? 'Save as new variation' : 'Save new version';
   /** Saves pending changes. Returns the new variation's id when saved as a variation. */
   const save = (stay = false) => {
     const copy = textDirty ? draft : undefined;
     setEditing(false);
     setLeaveGuard(null);
+    if (onlyName) {
+      renameCreative(v.id, nameDraft);
+      message.success({ content: 'Name saved', duration: 2 });
+      return undefined;
+    }
     if (makeNew) {
       const nid = commitVariation(job.id, v, opened, copy);
+      if (nameDirty) renameCreative(nid, nameDraft);
       message.success({ content: 'Saved as a new variation', duration: 2 });
       if (!stay) go(nid);
       return nid;
     }
     const n = commitVersion(v, opened, copy);
+    if (nameDirty) renameCreative(v.id, nameDraft);
     setBase(n);
     message.success({ content: `Saved as v${n}`, duration: 2 });
     return undefined;
   };
   const discard = () => {
+    setNameDraft(nameOf(v));
     if (pendingCount) restoreVersion(v, opened);
     setEditing(false);
     setLeaveGuard(null);
@@ -462,7 +477,11 @@ export function Editor() {
 
   const changeBlock = (
     <section className="ed-block">
-      <SectionHead title="Refine" />
+      {/* 273 (Mancini 19:07): no "Refine" heading; the panel starts with the creative's name. */}
+      <label className="ed-step ed-name">
+        <span className="ed-step-label">Name</span>
+        <Input value={nameDraft} onChange={(e) => setNameDraft(e.target.value)} maxLength={60} placeholder={NAME_HINT} />
+      </label>
       <AnimatePresence initial={false}>
         {rating === 'down' && (
           <motion.div key="why" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-reasons">
@@ -769,7 +788,7 @@ export function Editor() {
     <motion.div {...pageTransition} className="page editor">
       <PageHeader
         crumbs={crumbs}
-        title={ws.inCreation ? `Edit ${nameOf(v)}` : nameOf(v)}
+        title={ws.inCreation ? 'Edit Creative' : nameOf(v)}
         tag={
           locked ? (
             <Tag color="blue" icon={<LockOutlined />}>
@@ -788,7 +807,7 @@ export function Editor() {
               <Button onClick={() => leave(() => nav(back))}>Done</Button>
               {!locked && (
                 <Button type="primary" disabled={!dirty || applying} onClick={() => save()}>
-                  {makeNew ? 'Save as new variation' : 'Save new version'}
+                  {saveLabel}
                 </Button>
               )}
             </>
@@ -816,7 +835,7 @@ export function Editor() {
               </Dropdown>
               {!locked && (
                 <Button type="primary" disabled={!dirty || applying} onClick={() => save()}>
-                  {makeNew ? 'Save as new variation' : 'Save new version'}
+                  {saveLabel}
                 </Button>
               )}
             </>
@@ -924,7 +943,7 @@ export function Editor() {
                   go?.();
                 }}
               >
-                {makeNew ? 'Save as new variation' : 'Save new version'}
+                {saveLabel}
               </Button>
             </span>
           </div>

@@ -3171,3 +3171,41 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
   .lib-card-top .lib-sub { flex-basis: 100%; }
   .lib-card-top .lib-status { margin-left: auto; }
 }
+/* 273 (Mancini 19:07) Creative page: Linked ads lists every ad that uses the creative, with Link to Ad under it.
+   Edit Creative: the panel starts with the Name field. */
+.creative-page .rel-ads { margin-top: 8px; }
+.creative-page .rel-ad .lib-status { flex: none; }
+.cp-empty-line { margin: 8px 0 0; }
+.cp-link-btn { margin-top: 12px; }
+.ed-name { margin-bottom: 4px; }
+
+/* 274 (Mancini 19:08) Bulk select in Ad Library and Creative Gallery. */
+.gal-tools, .lib-tools { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.gal-tools .gal-menus { flex: none; }
+.gal-media { position: relative; }
+.lib-grid > li { position: relative; }
+.gal-check { position: absolute; top: 8px; left: 8px; z-index: 2; padding: 4px; border-radius: var(--r-control); background: rgba(255, 255, 255, 0.92); }
+.gal-check .ant-checkbox-inner { width: 18px; height: 18px; }
+.gal-card.is-selecting .gal-body, .gal-card.is-selecting .gal-art-btn { cursor: pointer; }
+.gal-card.is-selected, .lib-card.is-selected { box-shadow: 0 0 0 2px var(--c-primary); }
+.lib-row.is-selected { background: var(--c-primary-tint); }
+.gal-review-note { display: flex; align-items: center; gap: 4px; margin: 0 0 16px; padding: 8px 12px; border-radius: var(--r-control); background: var(--c-info-bg); border: 1px solid var(--c-info-border); font-size: var(--fs-body); line-height: var(--lh-body); color: var(--c-text); }
+.bulk-bar { padding: 8px 8px 8px 20px; }
+.bulk-left { display: inline-flex; align-items: center; gap: 12px; }
+.bulk-left b { font-weight: 600; }
+.bulk-actions { display: inline-flex; align-items: center; gap: 8px; }
+.bulk-bar .ant-btn-default:not(.ant-btn-dangerous) { background: transparent; color: #fff; border-color: rgba(255, 255, 255, 0.3); }
+.bulk-bar .ant-btn-dangerous:not(:disabled) { background: transparent; color: #ff8a80; border-color: rgba(255, 138, 128, 0.5); }
+@media (max-width: 767px) {
+  .bulk-bar { flex-direction: row; align-items: center; }
+  .bulk-bar .ant-btn { width: auto; }
+  .bulk-actions { flex-wrap: wrap; justify-content: flex-end; }
+}
+/* 275 (Mancini 19:10) Results in Meta: name, then one plain line of numbers; the change and the grade sit at the right. */
+.ih-name-row { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.ih-name-row .ih-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ih-repeat-icon { color: var(--c-warning); font-size: var(--fs-small); flex: none; }
+.ih-change { flex: none; display: inline-flex; align-items: center; gap: 2px; min-width: 48px; justify-content: flex-end; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; font-variant-numeric: tabular-nums; }
+.ih-change.tone-good { color: var(--c-success); }
+.ih-change.tone-bad { color: var(--c-error); }
+.ih-change .anticon { font-size: 10px; }

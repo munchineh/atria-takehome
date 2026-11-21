@@ -1,4 +1,4 @@
-import { Button, Dropdown, Tag, Tooltip } from 'antd';
+import { Button, Checkbox, Dropdown, Tag, Tooltip } from 'antd';
 import { ArchiveOutlined, ArchiveRestoreOutlined, CopyOutlined, EllipsisOutlined, FormOutlined, LockOutlined, UploadOutlined } from '../AppIcons';
 import { motion } from 'motion/react';
 import type { GalleryItem } from '../../data/gallery';
@@ -19,6 +19,9 @@ export function GalleryCard({
   hideOrigin = false,
   onOpen,
   onArchive,
+  selecting = false,
+  selected = false,
+  onToggle,
 }: {
   item: GalleryItem;
   index: number;
@@ -27,7 +30,12 @@ export function GalleryCard({
   hideOrigin?: boolean;
   onOpen: (to: string) => void;
   onArchive: (id: string, on: boolean) => void;
+  /** 274: in select mode a tap picks the card instead of opening it. */
+  selecting?: boolean;
+  selected?: boolean;
+  onToggle?: () => void;
 }) {
+  const open = (to: string) => (selecting ? onToggle?.() : onOpen(to));
   const metaParts: string[] = [];
   if (!hideDate) metaParts.push(item.date);
   if (item.versions > 1) metaParts.push(`${item.versions}\u00a0versions`);
@@ -73,15 +81,16 @@ export function GalleryCard({
 
   return (
     <motion.article
-      className={`gal-card ${item.archived ? 'is-archived' : ''}`}
+      className={`gal-card ${item.archived ? 'is-archived' : ''} ${selecting ? 'is-selecting' : ''} ${selected ? 'is-selected' : ''}`}
       initial={{ opacity: 0 }}
       animate={{ opacity: 1, transition: { duration: duration.fast, ease: ease.standard, delay: listDelay(index) } }}
     >
       <div className="gal-media">
+        {selecting && <Checkbox className="gal-check" checked={selected} onChange={() => onToggle?.()} aria-label={`Select ${item.name}`} />}
         <button
           type="button"
           className="gal-art-btn"
-          onClick={() => onOpen(item.to)}
+          onClick={() => open(item.to)}
           aria-label={`Open ${item.name}`}
         >
           <Peek preview={<AdArt slot={item.img} copy={item.copy} ratio="2 / 3" alt="" />} title={item.name}>
@@ -94,8 +103,8 @@ export function GalleryCard({
         className="gal-body"
         role="link"
         tabIndex={0}
-        onClick={() => onOpen(item.to)}
-        onKeyDown={(e) => e.key === 'Enter' && onOpen(item.to)}
+        onClick={() => open(item.to)}
+        onKeyDown={(e) => e.key === 'Enter' && open(item.to)}
       >
         <div className="gal-title-row">
           <div className="gal-title-stack">
@@ -159,14 +168,16 @@ export function GalleryCard({
         )}
       </div>
       {/* 263 (Mancini 17:36): two actions on every card. */}
+      {!selecting && (
       <div className="gal-actions">
-        <Button onClick={() => onOpen(item.editTo)}>
-          Edit
+        <Button onClick={() => onOpen(item.to)}>
+          View
         </Button>
         <Button onClick={() => onOpen(item.linkTo)}>
           Link to Ad
         </Button>
       </div>
+      )}
     </motion.article>
   );
 }
