@@ -189,7 +189,7 @@ const GradingNote = ({ spend }: { spend: number }) => {
   return (
     <div className="grading-note">
       <div className="grading-note-head">
-        <span className="grading-note-title">Grades are still settling</span>
+        <span className="grading-note-title">Grades are most accurate above {amount(RELIABLE_SPEND)}{"\u00a0"}a&nbsp;month</span>
         {showBar && (
           <span className="data-meter-num">
             <b>{amount(spend)}</b> of {amount(RELIABLE_SPEND)} a month
@@ -197,7 +197,7 @@ const GradingNote = ({ spend }: { spend: number }) => {
         )}
       </div>
       {showBar && <Progress percent={Math.round((spend / RELIABLE_SPEND) * 100)} showInfo={false} size="small" strokeColor="#f66c30" />}
-      <span className="t-help">Radar is most accurate when an account spends over {amount(RELIABLE_SPEND)} a month. Until then, grades may change as more data comes in.</span>
+      <span className="t-help">This account spends less, so grades may change as more data comes in.</span>
     </div>
   );
 };
