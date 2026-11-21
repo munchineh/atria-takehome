@@ -49,6 +49,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 43 | Nov 21, 11:05 | Editor, banner | Side-stroke banner; "Fix Say what…" read as one sentence; predicted CTR beside the parent's CPA looked like a drop | Plain card labelled "Original ad"; the change on its own line after an arrow; predicted CTR moved under the image as "Predicted CTR C vs A on the original" | Each number sits with the thing it describes | None | Batch E |
 | 44 | Nov 21, 11:05 | Overview, headline | Headline in a faint grey box, no focal point | 20 px headline with the two deltas as green and red pills, no box | The one sentence that matters most is the biggest thing on the page | None | Batch E |
 | 45 | Nov 21, 11:05 | Top bar, Radar icon | Animation too subtle | Data shape reaches further with a ripple round the spokes (0.7 s); bars dip and overshoot (0.6 s); both also play on hover; off with reduced motion | Noticeable once, never looping | None | Batch E |
+| 46 | Nov 21, 11:10 | Ad page, suggestions | Two CPA suggestions showed identical evidence and read as duplicates | Separate cards stay (Mancini). Each cites its own signal: "no reason to buy" quotes the ad text; "clicking but not buying" shows CTR (A) against CPA (D). The metric and grade stay in the card header | Evidence should prove the cause, not repeat the metric | Some causes need hand-written evidence | Batch E |
 
 ## Deviations from Atria (need a yes before the Figma annotations)
 

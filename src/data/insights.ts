@@ -16,7 +16,7 @@ export interface SuggestionParts {
   /** 1. What's happening. */
   diagnosis: string;
   /** 2. The number behind it, with the account average beside it. */
-  evidence: { metric: string; grade: Creative['overall']; value: string; average: string | null; text: string };
+  evidence: { metric: string; grade: Creative['overall']; value: string; average: string | null; text: string; row: { label: string; value: string; note: string | null } };
   /** 3. What to change, and why that fixes it. */
   action: { title: string; why: string; examples: string[] };
   /** 4. What "use this" does: the suggestion is selected and its fix goes into the brief. */
@@ -40,10 +40,26 @@ export function suggestionParts(c: Creative, r: Recommendation, avg: Avg): Sugge
       value: shown,
       average,
       text: average ? `${label} ${shown}. Account average ${average}.` : `${label} ${shown}.`,
+      row: evidenceRow(c, r, label, shown, average),
     },
     action: { title: r.fix, why: r.why, examples: r.examples },
     apply: { label: 'Add to brief', briefLine: briefLineFor(r) },
   };
+}
+
+/**
+ * Mancini 10:48: two suggestions on the same metric showed the same evidence and read as duplicates.
+ * Each cause now cites the signal behind it; the metric line stays in the card header.
+ */
+function evidenceRow(c: Creative, r: Recommendation, label: string, shown: string, average: string | null) {
+  const text = [c.copy?.head, c.copy?.price, c.copy?.band].filter(Boolean).join(' · ');
+  if (/clear\s+reason\s+to\s+buy/i.test(r.issue) && text) {
+    return { label: 'Ad text', value: `"${text.toLowerCase().replace(/(^|[.!?]\s+)([a-z])/g, (_m, a: string, b: string) => a + b.toUpperCase())}"`, note: 'no benefit or reason to choose it' };
+  }
+  if (/clicking[\s\S]*aren't\s+buying|watch\s+but\s+aren't\s+buying/i.test(r.issue) && c.grades.ctr) {
+    return { label: 'CTR', value: `${c.values.ctr.toFixed(2)}% (${c.grades.ctr})`, note: `but ${label} ${shown}${c.grades.conversion ? ` (${c.grades.conversion})` : ''}` };
+  }
+  return { label, value: shown, note: average ? `account average ${average}` : null };
 }
 
 /* ---------- Item 9: a brief filled in from the diagnosis ---------- */

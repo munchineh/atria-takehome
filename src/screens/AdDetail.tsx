@@ -153,13 +153,8 @@ function RecCard({
       <div className="rec-part rec-part-evidence">
         <span className="rec-ev-label">Evidence</span>
         <span className="rec-ev-val">
-          {evidence.metric} <b>{evidence.value}</b>
-          {evidence.average && (
-            <span className="muted">
-              {'\u00a0'}· account average{'\u00a0'}
-              {evidence.average}
-            </span>
-          )}
+          {evidence.row.label} <b>{evidence.row.value}</b>
+          {evidence.row.note && <span className="muted">{'\u00a0'}· {evidence.row.note}</span>}
         </span>
       </div>
 
