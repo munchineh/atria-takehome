@@ -1801,3 +1801,5 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .tag-cpa span { font-size: 12px; font-weight: 400; }
 .tag-cpa.tone-good span { color: var(--ant-color-success-text, #137333); }
 .tag-cpa.tone-bad span { color: var(--ant-color-error-text, #cf1322); }
+/* Grades in the Radar table: one fixed size, so "C" and "C-" sit the same and line up down a column. */
+.radar .ant-table .grade-tag.ant-tag { width: 30px; min-width: 30px; height: 22px; padding: 0; display: inline-flex; align-items: center; justify-content: center; line-height: 1; }

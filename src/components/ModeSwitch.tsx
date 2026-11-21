@@ -1,5 +1,5 @@
 import { startTransition, useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { motion, useAnimationControls } from 'motion/react';
+import { animate, motion, useAnimationControls } from 'motion/react';
 import { useLocation, useNavigate } from 'react-router-dom';
 
 /**
@@ -10,7 +10,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
  * mid-slide. Now: one thumb measured from the buttons and moved with x and width, the selection updates at once and
  * navigation runs a frame later inside startTransition, and the label weight never changes.
  * Motion: a soft spring with no overshoot, about a third of a second, like a native segmented control.
- * Icons play one short gesture when their side becomes active: bars rise in a wave, radar spokes pulse out and back.
+ * Icons play one short gesture when their side becomes active: bars dip in a wave; the radar's data shape reaches out along its fixed axes and settles back.
  */
 
 const SLIDE = { type: 'spring', bounce: 0, visualDuration: 0.32 } as const;
@@ -46,23 +46,36 @@ function BarsIcon({ play }: { play: number }) {
   );
 }
 
+/** Drawn like a real radar chart: the frame and axes stay put; the data shape inside reaches out along its axes and settles back. */
+const AXES = [0, 72, 144, 216, 288].map((deg) => {
+  const r = (deg - 90) * (Math.PI / 180);
+  return { x: Math.cos(r), y: Math.sin(r) };
+});
+const REST = [0.8, 0.55, 0.7, 0.45, 0.62];
+const PEAK = [0.95, 0.85, 0.5, 0.8, 0.9];
+const pts = (vals: number[], radius = 6.2) => AXES.map((a, i) => `${(8 + a.x * radius * vals[i]).toFixed(2)},${(8 + a.y * radius * vals[i]).toFixed(2)}`).join(' ');
+
 function RadarIcon({ play }: { play: number }) {
-  const controls = useAnimationControls();
+  const [shape, setShape] = useState(pts(REST));
   useEffect(() => {
-    if (play) void controls.start((i: number) => ({ scale: [1, 1.28, 1], transition: { duration: 0.44, delay: i * 0.04, ease: [0.2, 0, 0, 1] } }));
-  }, [play, controls]);
-  // Five spokes from the centre; each spoke tip grows out and back, so the shape breathes.
-  const tips = [0, 72, 144, 216, 288].map((deg) => {
-    const r = (deg - 90) * (Math.PI / 180);
-    return { x: 8 + Math.cos(r) * 6, y: 8 + Math.sin(r) * 6 };
-  });
+    if (!play) return;
+    const c = animate(0, 1, {
+      duration: 0.46,
+      ease: [0.2, 0, 0, 1],
+      onUpdate: (t) => {
+        const k = Math.sin(t * Math.PI); // out and back
+        setShape(pts(REST.map((v, i) => v + (PEAK[i] - v) * k)));
+      },
+    });
+    return () => c.stop();
+  }, [play]);
   return (
-    <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" strokeLinecap="round">
-      <polygon points={tips.map((t) => `${t.x},${t.y}`).join(' ')} opacity="0.45" />
-      {tips.map((t, i) => (
-        <motion.line key={i} custom={i} animate={controls} x1="8" y1="8" x2={t.x} y2={t.y} style={{ originX: '8px', originY: '8px', transformOrigin: '8px 8px' }} />
+    <svg className="ms-icon" width="1em" height="1em" viewBox="0 0 16 16" aria-hidden fill="none" stroke="currentColor" strokeLinejoin="round" strokeLinecap="round">
+      <polygon points={pts([1, 1, 1, 1, 1])} strokeWidth="1.1" opacity="0.55" />
+      {AXES.map((a, i) => (
+        <line key={i} x1="8" y1="8" x2={8 + a.x * 6.2} y2={8 + a.y * 6.2} strokeWidth="0.8" opacity="0.35" />
       ))}
-      <circle cx="8" cy="8" r="1" fill="currentColor" stroke="none" />
+      <polygon points={shape} strokeWidth="1.2" fill="currentColor" fillOpacity="0.3" />
     </svg>
   );
 }

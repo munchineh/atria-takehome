@@ -1,5 +1,5 @@
 import { Progress, Tooltip } from 'antd';
-import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined, ThunderboltOutlined } from '@ant-design/icons';
+import { CheckCircleFilled, ClockCircleOutlined, ExclamationCircleFilled, RightOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { useNavigate } from 'react-router-dom';
 import { ACCOUNT, METRIC_META, plural, type Creative, type MetricKey } from '../data/mock';
@@ -52,7 +52,7 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
         <motion.span key={key} variants={swap} initial="hidden" animate="show" exit="exit" className="status-inner">
           {status.kind === 'idle' && (
             <>
-              {healthy ? <CheckCircleFilled className="status-icon calm" /> : <ThunderboltOutlined className="status-icon" />}
+              {healthy && <CheckCircleFilled className="status-icon calm" />}
               {healthy ? (
                 <Tooltip title="All grades are B or above.">
                   <span>{diagnosis(creative)}</span>
