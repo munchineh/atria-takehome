@@ -20,7 +20,8 @@ export function diagnosis(c: Creative) {
   const worst = order.reduce<MetricKey | null>((w, k) => (rank(c.grades[k]) > (w ? rank(c.grades[w]) : -1) ? k : w), null);
   // K47 (R-L2): concise string so dense rows and phone cards never clip.
   if (!worst) return 'Not enough data';
-  if (rank(c.grades[worst]) <= 1) return 'No fix needed';
+  // Mancini 14:21: a healthy ad gets a low-priority next step instead of a status. It opens the ad, where its strengths can seed new variations.
+  if (rank(c.grades[worst]) <= 1) return 'Build similar';
   // Mancini 21 Nov 09:43: the action names the tab it belongs to. Improve tab: improve one metric. Rework tab: most
   // metrics are weak, so the step is to rework the whole ad with new variations, not to tune one number.
   if (c.tab === 'candidates') return 'Rework ad';
@@ -30,7 +31,7 @@ export function diagnosis(c: Creative) {
 
 export function StatusCell({ creative, status, withGrade }: { creative: Creative; status: RowStatus; withGrade?: boolean }) {
   const weak = weakest(creative);
-  const healthy = status.kind === 'idle' && diagnosis(creative).startsWith('No fix');
+  const healthy = status.kind === 'idle' && diagnosis(creative) === 'Build similar';
   const key = status.kind === 'generating' ? 'gen' : status.kind;
   const nav = useNavigate();
   const open =
@@ -52,9 +53,8 @@ export function StatusCell({ creative, status, withGrade }: { creative: Creative
         <motion.span key={key} variants={swap} initial="hidden" animate="show" exit="exit" className="status-inner">
           {status.kind === 'idle' && (
             <>
-              {healthy && <CheckCircleFilled className="status-icon calm" />}
               {healthy ? (
-                <Tooltip title="All grades are B or above.">
+                <Tooltip title="All grades are B or above. Make new variations from what already works.">
                   <span>{diagnosis(creative)}</span>
                 </Tooltip>
               ) : (

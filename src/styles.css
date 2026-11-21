@@ -2167,3 +2167,11 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .raya .raya-answer { margin-top: 12px; padding: 12px 16px; border-radius: var(--r-surface); background: var(--c-primary-tint); border: 1px solid var(--c-primary-border); }
 .raya .raya-answer .t-label { color: var(--c-text-2); }
 .raya .raya-answer p { margin: 4px 0 0; color: var(--c-text); }
+/* 105 Healthy rows (Mancini 14:21): "Build similar" is a low-priority action, styled as a text button. Same 12 px side padding
+   and height as the default buttons in the column, so its hover fill has room. No border at rest, fill on hover. */
+.status-cell.healthy { padding: 4px 12px; background: transparent; border-color: transparent; color: var(--c-text-2); }
+.status-cell.healthy .status-chev { color: var(--c-text-3); }
+.clickable-row:hover .status-cell.healthy, .radar-card:hover .status-cell.healthy, .status-cell.healthy:hover { background: var(--c-fill); border-color: transparent; color: var(--c-text); }
+.radar-card .card-foot .status-cell.healthy { padding: 0 14px; }
+/* 106 Grade scale in "How Radar grades your ads": every letter sits centered in a 24 px tag so the four line up. */
+.how-scale .grade-tag.ant-tag { width: 24px; padding: 0; justify-content: center; text-align: center; }
