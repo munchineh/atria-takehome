@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
+import { LIVE_FAIL_EVENT } from '../data/live';
 import { App, Badge, Button, Drawer, Grid, Tooltip, Popover, Progress } from 'antd';
 import {
   AppstoreOutlined,
@@ -115,6 +116,15 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
   const mobile = !bp.md;
   const wide = bp.xl;
   const { message } = App.useApp();
+  useEffect(() => {
+    const onFail = (e: Event) =>
+      message.warning({
+        content: (e as CustomEvent).detail === 'limit' ? "Today's live images are used up. Showing a sample image." : "The image couldn't be generated. Showing a sample image.",
+        duration: 4,
+      });
+    window.addEventListener(LIVE_FAIL_EVENT, onFail);
+    return () => window.removeEventListener(LIVE_FAIL_EVENT, onFail);
+  }, [message]);
   const [drawer, setDrawer] = useState(false);
   // Mancini 09:43, item 22: Atria's panel collapses from a button at its top right; the expand button then sits at the top of the rail.
   const [sideOpen, setSideOpen] = useState(() => {

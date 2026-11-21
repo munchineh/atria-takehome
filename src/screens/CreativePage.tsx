@@ -15,7 +15,7 @@ import {
 import { CREATIVES, plural } from '../data/mock';
 import { findCreative, recName, useStore } from '../data/store';
 import { TAG_TIPS, predictedCtr, ratioFor, tagsFor } from '../data/variations';
-import { AdArt } from '../components/Thumb';
+import { AdArt, Thumb } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
 import { PageHeader } from '../components/PageHeader';
 import { fadeUp, pageTransition } from '../motion/tokens';
@@ -233,15 +233,24 @@ export function CreativePage() {
                 </div>
               </dl>
             ) : (
-              <div className="cp-empty">
-                {/* Mancini 15:13: a variation belongs to the ad it was made from. It's a draft of that ad, not a creative without an ad. */}
-                <p className="t-help">
-                  {origin === 'ad'
-                    ? `Draft variation of ${c.name}. It isn't live yet.`
-                    : 'Not in an ad yet.'}
-                </p>
-                <Button onClick={() => nav(`/creation/${c.id}?round=${job.id}`)}>Add to an ad</Button>
-              </div>
+              origin === 'ad' ? (
+                /* Mancini 15:25: a variation is attached to the ad it was made from automatically. It shows that ad here, marked as not live. */
+                <div className="cp-linked">
+                  <Link to={`/ad/${c.id}`} className="ed-related-ad">
+                    <Thumb c={c} size={36} />
+                    <span className="ed-related-id">
+                      <b>{c.name}</b>
+                      <span className="t-help">Attached to this ad. It starts running when you publish it in Meta.</span>
+                    </span>
+                    <Tag className="cp-status">Not live</Tag>
+                  </Link>
+                </div>
+              ) : (
+                <div className="cp-empty">
+                  <p className="t-help">Not in an ad yet.</p>
+                  <Button onClick={() => nav(`/creation/${c.id}?round=${job.id}`)}>Add to an ad</Button>
+                </div>
+              )
             )}
           </motion.section>
 

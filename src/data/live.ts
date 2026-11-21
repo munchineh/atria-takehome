@@ -57,6 +57,16 @@ async function toJpeg(slot: string): Promise<string | null> {
   return c.toDataURL('image/jpeg', 0.88).split(',')[1];
 }
 
+/** Tells the shell a live image didn't arrive, so it can say the sample is staying (Mancini 15:25). */
+export const LIVE_FAIL_EVENT = 'atria:live-fail';
+const fail = (reason: 'limit' | 'error') => {
+  try {
+    window.dispatchEvent(new CustomEvent(LIVE_FAIL_EVENT, { detail: reason }));
+  } catch {
+    /* no window */
+  }
+};
+
 let n = 0;
 /** Returns a new slot holding the generated image, or null to keep the sample. */
 export async function generateLive(fromSlot: string, instruction: string, ratio: '2:3' | '3:4' = '2:3', text?: string, style?: string): Promise<string | null> {
@@ -71,16 +81,23 @@ export async function generateLive(fromSlot: string, instruction: string, ratio:
     });
     const out = (await r.json()) as { image?: string; left?: number; limit?: number; sample?: boolean; reason?: string };
     if (out.sample) {
-      if (out.reason === 'limit') set({ ...quota, left: 0 });
+      if (out.reason === 'limit') {
+        set({ ...quota, left: 0 });
+        fail('limit');
+      }
       return null;
     }
-    if (!out.image) return null;
+    if (!out.image) {
+      fail('error');
+      return null;
+    }
     set({ ...quota, left: out.left ?? Math.max(0, quota.left - 1) });
     n += 1;
     const slot = `live-${Date.now()}-${n}`;
     registerImage(slot, out.image);
     return slot;
   } catch {
+    fail('error');
     return null;
   }
 }

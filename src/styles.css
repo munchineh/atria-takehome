@@ -2567,3 +2567,6 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .credits-pop b { font-weight: 600; }
 /* 183 Gallery card: the name is centered on the more button. */
 .gal-grid .gal-title-row, .gal-title-row { align-items: center; }
+/* 186 Creative page: a variation shows the ad it is attached to as a linked row. */
+.cp-linked { margin-top: 8px; }
+.cp-linked .ed-related-ad .cp-status { margin-left: auto; flex: none; }

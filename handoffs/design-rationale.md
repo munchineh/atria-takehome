@@ -234,6 +234,8 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 182 | Credits in the top bar show a small ring for the share of the month's allowance left. The popover reads "1,298 of 2,000 credits left" and "Resets Dec 1. Each image uses 4 credits." The allowance and reset date are mock values. | Mancini 15:21 (ElevenLabs reference) | A bare number didn't say how much that is or when it comes back. |
 | 183 | Gallery card: the creative's name is vertically centered on the more button. | Mancini 15:23 | The name was top-aligned to a 32 px button and sat 5 px high. |
 | 184 | Creative gallery one-liner reads "Every creative you've kept. See its versions and the ads they run in." | Mancini 15:24 | It is the versions that run in ads, so the pronoun is "they". |
+| 185 | When a live image can't be generated, a message says so: "Today's live images are used up. Showing a sample image." or "The image couldn't be generated. Showing a sample image." | Mancini 15:25 | A failed or capped generation kept the sample image without saying anything. |
+| 186 | Creative page, "Where it runs": a variation made from an ad shows that ad as a linked row with a "Not live" tag and "Attached to this ad. It starts running when you publish it in Meta." The "Add to an ad" button stays only for creatives that didn't come from an ad. | Mancini 15:13, 15:25 | A variation attaches to its ad automatically, so "not in any ad" was wrong for it. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 
