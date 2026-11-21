@@ -1,12 +1,12 @@
 import { useEffect } from 'react';
-import { Empty, Grid, Select } from 'antd';
+import { Empty, Grid, Select, Tooltip } from 'antd';
 import { setHub } from '../data/nav';
-import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
+import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, InfoCircleOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
 import { WINDOWS, goalOf, graded, money, plural, type TabKey } from '../data/mock';
 import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
-import { creativeDiversity, formatBreakdown, healthBreakdown, iterationHistory, overviewBriefing, topTags, type Delta } from '../data/insights';
+import { creativeDiversity, formatBreakdown, healthBreakdown, iterationHistory, overviewBriefing, topTags, trendSeries, type Delta } from '../data/insights';
 import { AskRaya } from '../components/AskRaya';
 import { SectionHead } from '../components/SectionHead';
 import { PageHeader } from '../components/PageHeader';
@@ -25,60 +25,62 @@ import { fadeUp, pageTransition } from '../motion/tokens';
 
 const TAB_TONE: Record<TabKey, string> = { winners: 'best', potential: 'improve', candidates: 'rework' };
 
-function DeltaBadge({ d }: { d: Delta }) {
-  const Icon = d.pct > 0 ? ArrowUpOutlined : d.pct < 0 ? ArrowDownOutlined : MinusOutlined;
-  const word = d.pct > 0 ? 'up' : d.pct < 0 ? 'down' : 'unchanged';
+/** This period (solid) over the period before (dashed), no axes: the shape is the point. */
+function Sparkline({ d }: { d: Delta }) {
+  const { now, before } = trendSeries(d);
+  const all = [...now, ...before];
+  const lo = Math.min(...all);
+  const hi = Math.max(...all);
+  const W = 100;
+  const H = 32;
+  // Smooth curve (Catmull-Rom to Bézier) so the line reads as a trend, not noise.
+  const path = (vals: number[]) => {
+    const pts = vals.map((v, i) => [(i / (vals.length - 1)) * W, H - 2 - ((v - lo) / (hi - lo || 1)) * (H - 4)]);
+    return pts
+      .map((p, i) => {
+        if (!i) return `M${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+        const p0 = pts[i - 2] ?? pts[i - 1];
+        const p1 = pts[i - 1];
+        const p3 = pts[i + 1] ?? p;
+        const c1 = [p1[0] + (p[0] - p0[0]) / 6, p1[1] + (p[1] - p0[1]) / 6];
+        const c2 = [p[0] - (p3[0] - p1[0]) / 6, p[1] - (p3[1] - p1[1]) / 6];
+        return `C${c1[0].toFixed(1)},${c1[1].toFixed(1)} ${c2[0].toFixed(1)},${c2[1].toFixed(1)} ${p[0].toFixed(1)},${p[1].toFixed(1)}`;
+      })
+      .join(' ');
+  };
   return (
-    <span className={`ov-delta tone-${d.tone}`} aria-label={`${d.label} ${word} ${Math.abs(d.pct)}% against the period before`}>
-      <Icon aria-hidden />
-      <span>{Math.abs(d.pct)}%</span>
-    </span>
+    <svg className={`ov-spark tone-${d.tone}`} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden>
+      <path d={path(before)} className="ov-spark-before" />
+      <path d={path(now)} className="ov-spark-now" />
+    </svg>
   );
 }
 
-function Kpi({ label, value, help, delta, hero }: { label: string; value: string; help: string; delta: Delta; hero?: boolean }) {
+/**
+ * Key metric tile (Mancini 13:49, after SaaS KPI card patterns): label with a definition on hover, the value,
+ * the change against the period before coloured by whether it's good, and a sparkline. Every tile has the same four parts.
+ */
+function Kpi({ label, value, help, delta }: { label: string; value: string; help: string; delta: Delta; hero?: boolean }) {
+  const word = delta.pct > 0 ? 'Up' : delta.pct < 0 ? 'Down' : 'No change';
+  const Icon = delta.pct > 0 ? ArrowUpOutlined : delta.pct < 0 ? ArrowDownOutlined : MinusOutlined;
   return (
-    <div className={`ov-kpi ${hero ? 'hero' : ''}`}>
-      <div className="ov-kpi-top">
-        <span className="t-label">{label}</span>
-        <DeltaBadge d={delta} />
-      </div>
-      <span className="ov-kpi-val">{value}</span>
-      <span className="t-help">{help}</span>
+    <div className="ov-tile">
+      <span className="ov-tile-label">
+        {label}
+        <Tooltip title={`${help.replace(/\u00a0/g, ' ')}.`}>
+          <InfoCircleOutlined className="ov-tile-info" aria-label={`About ${label}`} />
+        </Tooltip>
+      </span>
+      <span className="ov-tile-val">{value}</span>
+      <span className={`ov-tile-delta tone-${delta.tone}`} aria-label={`${word} ${Math.abs(delta.pct)}% against the period before`}>
+        <Icon aria-hidden />
+        {Math.abs(delta.pct)}%<span className="ov-tile-vs">vs. previous period</span>
+      </span>
+      <Sparkline d={delta} />
     </div>
   );
 }
 
-function Headline({ lead, fallback }: { lead: { best?: Delta; worst?: Delta }; fallback: string }) {
-  const part = (d: Delta) => (
-    <>
-      {/* Keep the metric and "is" together so "is" never sits alone on a line. */}
-      <span>{`${d.label}\u00a0is`.replace(/ /g, '\u00a0')}</span>{' '}
-      <span className={`ov-hl-pill tone-${d.tone}`}>
-        {d.pct > 0 ? <ArrowUpOutlined aria-hidden /> : <ArrowDownOutlined aria-hidden />}
-        {d.pct > 0 ? 'up' : 'down'} {Math.abs(d.pct)}%
-      </span>
-    </>
-  );
-  const { best, worst } = lead;
-  return (
-    <p className="ov-headline ov-headline-xl">
-      {best && worst ? (
-        <>
-          {part(best)}, but {part(worst)}
-        </>
-      ) : best ? (
-        part(best)
-      ) : worst ? (
-        part(worst)
-      ) : (
-        fallback
-      )}
-      {/* Mancini 13:36: the full sentence reads better. */}
-      {(best || worst) && <span className="ov-hl-tail"> against the period before.</span>}
-    </p>
-  );
-}
 
 export function Overview() {
   // Breadcrumbs below this page start from here (Mancini 13:21).
@@ -153,9 +155,16 @@ export function Overview() {
 
       {/* Key metrics, as in Atria's Overview (Mancini 09:43, item 21). Overview is the account; Radar is each ad. */}
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-now" aria-labelledby="ov-sec-now">
-        <SectionHead id="ov-sec-now" title="Key metrics" help={titles.now.help} />
-        {/* Mancini 10:55: the headline is the page's focal point. Large type, the two numbers that matter as coloured pills, no grey box. */}
-        <Headline lead={briefing.now.lead} fallback={briefing.now.headline} />
+        <SectionHead
+          id="ov-sec-now"
+          title="Key metrics"
+          help={titles.now.help}
+          action={
+            <span className="ov-legend" aria-hidden>
+              <i className="ov-legend-now" /> This period <i className="ov-legend-before" /> Previous period
+            </span>
+          }
+        />
         <div className="ov-kpis ov-kpis-7" aria-label="Key metrics">
           <Kpi hero label="Spend" value={money(dSpend.now).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} delta={dSpend} />
           <Kpi label="ROAS" value={dRoas.now.toFixed(2)} help={'Revenue per $1 of\u00a0spend'} delta={dRoas} />

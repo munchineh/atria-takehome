@@ -442,3 +442,24 @@ export function ideaText(idea: string): IdeaText {
   if (quoted.length === 0) return { label: idea, copy: idea };
   return { label: idea, copy: null };
 }
+
+/* ---------- Key metric tiles: daily shape for the sparkline (Mancini 13:49) ---------- */
+/**
+ * Mock daily values for a metric across the selected period and the period before, so the tile can draw
+ * this period (solid) over the previous one (dashed). Deterministic per metric so the shape doesn't jump.
+ * Each series averages to the period's real value.
+ */
+export function trendSeries(d: Delta, points = 10): { now: number[]; before: number[] } {
+  let seed = [...d.key].reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7);
+  const rand = () => {
+    seed = (seed * 9301 + 49297) % 233280;
+    return seed / 233280;
+  };
+  const shape = (avg: number, drift: number) => {
+    const raw = Array.from({ length: points }, (_, i) => avg * (1 + drift * (i / (points - 1) - 0.5) + (rand() - 0.5) * 0.1));
+    const mean = raw.reduce((a, b) => a + b, 0) / points;
+    return raw.map((v) => (v * avg) / mean);
+  };
+  const drift = Math.max(-0.4, Math.min(0.4, d.pct / 100));
+  return { now: shape(d.now, drift), before: shape(d.before, 0) };
+}

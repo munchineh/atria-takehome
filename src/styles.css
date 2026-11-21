@@ -2007,3 +2007,24 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .panel.raya, .raya { background: linear-gradient(180deg, var(--c-primary-tint, #fff7f2) 0%, #fff 72%) !important; border-color: #f6e3d8; }
 .raya .raya-chip { border-radius: 999px; border-color: #f0e2d9; padding: 5px 12px; }
 .raya .raya-chip:hover { border-color: var(--c-primary); color: var(--c-primary); }
+/* Mancini 13:49: key metric tiles after SaaS KPI card patterns. Same four parts in every tile: label (definition on hover),
+   value, change against the period before coloured by meaning, sparkline of this period over the previous one. No headline sentence. */
+.ov-kpis.ov-kpis-7 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-top: 16px; }
+.ov-tile { display: flex; flex-direction: column; gap: 4px; padding: 12px 16px; border: 1px solid var(--c-border-2); border-radius: var(--r-surface); background: #fff; min-width: 0; }
+.ov-tile-label { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.ov-tile-info { color: var(--c-text-3); font-size: var(--fs-small); }
+.ov-tile-val { font-size: var(--fs-figure); line-height: 28px; font-weight: 600; color: var(--c-text); font-variant-numeric: tabular-nums; }
+.ov-tile-delta { display: inline-flex; align-items: center; gap: 4px; font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; font-variant-numeric: tabular-nums; }
+.ov-tile-delta.tone-good { color: #18b723; }
+.ov-tile-delta.tone-bad { color: #ed383b; }
+.ov-tile-delta.tone-neutral { color: var(--c-text-2); }
+.ov-tile-vs { font-weight: 400; color: var(--c-text-3); margin-left: 4px; }
+.ov-spark { width: 100%; height: 32px; margin-top: 8px; overflow: visible; }
+.ov-spark path { fill: none; vector-effect: non-scaling-stroke; stroke-linecap: round; stroke-linejoin: round; }
+.ov-spark-before { stroke: var(--c-border); stroke-width: 1.5; stroke-dasharray: 3 3; }
+.ov-spark-now { stroke: var(--c-primary); stroke-width: 2; }
+.ov-legend { display: inline-flex; align-items: center; gap: 6px; font-size: var(--fs-small); color: var(--c-text-2); white-space: nowrap; }
+.ov-legend i { display: inline-block; width: 16px; height: 0; border-top: 2px solid var(--c-primary); }
+.ov-legend i.ov-legend-before { border-top: 2px dashed var(--c-border); margin-left: 8px; }
+@media (max-width: 1199px) { .ov-kpis.ov-kpis-7 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (max-width: 767px) { .ov-kpis.ov-kpis-7 { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; } .ov-tile { padding: 12px; } .ov-tile-vs { display: none; } .ov-legend { display: none; } }
