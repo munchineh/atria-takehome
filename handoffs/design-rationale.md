@@ -204,6 +204,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 152 | Confirmed: on the ad page the reading replaces the generic one-liner under the title | Mancini 15:00 | It says what the page is about for this ad |
 | 153 | Radar grade accuracy note sits on the primary tint with the primary border | Mancini 15:01 | A white notice among white surfaces was easy to skip |
 | 154 | "Where it runs" popover button reads "See ad details"; the copies link shows the product focus ring | Mancini 15:01 | It opens the ad page, not a copy; the blue browser outline was off-palette |
+| 155 | "Where it runs" popover: each copy's share reads "60% of spend" | Mancini 15:02 | An unlabelled percentage beside a bar could have been anything |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

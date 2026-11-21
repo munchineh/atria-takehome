@@ -62,7 +62,8 @@ function WhereItRuns({ c, mobile }: { c: Creative; mobile: boolean }) {
             <li key={a.id} className="runs2-row">
               <i className={`live-dot ${st === 'Paused' ? 'paused' : ''}`} aria-label={st} />
               <span className="runs2-name">{a.campaign}</span>
-              {!single && <span className="runs2-share">{Math.round(share * 100)}%</span>}
+              {/* Mancini 15:02: a bare "60%" didn't say of what. */}
+              {!single && <span className="runs2-share">{Math.round(share * 100)}%<span className="runs2-share-of"> of spend</span></span>}
               <span className="runs2-meta">
                 {mixed ? `${platformOf(a)} · ` : ''}
                 {money(a.spend).replace(/\.\d\d$/, '')} · CPA {money(a.cpa)}
