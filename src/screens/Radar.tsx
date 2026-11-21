@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import { MadeFromIcon } from '../components/Icons';
 import { Peek } from '../components/Peek';
 import { setHub } from '../data/nav';
 import { useEffect, useState, type HTMLAttributes } from 'react';
@@ -6,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, ProfileOutlined, InsertRowRightOutlined, LineChartOutlined, TrophyOutlined, FlagOutlined, EyeOutlined, InfoCircleOutlined } from '../components/AppIcons';
+import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, LineChartOutlined, TrophyOutlined, FlagOutlined, EyeOutlined, InfoCircleOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -146,7 +147,7 @@ function NameCell({ c, morph = true, mobile = false, meta, aside }: { c: Creativ
               go(`/ad/${parent.id}`);
             }}
           >
-            <BranchesOutlined aria-hidden />
+            <MadeFromIcon />
             <span className="made-from-text">
               Made from <b>{parent.name}</b>
             </span>

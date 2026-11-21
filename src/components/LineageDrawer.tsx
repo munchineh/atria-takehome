@@ -1,9 +1,9 @@
 import { useState } from 'react';
+import { MadeFromIcon } from './Icons';
 import { Alert, Button, Drawer, Grid, Tag } from 'antd';
 import {
   ArrowDownOutlined,
   ArrowUpOutlined,
-  BranchesOutlined,
   CloseOutlined,
   HistoryOutlined,
   MinusOutlined,
@@ -105,7 +105,7 @@ function StepCard({
           <div className="lin-branches">
             {step.rounds.map((r) => (
               <button key={r.jobId} type="button" className="lin-branch-chip" onClick={() => onOpenRound(step.id, r.jobId)}>
-                <BranchesOutlined aria-hidden />
+                <MadeFromIcon />
                 <span>
                   {r.date}
                   {'\u00a0'}· {plural(r.kept || r.count, 'variation')}
@@ -119,7 +119,7 @@ function StepCard({
               if (!b) return null;
               return (
                 <button key={bid} type="button" className="lin-branch-chip alt" onClick={() => onOpenAd(bid)}>
-                  <BranchesOutlined aria-hidden />
+                  <MadeFromIcon />
                   <span>Branch{'\u00a0'}· {b.name}</span>
                   <RightOutlined aria-hidden />
                 </button>

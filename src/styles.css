@@ -2003,3 +2003,7 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .radar .ant-table-container { border-radius: var(--r-surface); overflow: hidden; }
 .radar .ant-table-summary > tr:last-child > td:first-child { border-bottom-left-radius: var(--r-surface); }
 .radar .ant-table-summary > tr:last-child > td:last-child { border-bottom-right-radius: var(--r-surface); }
+/* Mancini 13:47: Raya keeps its warm accent from before the overhaul: a soft orange wash and warm-edged pill prompts, so the AI reads apart from the data cards. */
+.panel.raya, .raya { background: linear-gradient(180deg, var(--c-primary-tint, #fff7f2) 0%, #fff 72%) !important; border-color: #f6e3d8; }
+.raya .raya-chip { border-radius: 999px; border-color: #f0e2d9; padding: 5px 12px; }
+.raya .raya-chip:hover { border-color: var(--c-primary); color: var(--c-primary); }

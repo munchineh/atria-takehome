@@ -147,3 +147,5 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 95 | Gallery status rows: every row can be dismissed (review rows mark the round seen, generating rows hide until ready); rows tighter (title and help as one block, 36 px thumbs) | Mancini 13:45 | Only the archive row had a close |
 | 96 | Archived creatives get their own view: an "Archived n" button at the end of the tab row toggles it ("Back to gallery"). Removed "Show archived" from Filter | Mancini 13:45 | Restoring from a filter made no sense |
 | 97 | Radar tab strip rounded on all corners; table rounds its bottom corners to match its top | Mancini 13:46 | |
+| 98 | "Made from" uses the corner-arrow icon everywhere (Radar rows, History drawer); the branch icon is gone | Mancini 13:47 | Same icon the gallery cards already use |
+| 99 | Ask Raya keeps a warm accent: soft orange wash on the card, pill prompts with warm edges | Mancini 13:47 | The foundation sweep had flattened it into a plain data card |
