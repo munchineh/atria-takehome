@@ -284,7 +284,13 @@ export function AdDetail() {
   const cost = total * ACCOUNT.creditsPerImage;
   const busy = s.kind === 'generating' || s.kind === 'queued';
   const short_ = cost > balance;
-  const toggle = (rid: string) => setSelected((p) => (p.includes(rid) ? p.filter((x) => x !== rid) : [...p, rid]));
+  // Mancini 15:31: when the last round failed, the bar says so first. Picking a suggestion goes back to the normal bar.
+  const [failSeen, setFailSeen] = useState(false);
+  const failedJob = s.kind === 'failed' && !failSeen ? jobs.find((j) => j.id === s.jobId) : undefined;
+  const toggle = (rid: string) => {
+    setFailSeen(true);
+    setSelected((p) => (p.includes(rid) ? p.filter((x) => x !== rid) : [...p, rid]));
+  };
   const viewRound = (jobId: string, rec?: string) => nav(`/ad/${c.id}/variations?round=${jobId}${rec ? `&rec=${rec}` : ''}`);
 
   /** AD-21e/f/g: footer per recommendation from its latest round. */
@@ -320,7 +326,7 @@ export function AdDetail() {
   const actionBar = iterable ? (
     <motion.div
       layout
-      className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''}`}
+      className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''} ${failedJob && !morph ? 'failed' : ''}`}
       style={{ borderRadius: !bp.md ? 0 : morph ? 16 : 32 }}
       initial={{ y: bp.md ? 0 : 24, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: spring.gentle }}
@@ -365,6 +371,11 @@ export function AdDetail() {
                       : `${s.kind === 'generating' ? `${timeLeft(s.progress).replace(/^./, (x) => x.toUpperCase())}\u00a0· ` : 'Starts when the current round finishes\u00a0· '}you can leave this page. Tasks will tell you when they're ready.`}
                   </span>
                 </>
+              ) : failedJob ? (
+                <>
+                  <b>The last round failed</b>
+                  <span className="small left">{failedJob.cost}{'\u00a0'}credits were returned to you.</span>
+                </>
               ) : selected.length === 0 && s.kind === 'ready' ? (
                 <>
                   <b>{plural(s.count, 'new variation')} ready</b>
@@ -389,7 +400,18 @@ export function AdDetail() {
               )}
             </div>
             {!busy &&
-              (short_ && selected.length ? (
+              (failedJob ? (
+                <Button
+                  size="large"
+                  onClick={() => {
+                    setSelected(failedJob.recIds);
+                    setFailSeen(true);
+                    setDialog(true);
+                  }}
+                >
+                  Try again
+                </Button>
+              ) : short_ && selected.length ? (
                 <Button size="large" onClick={() => message.info("In the live product, this opens billing. It's not part of this prototype.")}>
                   Get credits
                 </Button>

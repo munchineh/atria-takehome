@@ -241,6 +241,7 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 189 | Text buttons keep the padding and height of outlined and filled buttons (15 px sides, 32 px tall). "Open in Meta" in the "Where it runs" popover had its padding removed and is fixed. It was the only labelled text button with that override. | Mancini 15:29 | A text button is a button with an invisible container, so its hover fill must sit the same distance from the label as any other button's edge. |
 | 190 | Grade accuracy note on Radar shows a bar on the right, labelled "$6,200 of $10,000", in place of the ring. | Mancini 15:29 | A bar reads as progress toward a threshold. The ring read as a loading state. |
 | 191 | Radar "Next steps" failed state reads "Failed to create". The credits returned are in its tooltip. | Mancini 15:30 | The cell was the longest in the column and pushed the grades away. |
+| 192 | Ad page bar after a failed round turns red and reads "The last round failed" with "16 credits were returned to you." The button is "Try again", which reopens the create panel with the same suggestions picked. Picking a suggestion returns the bar to normal. | Mancini 15:31 | Opening an ad from a "Failed to create" row showed the same bar as any other ad, so nothing said what went wrong or what to do. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

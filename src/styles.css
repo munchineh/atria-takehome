@@ -2589,3 +2589,6 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .grading-bar-label b { font-weight: 600; color: var(--c-text); }
 .grading-bar .ant-progress { margin: 0; line-height: 1; }
 @media (max-width: 767px) { .grading-note .gal-status-row { flex-wrap: wrap; } .grading-bar { width: 100%; } }
+/* 192 Ad page bar after a failed round: error color, what happened, credits returned, "Try again". */
+.sticky-bar.failed { background: var(--c-error); color: #fff; }
+.sticky-bar.failed .sticky-summary .left { color: rgba(255, 255, 255, 0.88); }
