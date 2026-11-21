@@ -1741,30 +1741,28 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 }
 
 /* Radar card tabs (FG1, refined like Chrome: selected tab joins the table, others sit back). */
-.radar .radar-card-tabs > .ant-tabs-nav { margin: 0 0 16px !important; }
-.radar .radar-card-tabs > .ant-tabs-nav::before { border-bottom: 1px solid var(--c-border-2); }
-.radar .radar-card-tabs .ant-tabs-nav-list { gap: 2px; }
+/* Mancini 13:27, after Chrome: tabs sit on a grey strip. The selected tab is white, joins the white page below and flares out with concave feet. The others have no border; on hover they become a rounded tinted pill. */
+.radar .radar-card-tabs > .ant-tabs-nav { margin: 0 0 16px !important; padding: 6px 10px 0; background: var(--c-layout); border-radius: var(--r-surface) var(--r-surface) 0 0; }
+.radar .radar-card-tabs > .ant-tabs-nav::before { display: none; }
+.radar .radar-card-tabs .ant-tabs-nav-list { gap: 4px; }
 .radar .radar-card-tabs .ant-tabs-tab,
-.radar .radar-card-tabs .ant-tabs-tab:first-child { position: relative; margin: 0 !important; padding: 8px 14px !important; background: transparent !important; border: 1px solid transparent !important; border-bottom: 0 !important; border-radius: var(--r-surface) var(--r-surface) 0 0 !important; transition: background-color 0.16s, color 0.16s; }
+.radar .radar-card-tabs .ant-tabs-tab:first-child { position: relative; margin: 0 0 6px !important; padding: 6px 12px !important; background: transparent !important; border: 0 !important; border-radius: var(--r-surface) !important; transition: background-color 0.16s, color 0.16s; }
 .radar .radar-card-tabs .ant-tabs-tab .ant-tabs-tab-btn { color: var(--c-text-2); padding: 0 !important; }
-.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active):hover { background: rgba(0, 0, 0, 0.04) !important; }
+.radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active):hover { background: rgba(0, 0, 0, 0.06) !important; }
 .radar .radar-card-tabs .ant-tabs-tab:not(.ant-tabs-tab-active) .tab-count { background: transparent; }
-.radar .radar-card-tabs .ant-tabs-tab-active { background: #fff !important; border-color: var(--c-border-2) !important; z-index: 1; }
+.radar .radar-card-tabs .ant-tabs-tab.ant-tabs-tab-active { background: #fff !important; border-radius: 10px 10px 0 0 !important; margin-bottom: 0 !important; padding-bottom: 12px !important; z-index: 1; }
 .radar .radar-card-tabs .ant-tabs-tab-active .ant-tabs-tab-btn { color: var(--c-text) !important; font-weight: 600; }
-/* Chrome-style feet: the selected tab curves out into the line below it. */
 .radar .radar-card-tabs .ant-tabs-tab-active::before,
-.radar .radar-card-tabs .ant-tabs-tab-active::after { content: ''; position: absolute; bottom: -1px; width: 8px; height: 8px; pointer-events: none; }
-.radar .radar-card-tabs .ant-tabs-tab-active::before { left: -9px; background: radial-gradient(circle at 0 0, transparent 7.5px, var(--c-border-2) 7.5px, var(--c-border-2) 8.5px, #fff 8.5px); }
-.radar .radar-card-tabs .ant-tabs-tab-active::after { right: -9px; background: radial-gradient(circle at 100% 0, transparent 7.5px, var(--c-border-2) 7.5px, var(--c-border-2) 8.5px, #fff 8.5px); }
-.radar .radar-card-tabs .ant-tabs-tab:first-child.ant-tabs-tab-active::before { display: none; }
-.radar .radar-card-tabs .ant-tabs-tab-active { margin-bottom: -1px !important; padding-bottom: 9px !important; }
+.radar .radar-card-tabs .ant-tabs-tab-active::after { content: ''; position: absolute; bottom: 0; width: 10px; height: 10px; pointer-events: none; background-size: 10px 10px; background-repeat: no-repeat; }
+.radar .radar-card-tabs .ant-tabs-tab-active::before { left: -10px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M10 0V10H0A10 10 0 0 0 10 0Z' fill='%23fff'/%3E%3C/svg%3E"); }
+.radar .radar-card-tabs .ant-tabs-tab-active::after { right: -10px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M0 0V10H10A10 10 0 0 1 0 0Z' fill='%23fff'/%3E%3C/svg%3E"); }
 .radar-card-tabs .tab-label { gap: 6px; }
 .radar-card-tabs .tab-icon { display: inline-flex; color: var(--c-text-3); }
 .radar-card-tabs .ant-tabs-tab-active .tab-icon { color: var(--c-primary); }
 .radar-card-tabs .tab-info { color: var(--c-text-3); font-size: var(--fs-small); margin-left: 2px; }
 .radar-card-tabs .ant-tabs-tab-active .tab-count { font-weight: 400; }
 @media (max-width: 767px) {
-  .radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child { padding: 8px 10px !important; }
+  .radar .radar-card-tabs .ant-tabs-tab, .radar .radar-card-tabs .ant-tabs-tab:first-child { padding: 6px 10px !important; }
   .radar .radar-card-tabs > .ant-tabs-nav { margin-bottom: 12px !important; }
 }
 /* Mancini 12:53: the summary read oversized with loose leading; it's a paragraph, so Body 14/22 like FG2's Performance text. */
@@ -1947,3 +1945,7 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
   .radar .ant-table .name-sub .media-pill .anticon { font-size: var(--fs-small); }
   .radar .ant-table .ant-table-thead > tr > th, .radar .ant-table .ant-table-tbody > tr > td, .radar .ant-table .ant-table-summary td { padding-left: 10px; padding-right: 10px; }
 }
+/* Mancini 13:26: antd drew its thick focus ring on the clicked tab. Keep a ring only for keyboard focus (S-82), drawn inside the tab's shape. */
+.radar .radar-card-tabs .ant-tabs-tab-focus, .radar .radar-card-tabs .ant-tabs-tab:focus-within { outline: none !important; box-shadow: none !important; }
+.radar .radar-card-tabs .ant-tabs-tab .ant-tabs-tab-btn:focus { outline: none !important; }
+.radar .radar-card-tabs .ant-tabs-tab:has(.ant-tabs-tab-btn:focus-visible) { outline: 2px solid var(--c-primary) !important; outline-offset: -2px; }

@@ -137,3 +137,4 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 85 | Every breadcrumb ends with the current page; rounds read "Round 1 · Nov 12" | Mancini 13:21 | The ad page did, the rest didn't |
 | 86 | The breadcrumb root and the Overview / Radar switch follow where you came from: an ad opened from Overview says "Overview" | Mancini 13:21 | Entering from Overview and landing under "Radar" broke the trail |
 | 87 | Radar at tablet width: names keep two lines, the media tag is icon only, cells pad 10 | Mancini 13:22 | One-line names cut to "All moods · …"; this gives names room without losing them |
+| 88 | Radar tabs redrawn after Chrome: grey strip, borderless back tabs with a rounded hover pill, white selected tab with vector concave feet; antd's click focus ring removed (keyboard ring kept) | Mancini 13:26, 13:27 | The first feet were a CSS gradient that rendered lumpy on retina, and antd drew a thick ring on click |
