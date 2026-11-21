@@ -14,6 +14,7 @@ import { GalleryMenus, type GalleryFilters, type Order } from '../components/gal
 import { NewCreativeModal } from '../components/gallery/NewCreativeModal';
 import { pageTransition } from '../motion/tokens';
 import { PageHeader } from '../components/PageHeader';
+import { SectionHead } from '../components/SectionHead';
 
 const HOW = (
   <div className="grade-pop">
@@ -24,8 +25,8 @@ const HOW = (
 );
 
 /**
- * Creative gallery (DL-14, DL-15, DL-16):
- * The unit is a single creative image, newest first, with optional grouping and "New creative" creation flow.
+ * Creative gallery (DL-14, DL-15, DL-16, S-05, S-10, S-32, S-33, S-45, S-46):
+ * Focal point: the grid/list of saved creatives. Single primary action: New creative.
  */
 export function ImageAds() {
   const nav = useNavigate();
@@ -46,7 +47,6 @@ export function ImageAds() {
   }, [accountId]);
 
   const [groupBy, setGroupBy] = useState<GroupBy>('date');
-  // Mancini 09:43: grid and list views, like Atria's own view toggles on Overview's Top performing.
   const [view, setView] = useState<'grid' | 'list'>(() => {
     try {
       return (localStorage.getItem('atria-gallery-view') as 'grid' | 'list') || 'grid';
@@ -65,7 +65,10 @@ export function ImageAds() {
   const itemsClass = view === 'grid' ? 'gal-grid' : 'gal-list';
   const [newOpen, setNewOpen] = useState(false);
 
-  const allItems = useMemo(() => galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen }), [jobs, saved, versionsOf, archived, chosen]);
+  const allItems = useMemo(
+    () => galleryItems(jobs, findCreative, saved, versionsOf, { archived, chosen }),
+    [jobs, saved, versionsOf, archived, chosen],
+  );
 
   const accountScoped = useMemo(
     () => (filters.accountId === 'all' ? allItems : allItems.filter((i) => i.accountId === filters.accountId)),
@@ -91,11 +94,19 @@ export function ImageAds() {
   }, [accountScoped, filters, order]);
 
   const groups = useMemo(() => groupGallery(filtered, groupBy), [filtered, groupBy]);
-  // Suggest archiving saved creatives that never went into an ad and are over a week old.
-  const stale = useMemo(() => accountScoped.filter((i) => !i.archived && !i.inMeta && i.minutesAgo > 7 * 1440), [accountScoped]);
-  // Rounds with options still to review: their unstarred options aren't in the gallery.
+  const stale = useMemo(
+    () => accountScoped.filter((i) => !i.archived && !i.inMeta && i.minutesAgo > 7 * 1440),
+    [accountScoped],
+  );
   const toReview = useMemo(
-    () => jobs.filter((j) => j.state === 'ready' && j.unseen && findCreative(j.creativeId) && (filters.accountId === 'all' || findCreative(j.creativeId)!.accountId === filters.accountId)),
+    () =>
+      jobs.filter(
+        (j) =>
+          j.state === 'ready' &&
+          j.unseen &&
+          findCreative(j.creativeId) &&
+          (filters.accountId === 'all' || findCreative(j.creativeId)!.accountId === filters.accountId),
+      ),
     [jobs, filters.accountId],
   );
 
@@ -109,13 +120,15 @@ export function ImageAds() {
     [jobs, filters.accountId],
   );
 
-  const clearFilters = () => setFilters({ accountId, origin: filters.origin, campaign: 'all', use: 'all', showArchived: false });
+  const clearFilters = () =>
+    setFilters({ accountId, origin: filters.origin, campaign: 'all', use: 'all', showArchived: false });
   const hasFilters = filters.accountId !== accountId || filters.campaign !== 'all' || filters.use !== 'all';
   const onArchive = (id: string, on: boolean) => {
     setArchived([id], on);
-    message.success(on ? 'Archived. Turn on Show archived in Filter to see it.' : 'Restored to the gallery');
+    message.success(on ? 'Archived. Show archived is in Filter.' : 'Restored to the gallery');
   };
 
+  const hideOriginOnCards = filters.origin === 'cloned' || filters.origin === 'scratch';
 
   return (
     <motion.div {...pageTransition} className="page image-ads">
@@ -136,7 +149,6 @@ export function ImageAds() {
         }
       />
 
-      {/* DL-17: origin as tabs with counts, like Atria's All, Clone, Iterate, Raya. */}
       <Tabs
         className="gal-origin-tabs"
         activeKey={filters.origin}
@@ -144,7 +156,15 @@ export function ImageAds() {
         items={ORIGIN_TABS.map((t) => {
           const live = accountScoped.filter((i) => filters.showArchived || !i.archived);
           const n = t.value === 'all' ? live.length : live.filter((i) => i.origin === t.value).length;
-          return { key: t.value, label: <span className="tab-label">{t.label}<span className="tab-count">{n}</span></span> };
+          return {
+            key: t.value,
+            label: (
+              <span className="tab-label">
+                {t.label}
+                <span className="tab-count">{n}</span>
+              </span>
+            ),
+          };
         })}
       />
 
@@ -164,20 +184,22 @@ export function ImageAds() {
 
       {stale.length >= 3 && !nudgeOff && !filters.showArchived && (
         <div className="gal-nudge" role="status">
-          <span>
-            <b>{plural(stale.length, 'creative')}</b> haven't gone into an ad in over a week. Archive them to keep the gallery tidy?
+          <span className="gal-nudge-text">
+            <strong>{plural(stale.length, 'creative')}</strong> haven't gone into an ad in over a week. Archive them to keep the gallery tidy?
           </span>
           <span className="gal-nudge-actions">
             <Button
-              size="small"
               onClick={() => {
-                setArchived(stale.map((i) => i.id), true);
+                setArchived(
+                  stale.map((i) => i.id),
+                  true,
+                );
                 message.success(`Archived ${plural(stale.length, 'creative')}`);
               }}
             >
               Archive {stale.length}
             </Button>
-            <Button size="small" type="text" onClick={() => setNudgeOff(true)}>
+            <Button type="text" onClick={() => setNudgeOff(true)}>
               Not now
             </Button>
           </span>
@@ -189,10 +211,15 @@ export function ImageAds() {
           {toReview.map((j) => {
             const src = findCreative(j.creativeId)!;
             return (
-              <button key={j.id} type="button" className="panel gal-live-row gal-review-row" onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}>
+              <button
+                key={j.id}
+                type="button"
+                className="panel gal-live-row gal-review-row"
+                onClick={() => nav(`/creation/${src.id}?round=${j.id}`)}
+              >
                 <Thumb c={src} size={40} />
                 <span className="gal-live-body">
-                  <b>{src.name}</b>
+                  <strong className="gal-live-name">{src.name}</strong>
                   <span className="t-help">{plural(j.count - j.failed.length, 'new option')} ready. Star the ones to keep.</span>
                 </span>
                 <span className="gal-review-cta">Review</span>
@@ -202,8 +229,6 @@ export function ImageAds() {
         </div>
       )}
 
-
-      {/* Live generating strip for rounds currently in flight (including newly created standalone creatives). */}
       {activeJobs.length > 0 && (
         <div className="gal-live-list" aria-live="polite">
           {activeJobs.map((j) => {
@@ -214,14 +239,14 @@ export function ImageAds() {
                 <Thumb c={src} size={40} />
                 <div className="gal-live-body">
                   <div className="gal-live-head">
-                    <b>{src.name}</b>
-                    <span className="small muted">
+                    <strong className="gal-live-name">{src.name}</strong>
+                    <span className="t-help gal-live-meta">
                       {j.state === 'queued'
                         ? `Queued\u00a0· ${plural(j.count, 'creative')}`
                         : `Generating ${plural(j.count, 'creative')}\u00a0· ${timeLeft(j.progress)}`}
                     </span>
                   </div>
-                  <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="#f66c30" />
+                  <Progress percent={Math.round(j.progress * 100)} showInfo={false} size="small" strokeColor="var(--c-primary)" />
                 </div>
               </div>
             );
@@ -236,7 +261,7 @@ export function ImageAds() {
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 <>
-                  <b>No creatives match these filters</b>
+                  <strong>No creatives match these filters</strong>
                   <br />
                   Clear a filter to see every creative in this account.
                 </>
@@ -249,13 +274,13 @@ export function ImageAds() {
               image={Empty.PRESENTED_IMAGE_SIMPLE}
               description={
                 <>
-                  <b>No creatives yet</b>
+                  <strong>No creatives yet</strong>
                   <br />
-                  Create from a brief, a reference, or an existing ad.
+                  Create from a brief, a clone, or an existing ad.
                 </>
               }
             >
-              <Button type="primary" icon={<PlusOutlined />} onClick={() => setNewOpen(true)}>
+              <Button icon={<PlusOutlined />} onClick={() => setNewOpen(true)}>
                 New creative
               </Button>
             </Empty>
@@ -268,6 +293,7 @@ export function ImageAds() {
               key={item.id}
               item={item}
               index={i}
+              hideOrigin={hideOriginOnCards}
               onOpen={(to) => nav(to)}
               onArchive={onArchive}
             />
@@ -277,29 +303,31 @@ export function ImageAds() {
         <div className="gal-groups">
           {groups.map((group) => (
             <section key={group.key} className={`gal-group ${group.ungrouped ? 'is-ungrouped' : ''}`}>
-              <div className="gal-group-head">
-                <div className="gal-group-title-wrap">
-                  <h2 className="gal-group-title">{group.title}</h2>
-                  <span className="t-help gal-group-meta">{group.meta}</span>
-                </div>
-                {group.adId && (
-                  <Button
-                    type="link"
-                    size="small"
-                    className="inline-link"
-                    icon={<BarChartOutlined />}
-                    onClick={() => nav(`/ad/${group.adId}`)}
-                  >
-                    View in Radar
-                  </Button>
-                )}
-              </div>
+              <SectionHead
+                title={group.title}
+                help={group.meta}
+                action={
+                  group.adId ? (
+                    <Button
+                      type="link"
+                      className="inline-link"
+                      icon={<BarChartOutlined />}
+                      onClick={() => nav(`/ad/${group.adId}`)}
+                    >
+                      View in Radar
+                    </Button>
+                  ) : undefined
+                }
+              />
               <div className={itemsClass}>
                 {group.items.map((item, i) => (
                   <GalleryCard
                     key={item.id}
                     item={item}
                     index={i}
+                    hideDate={groupBy === 'date' && !group.ungrouped}
+                    hideAd={groupBy === 'ad' && Boolean(group.adId)}
+                    hideOrigin={hideOriginOnCards}
                     onOpen={(to) => nav(to)}
                     onArchive={onArchive}
                   />
@@ -314,7 +342,6 @@ export function ImageAds() {
         open={newOpen}
         onClose={() => setNewOpen(false)}
         onCreated={() => {
-          // Stay in the gallery so the user watches the new creatives arrive into the grid.
           setFilters((f) => ({ ...f, origin: 'all', campaign: 'all', use: 'all' }));
         }}
       />
