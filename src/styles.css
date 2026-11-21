@@ -1829,3 +1829,10 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .report-reasons.ant-radio-group { display: flex; flex-direction: column; gap: 8px; }
 .report-actions { display: flex; justify-content: flex-end; gap: 8px; }
 @media (max-width: 767px) { .report-actions .ant-btn { flex: 1; height: 44px; } }
+/* Copies panel (Mancini 10:29) */
+.copies-title { font-weight: 400; }
+.copies-n { font-weight: 600; }
+.place-more { align-self: flex-end; margin-left: auto; display: block; }
+.copy-row-main { grid-template-areas: 'dot name chev' '. nums chev'; }
+.copy-row-main .chev { align-self: center; }
+.copy-row-main .live-dot { align-self: center; }

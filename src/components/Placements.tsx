@@ -47,7 +47,7 @@ export function Placements({ items, animate = false }: { items: { label: string;
         )}
       </ul>
       {rest.length > 0 && (
-        <button className="link-btn small" onClick={(e) => { e.stopPropagation(); setAll((a) => !a); }}>
+        <button className="link-btn small place-more" onClick={(e) => { e.stopPropagation(); setAll((a) => !a); }}>
           {all ? 'Show top 3' : `Show all ${sorted.length}`}
         </button>
       )}

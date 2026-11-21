@@ -469,7 +469,10 @@ export function AdDetail() {
 
           <motion.div className="panel" variants={fadeUp} initial="hidden" animate="show">
             <button className="panel-toggle" onClick={() => setAdsOpen((o) => !o)} aria-expanded={adsOpen}>
-              <b className="panel-title">{copiesTitle(c)}</b>
+              {/* Mancini 10:29: the count carries the weight; the rest of the title is regular. */}
+              <b className="panel-title copies-title">
+                <span className="copies-n">{copiesTitle(c).split(' ')[0]}</span> {copiesTitle(c).split(' ').slice(1).join(' ')}
+              </b>
               <motion.span animate={{ rotate: adsOpen ? 180 : 0 }} transition={spring.snappy} className="chev">
                 <DownOutlined />
               </motion.span>
