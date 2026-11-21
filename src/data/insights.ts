@@ -371,7 +371,13 @@ export interface Diversity {
   topName: string;
   formats: number;
   line: string;
+  /** Ten creative dimensions, each rated on its own, as in Atria's Creative Diversity section. */
+  categories: { name: string; level: 'Low' | 'Fair' | 'Good' }[];
+  /** The score over the last eight weeks, oldest first. The last point is the current score. */
+  trend: number[];
 }
+
+const DIVERSITY_DIMENSIONS = ['Visual hook', 'Product quality', 'Theme', 'Media format', 'USP', 'Key message', 'Emotion', 'Core desire', 'Offer type', 'Persona'] as const;
 
 /**
  * Creative diversity: how evenly spend spreads across distinct concepts.
@@ -400,7 +406,21 @@ export function creativeDiversity(account: MockAccount, windowDays: number): Div
     label === 'Good'
       ? `Spend is spread across ${byConcept.size} concepts, so one tired ad won't drag the account down.`
       : `${Math.round(topShare * 100)}% of spend goes to one concept. Try a new angle so results don't hang on a single ad.`;
-  return { score, label, concepts: byConcept.size, topShare, topName, formats, line };
+  // Media format is rated from the real format count. The other nine dimensions are mock: the demo ads carry no
+  // per-dimension tags, so each sits at or one step from the overall label, fixed per account so it doesn't jump.
+  const levels = ['Low', 'Fair', 'Good'] as const;
+  const base = levels.indexOf(label);
+  const categories = DIVERSITY_DIMENSIONS.map((name, i) => {
+    if (name === 'Media format') return { name, level: levels[Math.min(formats, 3) - 1] ?? 'Low' };
+    const h = [...(account.id + name)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 7 + i) % 5;
+    const step = h === 0 ? -1 : h === 4 ? 1 : 0;
+    return { name, level: levels[Math.max(0, Math.min(2, base + step))] };
+  });
+  const trend = Array.from({ length: 8 }, (_, i) => {
+    const h = [...(account.id + i)].reduce((a, ch) => (a * 31 + ch.charCodeAt(0)) >>> 0, 11) % 9;
+    return i === 7 ? score : Math.max(0, Math.min(100, score - (7 - i) * 2 + h - 4));
+  });
+  return { score, label, concepts: byConcept.size, topShare, topName, formats, line, categories, trend };
 }
 
 /** Ask Raya, mock: answers a few common questions from the same data the page shows. */

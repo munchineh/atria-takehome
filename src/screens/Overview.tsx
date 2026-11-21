@@ -1,5 +1,5 @@
 import { useEffect } from 'react';
-import { Empty, Grid, Select, Tooltip } from 'antd';
+import { Empty, Grid, Progress, Select, Tooltip } from 'antd';
 import { setHub } from '../data/nav';
 import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, InfoCircleOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
 import { Link, useNavigate } from 'react-router-dom';
@@ -60,11 +60,11 @@ function Sparkline({ d }: { d: Delta }) {
  * Key metric tile (Mancini 13:49, after SaaS KPI card patterns): label with a definition on hover, the value,
  * the change against the period before coloured by whether it's good, and a sparkline. Every tile has the same four parts.
  */
-function Kpi({ label, value, help, delta }: { label: string; value: string; help: string; delta: Delta; hero?: boolean }) {
+function Kpi({ label, value, help, delta, compact }: { label: string; value: string; help: string; delta: Delta; compact?: boolean }) {
   const word = delta.pct > 0 ? 'Up' : delta.pct < 0 ? 'Down' : 'No change';
   const Icon = delta.pct > 0 ? ArrowUpOutlined : delta.pct < 0 ? ArrowDownOutlined : MinusOutlined;
   return (
-    <div className="ov-tile">
+    <div className={compact ? 'ov-stat' : 'ov-tile'}>
       <span className="ov-tile-label">
         {label}
         <Tooltip title={`${help.replace(/\u00a0/g, ' ')}.`}>
@@ -76,8 +76,22 @@ function Kpi({ label, value, help, delta }: { label: string; value: string; help
         <Icon aria-hidden />
         {Math.abs(delta.pct)}%<span className="ov-tile-vs">vs. previous period</span>
       </span>
-      <Sparkline d={delta} />
+      {!compact && <Sparkline d={delta} />}
     </div>
+  );
+}
+
+/** Score trend for Creative diversity: one line, no axes. */
+function ScoreTrend({ points }: { points: number[] }) {
+  const W = 100;
+  const H = 24;
+  const lo = Math.min(...points) - 2;
+  const hi = Math.max(...points) + 2;
+  const d = points.map((v, i) => `${i ? 'L' : 'M'}${((i / (points.length - 1)) * W).toFixed(1)},${(H - ((v - lo) / (hi - lo)) * H).toFixed(1)}`).join(' ');
+  return (
+    <svg className="div-trend" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden>
+      <path d={d} />
+    </svg>
   );
 }
 
@@ -165,14 +179,18 @@ export function Overview() {
             </span>
           }
         />
-        <div className="ov-kpis ov-kpis-7" aria-label="Key metrics">
-          <Kpi hero label="Spend" value={money(dSpend.now).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} delta={dSpend} />
+        {/* Mancini 14:18: seven equal tiles had no focal point. Three headline metrics keep the tile and sparkline;
+            the four supporting ones step down to a quiet row of label, value and change. */}
+        <div className="ov-kpis-hero" aria-label="Key metrics">
+          <Kpi label="Spend" value={money(dSpend.now).replace(/\.\d\d$/, '')} help={`${plural(ads.length, 'ad')} with spend`} delta={dSpend} />
           <Kpi label="ROAS" value={dRoas.now.toFixed(2)} help={'Revenue per $1 of\u00a0spend'} delta={dRoas} />
           <Kpi label="CPA" value={money(dCpa.now)} help={`Account average\u00a0${money(account.avg.cpa)}`} delta={dCpa} />
-          <Kpi label="Purchase value" value={money(dValue.now).replace(/\.\d\d$/, '')} help={`${Math.round(dPurchases.now).toLocaleString('en-US')} purchases`} delta={dValue} />
-          <Kpi label="AOV" value={money(dAov.now)} help="Average order value" delta={dAov} />
-          <Kpi label="CPC" value={money(dCpc.now)} help="Cost per link click" delta={dCpc} />
-          <Kpi label="CPM" value={money(dCpm.now)} help="Cost per 1,000 impressions" delta={dCpm} />
+        </div>
+        <div className="ov-kpi-strip" aria-label="More metrics">
+          <Kpi compact label="Purchase value" value={money(dValue.now).replace(/\.\d\d$/, '')} help={`${Math.round(dPurchases.now).toLocaleString('en-US')} purchases`} delta={dValue} />
+          <Kpi compact label="AOV" value={money(dAov.now)} help="Average order value" delta={dAov} />
+          <Kpi compact label="CPC" value={money(dCpc.now)} help="Cost per link click" delta={dCpc} />
+          <Kpi compact label="CPM" value={money(dCpm.now)} help="Cost per 1,000 impressions" delta={dCpm} />
         </div>
       </motion.section>
 
@@ -187,38 +205,61 @@ export function Overview() {
         </motion.section>
       </div>
 
-      <div className="ov-grid ov-grid-even">
-        <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-div">
-          <SectionHead id="ov-sec-div" title="Creative diversity" help={<>How evenly spend spreads across different ad concepts. An ad and its variations count as one concept.</>} />
-          <div className="div-score">
-            <span className="div-num">{diversity.score}</span>
-            <span className={`div-label tone-${diversity.label.toLowerCase()}`}>{diversity.label}</span>
-          </div>
-          <span className="bar-list-track div-track" aria-hidden>
-            <motion.i className={`div-${diversity.label.toLowerCase()}`} initial={{ scaleX: 0 }} animate={{ scaleX: diversity.score / 100 }} />
-          </span>
-          <p className="div-line">{diversity.line}</p>
-          <dl className="div-facts">
-            <div><dt className="t-help">Concepts</dt><dd>{diversity.concepts}</dd></div>
-            <div><dt className="t-help">Formats</dt><dd>{diversity.formats}</dd></div>
-            <div><dt className="t-help">Biggest concept</dt><dd>{Math.round(diversity.topShare * 100)}% of spend</dd></div>
-          </dl>
-        </motion.section>
-        <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-tags">
-          <SectionHead id="ov-sec-tags" title="Top creative tags" help={<>What your ads show and say. Ranked by spend, with CPA against the account average.</>} />
-          <ul className="tag-list">
-            {tags.map((t) => (
-              <li key={t.tag} className="tag-row">
-                <span className="tag-name">{t.tag}<span className="bar-list-count">{plural(t.count, 'ad')} · {Math.round(t.share * 100)}% of spend</span></span>
-                <span className={`tag-cpa tone-${t.vsAccount <= 0 ? 'good' : 'bad'}`}>
-                  {money(t.cpa)}
-                  <span>{t.vsAccount === 0 ? 'average' : `${Math.abs(t.vsAccount)}% ${t.vsAccount < 0 ? 'below' : 'above'}`}</span>
+      {/* Mancini 14:18: Creative diversity after Atria's own section, in light mode: the score in a ring, what it means,
+          the trend, and each creative dimension rated on its own. */}
+      <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-div" aria-labelledby="ov-sec-div">
+        <SectionHead id="ov-sec-div" title="Creative diversity" help={<>How varied this account's ads are. An ad and its variations count as one concept.</>} meta={win.long.split(' · ')[1]} />
+        <div className="div-body">
+          <div className="div-ring">
+            <Progress
+              type="circle"
+              percent={diversity.score}
+              size={104}
+              strokeWidth={8}
+              strokeColor={`var(--c-${diversity.label === 'Good' ? 'success' : diversity.label === 'Fair' ? 'warning' : 'error'})`}
+              railColor="var(--c-fill)"
+              format={() => (
+                <span className="div-ring-val">
+                  <b>{diversity.score}</b>
+                  <span>/100</span>
                 </span>
+              )}
+              aria-label={`Creative diversity score ${diversity.score} out of 100`}
+            />
+          </div>
+          <div className="div-read">
+            <span className="div-level">{diversity.label}</span>
+            <p className="div-line">{diversity.line}</p>
+            <p className="t-help div-meta">
+              {plural(diversity.concepts, 'concept')} · {plural(diversity.formats, 'format')} · biggest concept {Math.round(diversity.topShare * 100)}% of spend
+            </p>
+            <ScoreTrend points={diversity.trend} />
+          </div>
+          <ul className="div-cats" aria-label="Diversity by creative dimension">
+            {diversity.categories.map((cat) => (
+              <li key={cat.name} className="div-cat">
+                <span className="div-cat-name">{cat.name}</span>
+                <span className={`div-label tone-${cat.level.toLowerCase()}`}>{cat.level}</span>
               </li>
             ))}
           </ul>
-        </motion.section>
-      </div>
+        </div>
+      </motion.section>
+
+      <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel" aria-labelledby="ov-sec-tags">
+        <SectionHead id="ov-sec-tags" title="Top creative tags" help={<>What your ads show and say. Ranked by spend, with CPA against the account average.</>} />
+        <ul className="tag-list tag-list-2">
+          {tags.map((t) => (
+            <li key={t.tag} className="tag-row">
+              <span className="tag-name">{t.tag}<span className="bar-list-count">{plural(t.count, 'ad')} · {Math.round(t.share * 100)}% of spend</span></span>
+              <span className={`tag-cpa tone-${t.vsAccount <= 0 ? 'good' : 'bad'}`}>
+                {money(t.cpa)}
+                <span>{t.vsAccount === 0 ? 'average' : `${Math.abs(t.vsAccount)}% ${t.vsAccount < 0 ? 'below' : 'above'}`}</span>
+              </span>
+            </li>
+          ))}
+        </ul>
+      </motion.section>
 
       <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel ov-top" aria-labelledby="ov-sec-top">
         <SectionHead id="ov-sec-top" title="Top spend" help={<>The ads spending most in this period.</>} />

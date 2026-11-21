@@ -35,7 +35,7 @@ export function AskRaya({ account, windowDays, jobs }: { account: MockAccount; w
       </form>
       <div className="raya-prompts">
         {RAYA_PROMPTS.map((p) => (
-          <button key={p} type="button" className="raya-chip" onClick={() => ask(p)}>
+          <button key={p} type="button" className={`raya-chip ${thread?.q === p ? 'on' : ''}`} aria-pressed={thread?.q === p} onClick={() => ask(p)}>
             {p}
           </button>
         ))}
