@@ -16,12 +16,13 @@ import {
   BookmarkFilled,
   BookmarkOutlined,
   SwapOutlined,
+  PlusCircleOutlined,
 } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, CREATIVES, platformOf, plural, recommendationsFor, type Creative as CreativeT } from '../data/mock';
 import { findCreative, useStore, type Job } from '../data/store';
 import { hubCrumb, useWorkspace } from '../data/nav';
-import { ANGLE_REASON, ANGLE_TIP, ratioFor, type Variation, type Version } from '../data/variations';
+import { ANGLE_REASON, ANGLE_TIP, answers, recIdsOf, ratioFor, type Variation, type Version } from '../data/variations';
 import { PredictedTag } from './Editor';
 import { AdArt, Creative } from '../components/Thumb';
 import { CreateDialog } from '../components/CreateDialog';
@@ -147,7 +148,10 @@ function VariationCard({
   moreCost,
   index,
   versions,
+  alsoFor = [],
 }: {
+  /** 250: the other suggestions this variation answers, named on the card. */
+  alsoFor?: string[];
   v: Variation;
   versions: Version[];
   onFixText: () => void;
@@ -219,6 +223,13 @@ function VariationCard({
             </span>
           )}
         </div>
+
+        {/* 250: a variation that answers more than one suggestion names the others, since it also shows under them. */}
+        {alsoFor.length > 0 && (
+          <span className="var-also">
+            <PlusCircleOutlined aria-hidden /> Also answers {alsoFor.map((f) => `"${f.replace(/\u00a0/g, ' ')}"`).join(' and ')}
+          </span>
+        )}
 
         {state === 'ready' && (v.from || v.launched || typo) && (
           <div className="var-flags">
@@ -334,7 +345,7 @@ export function Results() {
   const settings = lastSettings[c.id] ?? { perRec: job.perRec, size: job.size };
   const moreCount = recs.length * settings.perRec;
   const perRecCost = settings.perRec * ACCOUNT.creditsPerImage;
-  const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || v.recId === recFilter));
+  const visible = job.variations.map((v, i) => ({ v, i })).filter(({ v }) => !v.deleted && (recFilter === 'all' || answers(v, recFilter)));
   const openEditor = (v: Variation, text = false) => nav(ws.editorPath(c.id, v.id, job.id, text));
   const audience = c.ads[0]?.adSet ?? 'Variation_Test';
   const allAngles = [...new Set(rounds.flatMap((r) => r.variations.map((v) => v.angle)))];
@@ -343,7 +354,8 @@ export function Results() {
   const [topAngle, topN] = Object.entries(counts).sort((a, b) => b[1] - a[1])[0] ?? ['', 0];
   const unused = ['Before and after', 'Social proof', 'Lifestyle', 'Gift'].find((a) => !allAngles.includes(a)) ?? 'Social proof';
   const picks = job.variations.filter((v) => shortlist.includes(v.id));
-  const sameRec = picks.length >= 2 && picks.every((p) => p.recId === picks[0].recId) && recs.length > 1;
+  // 250: a combined variation already covers more than one suggestion, so it never counts as "the same issue".
+  const sameRec = picks.length >= 2 && picks.every((p) => recIdsOf(p).length === 1 && p.recId === picks[0].recId) && recs.length > 1;
   const otherRec = recs.find((r) => r.id !== picks[0]?.recId);
 
   const go = (extra: Record<string, string>) =>
@@ -471,7 +483,7 @@ export function Results() {
           {recs
             .filter((r) => recFilter === 'all' || r.id === recFilter)
             .map((r) => {
-              const items = visible.filter(({ v }) => v.recId === r.id);
+              const items = visible.filter(({ v }) => answers(v, r.id));
               const meta = `Improves ${r.target === 'Hook' ? 'hook' : r.target}\u00a0· ${plural(items.length, 'variation')}`;
               return (
                 <section key={r.id} className="var-group">
@@ -492,6 +504,7 @@ export function Results() {
                             key={v.id}
                             index={k}
                             v={v}
+                            alsoFor={recIdsOf(v).filter((x) => x !== r.id).map((x) => recs.find((y) => y.id === x)?.fix).filter((x): x is string => !!x)}
                             state={cardState(job, i)}
                             original={c}
                             mobile={mobile}

@@ -107,6 +107,8 @@ export function Editor() {
 
   const recs = useMemo(() => recommendationsFor(c), [c]);
   const rec = recs.find((r) => r.id === v?.recId) ?? recommendationsFor(findCreative('mm-1090245')!).find((r) => r.id === v?.recId);
+  // 250: a variation can answer more than one suggestion; the extra ones are listed after the main one.
+  const extraRecs = (v?.alsoRecIds ?? []).map((id) => recs.find((r) => r.id === id)).filter((r): r is NonNullable<typeof r> => !!r);
   const recMetricKey: MetricKey | null = rec ? ({ CPA: 'conversion', CTR: 'ctr', Hook: 'hook' } as Record<string, MetricKey>)[rec.target] ?? null : null;
   const recGrade = recMetricKey ? c.grades[recMetricKey] : null;
   const recMeta = recMetricKey ? METRIC_META[recMetricKey] : null;
@@ -718,6 +720,7 @@ export function Editor() {
             <li className="ed-hist-step">
               <span className="ed-hist-label">Problem</span>
               <b className="ed-hist-text">{rec.issue}</b>
+              {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.issue}</b>)}
               <span className="ed-hist-metric">
                 <span>{recMetricLabel}</span>
                 {recGrade ? (
@@ -732,8 +735,9 @@ export function Editor() {
               </span>
             </li>
             <li className="ed-hist-step">
-              <span className="ed-hist-label">Suggestion used</span>
+              <span className="ed-hist-label">{extraRecs.length ? 'Suggestions used' : 'Suggestion used'}</span>
               <b className="ed-hist-text">{rec.fix}</b>
+              {extraRecs.map((r) => <b key={r.id} className="ed-hist-text">{r.fix}</b>)}
             </li>
           </ol>
         </section>

@@ -5,6 +5,8 @@ export interface Variation {
   id: string;
   jobId: string;
   recId: string;
+  /** 250 (Mancini 16:20): other suggestions this one variation also answers. It shows under each of them. */
+  alsoRecIds?: string[];
   angle: string;
   img: string;
   copy?: AdCopy;
@@ -147,10 +149,16 @@ export function buildVariations(jobId: string, recIds: string[], perRec: number,
         id: `${jobId}-${rid}-${i}`,
         jobId,
         recId: rid,
+        // 250: in a round with two or more suggestions, the first option of the first one answers them all at once.
+        ...(recIds.length > 1 && rid === recIds[0] && i === 0 ? { alsoRecIds: recIds.slice(1) } : {}),
       };
     });
   });
 }
+
+/** 250: every suggestion a variation answers, its main one first. */
+export const recIdsOf = (v: Pick<Variation, 'recId' | 'alsoRecIds'>) => [v.recId, ...(v.alsoRecIds ?? [])];
+export const answers = (v: Pick<Variation, 'recId' | 'alsoRecIds'>, rid: string) => recIdsOf(v).includes(rid);
 
 /** One definition of "angle" for every surface (R-E8). */
 export const ANGLE_TIP = TAG_TIPS.Angle;

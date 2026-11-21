@@ -1,13 +1,17 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
-import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, type Creative } from './mock';
+import { ACCOUNT, CREATIVES, PERSONAS, PROJECT_CREATIVES, SMALL_ACCOUNT, SMALL_CREATIVES, recommendationsFor, glue, type Creative, type AdCopy } from './mock';
 import { MORE_ACCOUNTS, TINY_TOAST_EXTRA, type MockAccount, type Persona } from './accounts';
-import { ANGLE_REASON, applyToImage, buildVariations, stylizedRender, adText, type Variation, type Version } from './variations';
+import { ANGLE_REASON, applyToImage, buildVariations, stylizedRender, type Variation, type Version } from './variations';
 import { generateLive } from './live';
 
 /**
  * Every sidebar account has data (chat 5c, wiring Mancini's 19:08 ask). Each account brings its own averages
  * (grade popovers, copies panel), personas (ad page) and art + headlines (new variations).
  */
+/** 248: the ad text as labelled parts, so the image model places each one (it drew "A · B · C" as one line). */
+const textParts = (copy?: AdCopy) =>
+  copy ? [copy.head && `Headline: ${copy.head}`, copy.price && `Price: ${copy.price}`, copy.band && `Band: ${copy.band}`, copy.cta && `Button: ${copy.cta}`].filter(Boolean).join(' / ') : '';
+
 export const DEMO_ACCOUNTS: MockAccount[] = [
   {
     ...ACCOUNT,
@@ -396,7 +400,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       // Ask the model to draw the text in when there is no ready-made render, or when the user typed a text style
       // (a ready-made render can't follow it). When it lands, the overlay copy is dropped.
       if (how === 'stylized' && last.copy && (!render || note))
-        void generateLive(last.img, 'Keep the composition. Leave clear space for the text.', '3:4', adText(last.copy), note || undefined).then((slot) => {
+        void generateLive(last.img, 'Keep the composition. Leave clear space for the text.', '3:4', textParts(last.copy), note || undefined).then((slot) => {
           if (slot) setVersions((p) => ({ ...p, [nid]: (p[nid] ?? []).map((x) => (x.n === 1 ? { ...x, img: slot, copy: undefined } : x)) }));
         });
       return nid;

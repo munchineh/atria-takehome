@@ -32,7 +32,7 @@
   --fs-title: 24px;  --lh-title: 32px;
   --fs-section: 16px; --lh-section: 24px;
   --fs-body: 14px;   --lh-body: 20px; /* 241 (Mancini 16:13): was 22, more compact body text site-wide */
-  --fs-small: 12px;  --lh-small: 20px;
+  --fs-small: 12px;  --lh-small: 18px; /* 249 (Mancini 16:20): was 20 */
   --fs-figure: 20px; --lh-figure: 28px;
 }
 
@@ -2844,3 +2844,23 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 /* 244 (continued): each card's grade sits at the top right, level with the thumbnail's top edge, inside the 16 px padding. */
 .lin-card-head { align-items: flex-start; }
 .lin-card-head .lin-grade { align-self: flex-start; margin: 0 0 0 auto; }
+
+/* 249 Small text is 12/18 (was 12/20). Tags, count tags and chips keep a 20 px line so their height doesn't change. */
+.ant-tag, .tab-count, .ih-this, .state-chip, .pick-chip, .media-pill, .lin-current-tag { line-height: 20px; }
+
+/* 250 Variations that answer more than one suggestion: a quiet "Also answers" line on the card; lists on the creative page. */
+.var-also { display: inline-flex; align-items: flex-start; gap: 6px; margin-top: 4px; font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-2); }
+.var-also .anticon { margin-top: 3px; color: var(--c-text-3); }
+.cp-fix-list { margin: 0; padding-left: 16px; }
+.ed-hist-step .ed-hist-text + .ed-hist-text { margin-top: 4px; }
+
+/* 251 Goal tag: the "Goal" key is a light orange (the primary mixed with white) with dark orange text, so it reads as
+   part of one orange tag on the grey page instead of a grey box. The value keeps the deeper tint. */
+.goal-split-k { background: color-mix(in srgb, var(--c-primary) 12%, #fff); color: color-mix(in srgb, var(--c-primary) 70%, #000); }
+
+/* 252 Failed variation cards: secondary text with an amber icon, never red (the failed-round rule). */
+.var-failed { color: var(--c-text-2); }
+.var-failed > .anticon { color: var(--c-warning); font-size: 16px; }
+.task-line.bad { color: var(--c-text-2); }
+.status-cell.failed { color: var(--c-text); border-color: var(--c-warning-border); background: var(--c-warning-bg); }
+.status-cell.failed .anticon, .status-icon.bad { color: var(--c-warning); }

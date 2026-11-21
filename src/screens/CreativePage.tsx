@@ -14,7 +14,7 @@ import {
   LockOutlined, DownOutlined } from '../components/AppIcons';
 import { CREATIVES, plural } from '../data/mock';
 import { findCreative, recName, useStore } from '../data/store';
-import { TAG_TIPS, predictedCtr, ratioFor, tagsFor } from '../data/variations';
+import { TAG_TIPS, predictedCtr, recIdsOf, ratioFor, tagsFor } from '../data/variations';
 import { AdArt, Thumb } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
 import { PageHeader } from '../components/PageHeader';
@@ -270,7 +270,8 @@ export function CreativePage() {
                   </div>
                   <div>
                     <dt>To fix</dt>
-                    <dd>{recName(c.id, v.recId)}</dd>
+                    {/* 250: one line per suggestion the variation answers. */}
+                    <dd>{recIdsOf(v).length > 1 ? <ul className="cp-fix-list">{recIdsOf(v).map((id) => <li key={id}>{recName(c.id, id)}</li>)}</ul> : recName(c.id, v.recId)}</dd>
                   </div>
                 </>
               ) : (

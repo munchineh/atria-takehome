@@ -30,6 +30,7 @@ import { timeLeft } from '../components/TasksPanel';
 import { Rolling } from '../components/Rolling';
 import { HistoryButton } from '../components/LineageDrawer';
 import { STEP_NOTES, parentIdOf } from '../data/lineage';
+import { answers } from '../data/variations';
 import { IterationHistory } from '../components/IterationHistory';
 import { SectionHead } from '../components/SectionHead';
 import { hubCrumb } from '../data/nav';
@@ -314,7 +315,7 @@ export function AdDetail() {
     if (!j) return undefined;
     if (j.state === 'generating' || j.state === 'queued') return { text: `Generating ${plural(j.perRec, 'variation')}`, running: true };
     if (j.state === 'failed') return { text: `Failed to create\u00a0· ${j.cost}\u00a0credits returned` };
-    const n = j.variations.filter((v, i) => v.recId === r.id && !j.failed.includes(i)).length;
+    const n = j.variations.filter((v, i) => answers(v, r.id) && !j.failed.includes(i)).length; // 250: combined variations count for each suggestion they answer
     if (j.unseen || j.minutesAgo < 60) return { text: `${plural(n, 'variation')} ready`, action: () => viewRound(j.id, r.id) };
     return { text: `${plural(n, 'variation')} made on ${j.date}`, action: () => viewRound(j.id, r.id) };
   };
