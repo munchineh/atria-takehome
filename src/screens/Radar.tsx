@@ -175,9 +175,10 @@ const howGrading = (lowSpend: boolean) => (
         </span>
       ))}
     </div>
-    <p>Overall combines an ad's grades, so it can carry a plus or minus. Hook and retention apply to video ads&nbsp;only.</p>
-    <p>Purchases count when they happen within 7 days of a click or 1 day of a view, as set in&nbsp;Meta.</p>
-    <p className="grade-pop-meta">An estimate from how ads performed in this account. Not a guarantee.{lowSpend ? '' : ' Grades are more accurate for accounts that spend over $10,000 a\u00a0month.'}</p>
+    <p>Overall is the average of an ad's grades. A plus or minus means it sits between two letters, so C+ is close to a&nbsp;B.</p>
+    <p>Hook and retention apply to video ads&nbsp;only.</p>
+    <p>Purchases count within the attribution window set in each ad account, such as 7 days after a click or 1 day after a&nbsp;view.</p>
+    <p className="grade-pop-meta">Grades rank ads against each other in this account, so they show where an ad stands today, not how it will do next.{lowSpend ? '' : ' They are most accurate when an account spends over $10,000 a\u00a0month.'}</p>
   </div>
 );
 
