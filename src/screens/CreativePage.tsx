@@ -269,7 +269,7 @@ export function CreativePage() {
               )}
               {v.from && (
                 <div>
-                  <dt>Iterated from</dt>
+                  <dt>Variation of</dt>
                   <dd>
                     {nameOf(v.from)} v{v.from.v}
                   </dd>
