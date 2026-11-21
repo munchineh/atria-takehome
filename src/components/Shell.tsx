@@ -219,6 +219,7 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
             )}
 {/* Mancini 15:21: a ring shows how much of the month's credits is left, and the popover says when it resets. */}
             <Popover
+              classNames={{ root: 'credits-popover' }}
               placement="bottomRight"
               content={
                 <div className="credits-pop">
@@ -252,6 +253,30 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
       </div>
       <TasksPanel mobile={mobile} />
       <Drawer open={drawer} onClose={() => setDrawer(false)} placement="left" size={300} title={inCreation ? 'Creation' : 'Analytics'} className="dark-drawer">
+        {/* Mancini 15:36: phones have no rail, so the product areas sit at the top of the drawer. Without them there was no way to reach Creation. */}
+        {mobile && (
+          <nav className="drawer-rail" aria-label="Main">
+            {RAIL.map((r) => {
+              const active = r.to === '/creation' ? inCreation : r.to === '/' && !inCreation;
+              return (
+                <button
+                  key={r.label}
+                  type="button"
+                  className={`drawer-rail-item ${active ? 'active' : ''}`}
+                  aria-current={active ? 'page' : undefined}
+                  onClick={() => {
+                    if (!r.to) return message.info({ content: `In the live product, this opens ${r.label}. It's not part of this prototype.`, key: 'rail' });
+                    setDrawer(false);
+                    nav(r.to);
+                  }}
+                >
+                  {r.icon}
+                  <span>{r.label}</span>
+                </button>
+              );
+            })}
+          </nav>
+        )}
         {/* 5d Gm-01: phones hide the top bar switch, so Overview and Radar sit at the top of the drawer. */}
         {mobile && !inCreation && header && (
           <div className="drawer-nav" onClick={() => setDrawer(false)}>

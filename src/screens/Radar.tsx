@@ -7,7 +7,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
 import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
-import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, InfoCircleOutlined } from '../components/AppIcons';
+import { FilterOutlined, PlusOutlined, MinusOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ProfileOutlined, InsertRowRightOutlined, InfoCircleOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, GOALS, goalOf, glue, METRIC_META, RELIABLE_SPEND, TABS, WINDOWS, copiesLabel, copyStatus, copiesTitle, platformOf, graded, money, sourceOf, statusOf as adStatusOf, plural, type Creative, type MetricKey } from '../data/mock';
 import { ALL_CREATIVES, DEMO_ACCOUNTS } from '../data/store';
@@ -493,6 +493,7 @@ export function Radar() {
     any('Source', (v) => v === sourceOf(c));
   const inTab = (c: Creative, k: TabKey) => k === 'all' || c.tab === k;
   const rows = CREATIVES.filter((c) => inTab(c, tab) && matches(c)).sort((a, b) => b.spend - a.spend);
+  const mixedGoals = new Set(CREATIVES.map((c) => goalOf(c))).size > 1;
   const count = (k: TabKey) => CREATIVES.filter((c) => inTab(c, k) && matches(c)).length;
   const open = (c: Creative) => nav(`/ad/${c.id}`);
 
@@ -677,11 +678,14 @@ export function Radar() {
                     morph={false}
                     mobile
                     meta={
-                      <div className="card-tags">
-                        <span className="card-goal-chip">
-                          {GOAL_ICON[goal]} {goal}
-                        </span>
-                      </div>
+                      // Mancini 15:40: a goal tag only helps when ads in this list have different goals. If they all share one, it's left out.
+                      mixedGoals ? (
+                        <div className="card-tags">
+                          <span className="card-goal-chip">
+                            {GOAL_ICON[goal]} {goal}
+                          </span>
+                        </div>
+                      ) : undefined
                     }
                     aside={
                       <span className="card-corner" onClick={(e) => e.stopPropagation()}>
@@ -695,17 +699,16 @@ export function Radar() {
                   />
                   <div className="card-foot">
                     <button
-                      className="card-more"
+                      className={`card-more ${expanded === c.id ? 'on' : ''}`}
                       aria-expanded={expanded === c.id}
                       onClick={(e) => {
                         e.stopPropagation();
                         setExpanded((x) => (x === c.id ? null : c.id));
                       }}
                     >
-                      Details{' '}
-                      <motion.span animate={{ rotate: expanded === c.id ? 180 : 0 }} transition={spring.snappy} style={{ display: 'inline-flex' }}>
-                        <DownOutlined />
-                      </motion.span>
+                      {/* Mancini 15:41: a quick-view icon instead of "Details" with a chevron. It turns into a minus while open. */}
+                      <span className="sr-only">{expanded === c.id ? 'Hide grades' : 'Show grades'}</span>
+                      {expanded === c.id ? <MinusOutlined aria-hidden /> : <PlusOutlined aria-hidden />}
                     </button>
                     <StatusCell creative={c} status={statusOf(c.id)} withGrade />
                   </div>

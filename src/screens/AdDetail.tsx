@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { App, Breadcrumb, Grid, Button, ConfigProvider, Typography, Switch, Tag, Tooltip } from 'antd';
 import { darkBarTheme } from '../theme';
-import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined } from '../components/AppIcons';
+import { DownOutlined, ExportOutlined, HistoryOutlined, ReloadOutlined, CalendarOutlined, InfoCircleOutlined, GiftOutlined, SmileOutlined, HomeOutlined, CoffeeOutlined, SunOutlined, ThunderboltOutlined, HeartOutlined, EnvironmentOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, ExclamationCircleFilled } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
 import {
   ACCOUNT,
@@ -98,7 +98,6 @@ const KV = ({ k, v }: { k: string; v: string }) => (
 );
 
 const BAND: Record<string, string> = { A: 'Top', B: 'Above average', C: 'Below average', D: 'Lowest' };
-const BAND_PCT: Record<string, number> = { A: 92, B: 66, C: 36, D: 12 };
 
 /** Item 4 (R-H, R-I): Suggestion card in four structured parts from suggestionParts(). */
 function RecCard({
@@ -328,7 +327,7 @@ export function AdDetail() {
     <motion.div
       layout
       className={`sticky-bar ${morph ? 'expanded' : ''} ${busy ? 'progressing' : ''} ${failedJob && !morph ? 'failed' : ''}`}
-      style={{ borderRadius: !bp.md ? 0 : morph ? 16 : 32 }}
+      style={{ borderRadius: !bp.md ? '16px 16px 0 0' : morph ? 16 : 32 }}
       initial={{ y: bp.md ? 0 : 24, opacity: 0 }}
       animate={{ y: 0, opacity: 1, transition: spring.gentle }}
       transition={{ layout: spring.layout }}
@@ -374,8 +373,10 @@ export function AdDetail() {
                 </>
               ) : failedJob ? (
                 <>
-                  <b>The last round failed</b>
-                  <span className="small left">{failedJob.cost}{'\u00a0'}credits were returned to you.</span>
+                  <b className="bar-fail-title">
+                    <ExclamationCircleFilled aria-hidden /> The last round failed
+                  </b>
+                  <span className="muted small left">{failedJob.cost}{'\u00a0'}credits were returned to you.</span>
                 </>
               ) : selected.length === 0 && s.kind === 'ready' ? (
                 <>
@@ -403,6 +404,7 @@ export function AdDetail() {
             {!busy &&
               (failedJob ? (
                 <Button
+                  type="primary"
                   size="large"
                   onClick={() => {
                     setSelected(failedJob.recIds);
@@ -630,18 +632,14 @@ export function AdDetail() {
                   <span className="t-help stat-note">{c.overall ? BAND[c.overall[0]] : 'Not graded'}</span>
                 </div>
                 {gradedMetrics.map((k, idx) => {
-                  const g = c.grades[k] as string;
                   const meta = METRIC_META[k];
                   return (
                     <div className={`stat ${idx === 0 && k === goalMetric ? 'stat-goal' : ''}`} key={k}>
                       <span className="t-label">{meta.label}</span>
-                      <span className="stat-val">{val(c, k)}</span>
-                      {/* Each grade shows where it sits: letter, a bar for its band, and the account average it's judged against. */}
-                      <span className="stat-grade">
+                      {/* Mancini 15:43: the value with its grade beside it. The band bars were removed: they showed the letter again, not a measurement. */}
+                      <span className="stat-val stat-val-graded">
+                        {val(c, k)}
                         <GradeTag creative={c} metric={k} />
-                        <span className={`stat-bar g-${g[0]}`} aria-hidden>
-                          <i style={{ width: `${BAND_PCT[g[0]]}%` }} />
-                        </span>
                       </span>
                       <span className="t-help stat-note">Average {meta.unit(accountOf(c).avg[meta.avgKey])}</span>
                     </div>

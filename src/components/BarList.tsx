@@ -23,8 +23,9 @@ export function BarList({ rows, tone, onPick, unit = 'ad' }: { rows: BarRow[]; t
             <span className="bar-list-track" aria-hidden>
               <motion.i
                 className={tone ? tone(r.key) : undefined}
-                initial={{ scaleX: 0 }}
-                animate={{ scaleX: Math.max(r.share, r.count ? 0.015 : 0) }}
+                // Mancini 15:37: width, not scaleX. Scaling squashed the rounded end into a square.
+                initial={{ width: 0 }}
+                animate={{ width: `${Math.max(r.share, r.count ? 0.03 : 0) * 100}%` }}
                 transition={{ duration: duration.slow, ease: ease.standard, delay: 0.05 * i }}
               />
             </span>

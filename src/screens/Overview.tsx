@@ -49,11 +49,17 @@ function Sparkline({ d }: { d: Delta }) {
       })
       .join(' ');
   };
+  // Mancini 15:38: a soft fill under this period's line, a quieter line for the period before, and a dot on the latest value.
+  const lastY = H - 2 - ((now[now.length - 1] - lo) / (hi - lo || 1)) * (H - 4);
   return (
-    <svg className={`ov-spark tone-${d.tone}`} viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" aria-hidden>
-      <path d={path(before)} className="ov-spark-before" />
-      <path d={path(now)} className="ov-spark-now" />
-    </svg>
+    <span className={`ov-spark-wrap tone-${d.tone}`} aria-hidden>
+      <svg className="ov-spark" viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none">
+        <path d={`${path(now)} L${W},${H} L0,${H} Z`} className="ov-spark-area" />
+        <path d={path(before)} className="ov-spark-before" />
+        <path d={path(now)} className="ov-spark-now" />
+      </svg>
+      <i className="ov-spark-dot" style={{ top: `${(lastY / H) * 100}%` }} />
+    </span>
   );
 }
 

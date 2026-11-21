@@ -2590,8 +2590,8 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .grading-bar .ant-progress { margin: 0; line-height: 1; }
 @media (max-width: 767px) { .grading-note .gal-status-row { flex-wrap: wrap; } .grading-bar { width: 100%; } }
 /* 192 Ad page bar after a failed round: error color, what happened, credits returned, "Try again". */
-.sticky-bar.failed { background: var(--c-error); color: #fff; }
-.sticky-bar.failed .sticky-summary .left { color: rgba(255, 255, 255, 0.88); }
+.bar-fail-title { display: inline-flex; align-items: center; gap: 8px; }
+.bar-fail-title .anticon { color: var(--c-warning); font-size: 16px; }
 /* 193 Suggestion cards: "Recommended" sits after the suggestion text. Recommended cards have an orange header band and an orange number; other cards stay plain. */
 .rec-diag-left .rec-suggested.ant-tag { margin-left: 8px !important; flex: none; }
 .rec-card.is-recommended .rec-part-diag { background: color-mix(in srgb, var(--c-primary) 10%, transparent); }
@@ -2602,3 +2602,77 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .personas-side .persona-card { background: none; border-radius: 0; padding: 12px 0; align-items: flex-start; }
 .personas-side .persona-card + .persona-card { border-top: 1px solid var(--c-border-2); }
 .personas-side .persona-card:last-child { padding-bottom: 0; }
+/* 196 Phones: the docked bar has rounded top corners and 16 px above its text. */
+@media (max-width: 767px) {
+  .detail .sticky-bar:not(.expanded), .sticky-bar { padding: 16px 16px calc(12px + env(safe-area-inset-bottom)); border-radius: 16px 16px 0 0; }
+}
+/* 197 Phone drawer: the five product areas as a row at the top, the current one filled. */
+.drawer-rail { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; margin: 0 0 16px; padding-bottom: 16px; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+.drawer-rail-item { all: unset; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 8px 0; min-height: 52px; border-radius: var(--r-control); font-size: var(--fs-small); line-height: var(--lh-small); color: rgba(255, 255, 255, 0.65); cursor: pointer; }
+.drawer-rail-item .anticon { font-size: 18px; }
+.drawer-rail-item.active { background: rgba(255, 255, 255, 0.1); color: #fff; }
+.drawer-rail-item:focus-visible { box-shadow: 0 0 0 2px var(--c-primary-border); }
+/* 198 Ask Raya card: the title's leading adds space at the top and the chips are a hard edge at the bottom, so the padding is 14 px top and 18 px bottom to look equal. */
+.panel.raya { padding-top: 14px; padding-bottom: 18px; }
+/* 199 Phones: the credits popover hugs its content and sits under the credits, on the right. */
+@media (max-width: 767px) {
+  .ant-popover.credits-popover { left: auto !important; right: 12px !important; width: max-content; max-width: calc(100vw - 24px) !important; }
+}
+/* 200 Progress bars are fully rounded at both ends. */
+.bar-list-track i { width: 0; min-width: 0; border-radius: 999px; }
+/* 201 Key metric graphs: taller, a soft fill under this period, a thin solid line for the period before, a dot on the latest value. */
+.ov-spark-wrap { position: relative; display: block; margin-top: 12px; height: 48px; }
+.ov-spark-wrap .ov-spark { display: block; width: 100%; height: 100%; margin: 0; }
+.ov-spark .ov-spark-area { fill: color-mix(in srgb, var(--c-primary) 10%, transparent); stroke: none; }
+.ov-spark .ov-spark-before { stroke: var(--c-border); stroke-width: 1; stroke-dasharray: none; }
+.ov-spark .ov-spark-now { stroke-width: 2; }
+.ov-spark-dot { position: absolute; right: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--c-primary); box-shadow: 0 0 0 2px #fff; translate: 50% -50%; }
+@supports (corner-shape: round) { .ov-spark-dot { corner-shape: round; } }
+.ov-legend i.ov-legend-before { border-top: 1px solid var(--c-border); }
+/* 202 Phones: Tasks sheet text is one step larger with even spacing. Titles are 16 px Semi Bold, status lines 14 px, 4 px apart. */
+@media (max-width: 767px) {
+  .tasks-sheet .tasks-title { font-size: var(--fs-figure); line-height: var(--lh-figure); }
+  .tasks-sheet .tasks-desc, .tasks-sheet .tasks-foot { font-size: var(--fs-body); line-height: var(--lh-body); }
+  .tasks-sheet .task-row { padding: 16px; gap: 12px; align-items: start; }
+  .tasks-sheet .task-body { gap: 4px; }
+  .tasks-sheet .task-title, .tasks-sheet .task-name, .tasks-sheet .task-row .task-name { font-size: var(--fs-section); line-height: var(--lh-section); font-weight: 600; }
+  .tasks-sheet .task-line, .tasks-sheet .task-line-meta, .tasks-sheet .task-acct, .tasks-sheet .task-line .inline-link { font-size: var(--fs-body); line-height: var(--lh-body); margin-top: 0; }
+  .tasks-sheet .task-line-text { line-height: var(--lh-body); }
+  .tasks-sheet .task-chev { align-self: center; }
+  .tasks-sheet .tasks-foot { padding: 14px 16px; }
+}
+/* 203 Radar tab bar: the first tab has room on its left, so the active "All" tab gets the same outward curve on both sides. */
+.radar .radar-card-tabs > .ant-tabs-nav .ant-tabs-nav-list { padding-left: 10px; }
+/* 204 Next steps buttons have no chevron at any size. */
+.status-cell .status-chev { display: none; }
+/* 205 Phones: every tap target is at least 44 px tall. Small controls keep their look and get a larger hit area. */
+@media (max-width: 767px) {
+  .ant-btn:not(.inline-link):not(.persona-flag):not(.ant-btn-icon-only) { min-height: 44px; }
+  .ant-btn.ant-btn-icon-only:not(.persona-flag) { min-width: 44px; min-height: 44px; }
+  .credits { min-height: 44px; }
+  .xlink, .raya-chip, .idea-pill, .chip, .acc-toggle, .why-toggle, .filter-pill, .lin-round, .drawer-rail-item { min-height: 44px; }
+  .raya-chip, .idea-pill, .chip { padding-block: 10px; }
+  .copies-link, .made-from, .grade-btn, .persona-flag.ant-btn, .ant-switch { position: relative; }
+  .copies-link::after, .made-from::after, .grade-btn::after, .persona-flag.ant-btn::after, .ant-switch::after { content: ''; position: absolute; inset: -12px -6px; }
+  .ant-switch::after { inset: -14px -8px; }
+  .ant-segmented .ant-segmented-item-label { min-height: 40px; line-height: 40px; }
+}
+
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+/* 206 Radar phone card: grades open from a 44 px quick-view icon button (plus, minus while open). */
+.radar-card .card-foot .card-more { width: 44px; min-height: 44px; padding: 0; margin: 0; justify-content: center; border-radius: var(--r-control); background: var(--c-fill); font-size: 14px; color: var(--c-text); flex: none; }
+.radar-card .card-foot .card-more.on { background: var(--c-border-2); }
+.radar-card .card-foot { justify-content: flex-start; }
+.radar-card .card-foot .status-cell { margin-left: auto; }
+/* 208 "Where it runs" sheet on phones: the two actions sit side by side, the text button on the left and the primary on the right, nearer the thumb. */
+.runs-sheet .runs2-actions { flex-direction: row; align-items: center; gap: 8px; flex-wrap: nowrap; }
+.runs-sheet .runs2-actions .runs2-out.ant-btn { order: 1; flex: 1; height: 44px; justify-content: center; }
+.runs-sheet .runs2-actions .runs2-cta { order: 2; flex: 1; height: 44px; }
+/* 209 Ad page metrics: the grade sits to the right of its value. No band bars. */
+.verdict-metrics .stat-val-graded { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+/* 210 Cards on the grey canvas: a slightly darker border and a hairline shadow so white cards separate from the background. The metric strip is white, not off-white. */
+.panel, .rec-card, .gal-card, .var-card, .radar-card, .ov-top-card { border-color: color-mix(in srgb, var(--c-border) 65%, #fff); box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
+.rec-card.selected { border-color: var(--c-primary); }
+.verdict-metrics { background: #fff; }
+/* Phones: a gallery status row whose only action is dismiss keeps the × beside the text, not on its own line. */
+@media (max-width: 767px) { .gal-status-actions:not(:has(.ant-btn:not(.ant-btn-icon-only))) { width: auto; padding-left: 0; margin-left: auto; } }
