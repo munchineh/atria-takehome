@@ -266,7 +266,7 @@ function VariationCard({
             </Button>
           ) : (
             <Button size={mobile ? 'large' : 'middle'} className="var-main" icon={<EditOutlined />} onClick={onRefine}>
-              Refine
+              Edit
             </Button>
           )}
           {/* 301 (Mancini 19:47): every creative is already in the gallery, so this selects it to compare or link. */}

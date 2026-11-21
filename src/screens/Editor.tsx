@@ -140,7 +140,7 @@ export function Editor() {
       <div className="page">
         <Empty description={<strong>This variation was deleted</strong>}>
           <Button type="primary" onClick={() => nav(ws.roundPath(c.id))}>
-            View variations
+            View creatives
           </Button>
         </Empty>
       </div>
@@ -327,7 +327,7 @@ export function Editor() {
           </span>
         </button>
         <button type="button" role="radio" aria-checked={methodNow === 'stylized'} disabled={!v.stylized && !canStylize} className={`ed-method ${methodNow === 'stylized' ? 'on' : ''}`} onClick={() => pickMethod('stylized')}>
-          <b>Stylized with AI</b>
+          <b>Text with AI</b>
           <span className="t-help">
             {v.stylized
               ? 'Atria redraws the whole image with the new text in it.'
@@ -348,7 +348,7 @@ export function Editor() {
               <label className="ed-style-note">
                 <span className="t-label">Text style (optional)</span>
                 <Input.TextArea value={styleNote} onChange={(e) => setStyleNote(e.target.value)} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="For example, hand-drawn chalk lettering" maxLength={160} />
-                <span className="t-help">This will only adjust the text generated on the image. Choose Whole image to edit the full prompt.</span>
+                <span className="t-help">This will only adjust the text generated on the image. Choose "Change the image" to edit the full prompt.</span>
               </label>
             )}
             <div className="ed-text-action">
@@ -549,8 +549,8 @@ export function Editor() {
             setEditing(false);
           }}
           options={[
-            { label: 'Whole image', value: 'image' },
-            { label: 'Text only', value: 'text' },
+            { label: 'Change the image', value: 'image' },
+            { label: 'Change text', value: 'text' },
           ]}
         />
       </div>

@@ -266,7 +266,7 @@ function RecCard({
             <span>{footer.text}</span>
             {footer.action && (
               <Button type="link" size="small" onClick={footer.action}>
-                View variations
+                View creatives
               </Button>
             )}
           </motion.div>
@@ -518,7 +518,7 @@ export function AdDetail() {
                 </Button>
               ) : selected.length === 0 && s.kind === 'ready' ? (
                 <Button type="primary" size="large" onClick={() => viewRound(s.jobId)}>
-                  View variations
+                  View creatives
                 </Button>
               ) : dupOnly ? (
                 <Button type="primary" size="large" onClick={duplicate}>

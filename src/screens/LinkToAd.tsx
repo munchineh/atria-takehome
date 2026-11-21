@@ -141,7 +141,7 @@ export function LinkToAd() {
         <div className="detail-right link-right">
           {/* Projected score, compared with the ad it came from. */}
           <motion.div variants={fadeUp} initial="hidden" animate="show" className="panel link-proj">
-            <SectionHead title="Projected score" help={`An estimate against ${sourceAd.name}, from how similar changes did in this account.`} />
+            <SectionHead title="Projected score" help={`An estimate against ${sourceAd.name}.`} />
             <div className="link-proj-row">
               {(
                 [
