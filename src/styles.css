@@ -3277,3 +3277,10 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .personas-side .persona-card > .persona-flag.ant-btn,
 .personas-side .persona-card > .persona-reported { grid-column: 2; justify-self: start; margin: 4px 0 0 -7px; }
 .personas-side .persona-card > .persona-reported { margin: 6px 0 0; }
+
+/* 310 Page label ("Ad Analytics", "Ad Details"): a neutral eyebrow, regular weight, on the same line as the tags
+   (Mancini 22 Nov 00:21). Was orange Semi Bold on its own line. */
+.page-kind { display: inline-flex; align-items: center; gap: 6px; margin: 0 4px 0 0; font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 400; color: var(--c-text-2); }
+.page-kind .anticon { font-size: 14px; color: var(--c-text-3); }
+.lib-ad-title .page-kind { margin-bottom: 0; }
+.lib-eyebrow { margin-bottom: 0; }

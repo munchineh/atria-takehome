@@ -705,11 +705,12 @@ export function AdDetail() {
 
         <motion.section className="detail-right" variants={section} initial="hidden" animate="show">
           <motion.div variants={fadeUp} className="ad-title">
-            {/* Row 304 (Mancini 20:45): names the page, so it isn't mistaken for Ad Details in Ad Library. */}
-            <span className="page-kind">
-              <LineChartOutlined /> Ad Analytics
-            </span>
             <div className="ph-eyebrow">
+              {/* Row 304 (Mancini 20:45): names the page, so it isn't mistaken for Ad Details in Ad Library.
+                  Row 310 (Mancini 22 Nov 00:21): a neutral eyebrow on the same line as the tags. */}
+              <span className="page-kind">
+                <LineChartOutlined /> Ad Analytics
+              </span>
           <>
             {/* Mancini 14:47: the ad's group and goal as pill chips above its name, as in mock B. */}
             <span className={`state-chip tone-${c.tab}`}>

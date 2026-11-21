@@ -153,11 +153,13 @@ export function LibraryAd() {
 
         <div className="detail-right">
           <div className="lib-ad-title">
-            {/* Row 304: names the page, so it isn't mistaken for Ad Analytics. */}
-            <span className="page-kind">
-              <ProfileOutlined /> Ad Details
-            </span>
-            {pending ? <span className="lib-status s-not-running">Not saved</span> : <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>}
+            {/* Row 304: names the page, so it isn't mistaken for Ad Analytics. Row 310: a neutral eyebrow on the status line. */}
+            <div className="ph-eyebrow lib-eyebrow">
+              <span className="page-kind">
+                <ProfileOutlined /> Ad Details
+              </span>
+              {pending ? <span className="lib-status s-not-running">Not saved</span> : <span className={`lib-status s-${a.status.replace(' ', '-').toLowerCase()}`}>{a.status}</span>}
+            </div>
             <h1 className="ph-title">{a.name}</h1>
             <p className="ph-desc">
               {a.source}
