@@ -2400,3 +2400,12 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .copies-link:focus-visible { outline: 2px solid var(--c-primary); outline-offset: 2px; border-radius: var(--r-tag); }
 .runs2-share { white-space: nowrap; } .runs2-share-of { font-weight: 400; font-size: var(--fs-small); color: var(--c-text-2); } /* 155 */
 .runs2-actions { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; } .runs2-actions .runs2-out.ant-btn { margin: 0; color: var(--c-text); } /* 156 */
+/* 158 New creative modal: 4 px from the title to its intro line, 16 px to the options. */
+.nc-modal .ant-modal-header, .ant-modal:has(.nc-intro) .ant-modal-header { margin-bottom: 4px; }
+.nc-intro { margin: 0 0 16px; }
+.nc-intro { margin: 0; }
+/* 159 Tasks panel: dividers are inset to the 14 px padding instead of running edge to edge; the footer loses its grey band. */
+.tasks-head, .task-row, .note-row { border-bottom: 0; background-image: linear-gradient(var(--c-border-2), var(--c-border-2)); background-size: calc(100% - 28px) 1px; background-position: 14px 100%; background-repeat: no-repeat; }
+.task-row:last-child { background-image: none; }
+.tasks-foot { border-top: 0; background-color: transparent; background-image: linear-gradient(var(--c-border-2), var(--c-border-2)); background-size: calc(100% - 28px) 1px; background-position: 14px 0; background-repeat: no-repeat; }
+.task-row.openable:hover, .note-row:hover { background-color: var(--c-fill-2); }

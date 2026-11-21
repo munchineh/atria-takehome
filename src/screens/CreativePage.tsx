@@ -264,7 +264,7 @@ export function CreativePage() {
               ) : (
                 <div>
                   <dt>Started</dt>
-                  <dd>{origin === 'clone' ? 'Ads you like' : 'Generated with AI'}</dd>
+                  <dd>{origin === 'clone' ? 'Ads you like' : 'AI playground'}</dd>
                 </div>
               )}
               {v.from && (

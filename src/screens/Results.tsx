@@ -410,7 +410,7 @@ export function Results() {
             <span className="orig-title">{c.project ? 'Starting point' : 'Original'}</span>
             <Creative c={c} />
             {c.project && (
-              <span className="t-help">{c.project === 'clone' ? 'From an ad you like' : 'Generated with AI'}{'\u00a0'}· not on Radar</span>
+              <span className="t-help">{c.project === 'clone' ? 'From an ad you like' : 'AI playground'}{'\u00a0'}· not on Radar</span>
             )}
           </aside>
         )}

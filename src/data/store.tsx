@@ -46,7 +46,7 @@ export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === 
 export type NewCreativeStart = 'scratch' | 'clone';
 export const NEW_CREATIVE_STARTS: { value: NewCreativeStart; title: string; help: string }[] = [
   // Mancini 10:31: two starts, named the same as the gallery tabs (From a brief, Clones). Reference and clone were one idea told twice.
-  { value: 'scratch', title: 'Generate with AI', help: 'Describe the product, who it\u2019s for, the goal and the tone.' },
+  { value: 'scratch', title: 'AI playground', help: 'Create creatives first and turn them into an ad later.' },
   { value: 'clone', title: 'Start from ads you like', help: 'Pick 1 to 10 ads. Atria rebuilds their idea with your brand and product.' },
 ];
 let projectCount = 0;
@@ -54,7 +54,7 @@ let projectCount = 0;
 export function newProject(start: NewCreativeStart, name: string, accountId: string): Creative {
   projectCount += 1;
   const base = PROJECT_CREATIVES.find((c) => c.project === (start === 'clone' ? 'clone' : 'scratch')) ?? PROJECT_CREATIVES[0];
-  const c: Creative = { ...base, id: `${start}-new-${projectCount}`, accountId, name: name.trim() || (start === 'clone' ? 'Cloned ad' : 'Untitled creative'), project: start === 'clone' ? 'clone' : 'scratch', ads: [] };
+  const c: Creative = { ...base, id: `${start}-new-${projectCount}`, accountId, name: name.trim() || (start === 'clone' ? 'From an ad you like' : 'Untitled creative'), project: start === 'clone' ? 'clone' : 'scratch', ads: [] };
   ALL_CREATIVES.push(c);
   return c;
 }

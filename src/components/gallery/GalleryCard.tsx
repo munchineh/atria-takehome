@@ -50,7 +50,7 @@ export function GalleryCard({
   ) : (
     <span className="gal-source">
       <FormOutlined />
-      <span>Generated with AI</span>
+      <span>AI playground</span>
     </span>
   );
 
