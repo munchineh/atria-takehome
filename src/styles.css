@@ -2676,3 +2676,11 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .verdict-metrics { background: #fff; }
 /* Phones: a gallery status row whose only action is dismiss keeps the × beside the text, not on its own line. */
 @media (max-width: 767px) { .gal-status-actions:not(:has(.ant-btn:not(.ant-btn-icon-only))) { width: auto; padding-left: 0; margin-left: auto; } }
+/* 205 (continued): the phone tap-target rule has to outrank the 32 px desktop minimum. */
+@media (max-width: 767px) {
+  html body .ant-btn:not(.inline-link):not(.ant-btn-link):not(.persona-flag):not(.toast-action) { min-height: 44px !important; }
+  html body .ant-btn.ant-btn-icon-only:not(.persona-flag) { min-width: 44px; }
+  .ant-segmented .ant-segmented-item-label { min-height: 40px !important; line-height: 40px !important; }
+}
+/* 211 Phones: cards on the ad page sit 12 px apart, the same as the suggestion cards. */
+@media (max-width: 767px) { .detail-grid { gap: 12px; } }

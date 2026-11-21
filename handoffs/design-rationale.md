@@ -260,6 +260,9 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 208 | "Where it runs" sheet on phones: "Open in Meta" and "See ad details" sit side by side at equal width, the primary on the right. | Mancini 15:42 | Stacked, the primary was centered and full width while the text button hugged the left, so the two looked unrelated. The primary on the right is nearer the thumb. |
 | 209 | Ad page metrics: each graded metric shows its value with the grade tag on the right and the account average under it. The band bars are removed. | Mancini 15:43 | The bars were drawn from the letter (A 92%, B 66%, C 36%, D 12%), so they repeated the grade and looked like a measurement they weren't. |
 | 210 | White cards on the grey canvas get a border between the two locked border colors and a 1 px hairline shadow. The metric strip on the ad page is white. | Mancini 15:42 | Card borders (#f0f0f0) were lighter than the canvas (#f5f5f5), so cards had no edge, and the off-white metric strip sat almost on the canvas color. |
+| 211 | Phones: cards on the ad page sit 12 px apart. | Mancini 15:45 | The left-column cards used the 20 px desktop column gap when stacked, wider than the 12 px between suggestion cards. |
+| 212 | Iteration history warning reads "Tests an idea you already tried" in place of "Repeats an earlier test". The full reason stays in Ad history (for example: this goes back to "no price", which A had before the price was changed). | Mancini 15:46 | "Repeats an earlier test" didn't say what was repeated or why it matters. |
+| 213 | Tooltip sweep: fragments lose their full stop ("Open in Meta Ads Manager", "Graded on video ads only", "Made from {ad}", the metric definitions on Radar and Overview). Full sentences keep theirs. | Mancini 15:47 (rule from 14:42) | The rule was applied to the tooltips he pointed at but not swept across the site. |
 
 ## Figma consistency pass (21 Nov, 14:00 to 14:40)
 

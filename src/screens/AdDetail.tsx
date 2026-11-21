@@ -506,7 +506,7 @@ export function AdDetail() {
                               <DownOutlined />
                             </motion.span>
                           </button>
-                          <Tooltip title={`Open in ${platformOf(a)} Ads Manager.`}>
+                          <Tooltip title={`Open in ${platformOf(a)} Ads Manager`}>
                             <Button
                               type="text"
                               size="small"

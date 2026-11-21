@@ -42,7 +42,7 @@ export function GalleryCard({
     )
   ) : item.ad ? (
     hideAd ? null : (
-      <Tooltip title={`Made from ${item.ad.name}.`} mouseEnterDelay={0.5}>
+      <Tooltip title={`Made from ${item.ad.name}`} mouseEnterDelay={0.5}>
         <span className="gal-source">
           <MadeFromIcon />
           <span className="ellipsis">{item.ad.name}</span>

@@ -192,7 +192,7 @@ export function overviewBriefing(account: MockAccount, windowDays: number, jobs:
     changed.push({
       adId: c.id,
       name: c.name,
-      text: `${step.result.text} (${step.result.from} to ${step.result.to}).${step.repeat ? ' Repeats an earlier test.' : ''}`,
+      text: `${step.result.text} (${step.result.from} to ${step.result.to}).${step.repeat ? ' It tests an idea you already tried.' : ''}`,
       tone: step.result.better ? 'good' : 'bad',
     });
   }

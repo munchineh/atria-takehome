@@ -241,7 +241,7 @@ export function HistoryButton({ creative, size = 'small' }: { creative: Creative
       {/* S-12: a help-level action in the page header is a text button with an icon, like Radar's. */}
       <Button type="text" size={size} icon={<HistoryOutlined />} className="history-btn" onClick={() => setOpen(true)}>
         History
-        {lineage.repeats > 0 && <WarningOutlined className="hist-warn-ic" aria-label="Repeats an earlier test" />}
+        {lineage.repeats > 0 && <WarningOutlined className="hist-warn-ic" aria-label="Tests an idea you already tried" />}
       </Button>
       <LineageDrawer open={open} onClose={() => setOpen(false)} lineage={lineage} all={all} />
     </>

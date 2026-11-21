@@ -508,19 +508,19 @@ export function Radar() {
     { title: 'Ad', key: 'name', render: (_, c) => <NameCell c={c} /> },
     {
       // 5d C5d-21 (Mancini's wording). The cell carries the grade only when that metric's column isn't shown (Gm-07, S-46).
-      title: <Head label="Next steps" tip="Suggested based on your ad performance." />,
+      title: <Head label="Next steps" tip="Suggested based on your ad performance" />,
       key: 'rec',
       width: wide ? 170 : 144,
       render: (_, c) => <StatusCell creative={c} status={statusOf(c.id)} withGrade={!weakShown(c)} />,
     },
-    ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one." />, key: 'overall', width: wide ? 84 : 64, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),
+    ...(shown('overall') ? [{ title: <Head label="Overall" tip="All of this ad's grades combined into one" />, key: 'overall', width: wide ? 84 : 64, render: (_: unknown, c: Creative) => <OverallTag creative={c} /> }] : []),
     ...(shown('conv') ? [metricCol('conversion', 'conv', wide ? 104 : 92)] : []),
     ...(shown('hook') ? [metricCol('hook', 'hook', 70)] : []),
     ...(shown('ret') ? [metricCol('retention', 'ret', 92)] : []),
     ...(shown('ctr') ? [metricCol('ctr', 'ctr', wide ? 64 : 56)] : []),
-    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period across all its copies." />, key: 'spend', width: wide ? 124 : 112, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
+    ...(shown('spend') ? [{ title: <Head label="Spend" tip="What this ad spent in the selected period across all its copies" />, key: 'spend', width: wide ? 124 : 112, align: 'right' as const, sorter: (a: Creative, b: Creative) => a.spend - b.spend, defaultSortOrder: 'descend' as const, render: (_: unknown, c: Creative) => money(c.spend) }] : []),
     ...(shown('cpa') ? [{ title: <Head label="CPA" tip="Cost per purchase: spend divided by purchases. Lower is better." />, key: 'cpa', width: 88, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{money(c.values.cpa)}</span> }] : []),
-    ...(shown('roas') ? [{ title: <Head label="ROAS" tip="Purchase value divided by spend." />, key: 'roas', width: 76, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{c.roas.toFixed(2)}</span> }] : []),
+    ...(shown('roas') ? [{ title: <Head label="ROAS" tip="Purchase value divided by spend" />, key: 'roas', width: 76, align: 'right' as const, render: (_: unknown, c: Creative) => <span className="cpa">{c.roas.toFixed(2)}</span> }] : []),
   ];
 
   return (
@@ -766,7 +766,7 @@ export function Radar() {
                     ) : col.key === 'spend' ? (
                       <b>{money(totSpend)}</b>
                     ) : col.key === 'cpa' ? (
-                      <Tooltip title="Total spend divided by total purchases."><b className="cpa">{money(totSpend / totBuys)}</b></Tooltip>
+                      <Tooltip title="Total spend divided by total purchases"><b className="cpa">{money(totSpend / totBuys)}</b></Tooltip>
                     ) : null}
                   </Table.Summary.Cell>
                 ))}

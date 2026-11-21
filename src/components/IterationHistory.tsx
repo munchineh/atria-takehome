@@ -84,7 +84,7 @@ export function IterationHistory({ items, limit = 5, empty, onNavigate }: { item
                       </span>
                       {r.repeat && (
                         <span className="ih-repeat">
-                          <WarningOutlined aria-hidden /> Repeats an earlier test
+                          <WarningOutlined aria-hidden /> Tests an idea you already tried
                         </span>
                       )}
                     </span>

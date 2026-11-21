@@ -74,7 +74,7 @@ function Kpi({ label, value, help, delta, compact }: { label: string; value: str
     <div className={compact ? 'ov-stat' : 'ov-tile'}>
       <span className="ov-tile-label">
         {label}
-        <Tooltip title={`${help.replace(/\u00a0/g, ' ')}.`}>
+        <Tooltip title={help.replace(/\u00a0/g, ' ')}>
           <InfoCircleOutlined className="ov-tile-info" aria-label={`About ${label}`} />
         </Tooltip>
       </span>

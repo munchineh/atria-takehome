@@ -7,7 +7,7 @@ import { METRIC_META, WINDOWS, money, type Creative, type Grade, type MetricKey 
 export function GradeChip({ g }: { g: Grade }) {
   if (!g)
     return (
-      <Tooltip title="Graded on video ads only.">
+      <Tooltip title="Graded on video ads only">
         <span className="na">N/A</span>
       </Tooltip>
     );
