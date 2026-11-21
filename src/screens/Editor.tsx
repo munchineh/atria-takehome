@@ -17,7 +17,7 @@ import { ACCOUNT, CREATIVES, METRIC_META, plural, recommendationsFor, type AdCop
 import { accountOf, findCreative, useStore } from '../data/store';
 import { hubCrumb, useWorkspace } from '../data/nav';
 import { CHIPS, REASONS, STYLIZED, ratioFor, TAG_TIPS, predictedCtr, promptFor, tagsFor, type Version } from '../data/variations';
-import { AdArt } from '../components/Thumb';
+import { AdArt, Thumb } from '../components/Thumb';
 import { duration, ease, fadeUp, pageTransition, spring } from '../motion/tokens';
 import { ReportAudience } from '../components/ReportAudience';
 import { Rating } from '../components/Rating';
@@ -612,29 +612,6 @@ export function Editor() {
         </p>
       )}
 
-      {rec && (
-        <section className="panel ed-diag-banner" aria-label="Original ad diagnostic">
-          <span className="t-help ed-diag-from">Original ad</span>
-          <div className="ed-diag-head">
-            <span className="ed-diag-metric">{recMetricLabel}</span>
-            {recGrade ? (
-              <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
-            ) : (
-              <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
-                <Tag className="rec-grade no-grade">No grade</Tag>
-              </Tooltip>
-            )}
-            {recVal && <span className="ed-diag-val">{recVal}</span>}
-            {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
-          </div>
-          <p className="ed-diag-issue">{rec.issue}</p>
-          <p className="ed-diag-fix">
-            <ArrowRightOutlined aria-hidden />
-            <span>{rec.fix}</span>
-          </p>
-        </section>
-      )}
-
       <div className="ed-grid">
         {canvas}
         <aside className={`ed-panel panel ${locked ? 'locked' : ''}`}>
@@ -661,6 +638,38 @@ export function Editor() {
           {tagBlock}
         </aside>
       </div>
+
+      {rec && (
+        <section className="panel ed-related" aria-label="Related ads">
+          {/* Mancini 15:15: a creative isn't an ad, so the ad it was made from is a section of its own. It's a list because a creative can relate to more than one ad. */}
+          <SectionHead title="Related ads" help="The ad this creative was made from and the problem it was made to fix." />
+          <Link to={ws.radarPath(c.id)} className="ed-related-ad">
+            <Thumb c={c} size={36} />
+            <span className="ed-related-id">
+              <b>{c.name}</b>
+              <span className="t-help">Made from this ad</span>
+            </span>
+          </Link>
+          <div className="ed-diag-head">
+            <span className="ed-diag-metric">{recMetricLabel}</span>
+            {recGrade ? (
+              <Tag className={`grade-tag g-${recGrade[0]}`}>{recGrade}</Tag>
+            ) : (
+              <Tooltip title={`${recMetricLabel} isn't graded on this account. Radar grades conversion on ${ACCOUNT.conversionMetric}.`}>
+                <Tag className="rec-grade no-grade">No grade</Tag>
+              </Tooltip>
+            )}
+            {recVal && <span className="ed-diag-val">{recVal}</span>}
+            {recAvg && <span className="t-help">Account average{'\u00a0'}{recAvg}</span>}
+          </div>
+          <p className="ed-diag-issue">{rec.issue}</p>
+          <p className="ed-diag-fix">
+            <ArrowRightOutlined aria-hidden />
+            <span>{rec.fix}</span>
+          </p>
+        </section>
+      )}
+
 
       <AnimatePresence>
         {mobile && !locked && ask.trim().length > 0 && (

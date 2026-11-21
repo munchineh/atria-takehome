@@ -2477,3 +2477,64 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .bar-list-track i.neutral { background: var(--c-info); opacity: 1; }
 .tag-share i { background: var(--c-info); }
 .div-meta + .div-meta { margin-top: 0; }
+
+/* 169 "Suggestion used" and "Top pick" tags: deeper orange fill, no stroke. */
+.rec-suggested.ant-tag { border: 0; background: color-mix(in srgb, var(--c-primary) 16%, transparent); }
+/* 171 Ad history panel: floating sheet on desktop, title with its help line, fill cards without strokes, rounds shown as thumbnail rows. */
+@media (min-width: 768px) {
+  .lineage-drawer.ant-drawer .ant-drawer-content-wrapper { top: 8px; bottom: 8px; right: 8px; border-radius: var(--r-surface); overflow: hidden; box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12); }
+  .lineage-drawer .ant-drawer-header { border-bottom: 0; padding: 20px 24px 4px; align-items: flex-start; }
+  .lineage-drawer .ant-drawer-body { padding: 16px 24px 24px; }
+}
+.lin-drawer-title { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.lin-drawer-name { display: inline-flex; align-items: center; gap: 8px; font-size: var(--fs-section, 16px); font-weight: 600; }
+.lin-drawer-title .t-help { font-weight: 400; white-space: normal; }
+.lin-path-tag.ant-tag, .lin-current-tag.ant-tag { border: 0; background: var(--c-fill); color: var(--c-text); font-weight: 400; }
+.lin-current-tag.is-this.ant-tag { background: color-mix(in srgb, var(--c-primary) 16%, transparent); font-weight: 600; }
+.lin-intro:empty { display: none; }
+.lin-card, .lin-card.is-current, .lin-card.has-repeat { border: 0; background: var(--c-fill-2); border-radius: var(--r-surface); padding: 16px; gap: 12px; margin-bottom: 12px; }
+.lin-card.is-current { background: var(--c-primary-tint); }
+.lin-card-head { gap: 12px; align-items: center; }
+.lin-letter { margin-top: 18px; border: 0; background: var(--c-fill); }
+.lin-letter.current { background: var(--c-primary); }
+.lin-line { width: 1px; background: var(--c-border-2); }
+.lin-branches { flex-direction: column; flex-wrap: nowrap; gap: 8px; padding-top: 0; border-top: 0; }
+.lin-branches-label { font-size: var(--fs-small); line-height: var(--lh-small); color: var(--c-text-3); }
+.lin-round { all: unset; box-sizing: border-box; display: flex; align-items: center; gap: 12px; padding: 8px 12px 8px 8px; border-radius: var(--r-control); background: #fff; cursor: pointer; }
+.lin-round:hover { box-shadow: 0 0 0 1px var(--c-primary-border); }
+.lin-round:focus-visible { box-shadow: 0 0 0 2px var(--c-primary-border); }
+.lin-round-thumbs { display: flex; gap: 4px; flex: none; }
+.lin-round-thumbs .thumb { border-radius: var(--r-tag); }
+.lin-round-more { width: 40px; height: 40px; display: grid; place-items: center; border-radius: var(--r-tag); background: var(--c-fill); font-size: var(--fs-small); color: var(--c-text-2); }
+.lin-round-text { flex: 1; min-width: 0; display: flex; flex-direction: column; font-size: var(--fs-body, 14px); }
+.lin-round-text b { font-weight: 600; }
+.lin-round > .anticon { font-size: 12px; color: var(--c-text-3); }
+@media (max-width: 767px) { .lin-round-thumbs .thumb:nth-child(n+3) { display: none; } }
+/* 172 Creative page status: "Draft" and "Archived" sit in a grey fill like every other read-only tag. */
+.cp-status.ant-tag:not(.ant-tag-blue) { border: 0; background: var(--c-fill); color: var(--c-text); padding: 0 8px; }
+
+/* 173 Button icons move a little on hover (transform only): download drops, edit tilts, the rest lift. */
+.ant-btn .ant-btn-icon .anticon { transition: transform 160ms cubic-bezier(0.2, 0, 0, 1); }
+.ant-btn:not(:disabled):hover .ant-btn-icon .anticon { transform: translateY(-1px) scale(1.06); }
+.ant-btn:not(:disabled):hover .ant-btn-icon .anticon-download { transform: translateY(2px); }
+.ant-btn:not(:disabled):hover .ant-btn-icon .anticon-edit { transform: rotate(-10deg); }
+@media (prefers-reduced-motion: reduce) { .ant-btn .ant-btn-icon .anticon { transition: none; transform: none !important; } }
+/* 170 Suggestion heading on the variations page: the tag is a solid box and the last line is text, so the bottom padding is 4 px smaller to look equal. */
+.var-group-head { padding: 16px 16px 12px; }
+/* 174 Predicted grades: the dashed stroke takes the grade's own color, a step deeper than its border tint. */
+.predicted.grade-tag.g-A { border-color: color-mix(in srgb, var(--c-success) 55%, transparent) !important; }
+.predicted.grade-tag.g-B { border-color: color-mix(in srgb, var(--c-info) 55%, transparent) !important; }
+.predicted.grade-tag.g-C { border-color: color-mix(in srgb, var(--c-warning) 55%, transparent) !important; }
+.predicted.grade-tag.g-D { border-color: color-mix(in srgb, var(--c-error) 55%, transparent) !important; }
+/* 175 "Show the brief": chevron from the icon set with an 8 px gap, turns when open, and the focus ring only shows for keyboards. */
+.cp-brief summary { display: inline-flex; align-items: center; gap: 8px; list-style: none; cursor: pointer; color: var(--c-primary); border-radius: var(--r-tag); outline: none; }
+.cp-brief summary::-webkit-details-marker { display: none; }
+.cp-brief summary .anticon { font-size: 12px; transition: transform 160ms cubic-bezier(0.2, 0, 0, 1); }
+.cp-brief[open] summary .anticon { transform: rotate(90deg); }
+.cp-brief summary:focus-visible { box-shadow: 0 0 0 2px var(--c-primary-border); }
+/* 176 Editor: "Related ads" is a section under the editor, not a banner above it. */
+.ed-related { display: flex; flex-direction: column; gap: 8px; margin-top: 16px; }
+.ed-related-ad { display: flex; align-items: center; gap: 12px; padding: 8px; margin: 4px -8px 0; border-radius: var(--r-control); color: var(--c-text); }
+.ed-related-ad:hover { background: var(--c-fill); color: var(--c-text); }
+.ed-related-id { display: flex; flex-direction: column; min-width: 0; }
+.ed-related-id b { font-weight: 600; }

@@ -61,7 +61,8 @@ function StepCard({
                   {step.name}
                 </button>
               )}
-              {step.current && <Tag className="lin-current-tag">Current</Tag>}
+              {step.letter === 'A' && <Tag className="lin-current-tag">Original</Tag>}
+              {step.current && <Tag className="lin-current-tag is-this">This ad</Tag>}
             </div>
             {/* G2 (R-L) & G3 (R-N1): keep date + placement joined without trailing dot; spend on its own line in whole dollars. */}
             <div className="lin-meta">
@@ -86,10 +87,13 @@ function StepCard({
           </div>
         )}
 
-        <div className="lin-body">
-          <p className="lin-summary">{step.summary}</p>
-          {step.reason && <p className="lin-reason">{step.reason}</p>}
-        </div>
+        {/* Mancini 15:12: the first step says "Original" as a tag, so it needs no body line. */}
+        {step.summary !== 'Original ad' && (
+          <div className="lin-body">
+            <p className="lin-summary">{step.summary}</p>
+            {step.reason && <p className="lin-reason">{step.reason}</p>}
+          </div>
+        )}
 
         {step.repeat && (
           <div className="lin-repeat" role="status">
@@ -103,13 +107,21 @@ function StepCard({
 
         {(step.rounds.length > 0 || step.branchIds.length > 0) && (
           <div className="lin-branches">
+            {step.rounds.length > 0 && <span className="lin-branches-label">Variations made from this ad</span>}
             {step.rounds.map((r) => (
-              <button key={r.jobId} type="button" className="lin-branch-chip" onClick={() => onOpenRound(step.id, r.jobId)}>
-                <MadeFromIcon />
-                <span>
-                  {r.date}
-                  {'\u00a0'}· {plural(r.kept || r.count, 'variation')}
-                  {r.versions > 0 ? `\u00a0· ${plural(r.versions, 'version')}` : ''}
+              <button key={r.jobId} type="button" className="lin-round" onClick={() => onOpenRound(step.id, r.jobId)}>
+                <span className="lin-round-thumbs" aria-hidden>
+                  {r.imgs.slice(0, 4).map((img, k) => (
+                    <Thumb key={k} c={{ img, media: 'Image', name: '' }} size={40} />
+                  ))}
+                  {r.imgs.length > 4 && <span className="lin-round-more">+{r.imgs.length - 4}</span>}
+                </span>
+                <span className="lin-round-text">
+                  <b>{r.date}</b>
+                  <span className="t-help">
+                    {plural(r.kept || r.count, 'variation')}
+                    {r.versions > 0 ? `\u00a0· ${plural(r.versions, 'version')}` : ''}
+                  </span>
                 </span>
                 <RightOutlined aria-hidden />
               </button>
@@ -174,15 +186,16 @@ export function LineageDrawer({
       }
       title={
         <div className="lin-drawer-title">
-          <span>Ad history</span>
-          <Tag className="lin-path-tag">{lineage.path}</Tag>
+          <span className="lin-drawer-name">
+            Ad history <Tag className="lin-path-tag">{lineage.path}</Tag>
+          </span>
+          <span className="t-help">See what changed at each step and how it did against the ad before it.</span>
         </div>
       }
       className={`lineage-drawer ${mobile ? 'pop-sheet lineage-sheet' : ''}`}
       destroyOnHidden
     >
       <div className="lin-intro">
-        <p className="t-help">Trace each step from the original ad: what changed and how it did against its parent.</p>
         {lineage.repeats > 0 && (
           /* G4 (R-V): use the specific repeat explanation from the first repeating step instead of generic copy. */
           <Alert

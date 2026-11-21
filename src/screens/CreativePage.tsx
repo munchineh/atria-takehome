@@ -11,8 +11,7 @@ import {
   DownloadOutlined,
   EditOutlined,
   EllipsisOutlined,
-  LockOutlined,
-} from '../components/AppIcons';
+  LockOutlined, RightOutlined } from '../components/AppIcons';
 import { CREATIVES, plural } from '../data/mock';
 import { findCreative, recName, useStore } from '../data/store';
 import { TAG_TIPS, predictedCtr, ratioFor, tagsFor } from '../data/variations';
@@ -235,8 +234,12 @@ export function CreativePage() {
               </dl>
             ) : (
               <div className="cp-empty">
-                {/* Mancini 14:57: "made from an ad" and "running in an ad" are two different links. Say which one this is. */}
-                <p className="t-help">Not running in any ad yet. It was made from an ad, and it only runs once you add it to one.</p>
+                {/* Mancini 15:13: a variation belongs to the ad it was made from. It's a draft of that ad, not a creative without an ad. */}
+                <p className="t-help">
+                  {origin === 'ad'
+                    ? `Draft variation of ${c.name}. It isn't live yet.`
+                    : 'Not in an ad yet.'}
+                </p>
                 <Button onClick={() => nav(`/creation/${c.id}?round=${job.id}`)}>Add to an ad</Button>
               </div>
             )}
@@ -282,7 +285,7 @@ export function CreativePage() {
             </dl>
             {briefs[c.product] && (
               <details className="cp-brief">
-                <summary>Show the brief</summary>
+                <summary><RightOutlined aria-hidden /> Show the brief</summary>
                 <p>{briefs[c.product]}</p>
               </details>
             )}

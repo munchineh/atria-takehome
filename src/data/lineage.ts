@@ -100,7 +100,7 @@ export interface LineageStep {
   /** True for the ad the lineage was opened from. */
   current: boolean;
   /** Variations made from this step that are not live ads (yet), newest round first. */
-  rounds: { jobId: string; date: string; count: number; kept: number; state: Job['state']; versions: number }[];
+  rounds: { jobId: string; date: string; count: number; kept: number; state: Job['state']; versions: number; imgs: string[] }[];
   /** Other live ads made from this step (branches off the main chain). */
   branchIds: string[];
 }
@@ -213,6 +213,7 @@ export function lineageOf(currentId: string, all: Creative[], jobs: Job[] = [], 
         count: j.count,
         kept: j.state === 'failed' ? 0 : j.count - j.failed.length,
         state: j.state,
+        imgs: j.variations.map((v) => v.img),
         versions: versionsOf ? j.variations.reduce((n, v) => n + Math.max(0, versionsOf(v).length - 1), 0) : 0,
       }))
       .reverse();
