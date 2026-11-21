@@ -87,7 +87,7 @@ export function LinkToAd() {
   return (
     <motion.div {...pageTransition} className="page link-ad">
       <header className="ph ad-top">
-        <Breadcrumb className="ph-crumbs" items={[{ title: <Link to="/creation">Creative Gallery</Link> }, { title: 'Link to Ad' }]} />
+        <Breadcrumb className="ph-crumbs" items={[{ title: <Link to="/creation">Creative Gallery</Link> }, { title: 'Create ad' }]} />
         <div className="ph-actions">
           <Button onClick={() => nav(-1)}>Cancel</Button>
           <Button type="primary" disabled={!ready} onClick={create}>
@@ -96,8 +96,8 @@ export function LinkToAd() {
         </div>
       </header>
       <div className="link-title">
-        <h1 className="ph-title">Link to Ad</h1>
-        <p className="ph-desc">Set up the ad around this creative. It's saved in Ad Library as not running until you open it in Ads Manager.</p>
+        <h1 className="ph-title">Create ad</h1>
+        <p className="ph-desc">Link this creative to a new ad. It's saved in Ad Library as not running until you open it in Ads Manager.</p>
       </div>
 
       <div className="detail-grid">

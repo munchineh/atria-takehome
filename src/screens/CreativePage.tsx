@@ -237,7 +237,7 @@ export function CreativePage() {
               <p className="t-help cp-empty-line">Not in an ad yet.</p>
             )}
             <Button className="cp-link-btn" icon={<LinkOutlined />} onClick={() => nav(`/creation/link/${v.id}?round=${job.id}`)}>
-              Link to Ad
+              Create ad
             </Button>
           </motion.section>
 

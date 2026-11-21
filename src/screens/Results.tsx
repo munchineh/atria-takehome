@@ -575,7 +575,7 @@ export function Results() {
             {mobile ? (
               <div className="res-bar-actions">
                 <Button type="primary" icon={<LinkOutlined />} disabled={shortlist.length !== 1} onClick={linkOne}>
-                  Link to Ad
+                  Create ad
                 </Button>
                 <Dropdown
                   trigger={['click']}
@@ -606,7 +606,7 @@ export function Results() {
                 </Button>
                 <Tooltip title={shortlist.length > 1 ? 'Select one creative to link it to an ad.' : undefined}>
                   <Button type="primary" icon={<LinkOutlined />} disabled={shortlist.length !== 1} onClick={linkOne}>
-                    Link to Ad
+                    Create ad
                   </Button>
                 </Tooltip>
                 <Button type="text" className="on-dark" onClick={() => setShortlist([])}>
