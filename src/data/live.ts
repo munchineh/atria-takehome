@@ -59,7 +59,7 @@ async function toJpeg(slot: string): Promise<string | null> {
 
 let n = 0;
 /** Returns a new slot holding the generated image, or null to keep the sample. */
-export async function generateLive(fromSlot: string, instruction: string, ratio: '2:3' | '3:4' = '2:3', text?: string): Promise<string | null> {
+export async function generateLive(fromSlot: string, instruction: string, ratio: '2:3' | '3:4' = '2:3', text?: string, style?: string): Promise<string | null> {
   if (!quota.live || quota.left <= 0) return null;
   try {
     const imageData = await toJpeg(fromSlot);
@@ -67,7 +67,7 @@ export async function generateLive(fromSlot: string, instruction: string, ratio:
     const r = await fetch('./api/generate', {
       method: 'POST',
       headers: { 'content-type': 'application/json', 'x-visitor': visitor },
-      body: JSON.stringify({ imageData, mime: 'image/jpeg', instruction, ratio, ...(text ? { text } : {}) }),
+      body: JSON.stringify({ imageData, mime: 'image/jpeg', instruction, ratio, ...(text ? { text } : {}), ...(style ? { style } : {}) }),
     });
     const out = (await r.json()) as { image?: string; left?: number; limit?: number; sample?: boolean; reason?: string };
     if (out.sample) {

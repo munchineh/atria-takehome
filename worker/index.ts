@@ -80,7 +80,7 @@ async function generate(req: Request, env: Env) {
   if (!q.live) return json({ sample: true, reason: 'off' });
   if (q.left <= 0) return json({ sample: true, reason: 'limit', limit: q.limit, left: 0 });
 
-  const body = (await req.json().catch(() => null)) as { image?: string; imageData?: string; mime?: string; instruction?: string; ratio?: string; text?: string } | null;
+  const body = (await req.json().catch(() => null)) as { image?: string; imageData?: string; mime?: string; instruction?: string; ratio?: string; text?: string; style?: string } | null;
   const instruction = (body?.instruction ?? '').slice(0, 600);
   if (!instruction) return json({ error: 'bad request' }, 400);
   let mime = 'image/webp';
@@ -101,11 +101,13 @@ async function generate(req: Request, env: Env) {
 
   // Stylized text (plan item 11): the model draws the headline into the image instead of the app overlaying it.
   const drawText = (body?.text ?? '').replace(/["\n\r]/g, ' ').slice(0, 120).trim();
+  // Optional lettering style typed by the user in the editor ("Text style"). It only steers how the text is drawn.
+  const style = (body?.style ?? '').replace(/["\n\r]/g, ' ').slice(0, 160).trim();
   const prompt =
     `You are making a new variation of this social media ad photo. ${instruction} ` +
     'Keep the same product, recognisable and accurate. Photographic, natural light. ' +
     (drawText
-      ? `Draw this ad text into the image in bold, expressive display lettering that suits the product, spelled exactly as written: "${drawText}". Add no other text or logos.`
+      ? `Draw this ad text into the image, spelled exactly as written: "${drawText}". ${style ? `Lettering style: ${style}. Change only the lettering and keep the rest of the image as it is.` : 'Use bold, expressive display lettering that suits the product.'} Add no other text or logos.`
       : 'Do not add any text, letters, logos, prices or buttons to the image: the ad copy is added separately.');
 
   const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent`, {

@@ -393,9 +393,10 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       addVariation(jobId, nv);
       land(nid, 1, 3000);
       if (how === 'prompt') liveVersion(nid, 1, last.img, note);
-      // No ready-made render: ask the model to draw the text in; when it lands, the overlay copy is dropped.
-      if (how === 'stylized' && !render && last.copy)
-        void generateLive(last.img, 'Keep the composition. Leave clear space for the text.', '3:4', adText(last.copy)).then((slot) => {
+      // Ask the model to draw the text in when there is no ready-made render, or when the user typed a text style
+      // (a ready-made render can't follow it). When it lands, the overlay copy is dropped.
+      if (how === 'stylized' && last.copy && (!render || note))
+        void generateLive(last.img, 'Keep the composition. Leave clear space for the text.', '3:4', adText(last.copy), note || undefined).then((slot) => {
           if (slot) setVersions((p) => ({ ...p, [nid]: (p[nid] ?? []).map((x) => (x.n === 1 ? { ...x, img: slot, copy: undefined } : x)) }));
         });
       return nid;
