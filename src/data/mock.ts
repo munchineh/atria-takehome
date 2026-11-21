@@ -19,6 +19,9 @@ export const ACCOUNT = {
   name: 'Moody Mochi',
   monthlySpend: 96800,
   credits: 1298,
+  /** Monthly allowance and the date it resets (mock). */
+  creditsPlan: 2000,
+  creditsReset: 'Dec 1',
   creditsPerImage: 4,
   variationsPerRecommendation: 4,
   /** RA-23: the conversion grade is set per account in Radar settings. */

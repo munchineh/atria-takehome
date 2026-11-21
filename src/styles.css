@@ -2545,3 +2545,23 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .acc-toggle .anticon, .cp-brief summary.acc-toggle .anticon { font-size: 12px; color: var(--c-text-3); transition: transform 160ms cubic-bezier(0.2, 0, 0, 1); }
 .acc-toggle[aria-expanded="true"] .anticon, .cp-brief[open] summary.acc-toggle .anticon { transform: rotate(180deg); }
 .cp-brief { padding-top: 4px; }
+/* 181 Editor panel order: save as, what to change, then for text how. Each step has a small label; the two text methods are option rows. */
+.ed-step { display: flex; flex-direction: column; gap: 8px; }
+.ed-step-label { font-size: var(--fs-small); line-height: var(--lh-small); font-weight: 600; color: var(--c-text-2); }
+.ed-step.ed-mode .ed-mode-help { margin: 0; }
+.ed-methods { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 4px; }
+.ed-method { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 12px; border-radius: var(--r-control); background: var(--c-fill-2); cursor: pointer; font-size: var(--fs-body); line-height: var(--lh-body); }
+.ed-method b { font-weight: 600; color: var(--c-text); }
+.ed-method:hover:not(:disabled) { background: var(--c-fill); }
+.ed-method.on { background: color-mix(in srgb, var(--c-primary) 12%, transparent); }
+.ed-method:disabled { cursor: not-allowed; opacity: 0.6; }
+.ed-method:focus-visible { box-shadow: 0 0 0 2px var(--c-primary-border); }
+.ed-prompt { margin-top: 4px; }
+.ed-apply { margin-top: 4px; }
+@media (max-width: 767px) { .ed-methods { grid-template-columns: 1fr; } }
+.ed-method.on, .ed-method.on:hover { background: color-mix(in srgb, var(--c-primary) 12%, transparent); }
+/* 182 Credits: a small ring for how much of the month is left; the popover gives the total and the reset date. */
+.credits { display: inline-flex; align-items: center; gap: 6px; cursor: default; }
+.credits .ant-progress { line-height: 1; }
+.credits-pop { display: flex; flex-direction: column; gap: 2px; max-width: 240px; }
+.credits-pop b { font-weight: 600; }

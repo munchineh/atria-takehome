@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from 'react';
-import { App, Badge, Button, Drawer, Grid, Tooltip } from 'antd';
+import { App, Badge, Button, Drawer, Grid, Tooltip, Popover, Progress } from 'antd';
 import {
   AppstoreOutlined,
   ArrowRightOutlined,
@@ -204,9 +204,23 @@ export function Shell({ children, header }: { children: ReactNode; header?: Reac
                 </span>
               </Tooltip>
             )}
-            <Tooltip title={`Credits left in this workspace. Each image Atria makes uses ${ACCOUNT.creditsPerImage}\u00a0credits.`}>
-              <span className="credits">{credits.toLocaleString('en-US')}{'\u00a0'}credits</span>
-            </Tooltip>
+{/* Mancini 15:21: a ring shows how much of the month's credits is left, and the popover says when it resets. */}
+            <Popover
+              placement="bottomRight"
+              content={
+                <div className="credits-pop">
+                  <b>
+                    {credits.toLocaleString('en-US')} of {ACCOUNT.creditsPlan.toLocaleString('en-US')} credits left
+                  </b>
+                  <span className="t-help">Resets {ACCOUNT.creditsReset}. Each image uses {ACCOUNT.creditsPerImage}{'\u00a0'}credits.</span>
+                </div>
+              }
+            >
+              <span className="credits" tabIndex={0}>
+                <Progress type="circle" size={16} strokeWidth={14} showInfo={false} percent={Math.round((credits / ACCOUNT.creditsPlan) * 100)} strokeColor="var(--c-primary)" aria-hidden />
+                {credits.toLocaleString('en-US')}{'\u00a0'}credits
+              </span>
+            </Popover>
             <Tooltip title={tasksOpen ? '' : 'Tasks'}>
               <motion.span
                 key={bump}

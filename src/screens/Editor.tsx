@@ -78,6 +78,8 @@ export function Editor() {
   const [rating, setRating] = useState<'up' | 'down' | null>(null);
   const [textMode, setTextMode] = useState<'editable' | 'stylized'>('editable');
   const [styleNote, setStyleNote] = useState('');
+  // Mancini 15:20: the panel asks three things in order: save as, what to change, and for text, how.
+  const [scope, setScope] = useState<'image' | 'text'>(params.get('text') === '1' ? 'text' : 'image');
   const [editing, setEditing] = useState(params.get('text') === '1');
   const [draft, setDraft] = useState<AdCopy | undefined>(undefined);
   const [promptOpen, setPromptOpen] = useState(false);
@@ -157,6 +159,8 @@ export function Editor() {
   };
   const chip = (label: string) => {
     if ((label === 'Edit text' || label === 'Fix the text') && !v.stylized) {
+      setScope('text');
+      setMakeNew(false);
       setTextMode('editable');
       setEditing(true);
       return;
@@ -274,34 +278,34 @@ export function Editor() {
     </section>
   );
 
+  const pickMethod = (m: 'editable' | 'stylized') => {
+    setTextMode(m);
+    setEditing(false);
+    // Typed text is always a new version. Stylized text redraws the image, so it is always a new variation.
+    if (!v.stylized) setMakeNew(m === 'stylized');
+  };
+  const methodNow = v.stylized || textMode === 'stylized' ? 'stylized' : 'editable';
   const textBlock = (
-    <section className="ed-block">
-      <SectionHead
-        title="Text"
-        help={
-          v.stylized
-            ? 'Atria drew this text into the image. Changing it makes a new version.'
-            : textMode === 'stylized'
-              ? 'Atria draws the text into the image. It looks richer, but words can come out misspelled.'
-              : 'Text sits on top of the image, so you can change it any time for free.'
-        }
-        action={
-          canStylize ? (
-            <Segmented
-              className="ed-seg"
-              value={textMode}
-              onChange={(m) => {
-                setTextMode(m as typeof textMode);
-                setEditing(false);
-              }}
-              options={[
-                { value: 'editable', label: 'Editable text' },
-                { value: 'stylized', label: 'Stylized text' },
-              ]}
-            />
-          ) : undefined
-        }
-      />
+    <div className="ed-step">
+      <span className="ed-step-label">How to change the text</span>
+      <div className="ed-methods" role="radiogroup" aria-label="How to change the text">
+        <button type="button" role="radio" aria-checked={methodNow === 'editable'} disabled={Boolean(v.stylized)} className={`ed-method ${methodNow === 'editable' ? 'on' : ''}`} onClick={() => pickMethod('editable')}>
+          <b>Type to edit</b>
+          <span className="t-help">
+            {v.stylized
+              ? "Not available. This creative's text is drawn into the image."
+              : 'Free. The text sits on top of the image and stays editable. Saved as a new version.'}
+          </span>
+        </button>
+        <button type="button" role="radio" aria-checked={methodNow === 'stylized'} disabled={!v.stylized && !canStylize} className={`ed-method ${methodNow === 'stylized' ? 'on' : ''}`} onClick={() => pickMethod('stylized')}>
+          <b>Stylized with AI</b>
+          <span className="t-help">
+            {v.stylized
+              ? 'Atria redraws the whole image with the new text in it.'
+              : "Atria redraws the whole image with the text in it. It looks richer, but words can come out misspelled and you can't type over the text afterwards. Always a new variation."}
+          </span>
+        </button>
+      </div>
 
       <AnimatePresence mode="wait" initial={false}>
         {v.stylized || textMode === 'stylized' ? (
@@ -315,8 +319,7 @@ export function Editor() {
               <label className="ed-style-note">
                 <span className="t-label">Text style (optional)</span>
                 <Input.TextArea value={styleNote} onChange={(e) => setStyleNote(e.target.value)} autoSize={{ minRows: 2, maxRows: 4 }} placeholder="For example, hand-drawn chalk lettering" maxLength={160} />
-                <span className="t-help">This will only adjust the text generated on the image. Edit the full prompt below to change the whole image.</span>
-                <span className="t-help ed-style-caveat">The image is drawn again, so small details can shift and the text may not match your description exactly. Check the result before you save it.</span>
+                <span className="t-help">This will only adjust the text generated on the image. Choose Whole image to edit the full prompt.</span>
               </label>
             )}
             <div className="ed-text-action">
@@ -395,100 +398,11 @@ export function Editor() {
           </motion.div>
         )}
       </AnimatePresence>
-    </section>
-  );
-
-  const changeBlock = (
-    <section className="ed-block">
-      <SectionHead title="Refine" />
-      <AnimatePresence initial={false}>
-        {rating === 'down' && (
-          <motion.div key="why" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-reasons">
-            <span className="t-label">What's wrong?</span>
-            <div className="ed-chips">
-              {REASONS.map((r) => (
-                <button key={r.label} type="button" className="chip" onClick={() => reason(r)}>
-                  {r.label}
-                </button>
-              ))}
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-      <label className="ed-field">
-        <span className="ed-label">What should change?</span>
-        <Input.TextArea
-          ref={input as never}
-          value={ask}
-          onChange={(e) => setAsk(e.target.value)}
-          placeholder="e.g. Make the headline shorter"
-          autoSize={{ minRows: 2, maxRows: 5 }}
-          onPressEnter={(e) => {
-            if (!e.shiftKey) {
-              e.preventDefault();
-              apply(ask);
-            }
-          }}
-        />
-      </label>
-      <div className="ed-chips">
-        {CHIPS.map((ch) => (
-          <button key={ch} type="button" className="chip" onClick={() => chip(ch)}>
-            {ch}
-          </button>
-        ))}
-      </div>
-      <AnimatePresence initial={false}>
-        {onOlder && (
-          <motion.div key="older" variants={fadeUp} initial="hidden" animate="show" exit="exit">
-            <Alert
-              type="info"
-              showIcon
-              icon={<MadeFromIcon />}
-              title={`You're on v${shown.n}. A change here makes a new variation, and v${latest.n} stays as it is.`}
-              action={
-                <Button type="link" onClick={() => setSel(null)}>
-                  Go to v{latest.n}
-                </Button>
-              }
-            />
-          </motion.div>
-        )}
-      </AnimatePresence>
-      {!onOlder && (
-        <div className="ed-mode">
-          <Segmented
-            block
-            size={mobile ? 'large' : 'middle'}
-            value={makeNew ? 'variation' : 'version'}
-            onChange={(val) => setMakeNew(val === 'variation')}
-            options={[
-              { label: 'New version', value: 'version' },
-              { label: 'New variation', value: 'variation' },
-            ]}
-          />
-          <p className="t-help ed-mode-help">
-            {makeNew
-              ? 'Makes a new, separate creative and leaves this one as it is. Best for a different idea you want to test against this one. It adds one more creative to manage.'
-              : `Edits this creative and saves it as v${latest.n + 1}. Best for small fixes. It stays one creative, so you can go back to an earlier version but can't test two versions against each other.`}
-          </p>
-        </div>
-      )}
-      {!mobile && (
-        <div className="ed-apply">
-          <span className="t-help">{costLine}</span>
-          <Tooltip title={applyDisabled ? (!ask.trim() ? 'Describe what you want to change first.' : 'Applying your previous change.') : undefined}>
-            <Button type={editing || locked ? 'default' : 'primary'} disabled={applyDisabled} onClick={() => apply(ask)}>
-              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
-            </Button>
-          </Tooltip>
-        </div>
-      )}
-    </section>
+    </div>
   );
 
   const promptBlock = (
-    <section className="ed-block">
+    <div className="ed-step ed-prompt">
       <button type="button" className="acc-toggle" onClick={() => setPromptOpen((o) => !o)} aria-expanded={promptOpen}>
         <span>{promptOpen ? 'Hide prompt' : 'Show prompt'}</span>
         <DownOutlined aria-hidden />
@@ -522,6 +436,123 @@ export function Editor() {
           </motion.div>
         )}
       </AnimatePresence>
+    </div>
+  );
+
+  const changeBlock = (
+    <section className="ed-block">
+      <SectionHead title="Refine" />
+      <AnimatePresence initial={false}>
+        {rating === 'down' && (
+          <motion.div key="why" variants={fadeUp} initial="hidden" animate="show" exit="exit" className="ed-reasons">
+            <span className="t-label">What's wrong?</span>
+            <div className="ed-chips">
+              {REASONS.map((r) => (
+                <button key={r.label} type="button" className="chip" onClick={() => reason(r)}>
+                  {r.label}
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <AnimatePresence initial={false}>
+        {onOlder && (
+          <motion.div key="older" variants={fadeUp} initial="hidden" animate="show" exit="exit">
+            <Alert
+              type="info"
+              showIcon
+              icon={<MadeFromIcon />}
+              title={`You're on v${shown.n}. A change here makes a new variation, and v${latest.n} stays as it is.`}
+              action={
+                <Button type="link" onClick={() => setSel(null)}>
+                  Go to v{latest.n}
+                </Button>
+              }
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
+      {!onOlder && (
+        <div className="ed-step ed-mode">
+          <span className="ed-step-label">Save as</span>
+          <Segmented
+            block
+            size={mobile ? 'large' : 'middle'}
+            value={makeNew ? 'variation' : 'version'}
+            onChange={(val) => {
+              setMakeNew(val === 'variation');
+              if (!v.stylized) setTextMode(val === 'variation' && canStylize ? 'stylized' : 'editable');
+              setEditing(false);
+            }}
+            options={[
+              { label: 'New version', value: 'version' },
+              { label: 'New variation', value: 'variation' },
+            ]}
+          />
+          <p className="t-help ed-mode-help">
+            {makeNew
+              ? 'Makes a new, separate creative and leaves this one as it is. Best for a different idea you want to test against this one. It adds one more creative to manage.'
+              : `Edits this creative and saves it as v${latest.n + 1}. Best for small fixes. It stays one creative, so you can go back to an earlier version but can't test two versions against each other.`}
+          </p>
+        </div>
+      )}
+      <div className="ed-step">
+        <span className="ed-step-label">What to change</span>
+        <Segmented
+          block
+          size={mobile ? 'large' : 'middle'}
+          value={scope}
+          onChange={(val) => {
+            setScope(val as typeof scope);
+            setEditing(false);
+          }}
+          options={[
+            { label: 'Whole image', value: 'image' },
+            { label: 'Text only', value: 'text' },
+          ]}
+        />
+      </div>
+      {scope === 'image' ? (
+        <>
+      <label className="ed-field">
+        <span className="ed-label">What should change?</span>
+        <Input.TextArea
+          ref={input as never}
+          value={ask}
+          onChange={(e) => setAsk(e.target.value)}
+          placeholder="e.g. Make the headline shorter"
+          autoSize={{ minRows: 2, maxRows: 5 }}
+          onPressEnter={(e) => {
+            if (!e.shiftKey) {
+              e.preventDefault();
+              apply(ask);
+            }
+          }}
+        />
+      </label>
+      <div className="ed-chips">
+        {CHIPS.map((ch) => (
+          <button key={ch} type="button" className="chip" onClick={() => chip(ch)}>
+            {ch}
+          </button>
+        ))}
+      </div>
+      {!mobile && (
+        <div className="ed-apply">
+          <span className="t-help">{costLine}</span>
+          <Tooltip title={applyDisabled ? (!ask.trim() ? 'Describe what you want to change first.' : 'Applying your previous change.') : undefined}>
+            <Button type={editing || locked ? 'default' : 'primary'} disabled={applyDisabled} onClick={() => apply(ask)}>
+              {onOlder ? `New variation from v${shown.n}` : makeNew ? 'Create new variation' : 'Apply change'}
+            </Button>
+          </Tooltip>
+        </div>
+      )}
+          {promptBlock}
+        </>
+      ) : (
+        textBlock
+      )}
     </section>
   );
 
@@ -635,8 +666,6 @@ export function Editor() {
             </div>
           )}
           {changeBlock}
-          {textBlock}
-          {promptBlock}
           {tagBlock}
         </aside>
       </div>
