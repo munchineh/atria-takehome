@@ -521,11 +521,12 @@ export function Editor() {
             value={makeNew ? 'variation' : 'version'}
             onChange={(val) => setMakeNew(val === 'variation')}
             options={[
-              { label: 'New version', value: 'version' },
+              // 294 (Mancini 19:39): say what each does to this creative.
+              { label: 'Edit version', value: 'version' },
               {
                 label: (
                   <span className="ed-save-opt">
-                    New variation{aiPending && <span className="ed-rec-tag">Recommended</span>}
+                    Create new variation{aiPending && <span className="ed-rec-tag">Recommended</span>}
                   </span>
                 ),
                 value: 'variation',
