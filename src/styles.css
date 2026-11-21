@@ -3232,3 +3232,6 @@ button.bar-list-row:focus-visible { outline: 2px solid var(--c-primary); outline
 .ed-chip-emoji { font-size: 15px; line-height: 1; }
 /* 292 (Mancini 19:38) History card: more room between the figure and "Average". */
 .ed-hist-metric .t-help { margin-left: 8px; }
+/* 296 (Mancini 19:42) Suggested prompts under "What should change?" (and in the Edit creative dialog) use a dashed
+   border, so they read as starting points rather than buttons. */
+.ed-chips .chip, .ecd-chips .ant-btn { border-style: dashed; }
