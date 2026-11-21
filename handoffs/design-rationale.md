@@ -130,3 +130,5 @@ One row per change made after the overnight build, newest at the bottom. Feeds t
 | 82 | Star becomes Save with a bookmark icon; bar says "2 saved"; copy says "Save the ones to keep" | Glossary | Mancini 13:04: the social media save pattern; one word for keeping a creative |
 | K12 | Creation sidebar keeps our structure; Creative gallery stays (R1 declined) | Mancini 13:03 | Scales to video, and lets people browse creatives apart from ads |
 | K13 | Filter stays at the right (R3 declined); persona cards stay (R5 declined) | Mancini 13:03 | |
+| K14 | Create form keeps our brief flow (R4 declined after mocks) | Mancini 13:09 | Cleaner than FG3's always-on link field |
+| K15 | Suggestion cards lead with the problem, stated plainly | Mancini 13:09 | A problem and a suggestion are different things; softened lines read as fixes |
