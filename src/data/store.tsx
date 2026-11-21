@@ -43,11 +43,11 @@ export const findCreative = (id?: string) => ALL_CREATIVES.find((c) => c.id === 
  * (from a reference, clone an ad, from an ad's suggestions, ask Raya). The gallery's "New creative" offers three;
  * the fourth (from an ad's suggestions) already lives on the ad page.
  */
-export type NewCreativeStart = 'scratch' | 'reference' | 'clone';
+export type NewCreativeStart = 'scratch' | 'clone';
 export const NEW_CREATIVE_STARTS: { value: NewCreativeStart; title: string; help: string }[] = [
+  // Mancini 10:31: two starts, named the same as the gallery tabs (From a brief, Clones). Reference and clone were one idea told twice.
   { value: 'scratch', title: 'Start from a brief', help: 'Describe the product, who it\u2019s for, the goal and the tone.' },
-  { value: 'reference', title: 'Start from a reference', help: 'Pick up to 10 reference ads. Atria follows their layout with your brand and product.' },
-  { value: 'clone', title: 'Clone an ad', help: 'Pick one ad you like. Atria rebuilds the idea for your brand.' },
+  { value: 'clone', title: 'Clone ads you like', help: 'Pick 1 to 10 ads. Atria rebuilds their idea with your brand and product.' },
 ];
 let projectCount = 0;
 /** Adds an untied project to the account and returns it; start its first round with `startJob({ creativeId: project.id, recIds: ['r1'], … })`. */

@@ -254,6 +254,7 @@ export function GalleryToolbar({
           icon={filters.shortlistedOnly ? <StarFilled /> : <StarOutlined />}
           className={`gal-shortlist-btn ${filters.shortlistedOnly ? 'on' : ''}`}
           aria-pressed={filters.shortlistedOnly}
+          disabled={shortlistedCount === 0 && !filters.shortlistedOnly}
           onClick={() => onChangeFilters({ ...filters, shortlistedOnly: !filters.shortlistedOnly })}
         >
           Shortlisted{shortlistedCount > 0 ? `\u00a0· ${shortlistedCount}` : ''}

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { App, Button, Drawer, Grid, Input, Modal, Select } from 'antd';
-import { CheckOutlined, CloseOutlined, CopyOutlined, EditOutlined, LeftOutlined, PictureOutlined } from '@ant-design/icons';
+import { CheckOutlined, CloseOutlined, CopyOutlined, EditOutlined, LeftOutlined } from '@ant-design/icons';
 import { AnimatePresence, motion } from 'motion/react';
 import { ACCOUNT, SIZES, plural } from '../../data/mock';
 import { DEMO_ACCOUNTS, NEW_CREATIVE_STARTS, newProject, useStore, type NewCreativeStart } from '../../data/store';
@@ -10,7 +10,6 @@ import { fadeUp } from '../../motion/tokens';
 
 const START_ICON: Record<NewCreativeStart, React.ReactNode> = {
   scratch: <EditOutlined />,
-  reference: <PictureOutlined />,
   clone: <CopyOutlined />,
 };
 
@@ -67,7 +66,7 @@ export function NewCreativeModal({
       const first = sampleAds[0];
       if (first) {
         setPickedIds([first.id]);
-        setName(s === 'clone' ? `Clone\u00a0· ${first.product}` : `${first.product}\u00a0· reference`);
+        setName(`Clone\u00a0· ${first.product}`);
         setBrief(
           `Product: ${first.product} from ${account.name}.\nGoal: make a fresh creative ready to test.\nTone: match the brand colors and style.`,
         );
@@ -78,16 +77,12 @@ export function NewCreativeModal({
 
   const toggleSample = (id: string) => {
     const ad = sampleAds.find((x) => x.id === id);
-    if (start === 'clone') {
-      setPickedIds([id]);
-      if (ad) setName(`Clone\u00a0· ${ad.product}`);
-    } else {
-      setPickedIds((prev) => {
-        if (prev.includes(id)) return prev.filter((x) => x !== id);
-        if (prev.length >= 10) return prev;
-        return [...prev, id];
-      });
-    }
+    setPickedIds((prev) => {
+      if (prev.includes(id)) return prev.filter((x) => x !== id);
+      if (prev.length >= 10) return prev;
+      if (!prev.length && ad) setName(`Clone\u00a0· ${ad.product}`);
+      return [...prev, id];
+    });
   };
 
   const cost = count * ACCOUNT.creditsPerImage;
@@ -160,9 +155,9 @@ export function NewCreativeModal({
               {start !== 'scratch' && (
                 <section className="dlg-block">
                   <div className="dlg-label-row">
-                    <span className="dlg-label">{start === 'clone' ? 'Ad to clone' : 'Reference ads'}</span>
+                    <span className="dlg-label">Ads to clone</span>
                     <span className="t-help">
-                      {start === 'clone' ? 'Pick 1 ad.' : `${pickedIds.length} of 10 selected.`}
+                      {`${pickedIds.length} of 10 selected.`}
                     </span>
                   </div>
                   <div className="nc-sample-grid">

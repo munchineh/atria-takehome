@@ -29,11 +29,11 @@ export function GalleryCard({
     </Tooltip>
   ) : item.origin === 'cloned' ? (
     <Tag className="gal-source" icon={<CopyOutlined />}>
-      Cloned
+      Clone
     </Tag>
   ) : (
     <Tag className="gal-source" icon={<FormOutlined />}>
-      From scratch
+      From a brief
     </Tag>
   );
 

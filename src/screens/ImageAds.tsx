@@ -114,7 +114,11 @@ export function ImageAds() {
   );
 
   const groups = useMemo(() => groupGallery(filtered, groupBy), [filtered, groupBy]);
-  const accountShortlisted = useMemo(() => gallerySummary(accountScoped).shortlisted, [accountScoped]);
+  // Mancini 10:32: the count says what the button will show, so it follows the open tab.
+  const accountShortlisted = useMemo(
+    () => gallerySummary(accountScoped.filter((i) => filters.origin === 'all' || i.origin === filters.origin)).shortlisted,
+    [accountScoped, filters.origin],
+  );
 
   const activeJobs = useMemo(
     () =>

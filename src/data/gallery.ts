@@ -17,7 +17,7 @@ import type { Variation, Version } from './variations';
 export type Origin = 'variation' | 'cloned' | 'scratch';
 export type GroupBy = 'none' | 'date' | 'ad' | 'campaign' | 'product';
 
-export const ORIGIN_LABEL: Record<Origin, string> = { variation: 'Made from an ad', cloned: 'Cloned', scratch: 'From scratch' };
+export const ORIGIN_LABEL: Record<Origin, string> = { variation: 'Variation', cloned: 'Clone', scratch: 'From a brief' };
 /** Atria's own Image Ads page groups by date by default and offers Product among others; Ad and Campaign are ours (DL-15). */
 export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
   { value: 'date', label: 'Date' },
@@ -29,9 +29,10 @@ export const GROUP_OPTIONS: { value: GroupBy; label: string }[] = [
 /** Origin is a tab row, as on Atria's page (All, Clone, Iterate, Raya). */
 export const ORIGIN_TABS: { value: 'all' | Origin; label: string }[] = [
   { value: 'all', label: 'All' },
-  { value: 'variation', label: 'From ads' },
-  { value: 'cloned', label: 'Cloned' },
-  { value: 'scratch', label: 'From scratch' },
+  // Mancini 10:31: one name per way in. Variations come from "Create variations" on an ad; the other two match New creative's starts.
+  { value: 'variation', label: 'Variations' },
+  { value: 'cloned', label: 'Clones' },
+  { value: 'scratch', label: 'From a brief' },
 ];
 /** Title of the last group, for creatives the grouping has no value for. */
 export const UNGROUPED_LABEL: Record<GroupBy, string> = { none: '', date: 'Earlier', ad: 'Not made from an ad', campaign: 'Not in a campaign yet', product: 'No product' };
