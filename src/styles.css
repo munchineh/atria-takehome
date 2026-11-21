@@ -1933,3 +1933,26 @@ button.bar-list-row:focus-visible { outline: 2px solid #f66c30; outline-offset: 
 .ant-popover .ant-popover-title, .runs-pop2 .ant-popover-title { font-size: var(--fs-body); line-height: var(--lh-body); font-weight: 600; margin-bottom: 8px; }
 /* S-11: every default button keeps the library height (32), including ones that had been squeezed */
 .ant-btn:not(.ant-btn-sm):not(.ant-btn-lg):not(.inline-link):not(.ant-btn-link):not(.icon-only) { min-height: 32px; }
+/* Page header (S-32) */
+.ph { margin-bottom: 24px; }
+.ph-crumbs { margin-bottom: 8px; font-size: var(--fs-body); }
+.ph-row { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; }
+.ph-text { min-width: 0; flex: 1; }
+.ph-title-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.ph .desc { margin: 4px 0 0; color: var(--c-text-2); }
+.ph-actions { display: inline-flex; align-items: center; gap: 8px; flex: none; }
+.ph-actions .ant-btn { height: 32px; }
+@media (max-width: 767px) {
+  .ph { margin-bottom: 16px; }
+  .ph-row { flex-direction: column; gap: 12px; }
+  .ph-actions { width: 100%; flex-wrap: wrap; }
+  .ph-actions .ant-btn { height: 44px; }
+  .ph-actions .ant-btn:not(.ant-btn-icon-only) { flex: 1; }
+}
+@media (max-width: 767px) { .ph-actions .ant-btn-text { flex: none !important; width: 44px; } .page.radar .ph-row { flex-direction: row; } .page.radar .ph-actions { width: auto; } }
+.overview .filter-bar { margin-bottom: 16px; }
+.ph .desc, .ph p.desc { font-size: var(--fs-body) !important; line-height: var(--lh-body); }
+@media (max-width: 767px) {
+  .ph-actions .ant-btn-text > span:not(.ant-btn-icon) { display: none; }
+  .ph-actions { flex-wrap: nowrap; }
+}

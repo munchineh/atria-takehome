@@ -2,7 +2,7 @@ import type { ReactNode } from 'react';
 import { useEffect, useState, type HTMLAttributes } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { PopSheet, usePeriodSheet } from '../components/PopSheet';
-import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip, Typography } from 'antd';
+import { Progress, App, Tag, Badge, Button, Checkbox, Drawer, Empty, Grid, Popover, Select, Table, Tabs, Tooltip } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import { FilterOutlined, DownOutlined, CloseOutlined, ExportOutlined, CalendarOutlined, QuestionCircleOutlined, PlayCircleOutlined, AppstoreOutlined, PictureOutlined, BranchesOutlined, HistoryOutlined } from '../components/AppIcons';
 import { AnimatePresence, motion } from 'motion/react';
@@ -13,6 +13,7 @@ import { useStore } from '../data/store';
 import { Thumb } from '../components/Thumb';
 import { GradeTag, OverallTag } from '../components/GradeTag';
 import { StatusCell } from '../components/StatusCell';
+import { PageHeader } from '../components/PageHeader';
 import { IterationHistory } from '../components/IterationHistory';
 import { iterationHistory } from '../data/insights';
 import { duration, ease, fadeUp, listDelay, pageTransition, spring } from '../motion/tokens';
@@ -436,28 +437,24 @@ export function Radar() {
 
   return (
     <motion.div {...pageTransition} className="page radar">
-      <div className="page-head">
-        <div className="page-title-row">
-          <Typography.Title level={1} className="page-title">
-            Radar
-          </Typography.Title>
-          <span className="page-title-actions">
+      <PageHeader
+        title="Radar"
+        desc="Find out how each ad is performing and what to do next."
+        actions={
+          <>
           <PopSheet content={<div className="ih-pop"><IterationHistory items={iterationHistory(account, windowDays, jobs)} limit={4} empty="No rounds yet. Open an ad and pick suggestions to create variations." /></div>} title="Iteration history" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
-            <Button type="text" size="small" className="hgw" aria-label="Iteration history">
-              <HistoryOutlined className="hgw-icon" />
-              <span className="hgw-text">History</span>
+            <Button type="text" icon={<HistoryOutlined />} aria-label="Iteration history">
+              {bp.md && 'History'}
             </Button>
           </PopSheet>
           <PopSheet content={howGrading(lowSpend)} title="How Radar grades your ads" trigger="click" placement="bottomRight" classNames={{ root: 'how-pop-root' }}>
-            <Button type="text" size="small" className="hgw" aria-label="How Radar grades your ads">
-              <QuestionCircleOutlined className="hgw-icon" />
-              <span className="hgw-text">How grading works</span>
+            <Button type="text" icon={<QuestionCircleOutlined />} aria-label="How Radar grades your ads">
+              {bp.md && 'How grading works'}
             </Button>
           </PopSheet>
-          </span>
-        </div>
-        <p className="muted desc">Find out how each ad is performing and what to do next.</p>
-      </div>
+                    </>
+        }
+      />
 
       <AnimatePresence initial={false}>
         {lowSpend && (

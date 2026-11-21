@@ -17,7 +17,7 @@ Prompt to paste:
 
 ## Phase B (after the foundation commit): page rebuilds
 
-Claude lands first: tokens in `src/theme.ts`, a rebuilt `src/styles.css` (tokens plus one block per component), and the shared components (`PageHeader`, `SectionHead`, `StatTile`, `KeyValue`, `ListRow`, `BarList`, `Rating`, `Chip`). Then:
+**Foundation is on `main` (21 Nov, 11:55):** CSS variables at the top of `src/styles.css` (`--c-*`, `--fs-*`, `--lh-*`, `--r-*`) and a SYSTEM LAYER block near the end; library tokens in `src/theme.ts`; shared components `PageHeader`, `SectionHead`, `BarList`, `Rating`, `IterationHistory`. Use `var(--…)` for every colour, size and radius. Then:
 
 | Owner | Pages |
 |---|---|

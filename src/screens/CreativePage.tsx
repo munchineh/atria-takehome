@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { App, Breadcrumb, Button, Dropdown, Empty, Tag, Tooltip, Typography } from 'antd';
+import { App, Button, Dropdown, Empty, Tag, Tooltip } from 'antd';
 import { motion } from 'motion/react';
 import { ArchiveOutlined, ArchiveRestoreOutlined, BarChartOutlined, DeleteOutlined, DownloadOutlined, EditOutlined, EllipsisOutlined, LockOutlined, CopyPlusOutlined } from '../components/AppIcons';
 import { CREATIVES, plural } from '../data/mock';
@@ -8,6 +8,7 @@ import { findCreative, recName, useStore } from '../data/store';
 import { TAG_TIPS, predictedCtr, ratioFor, tagsFor } from '../data/variations';
 import { AdArt } from '../components/Thumb';
 import { SectionHead } from '../components/SectionHead';
+import { PageHeader } from '../components/PageHeader';
 import { fadeUp, pageTransition } from '../motion/tokens';
 
 /**
@@ -55,24 +56,17 @@ export function CreativePage() {
 
   return (
     <motion.div {...pageTransition} className="page creative-page">
-      <Breadcrumb
-        className="cp-crumb"
-        items={[{ title: <Link to="/creation">Creative gallery</Link> }, { title: <Link to={`/creation/${c.id}?round=${job.id}`}>{`${c.name}, round ${roundNo}`}</Link> }, { title: v.angle }]}
-      />
-
-      <div className="cp-head">
-        <div className="cp-head-text">
-          <div className="cp-title-row">
-            <Typography.Title level={1} className="page-title">
-              {v.angle}
-            </Typography.Title>
+      <PageHeader
+        crumbs={[{ title: <Link to="/creation">Creative gallery</Link> }, { title: <Link to={`/creation/${c.id}?round=${job.id}`}>{`${c.name}, round ${roundNo}`}</Link> }, { title: v.angle }]}
+        title={v.angle}
+        tag={
             <Tag className={`cp-status s-${status.replace(/\s/g, '').toLowerCase()}`} icon={locked ? <LockOutlined /> : undefined}>
               {status}
             </Tag>
-          </div>
-          <p className="muted desc">See where this creative came from and where it runs. Edit it to make a new version.</p>
-        </div>
-        <div className="cp-actions">
+        }
+        desc="See where this creative came from and where it runs. Edit it to make a new version."
+        actions={
+          <>
           <Button icon={<DownloadOutlined />} onClick={() => message.success(`Downloaded ${v.angle} v${shown.n}`)}>
             Download
           </Button>
@@ -122,8 +116,9 @@ export function CreativePage() {
           >
             <Button icon={<EllipsisOutlined />} aria-label="More actions" />
           </Dropdown>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       <div className="cp-grid">
         <motion.section variants={fadeUp} initial="hidden" animate="show" className="panel cp-preview">

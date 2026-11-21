@@ -1,4 +1,4 @@
-import { Empty, Grid, Select, Typography } from 'antd';
+import { Empty, Grid, Select } from 'antd';
 import { ArrowDownOutlined, ArrowUpOutlined, CalendarOutlined, MinusOutlined, RightOutlined } from '../components/AppIcons';
 import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'motion/react';
@@ -6,6 +6,7 @@ import { WINDOWS, goalOf, graded, money, plural, type TabKey } from '../data/moc
 import { DEMO_ACCOUNTS, findCreative, useStore } from '../data/store';
 import { creativeDiversity, formatBreakdown, healthBreakdown, iterationHistory, overviewBriefing, topTags, type Delta } from '../data/insights';
 import { AskRaya } from '../components/AskRaya';
+import { PageHeader } from '../components/PageHeader';
 import { BarList } from '../components/BarList';
 import { IterationHistory } from '../components/IterationHistory';
 import { GradeChip, OverallTag } from '../components/GradeTag';
@@ -105,13 +106,9 @@ export function Overview() {
 
   return (
     <motion.div {...pageTransition} className="page overview">
-      <div className="page-head ov-head">
-        <div>
-          <Typography.Title level={1} className="page-title">
-            Overview
-          </Typography.Title>
-          <p className="muted desc">See how this account is doing and where to look first.</p>
-        </div>
+      <PageHeader title="Overview" desc="See how this account is doing and where to look first." />
+      {/* S-33: the period is a control, so it sits in the controls row like Radar's, not with the title. */}
+      <div className="filter-bar">
         <Select
           value={windowDays}
           onChange={(d) => setWindowDays(d)}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { App, Button, Empty, Progress, Tabs, Typography } from 'antd';
-import { BarChartOutlined, PlusOutlined } from '../components/AppIcons';
+import { App, Button, Empty, Progress, Tabs } from 'antd';
+import { BarChartOutlined, PlusOutlined, QuestionCircleOutlined } from '../components/AppIcons';
 import { motion } from 'motion/react';
 import { plural } from '../data/mock';
 import { findCreative, useStore } from '../data/store';
@@ -13,6 +13,7 @@ import { GalleryCard } from '../components/gallery/GalleryCard';
 import { GalleryMenus, type GalleryFilters, type Order } from '../components/gallery/GalleryMenus';
 import { NewCreativeModal } from '../components/gallery/NewCreativeModal';
 import { pageTransition } from '../motion/tokens';
+import { PageHeader } from '../components/PageHeader';
 
 const HOW = (
   <div className="grade-pop">
@@ -118,26 +119,22 @@ export function ImageAds() {
 
   return (
     <motion.div {...pageTransition} className="page image-ads">
-      <div className="page-head gal-head">
-        <div className="gal-head-text">
-          <Typography.Title level={1} className="page-title">
-            Creative gallery
-          </Typography.Title>
-          {/* Mancini 09:43: one line under the title, no extra meta line; counts live in the tabs below. */}
-          <p className="muted desc">Every creative you've kept, with its versions and the ads it runs in.</p>
-        </div>
-        <div className="gal-head-actions">
-          <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
-            <Button type="link" className="inline-link">
-              How the gallery works
+      <PageHeader
+        title="Creative gallery"
+        desc="Every creative you've kept, with its versions and the ads it runs in."
+        actions={
+          <>
+            <PopSheet content={HOW} title="How the gallery works" trigger="click" placement="bottomRight">
+              <Button type="text" icon={<QuestionCircleOutlined />}>
+                How the gallery works
+              </Button>
+            </PopSheet>
+            <Button type="primary" icon={<PlusOutlined />} onClick={() => setNewOpen(true)}>
+              New creative
             </Button>
-          </PopSheet>
-          {/* DL-15 & DL-16: gallery's primary action, "New creative". */}
-          <Button type="primary" icon={<PlusOutlined />} onClick={() => setNewOpen(true)}>
-            New creative
-          </Button>
-        </div>
-      </div>
+          </>
+        }
+      />
 
       {/* DL-17: origin as tabs with counts, like Atria's All, Clone, Iterate, Raya. */}
       <Tabs
